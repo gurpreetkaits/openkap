@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\BlogController;
-use App\Http\Controllers\VideoController;
 use App\Models\Video;
 use Illuminate\Support\Facades\Route;
 
@@ -14,6 +13,21 @@ Route::get('/privacy-policy', function () {
     return view('privacy-policy');
 });
 
+// About page
+Route::get('/about', function () {
+    return view('about');
+});
+
+// Contact page
+Route::get('/contact', function () {
+    return view('contact');
+});
+
+// Terms and Conditions page
+Route::get('/terms', function () {
+    return view('terms');
+});
+
 // Blog routes (SEO-friendly server-rendered pages)
 Route::get('/blog', [BlogController::class, 'webIndex'])->name('blog.index');
 Route::get('/blog/{slug}', [BlogController::class, 'webShow'])->name('blog.show');
@@ -22,7 +36,7 @@ Route::get('/blog/{slug}', [BlogController::class, 'webShow'])->name('blog.show'
 Route::get('/share/video/{token}', function ($token) {
     $video = Video::where('share_token', $token)->first();
 
-    if (!$video || !$video->isShareLinkValid()) {
+    if (! $video || ! $video->isShareLinkValid()) {
         abort(404, 'Video not found or no longer available');
     }
 
