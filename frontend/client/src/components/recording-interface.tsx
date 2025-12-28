@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Video, Square, Pause, Play, Download, Monitor, Camera, Users } from 'lucide-react';
+import { Video, Square, Pause, Play, Download, Monitor, Camera, Users, Mic, ZoomIn } from 'lucide-react';
 import { useScreenRecording, type RecordingState } from '@/hooks/use-screen-recording';
 import { RecordingOptions, downloadVideo, type RecordingType } from '@/lib/recording-utils';
 
@@ -22,9 +22,34 @@ export const RecordingInterface = () => {
     includeAudio: true,
     showCursor: false,
     countdownTimer: false,
+    zoomOnClick: true,
+    audioDeviceId: undefined,
   });
 
+  const [audioDevices, setAudioDevices] = useState<MediaDeviceInfo[]>([]);
+
   const previewVideoRef = useRef<HTMLVideoElement>(null);
+
+  // Enumerate audio devices
+  useEffect(() => {
+    const getAudioDevices = async () => {
+      try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const audioInputs = devices.filter(device => device.kind === 'audioinput');
+        setAudioDevices(audioInputs);
+      } catch (error) {
+        console.error('Failed to enumerate audio devices:', error);
+      }
+    };
+
+    getAudioDevices();
+
+    // Listen for device changes
+    navigator.mediaDevices.addEventListener('devicechange', getAudioDevices);
+    return () => {
+      navigator.mediaDevices.removeEventListener('devicechange', getAudioDevices);
+    };
+  }, []);
 
   // Setup preview stream
   useEffect(() => {
@@ -235,51 +260,65 @@ export const RecordingInterface = () => {
                 </div>
               </div>
 
-              {/* Additional Options */}
-              <div className="flex items-center justify-center space-x-6 text-sm">
-                <div className="form-control">
-                  <label className="label cursor-pointer">
-                    <input 
-                      type="checkbox" 
-                      className="checkbox checkbox-sm mr-2" 
-                      checked={options.includeAudio}
-                      onChange={(e) =>
-                        setOptions(prev => ({ ...prev, includeAudio: e.target.checked }))
-                      }
-                      data-testid="checkbox-audio"
-                    />
-                    <span className="label-text">Include audio</span>
-                  </label>
+              {/* Minimal Recording Options */}
+              <div className="space-y-3 max-w-md mx-auto">
+                {/* Microphone Toggle */}
+                <div className="flex items-center justify-between p-3 bg-base-200 rounded-lg">
+                  <div className="flex items-center space-x-2">
+                    <Mic className="w-4 h-4 text-base-content opacity-70" />
+                    <span className="text-sm font-medium">Microphone</span>
+                  </div>
+                  <input
+                    type="checkbox"
+                    className="toggle toggle-primary toggle-sm"
+                    checked={options.includeAudio}
+                    onChange={(e) =>
+                      setOptions(prev => ({ ...prev, includeAudio: e.target.checked }))
+                    }
+                    data-testid="checkbox-audio"
+                  />
                 </div>
-                {(options.recordingType === 'screen' || options.recordingType === 'screen+camera') && (
-                  <div className="form-control">
-                    <label className="label cursor-pointer">
-                      <input 
-                        type="checkbox" 
-                        className="checkbox checkbox-sm mr-2" 
-                        checked={options.showCursor}
-                        onChange={(e) =>
-                          setOptions(prev => ({ ...prev, showCursor: e.target.checked }))
-                        }
-                        data-testid="checkbox-cursor"
-                      />
-                      <span className="label-text">Show cursor</span>
-                    </label>
+
+                {/* Audio Input Dropdown */}
+                {options.includeAudio && audioDevices.length > 0 && (
+                  <div className="flex items-center space-x-3 p-3 bg-base-200 rounded-lg">
+                    <label className="text-sm font-medium whitespace-nowrap">Audio Input:</label>
+                    <select
+                      className="select select-sm select-bordered flex-1"
+                      value={options.audioDeviceId || ''}
+                      onChange={(e) =>
+                        setOptions(prev => ({ ...prev, audioDeviceId: e.target.value || undefined }))
+                      }
+                      data-testid="select-audio-device"
+                    >
+                      <option value="">Default</option>
+                      {audioDevices.map(device => (
+                        <option key={device.deviceId} value={device.deviceId}>
+                          {device.label || `Microphone ${device.deviceId.substring(0, 8)}`}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 )}
-                <div className="form-control">
-                  <label className="label cursor-pointer">
-                    <input 
-                      type="checkbox" 
-                      className="checkbox checkbox-sm mr-2" 
-                      checked={options.countdownTimer}
-                      onChange={(e) =>
-                        setOptions(prev => ({ ...prev, countdownTimer: e.target.checked }))
-                      }
-                      data-testid="checkbox-countdown"
-                    />
-                    <span className="label-text">Countdown timer</span>
-                  </label>
+
+                {/* Zoom on Click Toggle */}
+                <div className="flex items-center justify-between p-3 bg-orange-50 dark:bg-orange-950/20 rounded-lg border border-orange-200 dark:border-orange-900">
+                  <div className="flex items-center space-x-2">
+                    <ZoomIn className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+                    <div>
+                      <div className="text-sm font-medium">Zoom on Click</div>
+                      <div className="text-xs text-base-content opacity-60">Auto-zoom when you click</div>
+                    </div>
+                  </div>
+                  <input
+                    type="checkbox"
+                    className="toggle toggle-warning toggle-sm"
+                    checked={options.zoomOnClick ?? true}
+                    onChange={(e) =>
+                      setOptions(prev => ({ ...prev, zoomOnClick: e.target.checked }))
+                    }
+                    data-testid="checkbox-zoom"
+                  />
                 </div>
               </div>
             </div>

@@ -14,6 +14,12 @@ export default defineConfig(({ mode }) => {
       }
     },
     server: {
+      host: '0.0.0.0',
+      port: 5173,
+      watch: {
+        usePolling: true,  // Enable polling for Docker
+        interval: 100      // Poll every 100ms
+      },
       proxy: {
         '/api': {
           // Use VITE_PROXY_TARGET for Docker (http://nginx), fallback to VITE_BACKEND_URL or localhost

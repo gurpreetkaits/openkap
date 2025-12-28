@@ -40,6 +40,7 @@ let controlBar = null;
 let controlBarTimer = null;
 let isPaused = false;
 let recordingPanel = null;
+let zoomHandler = null;
 
 // ============================================
 // Configuration - Change ENV to switch environments
@@ -405,6 +406,16 @@ async function initRecording(options) {
   try {
     recordingOptions = options;
     recordedChunks = [];
+
+    // Initialize zoom handler if enabled (pass recording start time for click tracking)
+    if (options.zoomOnClick && typeof window.ScreenSenseZoomHandler !== 'undefined') {
+      if (!zoomHandler) {
+        zoomHandler = new window.ScreenSenseZoomHandler();
+      }
+      // Pass the recording start time so clicks are tracked with correct timestamps
+      zoomHandler.enable(Date.now());
+      console.log('Zoom-on-click feature enabled with click tracking');
+    }
 
     // Request screen capture (with system audio)
     if (options.screen) {
@@ -1067,9 +1078,10 @@ async function createRecordingPanel() {
       </div>
     </div>
 
-    <!-- Audio Option -->
+    <!-- Audio & Effects Options -->
     <div style="padding: 0 20px 20px;">
-      <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: #f9fafb; border-radius: 10px;">
+      <!-- Microphone Toggle -->
+      <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: #f9fafb; border-radius: 10px; margin-bottom: 10px;">
         <div style="display: flex; align-items: center; gap: 10px;">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2">
             <path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/>
@@ -1078,6 +1090,22 @@ async function createRecordingPanel() {
           <span style="font-size: 14px; color: #374151;">Microphone</span>
         </div>
         <div class="sb-toggle active" id="sb-mic-toggle"></div>
+      </div>
+
+      <!-- Zoom on Click Toggle -->
+      <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: #fff7ed; border-radius: 10px; border: 1px solid #fed7aa;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/>
+            <path d="m21 21-4.35-4.35"/>
+            <path d="M11 8v6M8 11h6"/>
+          </svg>
+          <div>
+            <span style="font-size: 14px; color: #374151; font-weight: 500;">Zoom on Click</span>
+            <div style="font-size: 11px; color: #9ca3af; margin-top: 2px;">Auto-zoom when you click</div>
+          </div>
+        </div>
+        <div class="sb-toggle active" id="sb-zoom-toggle"></div>
       </div>
     </div>
 
@@ -1115,6 +1143,7 @@ async function createRecordingPanel() {
   // State
   let selectedMode = 'screen';
   let micEnabled = true;
+  let zoomEnabled = true; // Zoom on click enabled by default
 
   // Close panel handlers
   const closePanel = () => {
@@ -1143,12 +1172,20 @@ async function createRecordingPanel() {
     micToggle.classList.toggle('active', micEnabled);
   });
 
+  // Zoom toggle
+  const zoomToggle = recordingPanel.querySelector('#sb-zoom-toggle');
+  zoomToggle.addEventListener('click', () => {
+    zoomEnabled = !zoomEnabled;
+    zoomToggle.classList.toggle('active', zoomEnabled);
+  });
+
   // Start recording
   recordingPanel.querySelector('#sb-start-recording').addEventListener('click', async () => {
     const options = {
       screen: selectedMode === 'screen' || selectedMode === 'screen-camera',
       camera: selectedMode === 'camera' || selectedMode === 'screen-camera',
-      microphone: micEnabled
+      microphone: micEnabled,
+      zoomOnClick: zoomEnabled
     };
 
     // Close panel first
@@ -1313,11 +1350,18 @@ async function stopRecording() {
       mediaRecorder.onstop = async () => {
         console.log('Recording stopped');
 
+        // Collect click events from zoom handler before cleanup
+        let clickEvents = [];
+        if (zoomHandler) {
+          clickEvents = zoomHandler.getClickEvents();
+          console.log('Collected click events for upload:', clickEvents.length);
+        }
+
         // Auto-upload to backend
         if (recordedChunks.length > 0) {
           const blob = new Blob(recordedChunks, { type: 'video/webm' });
           try {
-            await uploadToBackend(blob);
+            await uploadToBackend(blob, clickEvents);
             recordedChunks = []; // Clear after successful upload
           } catch (error) {
             console.error('Auto-upload failed:', error);
@@ -1344,9 +1388,16 @@ async function downloadRecording() {
 
   const blob = new Blob(recordedChunks, { type: 'video/webm' });
 
+  // Collect click events from zoom handler
+  let clickEvents = [];
+  if (zoomHandler) {
+    clickEvents = zoomHandler.getClickEvents();
+    console.log('Collected click events for download upload:', clickEvents.length);
+  }
+
   // Try to upload to backend first
   try {
-    const result = await uploadToBackend(blob);
+    const result = await uploadToBackend(blob, clickEvents);
     if (result.success) {
       console.log('Video uploaded successfully:', result);
       // Clear recorded chunks after successful upload
@@ -1377,7 +1428,7 @@ async function downloadRecording() {
   return { success: true, downloaded: true };
 }
 
-async function uploadToBackend(blob) {
+async function uploadToBackend(blob, clickEvents = []) {
   const API_URL = 'http://localhost:8000/api/videos';
 
   // Get auth token from localStorage or chrome.storage
@@ -1403,7 +1454,13 @@ async function uploadToBackend(blob) {
   formData.append('duration', duration.toString());
   formData.append('is_public', '1');
 
-  console.log('Uploading video to backend...', { title, duration });
+  // Include click events for backend zoom post-processing
+  if (clickEvents && clickEvents.length > 0) {
+    formData.append('click_events', JSON.stringify(clickEvents));
+    console.log('Including click events in upload:', clickEvents);
+  }
+
+  console.log('Uploading video to backend...', { title, duration, clickEventsCount: clickEvents.length });
 
   const response = await fetch(API_URL, {
     method: 'POST',
@@ -1548,6 +1605,12 @@ function showUploadNotification(shareUrl) {
 function cleanup() {
   // Remove the control bar
   removeControlBar();
+
+  // Disable zoom handler
+  if (zoomHandler) {
+    zoomHandler.disable();
+    zoomHandler = null;
+  }
 
   // Stop all tracks
   if (screenStream) {

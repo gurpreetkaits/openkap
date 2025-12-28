@@ -234,7 +234,13 @@
         <div class="footer-content">
             <span>&copy; {{ date('Y') }} ScreenSense</span>
             <span class="footer-divider"></span>
-            <a href="/privacy-policy" class="footer-link">Privacy Policy</a>
+            <a href="/about" class="footer-link">About</a>
+            <span class="footer-divider"></span>
+            <a href="/contact" class="footer-link">Contact</a>
+            <span class="footer-divider"></span>
+            <a href="/privacy-policy" class="footer-link">Privacy</a>
+            <span class="footer-divider"></span>
+            <a href="/terms" class="footer-link">Terms</a>
             <span class="footer-divider"></span>
             <a href="https://github.com/gurpreetkaits/screensense" target="_blank" rel="noopener noreferrer" class="footer-link">GitHub</a>
         </div>

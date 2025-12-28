@@ -40,6 +40,8 @@ class VideoManager
                 'conversion_status' => $video->conversion_status,
                 'conversion_progress' => $video->conversion_progress,
                 'is_converting' => in_array($video->conversion_status, ['pending', 'processing']),
+                'processing_status' => $video->processing_status,
+                'has_zoom_effects' => ! empty($video->click_events),
                 'created_at' => $video->created_at->toISOString(),
                 'updated_at' => $video->updated_at->toISOString(),
             ];
@@ -53,12 +55,16 @@ class VideoManager
 
     public function createVideo(User $user, array $data, UploadedFile $videoFile): Video
     {
+        $clickEvents = $data['click_events'] ?? [];
+
         $video = $this->videos->createVideo([
             'user_id' => $user->id,
             'title' => $data['title'],
             'description' => $data['description'] ?? null,
             'duration' => $data['duration'] ?? null,
             'is_public' => $data['is_public'] ?? true,
+            'click_events' => $clickEvents,
+            'processing_status' => count($clickEvents) > 0 ? 'ready' : null,
         ]);
 
         $video->addMedia($videoFile)->toMediaCollection('videos');
@@ -70,6 +76,12 @@ class VideoManager
         $video->generateThumbnailFromMidpoint();
 
         ConvertVideoToMp4::dispatch($video);
+
+        // Dispatch zoom processing job if there are click events
+        if (count($clickEvents) > 0) {
+            \App\Jobs\ProcessVideoZoomEffects::dispatch($video);
+            Log::info("[VideoManager] Dispatched zoom processing job for video {$video->id} with ".count($clickEvents).' clicks');
+        }
 
         $user->increment('videos_count');
 
@@ -93,6 +105,8 @@ class VideoManager
             'conversion_status' => $video->conversion_status,
             'conversion_progress' => $video->conversion_progress,
             'is_converting' => $video->isConverting(),
+            'processing_status' => $video->processing_status,
+            'has_zoom_effects' => ! empty($video->click_events),
             'created_at' => $video->created_at->toISOString(),
             'updated_at' => $video->updated_at->toISOString(),
         ];
@@ -115,6 +129,7 @@ class VideoManager
     public function updateVideo(Video $video, array $data): Video
     {
         $this->videos->updateVideo($video, $data);
+
         return $video->fresh();
     }
 
@@ -132,12 +147,13 @@ class VideoManager
     public function regenerateShareToken(Video $video): Video
     {
         $video->regenerateShareToken();
+
         return $video;
     }
 
     public function getSharedVideoDetails(Video $video): ?array
     {
-        if (!$video->isShareLinkValid()) {
+        if (! $video->isShareLinkValid()) {
             return null;
         }
 
@@ -170,6 +186,8 @@ class VideoManager
             'url' => url("/api/share/video/{$video->share_token}/stream"),
             'thumbnail' => $video->getThumbnailUrl(),
             'created_at' => $video->created_at->toISOString(),
+            'processing_status' => $video->processing_status,
+            'has_zoom_effects' => ! empty($video->click_events),
             'reactions' => $reactions,
             'comments' => $comments,
         ];
@@ -178,7 +196,7 @@ class VideoManager
     public function trimVideo(Video $video, float $startTime, float $endTime): array
     {
         $media = $video->getFirstMedia('videos');
-        if (!$media) {
+        if (! $media) {
             throw new \Exception('Video file not found');
         }
 
@@ -190,9 +208,9 @@ class VideoManager
 
         $originalPath = $media->getPath();
         $extension = pathinfo($originalPath, PATHINFO_EXTENSION);
-        $tempPath = storage_path('app/temp_trimmed_' . uniqid() . '.' . $extension);
+        $tempPath = storage_path('app/temp_trimmed_'.uniqid().'.'.$extension);
 
-        if (!is_dir(storage_path('app'))) {
+        if (! is_dir(storage_path('app'))) {
             mkdir(storage_path('app'), 0755, true);
         }
 
@@ -230,8 +248,8 @@ class VideoManager
             'id' => $video->id,
             'title' => $video->title,
             'duration' => $video->duration,
-            'url' => url("/api/share/video/{$video->share_token}/stream") . '?v=' . time(),
-            'thumbnail' => $video->getThumbnailUrl() . '?v=' . time(),
+            'url' => url("/api/share/video/{$video->share_token}/stream").'?v='.time(),
+            'thumbnail' => $video->getThumbnailUrl().'?v='.time(),
         ];
     }
 
@@ -265,8 +283,8 @@ class VideoManager
             'file_exists' => file_exists($tempPath),
         ]);
 
-        if ($returnCode !== 0 || !file_exists($tempPath)) {
-            if (!$isWebM) {
+        if ($returnCode !== 0 || ! file_exists($tempPath)) {
+            if (! $isWebM) {
                 $output = [];
                 $ffmpegCommand = sprintf(
                     'ffmpeg -y -i %s -ss %s -t %s -c:v libx264 -preset fast -crf 23 -c:a aac -b:a 128k %s 2>&1',
@@ -287,28 +305,37 @@ class VideoManager
                 ]);
             }
 
-            if ($returnCode !== 0 || !file_exists($tempPath)) {
+            if ($returnCode !== 0 || ! file_exists($tempPath)) {
                 Log::error('FFmpeg trim failed', [
                     'command' => $ffmpegCommand,
                     'output' => implode("\n", $output),
                     'return_code' => $returnCode,
                 ]);
-                throw new \Exception('Failed to trim video: ' . implode(' ', array_slice($output, -3)));
+                throw new \Exception('Failed to trim video: '.implode(' ', array_slice($output, -3)));
             }
         }
     }
 
     public function streamVideo(Video $video, ?string $rangeHeader = null): array
     {
-        $media = $video->getFirstMedia('videos');
+        // Check for processed video first (with zoom effects applied)
+        $media = null;
+        if ($video->processing_status === 'processed') {
+            $media = $video->getFirstMedia('processed_videos');
+        }
 
-        if (!$media) {
+        // Fall back to original video
+        if (! $media) {
+            $media = $video->getFirstMedia('videos');
+        }
+
+        if (! $media) {
             throw new \Exception('Video file not found');
         }
 
         $filePath = $media->getPath();
 
-        if (!file_exists($filePath)) {
+        if (! file_exists($filePath)) {
             throw new \Exception('Video file not found on disk');
         }
 
@@ -332,6 +359,7 @@ class VideoManager
     public function canAccessSharedVideo(Video $video, ?int $userId = null): bool
     {
         $isOwner = $userId !== null && $userId === $video->user_id;
+
         return $isOwner || $video->isShareLinkValid();
     }
 

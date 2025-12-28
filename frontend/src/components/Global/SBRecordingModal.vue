@@ -69,40 +69,64 @@
               <p class="text-gray-600">Select your recording options below</p>
             </div>
 
-            <!-- Recording Options Cards -->
-            <div class="grid grid-cols-2 gap-4 mb-8 max-w-md mx-auto">
-              <!-- Screen Option (always enabled) -->
-              <div class="bg-orange-50 border-2 border-orange-500 rounded-xl p-6">
-                <div class="flex flex-col items-center">
-                  <div class="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mb-3">
-                    <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+            <!-- Recording Options - Minimal Design -->
+            <div class="space-y-3 max-w-md mx-auto mb-8">
+              <!-- Microphone Toggle -->
+              <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200">
+                <div class="flex items-center space-x-3">
+                  <div class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                    <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/>
                     </svg>
                   </div>
-                  <h3 class="font-semibold text-gray-900 text-sm">Screen</h3>
-                  <p class="text-xs text-gray-500 mt-1">Always included</p>
+                  <span class="font-medium text-gray-900">Microphone</span>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                  <input v-model="recordingOptions.microphone" type="checkbox" class="sr-only peer">
+                  <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-600"></div>
+                </label>
+              </div>
+
+              <!-- Audio Input Dropdown -->
+              <div v-if="recordingOptions.microphone && audioDevices.length > 0" class="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200">
+                <div class="flex items-center space-x-3 flex-1">
+                  <div class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0">
+                    <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/>
+                    </svg>
+                  </div>
+                  <select
+                    v-model="recordingOptions.audioDeviceId"
+                    class="flex-1 bg-transparent border-none text-gray-900 font-medium focus:ring-0 focus:outline-none p-0 cursor-pointer"
+                  >
+                    <option :value="undefined">Default Microphone</option>
+                    <option v-for="device in audioDevices" :key="device.deviceId" :value="device.deviceId">
+                      {{ device.label || `Microphone ${device.deviceId.substring(0, 8)}` }}
+                    </option>
+                  </select>
                 </div>
               </div>
 
-              <!-- Microphone Option -->
-              <label class="relative cursor-pointer group">
-                <input
-                  v-model="recordingOptions.microphone"
-                  type="checkbox"
-                  class="peer sr-only"
-                >
-                <div class="bg-white border-2 border-gray-200 rounded-xl p-6 transition-all peer-checked:border-orange-500 peer-checked:bg-orange-50 hover:shadow-md">
-                  <div class="flex flex-col items-center">
-                    <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-3 peer-checked:bg-orange-100 transition-colors">
-                      <svg class="w-6 h-6 text-gray-600 peer-checked:text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/>
-                      </svg>
-                    </div>
-                    <h3 class="font-semibold text-gray-900 text-sm">Microphone</h3>
-                    <p class="text-xs text-gray-500 mt-1">{{ recordingOptions.microphone ? 'Enabled' : 'Disabled' }}</p>
+              <!-- Zoom on Click Toggle -->
+              <div class="flex items-center justify-between p-4 bg-orange-50 rounded-xl border-2 border-orange-200">
+                <div class="flex items-center space-x-3">
+                  <div class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+                    <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <circle cx="11" cy="11" r="8"/>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m21 21-4.35-4.35"/>
+                      <path d="M11 8v6M8 11h6"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <div class="font-medium text-gray-900">Zoom on Click</div>
+                    <div class="text-xs text-gray-600">Auto-zoom when you click</div>
                   </div>
                 </div>
-              </label>
+                <label class="relative inline-flex items-center cursor-pointer">
+                  <input v-model="recordingOptions.zoomOnClick" type="checkbox" class="sr-only peer">
+                  <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-600"></div>
+                </label>
+              </div>
             </div>
 
             <!-- Start Recording Button -->
@@ -249,6 +273,7 @@ import { ref, watch, onUnmounted } from 'vue'
 import { useAuth } from '@/stores/auth'
 import { buildApiUrl } from '@/config/api'
 import toast from '@/services/toastService'
+import { ZoomHandler } from '@/lib/zoomHandler'
 
 export default {
   name: 'SBRecordingModal',
@@ -282,11 +307,19 @@ export default {
     const chunksUploaded = ref(0)
     const uploadQueue = ref([])
 
+    // Zoom click tracking
+    const clickEvents = ref([])
+
     // Recording options
     const recordingOptions = ref({
       screen: true,
-      microphone: true
+      microphone: true,
+      zoomOnClick: true,
+      audioDeviceId: undefined
     })
+
+    // Audio devices
+    const audioDevices = ref([])
 
     // Media elements
     const previewVideo = ref(null)
@@ -296,6 +329,7 @@ export default {
     let stream = null
     let recordingInterval = null
     let chunkIndex = 0
+    let zoomHandler = null
 
     const formatTime = (seconds) => {
       const minutes = Math.floor(seconds / 60)
@@ -332,6 +366,15 @@ export default {
       }
     }
 
+    const getAudioDevices = async () => {
+      try {
+        const devices = await navigator.mediaDevices.enumerateDevices()
+        audioDevices.value = devices.filter(device => device.kind === 'audioinput')
+      } catch (error) {
+        console.error('Failed to enumerate audio devices:', error)
+      }
+    }
+
     const closeModal = () => {
       if (!isRecording.value && !isFinishing.value && !isSaving.value) {
         resetState()
@@ -363,8 +406,32 @@ export default {
       uploadedBytes.value = 0
       chunksUploaded.value = 0
       uploadQueue.value = []
+      clickEvents.value = []
       chunkIndex = 0
       canRecordVideo.value = true
+    }
+
+    // Track mouse clicks for zoom effects
+    const trackClick = (event) => {
+      if (!isRecording.value || isPaused.value || !recordingOptions.value.zoomOnClick) return
+
+      const timestamp = recordingTime.value
+      const x = event.clientX
+      const y = event.clientY
+
+      // Get viewport dimensions for normalization (0-1 range)
+      const viewportWidth = window.innerWidth
+      const viewportHeight = window.innerHeight
+
+      clickEvents.value.push({
+        timestamp,
+        x,
+        y,
+        normalizedX: x / viewportWidth,
+        normalizedY: y / viewportHeight
+      })
+
+      console.log('[RecordingModal] Click tracked:', { timestamp, x, y })
     }
 
     // Start upload session
@@ -459,7 +526,8 @@ export default {
           'Authorization': `Bearer ${auth.token.value}`
         },
         body: JSON.stringify({
-          duration: recordingTime.value
+          duration: recordingTime.value,
+          click_events: recordingOptions.value.zoomOnClick ? clickEvents.value : []
         })
       })
 
@@ -515,12 +583,19 @@ export default {
         let audioStream = null
         if (recordingOptions.value.microphone) {
           try {
+            const audioConstraints = {
+              echoCancellation: true,
+              noiseSuppression: true,
+              autoGainControl: true
+            }
+
+            // Use specific device if selected
+            if (recordingOptions.value.audioDeviceId) {
+              audioConstraints.deviceId = { exact: recordingOptions.value.audioDeviceId }
+            }
+
             audioStream = await navigator.mediaDevices.getUserMedia({
-              audio: {
-                echoCancellation: true,
-                noiseSuppression: true,
-                autoGainControl: true
-              },
+              audio: audioConstraints,
               video: false
             })
           } catch (audioErr) {
@@ -631,6 +706,12 @@ export default {
           }
         }
 
+        // Enable click tracking for zoom effects
+        if (recordingOptions.value.zoomOnClick) {
+          document.addEventListener('click', trackClick, true)
+          console.log('[RecordingModal] Click tracking enabled')
+        }
+
         mediaRecorder.start(3000)
         isRecording.value = true
         recordingTime.value = 0
@@ -685,6 +766,10 @@ export default {
         recordingInterval = null
       }
 
+      // Disable click tracking
+      document.removeEventListener('click', trackClick, true)
+      console.log('[RecordingModal] Click tracking disabled. Total clicks:', clickEvents.value.length)
+
       isPaused.value = false
     }
 
@@ -720,6 +805,7 @@ export default {
       if (newVal) {
         console.log('[RecordingModal] Modal opened, fetching fresh subscription status from backend...')
         checkSubscription()
+        getAudioDevices()
       } else if (!isRecording.value && !isFinishing.value && !isSaving.value) {
         resetState()
       }
@@ -759,6 +845,7 @@ export default {
       isDiscarding,
       recordingTime,
       recordingOptions,
+      audioDevices,
       previewVideo,
       uploadedBytes,
       // Methods

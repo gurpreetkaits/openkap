@@ -23,13 +23,13 @@ class VideoController extends Controller
 
     public function store(Request $request)
     {
-        if (!$this->videoManager->canUserRecordVideo(Auth::user())) {
+        if (! $this->videoManager->canUserRecordVideo(Auth::user())) {
             return response()->json([
                 'error' => 'video_limit_reached',
                 'message' => 'You have reached your video limit. Upgrade to Pro to continue recording.',
                 'videos_count' => Auth::user()->getVideosCount(),
                 'remaining_quota' => Auth::user()->getRemainingVideoQuota(),
-                'upgrade_url' => config('services.frontend.url') . '/subscription',
+                'upgrade_url' => config('services.frontend.url').'/subscription',
             ], 403);
         }
 
@@ -39,11 +39,21 @@ class VideoController extends Controller
             'duration' => 'nullable|integer',
             'video' => 'required|file|mimes:webm,mp4,mov|max:10240000',
             'is_public' => 'nullable|boolean',
+            'click_events' => 'nullable|string', // JSON string of click events
         ]);
+
+        // Parse click_events from JSON string
+        $clickEvents = [];
+        if ($request->has('click_events') && $request->click_events) {
+            $clickEvents = json_decode($request->click_events, true) ?? [];
+        }
 
         $video = $this->videoManager->createVideo(
             Auth::user(),
-            $request->only(['title', 'description', 'duration', 'is_public']),
+            array_merge(
+                $request->only(['title', 'description', 'duration', 'is_public']),
+                ['click_events' => $clickEvents]
+            ),
             $request->file('video')
         );
 
@@ -59,6 +69,8 @@ class VideoController extends Controller
                 'share_url' => $video->getShareUrl(),
                 'is_public' => $video->is_public,
                 'conversion_status' => $video->conversion_status,
+                'processing_status' => $video->processing_status,
+                'has_zoom_effects' => ! empty($clickEvents),
                 'created_at' => $video->created_at->toISOString(),
             ],
         ], 201);
@@ -68,7 +80,7 @@ class VideoController extends Controller
     {
         $video = $this->videoManager->findVideo($id);
 
-        if (!$video) {
+        if (! $video) {
             return response()->json(['message' => 'Video not found'], 404);
         }
 
@@ -231,7 +243,7 @@ class VideoController extends Controller
     {
         $video = $this->videoManager->findByShareTokenOrFail($token);
 
-        if (!$this->videoManager->canAccessSharedVideo($video, Auth::id())) {
+        if (! $this->videoManager->canAccessSharedVideo($video, Auth::id())) {
             return response()->json([
                 'message' => 'This video is no longer available for sharing',
             ], 403);
@@ -264,7 +276,7 @@ class VideoController extends Controller
             ]);
         }
 
-        if (!$range) {
+        if (! $range) {
             $start = 0;
             $end = min(2 * 1024 * 1024, $fileSize - 1);
             $length = $end - $start + 1;
@@ -284,7 +296,7 @@ class VideoController extends Controller
 
         preg_match('/bytes=(\d+)-(\d*)/', $range, $matches);
         $start = intval($matches[1]);
-        $end = !empty($matches[2]) ? intval($matches[2]) : $fileSize - 1;
+        $end = ! empty($matches[2]) ? intval($matches[2]) : $fileSize - 1;
 
         $maxChunkSize = 10 * 1024 * 1024;
         if (($end - $start + 1) > $maxChunkSize) {

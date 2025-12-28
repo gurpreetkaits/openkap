@@ -163,12 +163,16 @@ class StreamVideoController extends Controller
 
         // Create Video record
         $title = $request->title ?? $metadata['title'];
+        $clickEvents = $request->click_events ?? [];
+
         $video = Video::create([
             'user_id' => $userId,
             'title' => $title,
             'description' => null,
             'duration' => $request->duration ?? 0,
             'is_public' => true,
+            'click_events' => $clickEvents,
+            'processing_status' => count($clickEvents) > 0 ? 'ready' : 'ready', // ready to watch, will be 'processing' when FFmpeg job starts
         ]);
 
         // Add merged video to media library
@@ -185,6 +189,12 @@ class StreamVideoController extends Controller
             $user->increment('videos_count');
         }
 
+        // Dispatch zoom processing job if there are click events
+        if (count($clickEvents) > 0) {
+            \App\Jobs\ProcessVideoZoomEffects::dispatch($video);
+            \Log::info("[StreamVideo] Dispatched zoom processing job for video {$video->id} with ".count($clickEvents).' clicks');
+        }
+
         // Clean up chunks directory
         $this->cleanupSession($sessionId);
 
@@ -198,6 +208,7 @@ class StreamVideoController extends Controller
                 'thumbnail' => $video->getThumbnailUrl(),
                 'share_url' => $video->getShareUrl(),
                 'is_public' => $video->is_public,
+                'processing_status' => $video->processing_status,
                 'created_at' => $video->created_at->toISOString(),
             ],
         ], 201);

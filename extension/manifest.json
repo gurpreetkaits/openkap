@@ -29,7 +29,7 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["scripts/content.js"],
+      "js": ["scripts/zoom-handler.js", "scripts/content.js"],
       "css": ["scripts/content.css"]
     }
   ],

@@ -1,14 +1,15 @@
 import { useState, useCallback, useRef } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { 
-  RecordingOptions, 
-  RecordedVideo, 
-  formatTime, 
+import {
+  RecordingOptions,
+  RecordedVideo,
+  formatTime,
   generateVideoId,
   checkBrowserSupport,
   getDisplayMediaConstraints,
   getCameraConstraints
 } from '@/lib/recording-utils';
+import { ZoomHandler } from '@/lib/zoom-handler';
 
 export type RecordingState = 'idle' | 'recording' | 'paused' | 'completed';
 
@@ -35,6 +36,7 @@ export const useScreenRecording = (): UseScreenRecordingReturn => {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const zoomHandlerRef = useRef<ZoomHandler | null>(null);
   const { toast } = useToast();
 
   const { supported: isSupported, message: supportMessage } = checkBrowserSupport();
@@ -144,6 +146,15 @@ export const useScreenRecording = (): UseScreenRecordingReturn => {
         stopRecording();
       };
 
+      // Enable zoom on click if enabled
+      if (options.zoomOnClick) {
+        if (!zoomHandlerRef.current) {
+          zoomHandlerRef.current = new ZoomHandler();
+        }
+        zoomHandlerRef.current.enable();
+        console.log('Zoom-on-click enabled for recording');
+      }
+
       // Start recording
       mediaRecorder.start(1000); // Collect data every second
       setState('recording');
@@ -182,6 +193,12 @@ export const useScreenRecording = (): UseScreenRecordingReturn => {
     if (stream) {
       stream.getTracks().forEach(track => track.stop());
       setStream(null);
+    }
+
+    // Disable zoom handler
+    if (zoomHandlerRef.current) {
+      zoomHandlerRef.current.disable();
+      zoomHandlerRef.current = null;
     }
 
     stopTimer();

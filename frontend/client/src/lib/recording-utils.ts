@@ -5,6 +5,8 @@ export interface RecordingOptions {
   includeAudio: boolean;
   showCursor: boolean;
   countdownTimer: boolean;
+  zoomOnClick?: boolean;
+  audioDeviceId?: string;
 }
 
 export interface RecordedVideo {
@@ -72,7 +74,7 @@ export const getDisplayMediaConstraints = (options: RecordingOptions): MediaStre
       // @ts-ignore - cursor is a valid property but not in TS types
       cursor: options.showCursor ? 'always' : 'never',
     },
-    audio: options.includeAudio,
+    audio: options.includeAudio ? (options.audioDeviceId ? { deviceId: options.audioDeviceId } : true) : false,
   };
 };
 
@@ -83,6 +85,6 @@ export const getCameraConstraints = (options: RecordingOptions): MediaStreamCons
       height: { ideal: 720 },
       facingMode: 'user'
     },
-    audio: options.includeAudio,
+    audio: options.includeAudio ? (options.audioDeviceId ? { deviceId: options.audioDeviceId } : true) : false,
   };
 };
