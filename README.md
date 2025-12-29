@@ -35,7 +35,7 @@ _Coming soon_
 - Queue system for background jobs
 
 **Frontend:**
-- React 18
+- Vue 2
 - TypeScript
 - Vite
 - Tailwind CSS 4
