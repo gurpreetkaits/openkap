@@ -46,6 +46,10 @@ case "$1" in
         shift
         docker exec -it "$CONTAINER" php artisan test "$@"
         ;;
+    pint)
+        shift
+        docker exec -it "$CONTAINER" ./vendor/bin/pint "$@"
+        ;;
     tinker)
         docker exec -it "$CONTAINER" php artisan tinker
         ;;
