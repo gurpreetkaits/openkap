@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\Video;
+use App\Jobs\ProcessHlsConversionJob;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -10,7 +11,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 
-class ConvertVideoToMp4 implements ShouldQueue
+class ConvertVideoToMp4Job implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -23,7 +24,7 @@ class ConvertVideoToMp4 implements ShouldQueue
      * The maximum number of seconds the job can run.
      * Set to 30 minutes for long videos.
      */
-    public int $timeout = 1800;
+    public int $timeout = 7200; // 2 hours
 
     /**
      * The number of seconds to wait before retrying the job.
@@ -75,6 +76,9 @@ class ConvertVideoToMp4 implements ShouldQueue
                 'conversion_progress' => 100,
                 'converted_at' => now(),
             ]);
+
+            // Still dispatch HLS conversion
+            ProcessHlsConversionJob::dispatch($video)->delay(now()->addSeconds(5));
             return;
         }
 
@@ -93,18 +97,14 @@ class ConvertVideoToMp4 implements ShouldQueue
         $outputPath = $tempDir . '/converted_' . $video->id . '_' . time() . '.mp4';
 
         try {
-            // Build FFmpeg command with faststart for instant seeking
-            $ffmpegPath = config('media-library.ffmpeg_path', '/opt/homebrew/bin/ffmpeg');
+            $ffmpegPath = config('media-library.ffmpeg_path');
 
-            // Memory-optimized FFmpeg settings for low-memory servers:
-            // -threads 1: Single thread to minimize memory usage
-            // -preset ultrafast: Fastest preset, uses least memory
-            // -tune fastdecode: Optimizes for playback, reduces encoding complexity
-            // -max_muxing_queue_size 1024: Limits muxing buffer (prevents memory bloat)
-            // -bufsize 1M: Limits rate control buffer
-            // -movflags +faststart: Puts moov atom at beginning for instant seeking
+            // Memory-optimized FFmpeg settings (adjusted for speed):
+            // -threads 0: Allow FFmpeg to choose optimal thread count
+            // -preset ultrafast: Fastest preset
+            // -tune fastdecode: Optimizes for playback
             $command = sprintf(
-                '%s -y -threads 1 -i %s -c:v libx264 -preset ultrafast -tune fastdecode -crf 23 -maxrate 2M -bufsize 1M -c:a aac -b:a 128k -max_muxing_queue_size 1024 -movflags +faststart %s 2>&1',
+                '%s -y -threads 0 -i %s -c:v libx264 -preset ultrafast -tune fastdecode -crf 23 -maxrate 4M -bufsize 2M -c:a aac -b:a 128k -max_muxing_queue_size 1024 -movflags +faststart %s 2>&1',
                 escapeshellarg($ffmpegPath),
                 escapeshellarg($inputPath),
                 escapeshellarg($outputPath)
@@ -143,6 +143,23 @@ class ConvertVideoToMp4 implements ShouldQueue
                 throw new \Exception("Output file is too small: $outputSize bytes");
             }
 
+            // Extract actual duration using ffprobe
+            $ffprobePath = config('media-library.ffprobe_path');
+
+            $probeCommand = sprintf(
+                '%s -v quiet -select_streams v:0 -show_entries stream=duration -of json %s',
+                escapeshellarg($ffprobePath),
+                escapeshellarg($outputPath)
+            );
+
+            $probeOutput = [];
+            exec($probeCommand, $probeOutput);
+            $probeData = json_decode(implode('', $probeOutput), true);
+            
+            $duration = isset($probeData['streams'][0]['duration']) 
+                ? (float) $probeData['streams'][0]['duration'] 
+                : $video->duration;
+
             $video->update(['conversion_progress' => 80]);
 
             // Replace the original media with the converted file
@@ -152,7 +169,10 @@ class ConvertVideoToMp4 implements ShouldQueue
                 ->usingFileName('video_' . $video->id . '.mp4')
                 ->toMediaCollection('videos');
 
-            $video->update(['conversion_progress' => 95]);
+            $video->update([
+                'conversion_progress' => 95,
+                'duration' => round($duration), // Update with actual duration
+            ]);
 
             // Regenerate thumbnail from the converted video
             $video->generateThumbnailFromMidpoint();
@@ -169,7 +189,11 @@ class ConvertVideoToMp4 implements ShouldQueue
                 'video_id' => $video->id,
                 'original_extension' => $originalExtension,
                 'output_size' => $outputSize,
+                'duration' => $duration,
             ]);
+
+            // Dispatch HLS conversion job
+            ProcessHlsConversionJob::dispatch($video)->delay(now()->addSeconds(5));
 
             // Clean up temp file if it still exists
             if (file_exists($outputPath)) {
@@ -236,4 +260,7 @@ class ConvertVideoToMp4 implements ShouldQueue
 
         $this->markAsFailed($this->video, $exception?->getMessage() ?? 'Unknown error');
     }
+
+
+
 }

@@ -2,7 +2,7 @@
 
 namespace App\Managers;
 
-use App\Jobs\ConvertVideoToMp4;
+use App\Jobs\ConvertVideoToMp4Job;
 use App\Models\Reaction;
 use App\Models\User;
 use App\Models\Video;
@@ -31,6 +31,7 @@ class VideoManager
                 'description' => $video->description,
                 'duration' => $video->duration,
                 'url' => url("/api/share/video/{$video->share_token}/stream"),
+                'hls_url' => $video->getHlsUrl(),
                 'thumbnail' => $thumbnailUrl,
                 'share_url' => "{$frontendUrl}/share/video/{$video->share_token}",
                 'is_public' => $video->is_public,
@@ -40,6 +41,9 @@ class VideoManager
                 'conversion_status' => $video->conversion_status,
                 'conversion_progress' => $video->conversion_progress,
                 'is_converting' => in_array($video->conversion_status, ['pending', 'processing']),
+                'hls_status' => $video->hls_status ?? 'pending',
+                'hls_progress' => $video->hls_progress ?? 0,
+                'is_hls_ready' => $video->isHlsReady(),
                 'created_at' => $video->created_at->toISOString(),
                 'updated_at' => $video->updated_at->toISOString(),
             ];
@@ -65,11 +69,14 @@ class VideoManager
 
         $media = $video->getFirstMedia('videos');
         $originalExtension = pathinfo($media->file_name, PATHINFO_EXTENSION);
-        $video->update(['original_extension' => strtolower($originalExtension)]);
+        if ($data['duration']) {
+            $video->duration = $data['duration'];
+            $video->save();
+        }
 
         $video->generateThumbnailFromMidpoint();
 
-        ConvertVideoToMp4::dispatch($video);
+        ConvertVideoToMp4Job::dispatch($video);
 
         $user->increment('videos_count');
 
@@ -84,6 +91,7 @@ class VideoManager
             'description' => $video->description,
             'duration' => $video->duration,
             'url' => url("/api/share/video/{$video->share_token}/stream"),
+            'hls_url' => $video->getHlsUrl(),
             'thumbnail' => $video->getThumbnailUrl(),
             'share_url' => $video->getShareUrl(),
             'is_public' => $video->is_public,
@@ -93,6 +101,9 @@ class VideoManager
             'conversion_status' => $video->conversion_status,
             'conversion_progress' => $video->conversion_progress,
             'is_converting' => $video->isConverting(),
+            'hls_status' => $video->hls_status ?? 'pending',
+            'hls_progress' => $video->hls_progress ?? 0,
+            'is_hls_ready' => $video->isHlsReady(),
             'created_at' => $video->created_at->toISOString(),
             'updated_at' => $video->updated_at->toISOString(),
         ];
@@ -109,12 +120,18 @@ class VideoManager
             'is_failed' => $video->isConversionFailed(),
             'message' => $video->getConversionStatusMessage(),
             'converted_at' => $video->converted_at?->toISOString(),
+            'hls_status' => $video->hls_status,
+            'hls_progress' => $video->hls_progress,
+            'hls_error' => $video->hls_error,
+            'is_hls_ready' => $video->isHlsReady(),
+            'hls_url' => $video->getHlsUrl(),
         ];
     }
 
     public function updateVideo(Video $video, array $data): Video
     {
         $this->videos->updateVideo($video, $data);
+
         return $video->fresh();
     }
 
@@ -132,12 +149,13 @@ class VideoManager
     public function regenerateShareToken(Video $video): Video
     {
         $video->regenerateShareToken();
+
         return $video;
     }
 
     public function getSharedVideoDetails(Video $video): ?array
     {
-        if (!$video->isShareLinkValid()) {
+        if (! $video->isShareLinkValid()) {
             return null;
         }
 
@@ -168,17 +186,19 @@ class VideoManager
             'description' => $video->description,
             'duration' => $video->duration,
             'url' => url("/api/share/video/{$video->share_token}/stream"),
+            'hls_url' => $video->getHlsUrl(),
             'thumbnail' => $video->getThumbnailUrl(),
             'created_at' => $video->created_at->toISOString(),
             'reactions' => $reactions,
             'comments' => $comments,
+            'is_hls_ready' => $video->isHlsReady(),
         ];
     }
 
     public function trimVideo(Video $video, float $startTime, float $endTime): array
     {
         $media = $video->getFirstMedia('videos');
-        if (!$media) {
+        if (! $media) {
             throw new \Exception('Video file not found');
         }
 
@@ -190,9 +210,9 @@ class VideoManager
 
         $originalPath = $media->getPath();
         $extension = pathinfo($originalPath, PATHINFO_EXTENSION);
-        $tempPath = storage_path('app/temp_trimmed_' . uniqid() . '.' . $extension);
+        $tempPath = storage_path('app/temp_trimmed_'.uniqid().'.'.$extension);
 
-        if (!is_dir(storage_path('app'))) {
+        if (! is_dir(storage_path('app'))) {
             mkdir(storage_path('app'), 0755, true);
         }
 
@@ -230,8 +250,8 @@ class VideoManager
             'id' => $video->id,
             'title' => $video->title,
             'duration' => $video->duration,
-            'url' => url("/api/share/video/{$video->share_token}/stream") . '?v=' . time(),
-            'thumbnail' => $video->getThumbnailUrl() . '?v=' . time(),
+            'url' => url("/api/share/video/{$video->share_token}/stream").'?v='.time(),
+            'thumbnail' => $video->getThumbnailUrl().'?v='.time(),
         ];
     }
 
@@ -265,8 +285,8 @@ class VideoManager
             'file_exists' => file_exists($tempPath),
         ]);
 
-        if ($returnCode !== 0 || !file_exists($tempPath)) {
-            if (!$isWebM) {
+        if ($returnCode !== 0 || ! file_exists($tempPath)) {
+            if (! $isWebM) {
                 $output = [];
                 $ffmpegCommand = sprintf(
                     'ffmpeg -y -i %s -ss %s -t %s -c:v libx264 -preset fast -crf 23 -c:a aac -b:a 128k %s 2>&1',
@@ -287,13 +307,13 @@ class VideoManager
                 ]);
             }
 
-            if ($returnCode !== 0 || !file_exists($tempPath)) {
+            if ($returnCode !== 0 || ! file_exists($tempPath)) {
                 Log::error('FFmpeg trim failed', [
                     'command' => $ffmpegCommand,
                     'output' => implode("\n", $output),
                     'return_code' => $returnCode,
                 ]);
-                throw new \Exception('Failed to trim video: ' . implode(' ', array_slice($output, -3)));
+                throw new \Exception('Failed to trim video: '.implode(' ', array_slice($output, -3)));
             }
         }
     }
@@ -302,13 +322,13 @@ class VideoManager
     {
         $media = $video->getFirstMedia('videos');
 
-        if (!$media) {
+        if (! $media) {
             throw new \Exception('Video file not found');
         }
 
         $filePath = $media->getPath();
 
-        if (!file_exists($filePath)) {
+        if (! file_exists($filePath)) {
             throw new \Exception('Video file not found on disk');
         }
 
@@ -332,6 +352,7 @@ class VideoManager
     public function canAccessSharedVideo(Video $video, ?int $userId = null): bool
     {
         $isOwner = $userId !== null && $userId === $video->user_id;
+
         return $isOwner || $video->isShareLinkValid();
     }
 

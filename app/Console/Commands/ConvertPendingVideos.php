@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Jobs\ConvertVideoToMp4;
+use App\Jobs\ConvertVideoToMp4Job;
 use App\Models\Video;
 use Illuminate\Console\Command;
 
@@ -53,6 +53,7 @@ class ConvertPendingVideos extends Command
 
         if ($videos->isEmpty()) {
             $this->info('No videos to convert.');
+
             return Command::SUCCESS;
         }
 
@@ -66,11 +67,12 @@ class ConvertPendingVideos extends Command
 
         foreach ($videos as $video) {
             // Check if video has media
-            if (!$video->getFirstMedia('videos')) {
+            if (! $video->getFirstMedia('videos')) {
                 $this->newLine();
                 $this->warn("  Skipping video #{$video->id} - no media file found");
                 $skipped++;
                 $bar->advance();
+
                 continue;
             }
 
@@ -86,14 +88,14 @@ class ConvertPendingVideos extends Command
                 try {
                     $this->newLine();
                     $this->info("  Converting video #{$video->id}: {$video->title}");
-                    ConvertVideoToMp4::dispatchSync($video);
+                    ConvertVideoToMp4Job::dispatchSync($video);
                     $this->info("  Completed video #{$video->id}");
                 } catch (\Exception $e) {
                     $this->error("  Failed video #{$video->id}: {$e->getMessage()}");
                 }
             } else {
                 // Dispatch to queue
-                ConvertVideoToMp4::dispatch($video);
+                ConvertVideoToMp4Job::dispatch($video);
             }
 
             $dispatched++;

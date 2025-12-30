@@ -13,6 +13,9 @@ export default defineConfig(({ mode }) => {
         '@': path.resolve(__dirname, './src')
       }
     },
+    optimizeDeps: {
+      include: ['hls.js']
+    },
     server: {
       proxy: {
         '/api': {

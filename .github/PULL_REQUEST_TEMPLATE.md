@@ -21,8 +21,8 @@ Brief description of the changes.
 
 Describe how you tested these changes:
 
-- [ ] I ran `composer test` and all tests pass
-- [ ] I ran `composer pint` and code is properly formatted
+- [ ] I ran `./sail test` and all tests pass
+- [ ] I ran `./sail pint` and code is properly formatted
 - [ ] I tested the changes manually
 
 ## Screenshots (if applicable)

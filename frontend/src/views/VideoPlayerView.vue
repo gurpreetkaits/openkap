@@ -96,7 +96,6 @@
               ref="videoRef"
               :key="video.id"
               class="w-full h-full object-contain max-h-[90vh]"
-              :src="video.url"
               preload="metadata"
               crossorigin="use-credentials"
               @click="togglePlay"
@@ -241,6 +240,38 @@
                   </div>
 
                   <div class="flex items-center gap-2">
+                    <!-- Quality Selector (only show when HLS qualities available) -->
+                    <div v-if="availableQualities.length > 1" class="relative" ref="qualityMenuRef">
+                      <button
+                        @click.stop.prevent="toggleQualityMenu"
+                        class="px-3 py-1.5 text-white/80 hover:text-white text-sm font-medium rounded hover:bg-white/10 transition-colors flex items-center gap-1"
+                        title="Video Quality"
+                      >
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                        {{ getCurrentQualityLabel() }}
+                      </button>
+                      <div
+                        v-show="showQualityMenu"
+                        class="absolute bottom-full right-0 mb-2 py-2 bg-gray-900 rounded-xl shadow-2xl border border-white/20 min-w-[120px] z-50"
+                      >
+                        <button
+                          v-for="quality in availableQualities"
+                          :key="quality.index"
+                          @click.stop.prevent="setQuality(quality.index)"
+                          class="w-full px-4 py-2.5 text-left text-sm hover:bg-white/10 transition-colors flex items-center justify-between"
+                          :class="currentQuality === quality.index ? 'text-orange-400 bg-white/5' : 'text-white'"
+                        >
+                          <span>{{ quality.label }}</span>
+                          <svg v-if="currentQuality === quality.index" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+
                     <!-- Speed -->
                     <div class="relative" ref="speedMenuRef">
                       <button
@@ -511,6 +542,7 @@ import { useRoute } from 'vue-router'
 import { useAuth } from '@/stores/auth'
 import videoService from '@/services/videoService'
 import SBDeleteModal from '@/components/Global/SBDeleteModal.vue'
+import Hls from 'hls.js'
 
 export default {
   name: 'VideoPlayerView',
@@ -585,6 +617,13 @@ export default {
       { icon: '👀', count: 0, selected: false },
     ])
 
+    // HLS related
+    const hlsInstance = ref(null)
+    const availableQualities = ref([])
+    const currentQuality = ref(-1)
+    const showQualityMenu = ref(false)
+    const qualityMenuRef = ref(null)
+
     let controlsTimeout = null
     let toastTimeout = null
     let skipTimeout = null
@@ -608,9 +647,13 @@ export default {
           description: fetchedVideo.description,
           duration: fetchedVideo.duration,
           url: fetchedVideo.url,
+          hls_url: fetchedVideo.hls_url,
           shareUrl: fetchedVideo.share_url,
           createdAt: new Date(fetchedVideo.created_at),
         }
+
+        // Initialize HLS after setting video data
+        setTimeout(() => initHls(), 100)
 
         // CRITICAL: Set duration immediately from API data
         // WebM files often have duration metadata at the END of file
@@ -628,6 +671,124 @@ export default {
         error.value = 'Failed to load video. Please try again.'
       } finally {
         loading.value = false
+      }
+    }
+
+    const initHls = () => {
+      const videoElement = videoRef.value
+      if (!videoElement) return
+
+      const hlsUrl = video.value.hls_url
+      
+      // If HLS URL is not available or empty, immediately fall back to raw URL
+      if (!hlsUrl) {
+        videoElement.src = video.value.url
+        return
+      }
+
+      // If HLS URL available and HLS.js is supported
+      if (Hls.isSupported()) {
+        // Destroy existing instance
+        if (hlsInstance.value) {
+          hlsInstance.value.destroy()
+        }
+
+        const hls = new Hls({
+          enableWorker: true,
+          lowLatencyMode: false,
+          backBufferLength: 90,
+          // Handle 404/403 errors gracefully
+          xhrSetup: function (xhr, url) {
+            xhr.onreadystatechange = function () {
+              if (xhr.readyState === 4) {
+                if (xhr.status === 404 || xhr.status === 403) {
+                  // Manifest missing or forbidden, fallback to raw
+                  console.warn('HLS manifest missing/forbidden, falling back to MP4')
+                  hls.destroy()
+                  videoElement.src = video.value.url
+                }
+              }
+            }
+          }
+        })
+
+        hls.loadSource(hlsUrl)
+        hls.attachMedia(videoElement)
+
+        hls.on(Hls.Events.MANIFEST_PARSED, (event, data) => {
+          availableQualities.value = data.levels.map((level, index) => ({
+            index,
+            height: level.height,
+            width: level.width,
+            bitrate: level.bitrate,
+            label: `${level.height}p`
+          }))
+          availableQualities.value.unshift({ index: -1, label: 'Auto' })
+        })
+
+        hls.on(Hls.Events.ERROR, (event, data) => {
+          if (data.fatal) {
+            switch (data.type) {
+              case Hls.ErrorTypes.NETWORK_ERROR:
+                 // If 404, we handled it in xhrSetup, but just in case:
+                if (data.response && (data.response.code === 404 || data.response.code === 403)) {
+                   hls.destroy()
+                   videoElement.src = video.value.url
+                } else {
+                   hls.startLoad()
+                }
+                break
+              case Hls.ErrorTypes.MEDIA_ERROR:
+                hls.recoverMediaError()
+                break
+              default:
+                hls.destroy()
+                videoElement.src = video.value.url
+                break
+            }
+          }
+        })
+
+        hlsInstance.value = hls
+
+      } else if (hlsUrl && videoElement.canPlayType('application/vnd.apple.mpegurl')) {
+        // Native HLS support (Safari)
+        videoElement.src = hlsUrl
+        // Add simple error listener for native HLS
+        videoElement.onerror = () => {
+             console.warn('Native HLS failed, falling back to MP4')
+             videoElement.src = video.value.url
+        }
+      } else {
+        // Fallback to MP4
+        videoElement.src = video.value.url
+      }
+    }
+
+    const setQuality = (qualityIndex) => {
+      if (!hlsInstance.value) return
+      currentQuality.value = qualityIndex
+      showQualityMenu.value = false
+      hlsInstance.value.currentLevel = qualityIndex
+      const quality = availableQualities.value.find(q => q.index === qualityIndex)
+      showToast(`Quality: ${quality?.label || 'Auto'}`)
+    }
+
+    const toggleQualityMenu = () => {
+      showQualityMenu.value = !showQualityMenu.value
+      showSpeedMenu.value = false
+    }
+
+    const getCurrentQualityLabel = () => {
+      if (currentQuality.value === -1) return 'Auto'
+      const quality = availableQualities.value.find(q => q.index === currentQuality.value)
+      return quality?.label || 'Auto'
+    }
+
+    const destroyHls = () => {
+      if (hlsInstance.value) {
+        hlsInstance.value.destroy()
+        hlsInstance.value = null
       }
     }
 
@@ -1201,6 +1362,9 @@ export default {
       if (speedMenuRef.value && !speedMenuRef.value.contains(e.target)) {
         showSpeedMenu.value = false
       }
+      if (qualityMenuRef.value && !qualityMenuRef.value.contains(e.target)) {
+        showQualityMenu.value = false
+      }
     }
 
     const handleFullscreenChange = () => {
@@ -1235,6 +1399,7 @@ export default {
       if (controlsTimeout) clearTimeout(controlsTimeout)
       if (toastTimeout) clearTimeout(toastTimeout)
       if (skipTimeout) clearTimeout(skipTimeout)
+      destroyHls()
     })
 
     return {
@@ -1251,6 +1416,9 @@ export default {
       allVideos, currentIndex, hasPrevious, hasNext, goToPreviousVideo, goToNextVideo,
       // Speed options
       speedOptions, toggleSpeedMenu,
+      // HLS
+      availableQualities, currentQuality, showQualityMenu, qualityMenuRef,
+      setQuality, toggleQualityMenu, getCurrentQualityLabel,
       // Methods
       togglePlay, updateProgress, onVideoLoaded, onVideoError, onVideoEnded, seek, startSeeking, updateHoverTime,
       skip, toggleMute, updateVolume, setPlaybackSpeed, toggleFullscreen, togglePiP,

@@ -1,6 +1,27 @@
-# General 
+# General
 
 - Do Not Commit Without Permission
+
+# Naming Conventions
+
+All class files must use consistent suffixes matching their type:
+
+| Type | Suffix | Example | Location |
+|------|--------|---------|----------|
+| Controller | `*Controller` | `VideoController.php` | `app/Http/Controllers/` |
+| Manager | `*Manager` | `VideoManager.php` | `app/Managers/` |
+| Service | `*Service` | `HlsService.php` | `app/Services/` |
+| Repository | `*Repository` | `VideoRepository.php` | `app/Repositories/` |
+| Job | `*Job` | `ProcessHlsConversionJob.php` | `app/Jobs/` |
+| Command | `*Command` | `ConvertVideosToHlsCommand.php` | `app/Console/Commands/` |
+| Action | `*Action` | `CreateUserAction.php` | `app/Actions/` |
+| Request | `*Request` | `StoreVideoRequest.php` | `app/Http/Requests/` |
+| Resource | `*Resource` | `VideoResource.php` | `app/Http/Resources/` |
+| Middleware | `*Middleware` | `CheckSubscriptionMiddleware.php` | `app/Http/Middleware/` |
+| Event | `*Event` | `VideoUploadedEvent.php` | `app/Events/` |
+| Listener | `*Listener` | `SendNotificationListener.php` | `app/Listeners/` |
+
+**This naming convention is mandatory** - always use the appropriate suffix when creating new classes.
 
 # Manager / Repository Pattern
 - We use manager classes (sometimes known more commonly as Service classes) to handle business logic
@@ -38,5 +59,5 @@ instead of unstructured arrays
 - **This rule overrides "do only what is asked"** - fixing repository violations is always required
 
 
-**Last Updated:** 2025-12-07
-**Version:** 1.0 (MVP)
+**Last Updated:** 2025-12-30
+**Version:** 1.1
