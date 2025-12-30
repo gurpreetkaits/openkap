@@ -55,7 +55,6 @@
             <video
               ref="videoRef"
               class="w-full h-full object-contain max-h-[90vh]"
-              :src="video.url"
               preload="metadata"
               @click="togglePlay"
               @dblclick="toggleFullscreen"
@@ -199,6 +198,38 @@
                   </div>
 
                   <div class="flex items-center gap-2">
+                    <!-- Quality Selector (only show when HLS qualities available) -->
+                    <div v-if="availableQualities.length > 1" class="relative" ref="qualityMenuRef">
+                      <button
+                        @click.stop.prevent="toggleQualityMenu"
+                        class="px-3 py-1.5 text-white/80 hover:text-white text-sm font-medium rounded hover:bg-white/10 transition-colors flex items-center gap-1"
+                        title="Video Quality"
+                      >
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                        {{ getCurrentQualityLabel() }}
+                      </button>
+                      <div
+                        v-show="showQualityMenu"
+                        class="absolute bottom-full right-0 mb-2 py-2 bg-gray-900 rounded-xl shadow-2xl border border-white/20 min-w-[120px] z-50"
+                      >
+                        <button
+                          v-for="quality in availableQualities"
+                          :key="quality.index"
+                          @click.stop.prevent="setQuality(quality.index)"
+                          class="w-full px-4 py-2.5 text-left text-sm hover:bg-white/10 transition-colors flex items-center justify-between"
+                          :class="currentQuality === quality.index ? 'text-orange-400 bg-white/5' : 'text-white'"
+                        >
+                          <span>{{ quality.label }}</span>
+                          <svg v-if="currentQuality === quality.index" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+
                     <!-- Speed -->
                     <div class="relative" ref="speedMenuRef">
                       <button
@@ -403,9 +434,10 @@
 </template>
 
 <script>
-import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuth } from '@/stores/auth'
+import Hls from 'hls.js'
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8888'
 
@@ -456,6 +488,14 @@ export default {
     const newComment = ref('')
     const isSavingComment = ref(false)
 
+    // HLS related
+    const hlsInstance = ref(null)
+    const availableQualities = ref([])
+    const currentQuality = ref(-1) // -1 = auto
+    const showQualityMenu = ref(false)
+    const qualityMenuRef = ref(null)
+    const isHlsSupported = ref(Hls.isSupported())
+
     let controlsTimeout = null
     let toastTimeout = null
     let skipTimeout = null
@@ -484,10 +524,129 @@ export default {
         comments.value = data.video.comments || []
         reactions.value = data.video.reactions || {}
         duration.value = data.video.duration || 0
+
+        // Initialize HLS after video data is loaded
+        setTimeout(() => initHls(), 100)
       } catch (err) {
         error.value = err.message || 'Failed to load video'
       } finally {
         loading.value = false
+      }
+    }
+
+    const initHls = () => {
+      const videoElement = videoRef.value
+      if (!videoElement) return
+
+      const hlsUrl = video.value.hls_url
+
+      // If HLS URL available and HLS.js is supported
+      if (hlsUrl && Hls.isSupported()) {
+        // Destroy existing instance
+        if (hlsInstance.value) {
+          hlsInstance.value.destroy()
+        }
+
+        const hls = new Hls({
+          enableWorker: true,
+          lowLatencyMode: false,
+          backBufferLength: 90,
+        })
+
+        hls.loadSource(hlsUrl)
+        hls.attachMedia(videoElement)
+
+        hls.on(Hls.Events.MANIFEST_PARSED, (event, data) => {
+          // Build quality options from levels
+          availableQualities.value = data.levels.map((level, index) => ({
+            index,
+            height: level.height,
+            width: level.width,
+            bitrate: level.bitrate,
+            label: `${level.height}p`
+          }))
+          // Add auto option
+          availableQualities.value.unshift({
+            index: -1,
+            label: 'Auto'
+          })
+        })
+
+        hls.on(Hls.Events.LEVEL_SWITCHED, (event, data) => {
+          if (currentQuality.value === -1) {
+            // Auto mode - show which level was selected
+            const level = hls.levels[data.level]
+            if (level) {
+              console.log(`HLS auto-switched to ${level.height}p`)
+            }
+          }
+        })
+
+        hls.on(Hls.Events.ERROR, (event, data) => {
+          if (data.fatal) {
+            switch (data.type) {
+              case Hls.ErrorTypes.NETWORK_ERROR:
+                console.error('HLS network error, trying to recover...')
+                hls.startLoad()
+                break
+              case Hls.ErrorTypes.MEDIA_ERROR:
+                console.error('HLS media error, trying to recover...')
+                hls.recoverMediaError()
+                break
+              default:
+                console.error('HLS fatal error, falling back to MP4')
+                hls.destroy()
+                // Fallback to regular MP4
+                videoElement.src = video.value.url
+                break
+            }
+          }
+        })
+
+        hlsInstance.value = hls
+
+      } else if (hlsUrl && videoElement.canPlayType('application/vnd.apple.mpegurl')) {
+        // Native HLS support (Safari)
+        videoElement.src = hlsUrl
+      } else {
+        // Fallback to MP4
+        videoElement.src = video.value.url
+      }
+    }
+
+    const setQuality = (qualityIndex) => {
+      if (!hlsInstance.value) return
+
+      currentQuality.value = qualityIndex
+      showQualityMenu.value = false
+
+      if (qualityIndex === -1) {
+        // Auto mode
+        hlsInstance.value.currentLevel = -1
+        showToast('Quality: Auto')
+      } else {
+        hlsInstance.value.currentLevel = qualityIndex
+        const quality = availableQualities.value.find(q => q.index === qualityIndex)
+        showToast(`Quality: ${quality?.label || qualityIndex}`)
+      }
+    }
+
+    const toggleQualityMenu = () => {
+      showQualityMenu.value = !showQualityMenu.value
+      // Close speed menu if open
+      showSpeedMenu.value = false
+    }
+
+    const getCurrentQualityLabel = () => {
+      if (currentQuality.value === -1) return 'Auto'
+      const quality = availableQualities.value.find(q => q.index === currentQuality.value)
+      return quality?.label || 'Auto'
+    }
+
+    const destroyHls = () => {
+      if (hlsInstance.value) {
+        hlsInstance.value.destroy()
+        hlsInstance.value = null
       }
     }
 
@@ -853,6 +1012,9 @@ export default {
       if (speedMenuRef.value && !speedMenuRef.value.contains(e.target)) {
         showSpeedMenu.value = false
       }
+      if (qualityMenuRef.value && !qualityMenuRef.value.contains(e.target)) {
+        showQualityMenu.value = false
+      }
     }
 
     const handleFullscreenChange = () => {
@@ -873,20 +1035,25 @@ export default {
       if (controlsTimeout) clearTimeout(controlsTimeout)
       if (toastTimeout) clearTimeout(toastTimeout)
       if (skipTimeout) clearTimeout(skipTimeout)
+      destroyHls()
     })
 
     return {
       video, loading, error, comments, reactions, userReactions, totalReactions,
-      videoRef, progressBar, speedMenuRef, playerContainer,
+      videoRef, progressBar, speedMenuRef, playerContainer, qualityMenuRef,
       isPlaying, isBuffering, isMuted, isFullscreen, volume, currentTime, duration,
       bufferedPercent, progressPercent, playbackSpeed, speedOptions, controlsVisible,
       hoverTime, hoverPercent, showSpeedMenu, showBigPlayButton,
       copied, toast, showSkipBack, showSkipForward, skipBackAmount, skipForwardAmount,
       newComment, isSavingComment, isAuthenticated, currentUser, userInitial,
+      // HLS
+      availableQualities, currentQuality, showQualityMenu, isHlsSupported,
       togglePlay, updateProgress, onVideoLoaded, onVideoError, onVideoEnded, seek, startSeeking,
       updateHoverTime, skip, toggleMute, updateVolume, toggleSpeedMenu, setPlaybackSpeed,
       toggleFullscreen, togglePiP, showControls, hideControlsDelayed,
-      formatTime, formatDate, formatCommentTime, copyShareLink, toggleReaction, addComment, loginToComment
+      formatTime, formatDate, formatCommentTime, copyShareLink, toggleReaction, addComment, loginToComment,
+      // HLS functions
+      setQuality, toggleQualityMenu, getCurrentQualityLabel
     }
   }
 }

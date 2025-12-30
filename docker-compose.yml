@@ -10,6 +10,9 @@ services:
     container_name: screensense-app
     restart: unless-stopped
     working_dir: /var/www/html
+    environment:
+      FFMPEG_BINARIES: /usr/bin/ffmpeg
+      FFPROBE_BINARIES: /usr/bin/ffprobe
     volumes:
       - .:/var/www/html
       - ./docker/php/local.ini:/usr/local/etc/php/conf.d/local.ini
@@ -69,6 +72,9 @@ services:
     container_name: screensense-queue
     restart: unless-stopped
     working_dir: /var/www/html
+    environment:
+      FFMPEG_BINARIES: /usr/bin/ffmpeg
+      FFPROBE_BINARIES: /usr/bin/ffprobe
     command: php artisan queue:work --queue=default --tries=3 --timeout=1800
     volumes:
       - .:/var/www/html
