@@ -24,11 +24,8 @@
     <div v-else class="h-screen flex flex-col p-2 sm:p-4">
       <!-- Top Navigation -->
       <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 mb-3 sm:mb-4 flex-shrink-0">
-        <a href="/" class="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors">
-          <svg class="w-8 h-8 text-orange-500" fill="currentColor" viewBox="0 0 24 24">
-            <circle cx="12" cy="12" r="10"/>
-          </svg>
-          <span class="font-bold text-xl text-gray-900">ScreenSense</span>
+        <a href="/" class="flex items-center gap-2 hover:opacity-80 transition-opacity">
+          <img src="/logo.png" alt="ScreenSense" class="h-8 w-auto" />
         </a>
 
         <button
