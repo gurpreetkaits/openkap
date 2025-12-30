@@ -2,8 +2,8 @@
 
 namespace Tests\Unit;
 
-use App\Models\User;
 use App\Models\SubscriptionHistory;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

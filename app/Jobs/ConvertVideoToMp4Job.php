@@ -3,7 +3,6 @@
 namespace App\Jobs;
 
 use App\Models\Video;
-use App\Jobs\ProcessHlsConversionJob;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -45,7 +44,7 @@ class ConvertVideoToMp4Job implements ShouldQueue
     {
         $video = $this->video;
 
-        Log::info("Starting video conversion", [
+        Log::info('Starting video conversion', [
             'video_id' => $video->id,
             'title' => $video->title,
         ]);
@@ -53,9 +52,10 @@ class ConvertVideoToMp4Job implements ShouldQueue
         // Get the current media
         $media = $video->getFirstMedia('videos');
 
-        if (!$media) {
-            Log::error("No media found for video", ['video_id' => $video->id]);
+        if (! $media) {
+            Log::error('No media found for video', ['video_id' => $video->id]);
             $this->markAsFailed($video, 'No media file found');
+
             return;
         }
 
@@ -68,7 +68,7 @@ class ConvertVideoToMp4Job implements ShouldQueue
 
         // Skip if already MP4 with faststart (check file structure)
         if ($mimeType === 'video/mp4' && $this->hasFastStart($inputPath)) {
-            Log::info("Video already MP4 with faststart, skipping conversion", [
+            Log::info('Video already MP4 with faststart, skipping conversion', [
                 'video_id' => $video->id,
             ]);
             $video->update([
@@ -79,6 +79,7 @@ class ConvertVideoToMp4Job implements ShouldQueue
 
             // Still dispatch HLS conversion
             ProcessHlsConversionJob::dispatch($video)->delay(now()->addSeconds(5));
+
             return;
         }
 
@@ -90,27 +91,29 @@ class ConvertVideoToMp4Job implements ShouldQueue
 
         // Prepare output path
         $tempDir = storage_path('app/temp');
-        if (!is_dir($tempDir)) {
+        if (! is_dir($tempDir)) {
             mkdir($tempDir, 0755, true);
         }
 
-        $outputPath = $tempDir . '/converted_' . $video->id . '_' . time() . '.mp4';
+        $outputPath = $tempDir.'/converted_'.$video->id.'_'.time().'.mp4';
 
         try {
             $ffmpegPath = config('media-library.ffmpeg_path');
 
-            // Memory-optimized FFmpeg settings (adjusted for speed):
+            // Quality-optimized FFmpeg settings for screen recordings:
             // -threads 0: Allow FFmpeg to choose optimal thread count
-            // -preset ultrafast: Fastest preset
-            // -tune fastdecode: Optimizes for playback
+            // -preset medium: Good balance of quality and speed (was ultrafast)
+            // -crf 20: Better quality (lower = better, 18-23 typical range)
+            // -maxrate 8M: Higher bitrate cap for HD content
+            // -pix_fmt yuv420p: Best compatibility
             $command = sprintf(
-                '%s -y -threads 0 -i %s -c:v libx264 -preset ultrafast -tune fastdecode -crf 23 -maxrate 4M -bufsize 2M -c:a aac -b:a 128k -max_muxing_queue_size 1024 -movflags +faststart %s 2>&1',
+                '%s -y -threads 0 -i %s -c:v libx264 -preset medium -crf 20 -maxrate 8M -bufsize 4M -pix_fmt yuv420p -c:a aac -b:a 128k -max_muxing_queue_size 1024 -movflags +faststart %s 2>&1',
                 escapeshellarg($ffmpegPath),
                 escapeshellarg($inputPath),
                 escapeshellarg($outputPath)
             );
 
-            Log::info("Running FFmpeg conversion", [
+            Log::info('Running FFmpeg conversion', [
                 'video_id' => $video->id,
                 'command' => $command,
             ]);
@@ -124,18 +127,18 @@ class ConvertVideoToMp4Job implements ShouldQueue
 
             $outputText = implode("\n", $output);
 
-            Log::info("FFmpeg output", [
+            Log::info('FFmpeg output', [
                 'video_id' => $video->id,
                 'return_code' => $returnCode,
                 'output_length' => strlen($outputText),
             ]);
 
             if ($returnCode !== 0) {
-                throw new \Exception("FFmpeg failed with code $returnCode: " . substr($outputText, -500));
+                throw new \Exception("FFmpeg failed with code $returnCode: ".substr($outputText, -500));
             }
 
-            if (!file_exists($outputPath)) {
-                throw new \Exception("Output file was not created");
+            if (! file_exists($outputPath)) {
+                throw new \Exception('Output file was not created');
             }
 
             $outputSize = filesize($outputPath);
@@ -155,9 +158,9 @@ class ConvertVideoToMp4Job implements ShouldQueue
             $probeOutput = [];
             exec($probeCommand, $probeOutput);
             $probeData = json_decode(implode('', $probeOutput), true);
-            
-            $duration = isset($probeData['streams'][0]['duration']) 
-                ? (float) $probeData['streams'][0]['duration'] 
+
+            $duration = isset($probeData['streams'][0]['duration'])
+                ? (float) $probeData['streams'][0]['duration']
                 : $video->duration;
 
             $video->update(['conversion_progress' => 80]);
@@ -166,7 +169,7 @@ class ConvertVideoToMp4Job implements ShouldQueue
             $video->clearMediaCollection('videos');
 
             $video->addMedia($outputPath)
-                ->usingFileName('video_' . $video->id . '.mp4')
+                ->usingFileName('video_'.$video->id.'.mp4')
                 ->toMediaCollection('videos');
 
             $video->update([
@@ -185,7 +188,7 @@ class ConvertVideoToMp4Job implements ShouldQueue
                 'converted_at' => now(),
             ]);
 
-            Log::info("Video conversion completed successfully", [
+            Log::info('Video conversion completed successfully', [
                 'video_id' => $video->id,
                 'original_extension' => $originalExtension,
                 'output_size' => $outputSize,
@@ -193,6 +196,11 @@ class ConvertVideoToMp4Job implements ShouldQueue
             ]);
 
             // Dispatch HLS conversion job
+            Log::info('Dispatching ProcessHlsConversionJob', [
+                'video_id' => $video->id,
+                'title' => $video->title,
+                'delay' => '5 seconds',
+            ]);
             ProcessHlsConversionJob::dispatch($video)->delay(now()->addSeconds(5));
 
             // Clean up temp file if it still exists
@@ -201,7 +209,7 @@ class ConvertVideoToMp4Job implements ShouldQueue
             }
 
         } catch (\Exception $e) {
-            Log::error("Video conversion failed", [
+            Log::error('Video conversion failed', [
                 'video_id' => $video->id,
                 'error' => $e->getMessage(),
             ]);
@@ -225,7 +233,7 @@ class ConvertVideoToMp4Job implements ShouldQueue
     {
         // Read first 32 bytes to check for ftyp and moov atoms
         $handle = fopen($filePath, 'rb');
-        if (!$handle) {
+        if (! $handle) {
             return false;
         }
 
@@ -253,14 +261,11 @@ class ConvertVideoToMp4Job implements ShouldQueue
      */
     public function failed(?\Throwable $exception): void
     {
-        Log::error("Video conversion job failed permanently", [
+        Log::error('Video conversion job failed permanently', [
             'video_id' => $this->video->id,
             'error' => $exception?->getMessage(),
         ]);
 
         $this->markAsFailed($this->video, $exception?->getMessage() ?? 'Unknown error');
     }
-
-
-
 }

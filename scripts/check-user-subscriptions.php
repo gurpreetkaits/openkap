@@ -7,13 +7,13 @@
  * This script helps diagnose why subscriptions might be going to the wrong user
  */
 
-require __DIR__ . '/../vendor/autoload.php';
+require __DIR__.'/../vendor/autoload.php';
 
-$app = require_once __DIR__ . '/../bootstrap/app.php';
+$app = require_once __DIR__.'/../bootstrap/app.php';
 $app->make(\Illuminate\Contracts\Console\Kernel::class)->bootstrap();
 
-use App\Models\User;
 use App\Models\SubscriptionHistory;
+use App\Models\User;
 
 echo "═══════════════════════════════════════════════════════════════\n";
 echo "User Subscriptions Diagnostic Report\n";
@@ -21,7 +21,7 @@ echo "════════════════════════�
 
 // 1. Check all users
 echo "📊 All Users:\n";
-echo str_repeat("─", 67) . "\n";
+echo str_repeat('─', 67)."\n";
 
 $users = User::all(['id', 'email', 'name', 'polar_customer_id', 'polar_subscription_id', 'subscription_status']);
 
@@ -50,7 +50,7 @@ if ($users->isEmpty()) {
 
 // 2. Check users with subscriptions
 echo "💳 Users with Active Subscriptions:\n";
-echo str_repeat("─", 67) . "\n";
+echo str_repeat('─', 67)."\n";
 
 $subscribedUsers = User::whereNotNull('polar_subscription_id')->get();
 
@@ -81,7 +81,7 @@ if ($subscribedUsers->isEmpty()) {
 
 // 3. Check subscription history
 echo "📜 Recent Subscription History:\n";
-echo str_repeat("─", 67) . "\n";
+echo str_repeat('─', 67)."\n";
 
 $history = SubscriptionHistory::orderBy('created_at', 'desc')
     ->limit(10)

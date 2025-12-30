@@ -45,7 +45,7 @@ class CommentController extends Controller
     {
         $deleted = $this->commentManager->deleteComment($videoId, $commentId);
 
-        if (!$deleted) {
+        if (! $deleted) {
             return response()->json(['message' => 'Comment not found'], 404);
         }
 

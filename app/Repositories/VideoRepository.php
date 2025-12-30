@@ -9,7 +9,7 @@ class VideoRepository extends BaseRepository
 {
     public function __construct()
     {
-        parent::__construct(new Video());
+        parent::__construct(new Video);
     }
 
     public function findByUserId(int $userId): Collection
@@ -55,8 +55,9 @@ class VideoRepository extends BaseRepository
 
     public function togglePublicStatus(Video $video): Video
     {
-        $video->is_public = !$video->is_public;
+        $video->is_public = ! $video->is_public;
         $video->save();
+
         return $video;
     }
 

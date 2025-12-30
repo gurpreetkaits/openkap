@@ -57,6 +57,11 @@ class VideoManager
 
     public function createVideo(User $user, array $data, UploadedFile $videoFile): Video
     {
+        Log::info('VideoManager::createVideo started', [
+            'user_id' => $user->id,
+            'title' => $data['title'] ?? 'no title',
+        ]);
+
         $video = $this->videos->createVideo([
             'user_id' => $user->id,
             'title' => $data['title'],
@@ -76,7 +81,21 @@ class VideoManager
 
         $video->generateThumbnailFromMidpoint();
 
-        ConvertVideoToMp4Job::dispatch($video);
+        try {
+            Log::info('Dispatching ConvertVideoToMp4Job', [
+                'video_id' => $video->id,
+                'title' => $video->title,
+                'user_id' => $user->id,
+            ]);
+            ConvertVideoToMp4Job::dispatch($video);
+            Log::info('ConvertVideoToMp4Job dispatched successfully', ['video_id' => $video->id]);
+        } catch (\Exception $e) {
+            Log::error('Failed to dispatch ConvertVideoToMp4Job', [
+                'video_id' => $video->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+        }
 
         $user->increment('videos_count');
 

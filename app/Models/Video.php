@@ -191,8 +191,8 @@ class Video extends Model implements HasMedia
                 $this->addMedia($thumbnailPath)
                     ->toMediaCollection('thumbnails');
 
-                // Clean up temp file
-                unlink($thumbnailPath);
+                // Clean up temp file (use @ to suppress errors if file was already moved by addMedia)
+                @unlink($thumbnailPath);
             }
         } catch (\Exception $e) {
             \Log::error('Failed to generate thumbnail for video '.$this->id.': '.$e->getMessage());

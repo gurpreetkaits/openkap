@@ -53,7 +53,7 @@ class SubscriptionController extends Controller
     {
         $checkoutId = $request->input('checkout_id');
 
-        if (!$checkoutId) {
+        if (! $checkoutId) {
             return response()->json(['error' => 'Missing checkout_id parameter'], 400);
         }
 
@@ -76,6 +76,7 @@ class SubscriptionController extends Controller
     {
         try {
             $result = $this->subscriptionManager->cancelSubscription($request->user());
+
             return response()->json($result);
         } catch (\InvalidArgumentException $e) {
             return response()->json(['error' => $e->getMessage()], 400);
@@ -88,6 +89,7 @@ class SubscriptionController extends Controller
     {
         try {
             $portalUrl = $this->subscriptionManager->getPortalUrl($request->user());
+
             return response()->json(['portal_url' => $portalUrl]);
         } catch (\InvalidArgumentException $e) {
             return response()->json(['error' => $e->getMessage()], 400);

@@ -98,50 +98,26 @@ class HlsService
 
     /**
      * Determine quality variants based on source resolution.
+     * Creates 720p, 1080p, and 4K variants based on source.
+     * Uses lenient thresholds to handle non-standard screen recording resolutions.
      */
     protected function getQualityVariants(int $sourceHeight, int $sourceWidth): array
     {
         $variants = [];
 
-        // Always include 360p for slow connections
-        $variants['360p'] = [
-            'width' => 640,
-            'height' => 360,
-            'bitrate' => '800k',
-            'maxrate' => '856k',
-            'bufsize' => '1200k',
-            'audio_bitrate' => '96k',
-            'bandwidth' => 800000,
+        // Always include 720p as the base quality
+        $variants['720p'] = [
+            'width' => 1280,
+            'height' => 720,
+            'bitrate' => '2800k',
+            'maxrate' => '2996k',
+            'bufsize' => '4200k',
+            'audio_bitrate' => '128k',
+            'bandwidth' => 2800000,
         ];
 
-        // Include 480p if source is >= 480p
-        if ($sourceHeight >= 480) {
-            $variants['480p'] = [
-                'width' => 854,
-                'height' => 480,
-                'bitrate' => '1400k',
-                'maxrate' => '1498k',
-                'bufsize' => '2100k',
-                'audio_bitrate' => '128k',
-                'bandwidth' => 1400000,
-            ];
-        }
-
-        // Include 720p if source is >= 720p
-        if ($sourceHeight >= 720) {
-            $variants['720p'] = [
-                'width' => 1280,
-                'height' => 720,
-                'bitrate' => '2800k',
-                'maxrate' => '2996k',
-                'bufsize' => '4200k',
-                'audio_bitrate' => '128k',
-                'bandwidth' => 2800000,
-            ];
-        }
-
-        // Include 1080p if source is >= 1080p
-        if ($sourceHeight >= 1080) {
+        // Include 1080p if source is >= 1000p (lenient for screen recordings)
+        if ($sourceHeight >= 1000) {
             $variants['1080p'] = [
                 'width' => 1920,
                 'height' => 1080,
@@ -153,8 +129,8 @@ class HlsService
             ];
         }
 
-        // Include 4K if source is >= 2160p
-        if ($sourceHeight >= 2160) {
+        // Include 4K if source is >= 2000p (lenient for screen recordings)
+        if ($sourceHeight >= 2000) {
             $variants['2160p'] = [
                 'width' => 3840,
                 'height' => 2160,

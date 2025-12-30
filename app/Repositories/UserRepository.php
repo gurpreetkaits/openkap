@@ -9,7 +9,7 @@ class UserRepository extends BaseRepository
 {
     public function __construct()
     {
-        parent::__construct(new User());
+        parent::__construct(new User);
     }
 
     public function findOrFail(int $id): User

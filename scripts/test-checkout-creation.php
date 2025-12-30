@@ -13,19 +13,18 @@
  *   php scripts/test-checkout-creation.php 4
  */
 
-require __DIR__ . '/../vendor/autoload.php';
+require __DIR__.'/../vendor/autoload.php';
 
-$app = require_once __DIR__ . '/../bootstrap/app.php';
+$app = require_once __DIR__.'/../bootstrap/app.php';
 $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
 
 use App\Models\User;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
 
 // Get user ID from command line or use first user
 $userId = $argv[1] ?? null;
 
-if (!$userId) {
+if (! $userId) {
     echo "❌ Please provide a user ID\n";
     echo "Usage: php scripts/test-checkout-creation.php [user_id]\n";
     exit(1);
@@ -33,7 +32,7 @@ if (!$userId) {
 
 $user = User::find($userId);
 
-if (!$user) {
+if (! $user) {
     echo "❌ User with ID {$userId} not found\n";
     exit(1);
 }
@@ -43,14 +42,14 @@ echo "=========================\n\n";
 
 echo "User: {$user->name} ({$user->email})\n";
 echo "User ID: {$user->id}\n";
-echo "Existing Polar Customer ID: " . ($user->polar_customer_id ?? 'None') . "\n\n";
+echo 'Existing Polar Customer ID: '.($user->polar_customer_id ?? 'None')."\n\n";
 
 // Validate existing customer ID if present
 if ($user->polar_customer_id) {
     $pattern = '/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i';
     $isValidUuid = preg_match($pattern, $user->polar_customer_id);
 
-    if (!$isValidUuid) {
+    if (! $isValidUuid) {
         echo "⚠️  WARNING: User has invalid customer ID (not a UUID)\n";
         echo "   Clearing invalid ID: {$user->polar_customer_id}\n";
         $user->update(['polar_customer_id' => null]);
@@ -70,14 +69,14 @@ $environment = config('services.polar.environment');
 echo "Configuration:\n";
 echo "  Environment: {$environment}\n";
 echo "  API URL: {$apiUrl}\n";
-echo "  API Key: " . (substr($apiKey, 0, 15) . '...') . "\n";
+echo '  API Key: '.(substr($apiKey, 0, 15).'...')."\n";
 echo "  Product ID (Monthly): {$productIdMonthly}\n";
 echo "  Frontend URL: {$frontendUrl}\n\n";
 
 // Build checkout payload
 $checkoutPayload = [
     'products' => [$productIdMonthly],
-    'success_url' => $frontendUrl . '/subscription/success?checkout_id={CHECKOUT_ID}',
+    'success_url' => $frontendUrl.'/subscription/success?checkout_id={CHECKOUT_ID}',
     'customer_email' => $user->email,
     'customer_name' => $user->name,
     'customer_external_id' => (string) $user->id,
@@ -99,9 +98,9 @@ echo "Creating checkout session...\n";
 
 try {
     $response = Http::withHeaders([
-        'Authorization' => 'Bearer ' . $apiKey,
+        'Authorization' => 'Bearer '.$apiKey,
         'Content-Type' => 'application/json',
-    ])->post($apiUrl . '/v1/checkouts/', $checkoutPayload);
+    ])->post($apiUrl.'/v1/checkouts/', $checkoutPayload);
 
     if ($response->successful()) {
         $data = $response->json();
@@ -117,10 +116,10 @@ try {
         echo "\n❌ FAILED\n\n";
         echo "Status Code: {$response->status()}\n";
         echo "Error Response:\n";
-        echo json_encode($response->json(), JSON_PRETTY_PRINT) . "\n\n";
+        echo json_encode($response->json(), JSON_PRETTY_PRINT)."\n\n";
 
         echo "Request Payload:\n";
-        echo json_encode($checkoutPayload, JSON_PRETTY_PRINT) . "\n\n";
+        echo json_encode($checkoutPayload, JSON_PRETTY_PRINT)."\n\n";
 
         exit(1);
     }

@@ -86,7 +86,8 @@
             <div class="w-full max-w-[1800px] bg-white rounded-2xl border border-gray-200 p-4 shadow-sm">
             <!-- Video Player - Centered and larger -->
             <div
-              class="relative rounded-xl overflow-hidden bg-black w-full"
+              class="relative overflow-hidden bg-black w-full"
+              :class="isFullscreen ? 'rounded-none' : 'rounded-xl'"
               @mousemove="showControls"
               @mouseleave="hideControlsDelayed"
               ref="playerContainer"
@@ -94,7 +95,8 @@
             <video
               ref="videoRef"
               :key="video.id"
-              class="w-full h-full object-contain max-h-[80vh]"
+              class="w-full h-full object-contain"
+              :class="isFullscreen ? 'max-h-screen' : 'max-h-[80vh]'"
               preload="metadata"
               crossorigin="use-credentials"
               @click="togglePlay"
@@ -240,7 +242,7 @@
 
                   <div class="flex items-center gap-2">
                     <!-- Quality Selector (only show when HLS qualities available) -->
-                    <div v-if="availableQualities.length > 1" class="relative" ref="qualityMenuRef">
+                    <div v-if="availableQualities.length > 0" class="relative" ref="qualityMenuRef">
                       <button
                         @click.stop.prevent="toggleQualityMenu"
                         class="px-3 py-1.5 text-white/80 hover:text-white text-sm font-medium rounded hover:bg-white/10 transition-colors flex items-center gap-1"
@@ -669,14 +671,21 @@ export default {
         hls.attachMedia(videoElement)
 
         hls.on(Hls.Events.MANIFEST_PARSED, (event, data) => {
+          // Show all available qualities
           availableQualities.value = data.levels.map((level, index) => ({
             index,
             height: level.height,
             width: level.width,
             bitrate: level.bitrate,
-            label: `${level.height}p`
+            label: level.height >= 2160 ? '4K' : `${level.height}p`
           }))
-          availableQualities.value.unshift({ index: -1, label: 'Auto' })
+
+          // Set highest quality as default (usually 1080p or 720p)
+          if (availableQualities.value.length > 0) {
+            const highest = availableQualities.value[availableQualities.value.length - 1]
+            currentQuality.value = highest.index
+            hls.currentLevel = highest.index
+          }
         })
 
         hls.on(Hls.Events.ERROR, (event, data) => {
@@ -733,9 +742,8 @@ export default {
     }
 
     const getCurrentQualityLabel = () => {
-      if (currentQuality.value === -1) return 'Auto'
       const quality = availableQualities.value.find(q => q.index === currentQuality.value)
-      return quality?.label || 'Auto'
+      return quality?.label || '1080p'
     }
 
     const destroyHls = () => {

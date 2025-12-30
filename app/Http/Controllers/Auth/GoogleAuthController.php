@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
 
 class GoogleAuthController extends Controller
@@ -58,7 +57,8 @@ class GoogleAuthController extends Controller
 
             // Redirect to frontend with token
             $frontendUrl = config('services.frontend.url');
-            return redirect("$frontendUrl/auth/callback?token=$token&user=" . urlencode(json_encode([
+
+            return redirect("$frontendUrl/auth/callback?token=$token&user=".urlencode(json_encode([
                 'id' => $user->id,
                 'name' => $user->name,
                 'email' => $user->email,
@@ -66,8 +66,9 @@ class GoogleAuthController extends Controller
             ])));
 
         } catch (\Exception $e) {
-            \Log::error('Google OAuth Error: ' . $e->getMessage());
+            \Log::error('Google OAuth Error: '.$e->getMessage());
             $frontendUrl = config('services.frontend.url');
+
             return redirect("$frontendUrl/login?error=authentication_failed");
         }
     }

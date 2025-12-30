@@ -28,8 +28,8 @@ class RegenerateThumbnail extends Command
     {
         // Show current FFmpeg config (use config() not env() for cache compatibility)
         $this->info('FFmpeg Config:');
-        $this->line('  FFMPEG_PATH: ' . config('media-library.ffmpeg_path', 'not set'));
-        $this->line('  FFPROBE_PATH: ' . config('media-library.ffprobe_path', 'not set'));
+        $this->line('  FFMPEG_PATH: '.config('media-library.ffmpeg_path', 'not set'));
+        $this->line('  FFPROBE_PATH: '.config('media-library.ffprobe_path', 'not set'));
         $this->newLine();
 
         if ($this->option('all')) {
@@ -40,8 +40,9 @@ class RegenerateThumbnail extends Command
 
         $video = Video::find($videoId);
 
-        if (!$video) {
+        if (! $video) {
             $this->error("Video with ID {$videoId} not found.");
+
             return 1;
         }
 
@@ -49,36 +50,38 @@ class RegenerateThumbnail extends Command
 
         // Check if video file exists
         $videoMedia = $video->getFirstMedia('videos');
-        if (!$videoMedia) {
+        if (! $videoMedia) {
             $this->error("No video file found for video ID {$videoId}");
+
             return 1;
         }
 
-        $this->line("Video file: " . $videoMedia->getPath());
-        $this->line("File exists: " . (file_exists($videoMedia->getPath()) ? 'YES' : 'NO'));
-        $this->line("Duration: " . $video->duration . " seconds");
+        $this->line('Video file: '.$videoMedia->getPath());
+        $this->line('File exists: '.(file_exists($videoMedia->getPath()) ? 'YES' : 'NO'));
+        $this->line('Duration: '.$video->duration.' seconds');
         $this->newLine();
 
         try {
-            $this->info("Generating thumbnail...");
+            $this->info('Generating thumbnail...');
             $video->generateThumbnailFromMidpoint();
 
             // Check if thumbnail was created
             $thumbnail = $video->fresh()->getFirstMedia('thumbnails');
             if ($thumbnail) {
-                $this->info("Thumbnail generated successfully!");
-                $this->line("Thumbnail path: " . $thumbnail->getPath());
-                $this->line("Thumbnail URL: " . $thumbnail->getUrl());
+                $this->info('Thumbnail generated successfully!');
+                $this->line('Thumbnail path: '.$thumbnail->getPath());
+                $this->line('Thumbnail URL: '.$thumbnail->getUrl());
             } else {
-                $this->warn("Thumbnail generation completed but no thumbnail found.");
+                $this->warn('Thumbnail generation completed but no thumbnail found.');
             }
 
             return 0;
         } catch (\Exception $e) {
-            $this->error("Failed to generate thumbnail: " . $e->getMessage());
+            $this->error('Failed to generate thumbnail: '.$e->getMessage());
             $this->newLine();
-            $this->error("Stack trace:");
+            $this->error('Stack trace:');
             $this->line($e->getTraceAsString());
+
             return 1;
         }
     }
@@ -105,7 +108,7 @@ class RegenerateThumbnail extends Command
             } catch (\Exception $e) {
                 $failed++;
                 $this->newLine();
-                $this->error("Failed for video {$video->id}: " . $e->getMessage());
+                $this->error("Failed for video {$video->id}: ".$e->getMessage());
             }
             $bar->advance();
         }

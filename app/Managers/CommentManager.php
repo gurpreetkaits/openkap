@@ -3,7 +3,6 @@
 namespace App\Managers;
 
 use App\Models\Comment;
-use App\Models\Video;
 use App\Repositories\CommentRepository;
 use App\Repositories\VideoRepository;
 
@@ -29,7 +28,7 @@ class CommentManager
     {
         $video = $this->videos->findByShareToken($token);
 
-        if (!$video || !$video->isShareLinkValid()) {
+        if (! $video || ! $video->isShareLinkValid()) {
             return null;
         }
 
@@ -59,7 +58,7 @@ class CommentManager
     {
         $video = $this->videos->findByShareToken($token);
 
-        if (!$video || !$video->isShareLinkValid()) {
+        if (! $video || ! $video->isShareLinkValid()) {
             return null;
         }
 
@@ -70,7 +69,7 @@ class CommentManager
     {
         $comment = $this->comments->findByVideoAndId($videoId, $commentId);
 
-        if (!$comment) {
+        if (! $comment) {
             return false;
         }
 
