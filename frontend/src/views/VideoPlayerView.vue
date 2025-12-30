@@ -81,9 +81,9 @@
       <!-- Main Content Container -->
       <div class="flex h-[calc(100vh-64px)]">
         <!-- Video Player Column (centered, larger) -->
-        <div class="flex-1 overflow-y-auto px-4 lg:px-6 py-5 flex flex-col items-center">
+        <div class="flex-1 overflow-y-auto px-2 lg:px-4 py-4 flex flex-col items-center">
             <!-- Video Card Container -->
-            <div class="w-full max-w-[1400px] bg-white rounded-2xl border border-gray-200 p-3 shadow-sm">
+            <div class="w-full max-w-[1800px] bg-white rounded-2xl border border-gray-200 p-4 shadow-sm">
             <!-- Video Player - Centered and larger -->
             <div
               class="relative rounded-xl overflow-hidden bg-black w-full"
@@ -94,7 +94,7 @@
             <video
               ref="videoRef"
               :key="video.id"
-              class="w-full h-full object-contain max-h-[70vh]"
+              class="w-full h-full object-contain max-h-[80vh]"
               preload="metadata"
               crossorigin="use-credentials"
               @click="togglePlay"
@@ -371,11 +371,12 @@
           </div>
 
           <!-- Comments Sidebar (right panel) -->
-          <div class="hidden lg:block w-[340px] flex-shrink-0 border-l border-gray-200 bg-white">
-            <div class="h-full flex flex-col">
-              <!-- Stats Header -->
-              <div class="px-4 py-3 border-b border-gray-200">
-                <div class="flex items-center gap-4 text-sm text-gray-600">
+          <div class="hidden lg:block w-[400px] flex-shrink-0 py-4 pr-4">
+            <div class="bg-white border border-gray-200 rounded-2xl shadow-sm h-full flex flex-col">
+              <!-- Comments Header -->
+              <div class="px-5 py-4 border-b border-gray-200 flex-shrink-0">
+                <h2 class="text-lg font-bold text-gray-900">Comments</h2>
+                <div class="flex items-center gap-4 text-sm text-gray-500 mt-2">
                   <div class="flex items-center gap-1.5">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
@@ -391,7 +392,7 @@
                   </div>
                   <div class="flex items-center gap-1.5">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"/>
                     </svg>
                     <span>{{ reactions.reduce((sum, r) => sum + r.count, 0) }}</span>
                   </div>
@@ -400,26 +401,29 @@
 
               <!-- Comments List -->
               <div class="flex-1 overflow-y-auto">
-                <div v-if="comments.length === 0" class="flex flex-col items-center justify-center h-full text-gray-400 px-5">
+                <div v-if="comments.length === 0" class="flex flex-col items-center justify-center h-full text-center px-5">
+                  <svg class="w-16 h-16 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                  </svg>
                   <p class="text-base font-semibold text-gray-900">No comments yet</p>
                   <p class="text-sm text-gray-500 mt-1">Be the first to share your thoughts!</p>
                 </div>
 
                 <div v-else class="divide-y divide-gray-100">
-                  <div v-for="comment in comments" :key="comment.id" class="px-4 py-3 hover:bg-gray-50 transition-colors">
+                  <div v-for="comment in comments" :key="comment.id" class="px-5 py-4 hover:bg-gray-50 transition-colors">
                     <div class="flex gap-3">
                       <img
                         v-if="comment.avatar"
                         :src="comment.avatar"
                         :alt="comment.author"
-                        class="w-8 h-8 rounded-full object-cover flex-shrink-0"
+                        class="w-9 h-9 rounded-full object-cover flex-shrink-0"
                       />
-                      <div v-else class="w-8 h-8 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white text-xs font-semibold flex-shrink-0">
+                      <div v-else class="w-9 h-9 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white text-sm font-semibold flex-shrink-0">
                         {{ comment.author.charAt(0) }}
                       </div>
                       <div class="flex-1 min-w-0">
                         <div class="flex items-center gap-2 mb-1">
-                          <span class="text-gray-900 text-sm font-medium">{{ comment.author }}</span>
+                          <span class="text-gray-900 text-sm font-semibold">{{ comment.author }}</span>
                           <span class="text-gray-400 text-xs">{{ comment.time }}</span>
                         </div>
                         <p class="text-gray-700 text-sm leading-relaxed">{{ comment.text }}</p>
@@ -430,21 +434,36 @@
               </div>
 
               <!-- Comment Input (at bottom) -->
-              <div class="border-t border-gray-200 p-4">
-                <textarea
-                  v-model="newComment"
-                  placeholder="Leave a comment"
-                  rows="2"
-                  @keydown.enter.exact.prevent="addComment"
-                  class="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 resize-none"
-                ></textarea>
-                <button
-                  @click="addComment"
-                  :disabled="!newComment.trim() || isSavingComment"
-                  class="mt-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed text-gray-700 rounded-lg text-sm font-medium transition-colors"
-                >
-                  {{ isSavingComment ? 'Posting...' : 'Comment' }}
-                </button>
+              <div class="border-t border-gray-200 px-5 py-4 flex-shrink-0">
+                <div class="flex gap-3 mb-3">
+                  <img
+                    v-if="currentUser?.avatar"
+                    :src="currentUser.avatar"
+                    :alt="currentUser.name"
+                    class="w-9 h-9 rounded-full object-cover flex-shrink-0"
+                  />
+                  <div v-else class="w-9 h-9 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white text-sm font-semibold flex-shrink-0">
+                    {{ userInitial }}
+                  </div>
+                  <div class="flex-1">
+                    <textarea
+                      v-model="newComment"
+                      placeholder="Add a comment..."
+                      rows="3"
+                      @keydown.enter.exact.prevent="addComment"
+                      class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500 resize-none"
+                    ></textarea>
+                  </div>
+                </div>
+                <div class="flex justify-end">
+                  <button
+                    @click="addComment"
+                    :disabled="!newComment.trim() || isSavingComment"
+                    class="px-5 py-2 bg-orange-600 hover:bg-orange-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors"
+                  >
+                    {{ isSavingComment ? 'Posting...' : 'Comment' }}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
