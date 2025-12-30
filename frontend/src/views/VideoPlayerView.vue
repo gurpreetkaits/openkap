@@ -31,45 +31,7 @@
           <span class="font-medium">Back</span>
         </button>
 
-        <!-- Video Navigation -->
-        <div class="flex items-center gap-3">
-          <!-- Previous Video -->
-          <button
-            @click="goToPreviousVideo"
-            :disabled="!hasPrevious"
-            class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors"
-            :class="hasPrevious
-              ? 'bg-gray-200 hover:bg-gray-300 text-gray-700'
-              : 'bg-gray-100 text-gray-400 cursor-not-allowed'"
-            title="Previous video (P)"
-          >
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-            </svg>
-            <span class="hidden sm:inline">Previous</span>
-          </button>
 
-          <!-- Video Counter -->
-          <span v-if="allVideos.length > 0" class="text-gray-500 text-sm px-2">
-            {{ currentIndex + 1 }} / {{ allVideos.length }}
-          </span>
-
-          <!-- Next Video -->
-          <button
-            @click="goToNextVideo"
-            :disabled="!hasNext"
-            class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors"
-            :class="hasNext
-              ? 'bg-gray-200 hover:bg-gray-300 text-gray-700'
-              : 'bg-gray-100 text-gray-400 cursor-not-allowed'"
-            title="Next video (N)"
-          >
-            <span class="hidden sm:inline">Next</span>
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-            </svg>
-          </button>
-        </div>
 
         <button
           @click="copyShareLink"
@@ -559,11 +521,7 @@ export default {
     const loading = ref(true)
     const error = ref(null)
 
-    // Navigation between videos
-    const allVideos = ref([])
-    const currentIndex = ref(-1)
-    const hasPrevious = computed(() => currentIndex.value > 0)
-    const hasNext = computed(() => currentIndex.value < allVideos.value.length - 1 && currentIndex.value !== -1)
+
 
     const videoRef = ref(null)
     const progressBar = ref(null)
@@ -662,10 +620,7 @@ export default {
           duration.value = fetchedVideo.duration
         }
 
-        // Fetch all videos for navigation
-        const videos = await videoService.getVideos()
-        allVideos.value = videos
-        currentIndex.value = videos.findIndex(v => v.id === parseInt(route.params.id))
+
       } catch (err) {
         console.error('Failed to load video:', err)
         error.value = 'Failed to load video. Please try again.'
@@ -792,21 +747,7 @@ export default {
       }
     }
 
-    const goToPreviousVideo = () => {
-      if (hasPrevious.value) {
-        const prevVideo = allVideos.value[currentIndex.value - 1]
-        // Use full page reload instead of router navigation
-        window.location.href = `/video/${prevVideo.id}`
-      }
-    }
 
-    const goToNextVideo = () => {
-      if (hasNext.value) {
-        const nextVideo = allVideos.value[currentIndex.value + 1]
-        // Use full page reload instead of router navigation
-        window.location.href = `/video/${nextVideo.id}`
-      }
-    }
 
     const togglePlay = () => {
       if (!videoRef.value) return
@@ -1275,14 +1216,7 @@ export default {
           e.preventDefault()
           skip(10)
           break
-        case 'p':
-          e.preventDefault()
-          goToPreviousVideo()
-          break
-        case 'n':
-          e.preventDefault()
-          goToNextVideo()
-          break
+
         case 'c':
           e.preventDefault()
           // Toggle captions (placeholder for future feature)
@@ -1412,8 +1346,7 @@ export default {
       hoverPercent, showSpeedMenu, showBigPlayButton, copied, toast, showSkipBack,
       showSkipForward, skipBackAmount, skipForwardAmount, newComment, comments, reactions,
       isLoadingComments, isSavingComment,
-      // Navigation
-      allVideos, currentIndex, hasPrevious, hasNext, goToPreviousVideo, goToNextVideo,
+
       // Speed options
       speedOptions, toggleSpeedMenu,
       // HLS
