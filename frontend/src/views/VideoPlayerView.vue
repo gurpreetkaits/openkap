@@ -64,16 +64,28 @@
               </div>
             </div>
 
-            <!-- Right: Share button -->
-            <button
-              @click="copyShareLink"
-              class="flex items-center gap-2 px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-sm font-medium transition-colors"
-            >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
-              </svg>
-              {{ copied ? 'Copied!' : 'Share' }}
-            </button>
+            <!-- Right: Share buttons -->
+            <div class="flex items-center gap-2">
+              <button
+                @click="copyShareLink"
+                class="flex items-center gap-2 px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-sm font-medium transition-colors"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
+                </svg>
+                {{ copied ? 'Copied!' : 'Share' }}
+              </button>
+              <button
+                @click="copyEmbedCode"
+                class="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition-colors"
+                title="Copy embed code for websites"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
+                </svg>
+                {{ copiedEmbed ? 'Copied!' : 'Embed' }}
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -355,6 +367,18 @@
                   <span class="text-sm">{{ copied ? 'Copied!' : 'Share' }}</span>
                 </button>
 
+                <!-- Embed Button -->
+                <button
+                  @click="copyEmbedCode"
+                  class="flex items-center gap-2 px-4 py-1.5 hover:bg-gray-100 text-gray-700 rounded-full font-medium transition-all hover:scale-105"
+                  title="Copy embed code for websites"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
+                  </svg>
+                  <span class="text-sm">{{ copiedEmbed ? 'Copied!' : 'Embed' }}</span>
+                </button>
+
                 <!-- Divider -->
                 <div class="w-px h-6 bg-gray-200"></div>
 
@@ -544,6 +568,7 @@ export default {
     const speedOptions = [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2]
     const showBigPlayButton = ref(true)
     const copied = ref(false)
+    const copiedEmbed = ref(false)
     const toast = ref(null)
     const showSkipBack = ref(false)
     const showSkipForward = ref(false)
@@ -988,6 +1013,22 @@ export default {
       }
     }
 
+    const copyEmbedCode = async () => {
+      if (video.value.shareUrl) {
+        try {
+          // Derive embed URL from share URL by replacing /share/ with /embed/
+          const embedUrl = video.value.shareUrl.replace('/share/video/', '/embed/video/')
+          const embedCode = `<iframe src="${embedUrl}" width="640" height="360" frameborder="0" allowfullscreen></iframe>`
+          await navigator.clipboard.writeText(embedCode)
+          copiedEmbed.value = true
+          showToast('Embed code copied!')
+          setTimeout(() => { copiedEmbed.value = false }, 3000)
+        } catch (err) {
+          console.error('Failed to copy embed code:', err)
+        }
+      }
+    }
+
     const downloadVideo = () => {
       if (video.value.url) {
         const link = document.createElement('a')
@@ -1351,7 +1392,7 @@ export default {
       bufferedPercent, progressPercent, playbackSpeed, controlsVisible, hoverTime,
       hoverPercent, showSpeedMenu, showBigPlayButton, copied, toast, showSkipBack,
       showSkipForward, skipBackAmount, skipForwardAmount, newComment, comments, reactions,
-      isLoadingComments, isSavingComment,
+      isLoadingComments, isSavingComment, copiedEmbed, copyEmbedCode,
 
       // Speed options
       speedOptions, toggleSpeedMenu,

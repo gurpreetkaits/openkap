@@ -48,16 +48,28 @@
               </div>
             </div>
 
-            <!-- Right: Share button -->
-            <button
-              @click="copyShareLink"
-              class="flex items-center gap-2 px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-sm font-medium transition-colors"
-            >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
-              </svg>
-              {{ copied ? 'Copied!' : 'Share' }}
-            </button>
+            <!-- Right: Share buttons -->
+            <div class="flex items-center gap-2">
+              <button
+                @click="copyShareLink"
+                class="flex items-center gap-2 px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-sm font-medium transition-colors"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
+                </svg>
+                {{ copied ? 'Copied!' : 'Share' }}
+              </button>
+              <button
+                @click="copyEmbedCode"
+                class="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition-colors"
+                title="Copy embed code for websites"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
+                </svg>
+                {{ copiedEmbed ? 'Copied!' : 'Embed' }}
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -336,6 +348,18 @@
                 </svg>
                 <span class="text-sm">{{ copied ? 'Copied!' : 'Share' }}</span>
               </button>
+
+              <!-- Embed Button -->
+              <button
+                @click="copyEmbedCode"
+                class="flex items-center gap-2 px-4 py-1.5 hover:bg-gray-100 text-gray-700 rounded-full font-medium transition-all hover:scale-105"
+                title="Copy embed code"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
+                </svg>
+                <span class="text-sm">{{ copiedEmbed ? 'Copied!' : 'Embed' }}</span>
+              </button>
             </div>
           </div>
         </div>
@@ -519,6 +543,7 @@ export default {
     const showSpeedMenu = ref(false)
     const showBigPlayButton = ref(true)
     const copied = ref(false)
+    const copiedEmbed = ref(false)
     const toast = ref(null)
     const showSkipBack = ref(false)
     const showSkipForward = ref(false)
@@ -910,6 +935,17 @@ export default {
       } catch (err) {}
     }
 
+    const copyEmbedCode = async () => {
+      try {
+        const embedUrl = `${API_BASE_URL}/embed/video/${token.value}`
+        const embedCode = `<iframe src="${embedUrl}" width="640" height="360" frameborder="0" allowfullscreen></iframe>`
+        await navigator.clipboard.writeText(embedCode)
+        copiedEmbed.value = true
+        showToast('Embed code copied!')
+        setTimeout(() => { copiedEmbed.value = false }, 3000)
+      } catch (err) {}
+    }
+
     const toggleReaction = async (type) => {
       try {
         const response = await fetch(`${API_BASE_URL}/api/share/video/${token.value}/reactions`, {
@@ -1076,14 +1112,14 @@ export default {
       isPlaying, isBuffering, isMuted, isFullscreen, volume, currentTime, duration,
       bufferedPercent, progressPercent, playbackSpeed, speedOptions, controlsVisible,
       hoverTime, hoverPercent, showSpeedMenu, showBigPlayButton,
-      copied, toast, showSkipBack, showSkipForward, skipBackAmount, skipForwardAmount,
+      copied, copiedEmbed, toast, showSkipBack, showSkipForward, skipBackAmount, skipForwardAmount,
       newComment, isSavingComment, isAuthenticated, currentUser, userInitial,
       // HLS
       availableQualities, currentQuality, showQualityMenu, isHlsSupported,
       togglePlay, updateProgress, onVideoLoaded, onVideoError, onVideoEnded, seek, startSeeking,
       updateHoverTime, skip, toggleMute, updateVolume, toggleSpeedMenu, setPlaybackSpeed,
       toggleFullscreen, togglePiP, showControls, hideControlsDelayed,
-      formatTime, formatDate, formatCommentTime, copyShareLink, toggleReaction, addComment, loginToComment,
+      formatTime, formatDate, formatCommentTime, copyShareLink, copyEmbedCode, toggleReaction, addComment, loginToComment,
       // HLS functions
       setQuality, toggleQualityMenu, getCurrentQualityLabel
     }
