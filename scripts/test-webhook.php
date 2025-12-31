@@ -18,7 +18,7 @@
 $options = getopt('', ['event:', 'url:', 'help']);
 
 if (isset($options['help'])) {
-    echo <<<HELP
+    echo <<<'HELP'
 Polar Webhook Test Script
 
 Usage:
@@ -46,8 +46,8 @@ $webhookUrl = $options['url'] ?? 'http://localhost:8000/api/webhooks/polar';
 $eventType = $options['event'] ?? 'subscription.created';
 
 // Load .env file to get webhook secret
-$envPath = __DIR__ . '/../.env';
-if (!file_exists($envPath)) {
+$envPath = __DIR__.'/../.env';
+if (! file_exists($envPath)) {
     echo "❌ Error: .env file not found at {$envPath}\n";
     echo "Please copy .env.example to .env and configure POLAR_WEBHOOK_SECRET\n";
     exit(1);
@@ -60,7 +60,7 @@ $webhookSecret = $matches[1] ?? '';
 if (empty($webhookSecret) || $webhookSecret === 'whsec_xxxxxxxxxxxxx') {
     echo "❌ Error: POLAR_WEBHOOK_SECRET not configured in .env\n";
     echo "For testing, you can use any value, for example:\n";
-    echo "POLAR_WEBHOOK_SECRET=polar_whs_" . base64_encode('test_secret_key_12345') . "\n";
+    echo 'POLAR_WEBHOOK_SECRET=polar_whs_'.base64_encode('test_secret_key_12345')."\n";
     exit(1);
 }
 
@@ -69,7 +69,7 @@ $payloads = [
     'customer.created' => [
         'type' => 'customer.created',
         'data' => [
-            'id' => 'cust_test_' . uniqid(),
+            'id' => 'cust_test_'.uniqid(),
             'external_id' => '1', // User ID 1
             'email' => 'test@example.com',
             'name' => 'Test User',
@@ -78,7 +78,7 @@ $payloads = [
     'subscription.created' => [
         'type' => 'subscription.created',
         'data' => [
-            'id' => 'sub_test_' . uniqid(),
+            'id' => 'sub_test_'.uniqid(),
             'customer_id' => 'cust_test_123',
             'product_id' => 'prod_test_monthly',
             'price_id' => 'price_test_700',
@@ -94,7 +94,7 @@ $payloads = [
     'subscription.active' => [
         'type' => 'subscription.active',
         'data' => [
-            'id' => 'sub_test_' . uniqid(),
+            'id' => 'sub_test_'.uniqid(),
             'customer_id' => 'cust_test_123',
             'status' => 'active',
             'current_period_end' => date('c', strtotime('+1 month')),
@@ -103,7 +103,7 @@ $payloads = [
     'subscription.updated' => [
         'type' => 'subscription.updated',
         'data' => [
-            'id' => 'sub_test_' . uniqid(),
+            'id' => 'sub_test_'.uniqid(),
             'status' => 'active',
             'product_id' => 'prod_test_yearly',
             'price_id' => 'price_test_8000',
@@ -113,20 +113,20 @@ $payloads = [
     'subscription.canceled' => [
         'type' => 'subscription.canceled',
         'data' => [
-            'id' => 'sub_test_' . uniqid(),
+            'id' => 'sub_test_'.uniqid(),
         ],
     ],
     'subscription.revoked' => [
         'type' => 'subscription.revoked',
         'data' => [
-            'id' => 'sub_test_' . uniqid(),
+            'id' => 'sub_test_'.uniqid(),
         ],
     ],
 ];
 
-if (!isset($payloads[$eventType])) {
+if (! isset($payloads[$eventType])) {
     echo "❌ Error: Unknown event type '{$eventType}'\n";
-    echo "Available types: " . implode(', ', array_keys($payloads)) . "\n";
+    echo 'Available types: '.implode(', ', array_keys($payloads))."\n";
     exit(1);
 }
 
@@ -134,7 +134,7 @@ $payload = $payloads[$eventType];
 $payloadJson = json_encode($payload, JSON_PRETTY_PRINT);
 
 // Generate Standard Webhooks signature
-$webhookId = 'whk_test_' . uniqid();
+$webhookId = 'whk_test_'.uniqid();
 $timestamp = time();
 
 // Extract secret key from Polar format
@@ -147,7 +147,7 @@ if (str_starts_with($webhookSecret, 'polar_whs_')) {
 $decodedSecret = base64_decode($secretKey);
 
 // Construct signed content: {id}.{timestamp}.{payload}
-$signedContent = $webhookId . '.' . $timestamp . '.' . json_encode($payload);
+$signedContent = $webhookId.'.'.$timestamp.'.'.json_encode($payload);
 
 // Generate HMAC-SHA256 signature
 $signature = base64_encode(hash_hmac('sha256', $signedContent, $decodedSecret, true));
@@ -155,9 +155,9 @@ $signature = base64_encode(hash_hmac('sha256', $signedContent, $decodedSecret, t
 // Prepare headers
 $headers = [
     'Content-Type: application/json',
-    'webhook-id: ' . $webhookId,
-    'webhook-timestamp: ' . $timestamp,
-    'webhook-signature: v1,' . $signature,
+    'webhook-id: '.$webhookId,
+    'webhook-timestamp: '.$timestamp,
+    'webhook-signature: v1,'.$signature,
 ];
 
 // Display request details
@@ -171,7 +171,7 @@ echo "🔑 Webhook ID: {$webhookId}\n";
 echo "⏰ Timestamp: {$timestamp}\n\n";
 
 echo "📦 Payload:\n";
-echo $payloadJson . "\n\n";
+echo $payloadJson."\n\n";
 
 echo "🔐 Headers:\n";
 foreach ($headers as $header) {
@@ -210,10 +210,10 @@ echo "📊 HTTP Status: {$httpCode}\n\n";
 $decodedResponse = json_decode($response, true);
 if (json_last_error() === JSON_ERROR_NONE) {
     echo "📄 Response Body:\n";
-    echo json_encode($decodedResponse, JSON_PRETTY_PRINT) . "\n\n";
+    echo json_encode($decodedResponse, JSON_PRETTY_PRINT)."\n\n";
 } else {
     echo "📄 Response Body:\n";
-    echo $response . "\n\n";
+    echo $response."\n\n";
 }
 
 // Determine success

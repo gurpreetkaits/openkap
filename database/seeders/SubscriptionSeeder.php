@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
 use App\Models\SubscriptionHistory;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 
@@ -16,8 +16,9 @@ class SubscriptionSeeder extends Seeder
     {
         $user = User::where('email', 'gurpreetkait.codes@gmail.com')->first();
 
-        if (!$user) {
+        if (! $user) {
             $this->command->error('User with email gurpreetkait.codes@gmail.com not found.');
+
             return;
         }
 
@@ -26,14 +27,14 @@ class SubscriptionSeeder extends Seeder
 
         // Update user subscription fields
         $user->update([
-            'polar_customer_id' => 'cus_' . Str::random(24),
-            'polar_subscription_id' => 'sub_' . Str::random(24),
+            'polar_customer_id' => 'cus_'.Str::random(24),
+            'polar_subscription_id' => 'sub_'.Str::random(24),
             'subscription_status' => 'active',
             'subscription_started_at' => $now,
             'subscription_expires_at' => $yearFromNow,
             'subscription_canceled_at' => null,
-            'polar_product_id' => 'prod_' . Str::random(24),
-            'polar_price_id' => 'price_' . Str::random(24),
+            'polar_product_id' => 'prod_'.Str::random(24),
+            'polar_price_id' => 'price_'.Str::random(24),
         ]);
 
         // Create subscription history record

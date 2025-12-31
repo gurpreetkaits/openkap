@@ -18,6 +18,7 @@ ScreenSense is an open-source screen recording and sharing platform that makes i
 - **Comments & Engagement** - Add comments and reactions to videos
 - **Chrome Extension** - Record directly from your browser with our extension
 - **Video Streaming** - Efficient streaming with range request support for instant seeking
+- **HLS Adaptive Streaming** - Multiple quality variants (360p to 4K) with automatic quality switching
 - **Privacy Controls** - Toggle videos between public and private
 - **Subscription Support** - Integrated with Polar.sh for premium features
 
@@ -28,20 +29,17 @@ _Coming soon_
 ## Tech Stack
 
 **Backend:**
-- Laravel 12 (PHP 8.2+)
+- Laravel 12 (PHP 8.3+)
 - MariaDB/MySQL
 - Spatie Media Library (file management)
 - FFmpeg (video processing)
 - Queue system for background jobs
 
 **Frontend:**
-- React 18
-- TypeScript
-- Vite
-- Tailwind CSS 4
-- Radix UI components
-- TanStack Query
-- Wouter (routing)
+- Vue 3
+- Vite 5
+- Tailwind CSS 3
+- Vue Router 4
 
 **Browser Extension:**
 - Chrome Extension Manifest V3
@@ -51,7 +49,7 @@ _Coming soon_
 
 ### Prerequisites
 
-- PHP 8.2 or higher
+- PHP 8.3 or higher
 - Composer
 - Node.js 18+ and npm
 - MariaDB or MySQL
@@ -168,17 +166,20 @@ cd screensense
 # Copy Docker environment file
 cp .env.docker .env
 
-# Generate application key
-docker compose run --rm app php artisan key:generate
+# Make sail script executable
+chmod +x sail
 
 # Start all services
 docker compose up -d
 
+# Generate application key
+./sail artisan key:generate
+
 # Run migrations
-docker compose exec app php artisan migrate
+./sail artisan migrate
 
 # Create storage link
-docker compose exec app php artisan storage:link
+./sail artisan storage:link
 ```
 
 ### Access the Application
@@ -188,7 +189,34 @@ docker compose exec app php artisan storage:link
 | Frontend | http://localhost:3333 |
 | Backend API | http://localhost:8888 |
 
-### Docker Commands
+### Using the Sail Helper Script
+
+We provide a `./sail` helper script that makes it easy to run commands inside Docker containers. This is **not** Laravel Sail - it's a lightweight wrapper script for convenience.
+
+```bash
+# Run artisan commands
+./sail artisan migrate
+./sail artisan queue:work
+./sail artisan videos:convert-hls
+
+# Run composer commands
+./sail composer install
+./sail composer require some/package
+
+# Run PHP commands
+./sail php -v
+
+# Access the container shell
+./sail shell
+
+# Run tests
+./sail test
+
+# Open tinker
+./sail tinker
+```
+
+### Docker Compose Commands
 
 ```bash
 # Start services
@@ -203,15 +231,6 @@ docker compose logs -f
 # View specific service logs
 docker compose logs -f app
 docker compose logs -f queue
-
-# Run artisan commands
-docker compose exec app php artisan <command>
-
-# Run composer commands
-docker compose exec app composer <command>
-
-# Access app shell
-docker compose exec app bash
 
 # Rebuild containers (after Dockerfile changes)
 docker compose build --no-cache

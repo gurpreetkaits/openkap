@@ -10,7 +10,7 @@ class CommentRepository extends BaseRepository
 {
     public function __construct()
     {
-        parent::__construct(new Comment());
+        parent::__construct(new Comment);
     }
 
     public function getVideoComments(Video $video): Collection
@@ -22,7 +22,7 @@ class CommentRepository extends BaseRepository
 
     public function createComment(array $data): Comment
     {
-        $comment = new Comment();
+        $comment = new Comment;
         $comment->video_id = $data['video_id'];
         $comment->content = $data['content'];
         $comment->timestamp_seconds = $data['timestamp_seconds'] ?? null;

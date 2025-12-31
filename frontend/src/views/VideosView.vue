@@ -239,6 +239,11 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
                   </svg>
                 </button>
+                <button @click.stop="embedVideo(video)" class="w-9 h-9 flex items-center justify-center bg-white/90 hover:bg-white text-gray-800 rounded-full shadow-lg transition-all hover:scale-110" title="Copy embed code">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
+                  </svg>
+                </button>
                 <button @click.stop="downloadVideo(video)" class="w-9 h-9 flex items-center justify-center bg-white/90 hover:bg-white text-gray-800 rounded-full shadow-lg transition-all hover:scale-110" title="Download">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
@@ -354,6 +359,11 @@
             <button @click.stop="shareVideo(video)" class="p-2 text-gray-500 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors" title="Share">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
+              </svg>
+            </button>
+            <button @click.stop="embedVideo(video)" class="p-2 text-gray-500 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors" title="Copy embed code">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
               </svg>
             </button>
             <button @click.stop="downloadVideo(video)" class="p-2 text-gray-500 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors" title="Download">
@@ -773,6 +783,21 @@ export default {
       }
     }
 
+    const embedVideo = async (video) => {
+      if (video.shareUrl) {
+        try {
+          // Derive embed URL from share URL by replacing /share/ with /embed/
+          const embedUrl = video.shareUrl.replace('/share/video/', '/embed/video/')
+          const embedCode = `<iframe src="${embedUrl}" width="640" height="360" frameborder="0" allowfullscreen></iframe>`
+          await navigator.clipboard.writeText(embedCode)
+          toast.success('Embed code copied to clipboard!')
+        } catch (err) {
+          console.error('Failed to copy embed code:', err)
+          toast.error('Failed to copy embed code. Please try again.')
+        }
+      }
+    }
+
     const downloadVideo = async (video) => {
       if (!video.url) return
 
@@ -893,6 +918,7 @@ export default {
       goToRecord,
       openVideo,
       shareVideo,
+      embedVideo,
       downloadVideo,
       deleteVideo,
       confirmDeleteVideo,

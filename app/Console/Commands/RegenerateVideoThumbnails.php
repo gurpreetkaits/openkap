@@ -32,6 +32,7 @@ class RegenerateVideoThumbnails extends Command
 
         if ($videos->isEmpty()) {
             $this->warn('No videos found.');
+
             return Command::SUCCESS;
         }
 
@@ -68,7 +69,7 @@ class RegenerateVideoThumbnails extends Command
         $bar->finish();
 
         $this->newLine();
-        $this->info("Thumbnail regeneration complete!");
+        $this->info('Thumbnail regeneration complete!');
         $this->info("Processed: {$processed}");
 
         if ($failed > 0) {

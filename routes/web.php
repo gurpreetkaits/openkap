@@ -32,7 +32,7 @@ Route::get('/terms', function () {
 Route::get('/blog', [BlogController::class, 'webIndex'])->name('blog.index');
 Route::get('/blog/{slug}', [BlogController::class, 'webShow'])->name('blog.show');
 
-// Public video sharing page
+// Public video sharing page (for social media crawlers - returns OG meta tags)
 Route::get('/share/video/{token}', function ($token) {
     $video = Video::where('share_token', $token)->first();
 
@@ -45,5 +45,22 @@ Route::get('/share/video/{token}', function ($token) {
     return view('video.share', [
         'video' => $video,
         'videoUrl' => $media ? $media->getUrl() : null,
+    ]);
+});
+
+// Embeddable video player (for og:video - like Loom's embed page)
+Route::get('/embed/video/{token}', function ($token) {
+    $video = Video::where('share_token', $token)->first();
+
+    if (! $video || ! $video->isShareLinkValid()) {
+        abort(404, 'Video not found or no longer available');
+    }
+
+    $media = $video->getFirstMedia('videos');
+
+    return view('video.embed', [
+        'video' => $video,
+        'videoUrl' => $media ? $media->getUrl() : null,
+        'hlsUrl' => $video->getHlsUrl(),
     ]);
 });

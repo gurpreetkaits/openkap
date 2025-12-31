@@ -81,11 +81,11 @@ class SubscriptionHistory extends Model
      */
     public function getFormattedAmountAttribute(): ?string
     {
-        if (!$this->amount) {
+        if (! $this->amount) {
             return null;
         }
 
-        return '$' . number_format($this->amount / 100, 2);
+        return '$'.number_format($this->amount / 100, 2);
     }
 
     /**

@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\ConvertVideoToMp4Job;
 use App\Models\User;
 use App\Models\Video;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class StreamVideoController extends Controller
@@ -178,6 +180,14 @@ class StreamVideoController extends Controller
 
         // Generate thumbnail
         $video->generateThumbnailFromMidpoint();
+
+        // Dispatch conversion job
+        Log::info('Dispatching ConvertVideoToMp4Job from StreamVideoController', [
+            'video_id' => $video->id,
+            'title' => $video->title,
+            'user_id' => $userId,
+        ]);
+        ConvertVideoToMp4Job::dispatch($video);
 
         // Increment user's video count
         $user = User::find($userId);

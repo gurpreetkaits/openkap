@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Managers\VideoManager;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class VideoController extends Controller
 {
@@ -23,13 +24,18 @@ class VideoController extends Controller
 
     public function store(Request $request)
     {
-        if (!$this->videoManager->canUserRecordVideo(Auth::user())) {
+        Log::info('VideoController::store called', [
+            'user_id' => Auth::id(),
+            'has_video' => $request->hasFile('video'),
+        ]);
+
+        if (! $this->videoManager->canUserRecordVideo(Auth::user())) {
             return response()->json([
                 'error' => 'video_limit_reached',
                 'message' => 'You have reached your video limit. Upgrade to Pro to continue recording.',
                 'videos_count' => Auth::user()->getVideosCount(),
                 'remaining_quota' => Auth::user()->getRemainingVideoQuota(),
-                'upgrade_url' => config('services.frontend.url') . '/subscription',
+                'upgrade_url' => config('services.frontend.url').'/subscription',
             ], 403);
         }
 
@@ -68,7 +74,7 @@ class VideoController extends Controller
     {
         $video = $this->videoManager->findVideo($id);
 
-        if (!$video) {
+        if (! $video) {
             return response()->json(['message' => 'Video not found'], 404);
         }
 
@@ -231,7 +237,7 @@ class VideoController extends Controller
     {
         $video = $this->videoManager->findByShareTokenOrFail($token);
 
-        if (!$this->videoManager->canAccessSharedVideo($video, Auth::id())) {
+        if (! $this->videoManager->canAccessSharedVideo($video, Auth::id())) {
             return response()->json([
                 'message' => 'This video is no longer available for sharing',
             ], 403);
@@ -264,7 +270,7 @@ class VideoController extends Controller
             ]);
         }
 
-        if (!$range) {
+        if (! $range) {
             $start = 0;
             $end = min(2 * 1024 * 1024, $fileSize - 1);
             $length = $end - $start + 1;
@@ -284,7 +290,7 @@ class VideoController extends Controller
 
         preg_match('/bytes=(\d+)-(\d*)/', $range, $matches);
         $start = intval($matches[1]);
-        $end = !empty($matches[2]) ? intval($matches[2]) : $fileSize - 1;
+        $end = ! empty($matches[2]) ? intval($matches[2]) : $fileSize - 1;
 
         $maxChunkSize = 10 * 1024 * 1024;
         if (($end - $start + 1) > $maxChunkSize) {

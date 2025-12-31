@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Blog;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class BlogController extends Controller
@@ -66,7 +66,7 @@ class BlogController extends Controller
             ->where('slug', $slug)
             ->first();
 
-        if (!$blog) {
+        if (! $blog) {
             return response()->json([
                 'error' => 'Blog post not found',
             ], 404);

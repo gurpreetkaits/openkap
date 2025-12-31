@@ -7,9 +7,9 @@
  * This script tests if our webhook signature verification works correctly.
  */
 
-require __DIR__ . '/../vendor/autoload.php';
+require __DIR__.'/../vendor/autoload.php';
 
-$app = require_once __DIR__ . '/../bootstrap/app.php';
+$app = require_once __DIR__.'/../bootstrap/app.php';
 $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
 
 $webhookSecret = config('services.polar.webhook_secret');
@@ -17,10 +17,10 @@ $webhookSecret = config('services.polar.webhook_secret');
 echo "Testing Webhook Signature Verification\n";
 echo "======================================\n\n";
 
-echo "Webhook Secret: " . substr($webhookSecret, 0, 20) . "...\n\n";
+echo 'Webhook Secret: '.substr($webhookSecret, 0, 20)."...\n\n";
 
 // Test data
-$webhookId = "test_webhook_" . uniqid();
+$webhookId = 'test_webhook_'.uniqid();
 $webhookTimestamp = (string) time();
 $payload = json_encode([
     'type' => 'subscription.created',
@@ -32,7 +32,7 @@ $payload = json_encode([
 ]);
 
 echo "Test Payload:\n";
-echo $payload . "\n\n";
+echo $payload."\n\n";
 
 // Extract secret key
 $secretKey = $webhookSecret;
@@ -40,19 +40,19 @@ if (str_starts_with($webhookSecret, 'polar_whs_')) {
     $secretKey = substr($webhookSecret, 10); // Remove 'polar_whs_' prefix
 }
 
-echo "Secret Key (base64): " . substr($secretKey, 0, 20) . "...\n";
+echo 'Secret Key (base64): '.substr($secretKey, 0, 20)."...\n";
 
 // Decode the base64 secret
 $decodedSecret = base64_decode($secretKey);
-echo "Decoded Secret Length: " . strlen($decodedSecret) . " bytes\n\n";
+echo 'Decoded Secret Length: '.strlen($decodedSecret)." bytes\n\n";
 
 // Construct signed content (same as Polar)
-$signedContent = $webhookId . '.' . $webhookTimestamp . '.' . $payload;
+$signedContent = $webhookId.'.'.$webhookTimestamp.'.'.$payload;
 
 echo "Signed Content:\n";
 echo "  webhook_id: $webhookId\n";
 echo "  timestamp: $webhookTimestamp\n";
-echo "  payload length: " . strlen($payload) . "\n\n";
+echo '  payload length: '.strlen($payload)."\n\n";
 
 // Compute signature
 $expectedSignature = base64_encode(hash_hmac('sha256', $signedContent, $decodedSecret, true));
@@ -72,6 +72,7 @@ foreach ($signatures as $versionedSig) {
     $parts = explode(',', $versionedSig, 2);
     if (count($parts) !== 2) {
         echo "❌ Invalid signature format\n";
+
         continue;
     }
 
@@ -79,6 +80,7 @@ foreach ($signatures as $versionedSig) {
 
     if ($version !== 'v1') {
         echo "❌ Wrong version: $version\n";
+
         continue;
     }
 

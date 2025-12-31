@@ -8,21 +8,20 @@
  * Ensures no cross-contamination (subscriptions going to wrong user)
  */
 
-require __DIR__ . '/../vendor/autoload.php';
+require __DIR__.'/../vendor/autoload.php';
 
-$app = require_once __DIR__ . '/../bootstrap/app.php';
+$app = require_once __DIR__.'/../bootstrap/app.php';
 $app->make(\Illuminate\Contracts\Console\Kernel::class)->bootstrap();
 
-use App\Models\User;
 use App\Models\SubscriptionHistory;
-use Illuminate\Support\Facades\Http;
+use App\Models\User;
 
 echo "═══════════════════════════════════════════════════════════════\n";
 echo "Multi-User Webhook Matching Test\n";
 echo "═══════════════════════════════════════════════════════════════\n\n";
 
 // Get webhook secret
-$envPath = __DIR__ . '/../.env';
+$envPath = __DIR__.'/../.env';
 $envContent = file_get_contents($envPath);
 preg_match('/POLAR_WEBHOOK_SECRET=(.*)/', $envContent, $matches);
 $webhookSecret = $matches[1] ?? '';
@@ -35,8 +34,9 @@ if (empty($webhookSecret)) {
 $webhookUrl = 'http://localhost:8000/api/webhooks/polar';
 
 // Helper function to send webhook
-function sendWebhook($url, $secret, $payload) {
-    $webhookId = 'whk_test_' . uniqid();
+function sendWebhook($url, $secret, $payload)
+{
+    $webhookId = 'whk_test_'.uniqid();
     $timestamp = time();
 
     $secretKey = $secret;
@@ -45,7 +45,7 @@ function sendWebhook($url, $secret, $payload) {
     }
     $decodedSecret = base64_decode($secretKey);
 
-    $signedContent = $webhookId . '.' . $timestamp . '.' . json_encode($payload);
+    $signedContent = $webhookId.'.'.$timestamp.'.'.json_encode($payload);
     $signature = base64_encode(hash_hmac('sha256', $signedContent, $decodedSecret, true));
 
     $ch = curl_init($url);
@@ -53,9 +53,9 @@ function sendWebhook($url, $secret, $payload) {
     curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
     curl_setopt($ch, CURLOPT_HTTPHEADER, [
         'Content-Type: application/json',
-        'webhook-id: ' . $webhookId,
-        'webhook-timestamp: ' . $timestamp,
-        'webhook-signature: v1,' . $signature,
+        'webhook-id: '.$webhookId,
+        'webhook-timestamp: '.$timestamp,
+        'webhook-signature: v1,'.$signature,
     ]);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_TIMEOUT, 10);
@@ -72,7 +72,7 @@ $users = User::whereIn('id', [1, 2, 3, 4])->get()->keyBy('id');
 
 if ($users->count() < 2) {
     echo "❌ Error: Need at least 2 users in database for testing\n";
-    echo "Current users: " . $users->count() . "\n";
+    echo 'Current users: '.$users->count()."\n";
     exit(1);
 }
 
@@ -101,8 +101,8 @@ foreach ($users as $userId => $user) {
     echo "Testing User #{$userId}: {$user->email}\n";
     echo "══════════════════════════════════════════════════════\n";
 
-    $subscriptionId = "sub_test_user{$userId}_" . uniqid();
-    $customerId = "cust_test_user{$userId}_" . uniqid();
+    $subscriptionId = "sub_test_user{$userId}_".uniqid();
+    $customerId = "cust_test_user{$userId}_".uniqid();
 
     // Test 1: subscription.created with external_id
     echo "Test 1: subscription.created with external_id...\n";
@@ -142,7 +142,7 @@ foreach ($users as $userId => $user) {
         } else {
             echo "  ❌ ERROR: Subscription not assigned correctly\n";
             echo "     Expected: {$subscriptionId}\n";
-            echo "     Got: " . ($user->polar_subscription_id ?? 'null') . "\n";
+            echo '     Got: '.($user->polar_subscription_id ?? 'null')."\n";
             $errors[] = "User #{$userId}: subscription not assigned";
             $testResults[] = [
                 'user' => $userId,
@@ -197,14 +197,14 @@ echo "════════════════════════�
 echo "Test Results Summary\n";
 echo "═══════════════════════════════════════════════════════════════\n\n";
 
-$passed = array_filter($testResults, fn($r) => $r['status'] === 'PASS');
-$failed = array_filter($testResults, fn($r) => $r['status'] === 'FAIL');
+$passed = array_filter($testResults, fn ($r) => $r['status'] === 'PASS');
+$failed = array_filter($testResults, fn ($r) => $r['status'] === 'FAIL');
 
-echo "Total Tests: " . count($testResults) . "\n";
-echo "Passed: " . count($passed) . " ✓\n";
-echo "Failed: " . count($failed) . " ✗\n\n";
+echo 'Total Tests: '.count($testResults)."\n";
+echo 'Passed: '.count($passed)." ✓\n";
+echo 'Failed: '.count($failed)." ✗\n\n";
 
-if (!empty($errors)) {
+if (! empty($errors)) {
     echo "Errors:\n";
     foreach ($errors as $error) {
         echo "  ❌ {$error}\n";
@@ -214,7 +214,7 @@ if (!empty($errors)) {
 
 // Verify final state
 echo "Final User States:\n";
-echo str_repeat("─", 67) . "\n";
+echo str_repeat('─', 67)."\n";
 foreach ($users as $user) {
     $user->refresh();
     $subId = $user->polar_subscription_id ?? 'none';

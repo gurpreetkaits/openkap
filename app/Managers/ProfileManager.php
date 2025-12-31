@@ -42,7 +42,7 @@ class ProfileManager
             $updateData['location'] = $data['location'];
         }
 
-        if (!empty($updateData)) {
+        if (! empty($updateData)) {
             $user = $this->users->updateProfile($user, $updateData);
         }
 

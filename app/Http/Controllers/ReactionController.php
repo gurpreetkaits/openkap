@@ -45,7 +45,7 @@ class ReactionController extends Controller
         $video = Video::findOrFail($videoId);
 
         $validated = $request->validate([
-            'type' => 'required|string|in:' . implode(',', array_keys(Reaction::TYPES)),
+            'type' => 'required|string|in:'.implode(',', array_keys(Reaction::TYPES)),
             'session_id' => 'nullable|string|max:100',
         ]);
 
@@ -76,7 +76,7 @@ class ReactionController extends Controller
         }
 
         // Add new reaction
-        $reaction = new Reaction();
+        $reaction = new Reaction;
         $reaction->video_id = $video->id;
         $reaction->type = $type;
 
@@ -126,7 +126,7 @@ class ReactionController extends Controller
     {
         $video = Video::where('share_token', $token)->firstOrFail();
 
-        if (!$video->isShareLinkValid()) {
+        if (! $video->isShareLinkValid()) {
             return response()->json(['message' => 'Video not available'], 403);
         }
 
@@ -140,7 +140,7 @@ class ReactionController extends Controller
     {
         $video = Video::where('share_token', $token)->firstOrFail();
 
-        if (!$video->isShareLinkValid()) {
+        if (! $video->isShareLinkValid()) {
             return response()->json(['message' => 'Video not available'], 403);
         }
 

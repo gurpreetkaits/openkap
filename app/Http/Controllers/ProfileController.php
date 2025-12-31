@@ -27,7 +27,7 @@ class ProfileController extends Controller
 
         $validated = $request->validate([
             'name' => 'sometimes|string|max:255',
-            'username' => 'sometimes|string|max:255|unique:users,username,' . $userId,
+            'username' => 'sometimes|string|max:255|unique:users,username,'.$userId,
             'bio' => 'nullable|string|max:500',
             'website' => 'nullable|url|max:255',
             'location' => 'nullable|string|max:255',
