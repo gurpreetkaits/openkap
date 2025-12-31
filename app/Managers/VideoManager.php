@@ -19,9 +19,8 @@ class VideoManager
     public function getUserVideos(int $userId): array
     {
         $videos = $this->videos->findByUserId($userId);
-        $frontendUrl = rtrim(config('app.frontend_url', 'http://localhost:5173'), '/');
 
-        return $videos->map(function ($video) use ($frontendUrl) {
+        return $videos->map(function ($video) {
             $thumbnail = $video->media->where('collection_name', 'thumbnails')->first();
             $thumbnailUrl = $thumbnail ? $thumbnail->getUrl() : null;
 
@@ -33,7 +32,7 @@ class VideoManager
                 'url' => url("/api/share/video/{$video->share_token}/stream"),
                 'hls_url' => $video->getHlsUrl(),
                 'thumbnail' => $thumbnailUrl,
-                'share_url' => "{$frontendUrl}/share/video/{$video->share_token}",
+                'share_url' => $video->getShareUrl(),
                 'is_public' => $video->is_public,
                 'views_count' => $video->views_count ?? 0,
                 'comments_count' => $video->comments_count ?? 0,

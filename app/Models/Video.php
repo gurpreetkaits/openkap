@@ -216,13 +216,31 @@ class Video extends Model implements HasMedia
 
     /**
      * Generate a shareable URL for this video.
-     * Returns frontend URL for the Vue-based video player.
+     * Returns backend URL so social media crawlers can see OG meta tags.
+     * The backend page (share.blade.php) redirects human users to the frontend via JS.
      */
     public function getShareUrl(): string
+    {
+        return url("/share/video/{$this->share_token}");
+    }
+
+    /**
+     * Generate a frontend URL for this video (for internal redirects).
+     */
+    public function getFrontendShareUrl(): string
     {
         $frontendUrl = rtrim(config('app.frontend_url', 'http://localhost:5173'), '/');
 
         return "{$frontendUrl}/share/video/{$this->share_token}";
+    }
+
+    /**
+     * Generate an embeddable URL for this video (for og:video tags).
+     * Returns backend URL for the minimal embed player.
+     */
+    public function getEmbedUrl(): string
+    {
+        return url("/embed/video/{$this->share_token}");
     }
 
     /**
