@@ -41,7 +41,7 @@ Enhancement suggestions are tracked as GitHub issues. When creating an enhanceme
 
 ### Prerequisites
 
-- PHP 8.2+
+- PHP 8.3+
 - Composer
 - Node.js 18+
 - MariaDB/MySQL

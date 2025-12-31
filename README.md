@@ -29,7 +29,7 @@ _Coming soon_
 ## Tech Stack
 
 **Backend:**
-- Laravel 12 (PHP 8.2+)
+- Laravel 12 (PHP 8.3+)
 - MariaDB/MySQL
 - Spatie Media Library (file management)
 - FFmpeg (video processing)
@@ -49,7 +49,7 @@ _Coming soon_
 
 ### Prerequisites
 
-- PHP 8.2 or higher
+- PHP 8.3 or higher
 - Composer
 - Node.js 18+ and npm
 - MariaDB or MySQL
