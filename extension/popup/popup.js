@@ -4,7 +4,7 @@
 // Helper to check if a URL is a ScreenSense URL
 function isScreenSenseUrl(url) {
   if (!url) return false;
-  return url.includes('localhost:5173') ||
+  return url.includes('localhost:3333') ||
          url.includes('localhost:8000') ||
          url.includes('screensense.in');
 }

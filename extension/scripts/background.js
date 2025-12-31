@@ -346,10 +346,50 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   }
 });
 
-// Handle extension icon click - open record page directly
+// Handle extension icon click - show floating panel on current page
 chrome.action.onClicked.addListener(async (tab) => {
-  console.log('Extension icon clicked, opening record page');
+  console.log('Extension icon clicked on tab:', tab.id);
 
-  // Open the record page with autostart
-  chrome.tabs.create({ url: SCREENSENSE_URL + '/record?autostart=true' });
+  if (!tab || !tab.id) {
+    console.error('No valid tab found');
+    return;
+  }
+
+  const tabUrl = tab.url || '';
+
+  // Don't inject on restricted pages
+  if (tabUrl.startsWith('chrome://') || tabUrl.startsWith('chrome-extension://') || tabUrl.startsWith('about:') || tabUrl === '') {
+    console.warn('Cannot inject on restricted pages. Please navigate to a regular website.');
+    // Just log the error, don't redirect
+    return;
+  }
+
+  try {
+    // Ensure content script is injected
+    await chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      files: ['scripts/content.js']
+    });
+  } catch (e) {
+    // Script might already be injected
+    console.log('Content script already injected or injection failed:', e.message);
+  }
+
+  // Small delay to ensure content script is ready
+  await new Promise(resolve => setTimeout(resolve, 100));
+
+  // Send message to show the floating panel
+  try {
+    chrome.tabs.sendMessage(tab.id, {
+      action: 'showFloatingPanel'
+    }, (response) => {
+      if (chrome.runtime.lastError) {
+        console.error('Error showing panel:', chrome.runtime.lastError);
+        // Just log the error, don't redirect
+      }
+    });
+  } catch (e) {
+    console.error('Error sending message:', e);
+    // Just log the error, don't redirect
+  }
 });

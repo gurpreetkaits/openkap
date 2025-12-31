@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ScreenSense Extension Test Page</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      max-width: 1200px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .test-card {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+    h1 { color: #ea580c; }
+    h2 { color: #333; margin-top: 0; }
+    .test-button {
+      background: #ea580c;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      margin: 5px;
+    }
+    .test-button:hover { background: #dc2626; }
+    .result {
+      margin-top: 15px;
+      padding: 15px;
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+    }
+    .success { background: #d1fae5; color: #065f46; }
+    .error { background: #fee2e2; color: #991b1b; }
+    .info { background: #dbeafe; color: #1e40af; }
+    code {
+      background: #f3f4f6;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+    .step {
+      margin: 15px 0;
+      padding-left: 25px;
+      position: relative;
+    }
+    .step::before {
+      content: '→';
+      position: absolute;
+      left: 0;
+      color: #ea580c;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>🧪 ScreenSense Extension Test Page</h1>
+  <p>Use this page to test the extension and debug issues.</p>
+
+  <!-- Test 1: Check if content script loaded -->
+  <div class="test-card">
+    <h2>Test 1: Content Script Loaded?</h2>
+    <p>Checks if the content script was injected successfully.</p>
+    <button class="test-button" onclick="testContentScriptLoaded()">Run Test</button>
+    <div id="test1-result"></div>
+  </div>
+
+  <!-- Test 2: Check if FloatingPanel exists -->
+  <div class="test-card">
+    <h2>Test 2: FloatingPanel Class Available?</h2>
+    <p>Checks if the FloatingPanel class was loaded.</p>
+    <button class="test-button" onclick="testFloatingPanelExists()">Run Test</button>
+    <div id="test2-result"></div>
+  </div>
+
+  <!-- Test 3: Check if recording functions exist -->
+  <div class="test-card">
+    <h2>Test 3: Recording Functions Available?</h2>
+    <p>Checks if window.__screensense interface is available.</p>
+    <button class="test-button" onclick="testRecordingFunctionsExist()">Run Test</button>
+    <div id="test3-result"></div>
+  </div>
+
+  <!-- Test 4: Manually show panel -->
+  <div class="test-card">
+    <h2>Test 4: Manually Show Panel</h2>
+    <p>Directly calls the function to show the floating panel.</p>
+    <button class="test-button" onclick="testShowPanel()">Show Panel</button>
+    <div id="test4-result"></div>
+  </div>
+
+  <!-- Test 5: Test device enumeration -->
+  <div class="test-card">
+    <h2>Test 5: Device Enumeration</h2>
+    <p>Lists available cameras and microphones.</p>
+    <button class="test-button" onclick="testDeviceEnumeration()">Enumerate Devices</button>
+    <div id="test5-result"></div>
+  </div>
+
+  <!-- Instructions -->
+  <div class="test-card">
+    <h2>📋 Testing Instructions</h2>
+    <div class="step">First, reload the extension in <code>chrome://extensions</code></div>
+    <div class="step">Then refresh THIS page (F5)</div>
+    <div class="step">Run each test above in order</div>
+    <div class="step">If any test fails, note the error message</div>
+    <div class="step">Try clicking the extension icon - the panel should appear on THIS page without redirect</div>
+  </div>
+
+  <!-- What to expect -->
+  <div class="test-card">
+    <h2>✅ What Should Happen</h2>
+    <p><strong>When you click the extension icon on THIS page:</strong></p>
+    <ol>
+      <li>Floating panel appears on the RIGHT side of this page</li>
+      <li>Panel shows camera and microphone dropdowns</li>
+      <li>When you click "Start Recording", screen share dialog appears</li>
+      <li>After selecting screen, recording starts ON THIS PAGE (no redirect!)</li>
+      <li>Camera overlay appears in bottom-right (if camera enabled)</li>
+      <li>Control bar appears at top</li>
+    </ol>
+    <p><strong style="color: #ea580c;">NO REDIRECT should happen!</strong></p>
+  </div>
+
+  <script>
+    function showResult(elementId, message, type = 'info') {
+      const el = document.getElementById(elementId);
+      el.innerHTML = `<div class="result ${type}">${message}</div>`;
+    }
+
+    function testContentScriptLoaded() {
+      const loaded = window.__screensenseContentScriptLoaded === true;
+      if (loaded) {
+        showResult('test1-result', '✅ SUCCESS: Content script is loaded!', 'success');
+      } else {
+        showResult('test1-result', '❌ FAILED: Content script NOT loaded. Try refreshing the page.', 'error');
+      }
+    }
+
+    function testFloatingPanelExists() {
+      const exists = typeof window.FloatingPanel !== 'undefined';
+      if (exists) {
+        showResult('test2-result', '✅ SUCCESS: FloatingPanel class is available!', 'success');
+      } else {
+        showResult('test2-result', '❌ FAILED: FloatingPanel class not found. Check if floating-panel.js is loaded.', 'error');
+      }
+    }
+
+    function testRecordingFunctionsExist() {
+      if (!window.__screensense) {
+        showResult('test3-result', '❌ FAILED: window.__screensense is not defined.', 'error');
+        return;
+      }
+
+      const functions = [
+        'showPanel',
+        'startRecording',
+        'pauseRecording',
+        'resumeRecording',
+        'stopRecording',
+        'deleteRecording',
+        'getRecordingState'
+      ];
+
+      const missing = functions.filter(fn => typeof window.__screensense[fn] !== 'function');
+
+      if (missing.length === 0) {
+        showResult('test3-result',
+          `✅ SUCCESS: All recording functions available!<br>
+          Functions: ${functions.join(', ')}`,
+          'success'
+        );
+      } else {
+        showResult('test3-result',
+          `❌ FAILED: Missing functions: ${missing.join(', ')}`,
+          'error'
+        );
+      }
+    }
+
+    function testShowPanel() {
+      try {
+        if (typeof window.__screensenseShowPanel === 'function') {
+          window.__screensenseShowPanel();
+          showResult('test4-result',
+            '✅ Panel function called! The floating panel should now be visible on the right side.',
+            'success'
+          );
+        } else {
+          showResult('test4-result',
+            '❌ FAILED: __screensenseShowPanel function not found.',
+            'error'
+          );
+        }
+      } catch (error) {
+        showResult('test4-result',
+          `❌ ERROR: ${error.message}`,
+          'error'
+        );
+      }
+    }
+
+    async function testDeviceEnumeration() {
+      try {
+        // Request permissions first
+        await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
+
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const cameras = devices.filter(d => d.kind === 'videoinput');
+        const microphones = devices.filter(d => d.kind === 'audioinput');
+
+        let html = '✅ Devices found:<br><br>';
+        html += `<strong>Cameras (${cameras.length}):</strong><br>`;
+        cameras.forEach((cam, i) => {
+          html += `${i + 1}. ${cam.label || 'Camera ' + (i + 1)}<br>`;
+        });
+        html += `<br><strong>Microphones (${microphones.length}):</strong><br>`;
+        microphones.forEach((mic, i) => {
+          html += `${i + 1}. ${mic.label || 'Microphone ' + (i + 1)}<br>`;
+        });
+
+        showResult('test5-result', html, 'success');
+      } catch (error) {
+        showResult('test5-result',
+          `❌ ERROR: ${error.message}<br>You may need to grant camera/microphone permissions.`,
+          'error'
+        );
+      }
+    }
+
+    // Auto-run Test 1 on page load
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        console.log('🧪 Test page loaded. Extension info:');
+        console.log('Content script loaded:', window.__screensenseContentScriptLoaded);
+        console.log('FloatingPanel available:', typeof window.FloatingPanel !== 'undefined');
+        console.log('__screensense available:', typeof window.__screensense !== 'undefined');
+      }, 500);
+    });
+  </script>
+</body>
+</html>

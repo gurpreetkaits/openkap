@@ -5,7 +5,7 @@ const ENV = 'local'; // Change to 'production' for live site
 
 const CONFIG = {
   local: {
-    APP_URL: 'http://localhost:5173',
+    APP_URL: 'http://localhost:3333',
     API_URL: 'http://localhost:8000'
   },
   production: {

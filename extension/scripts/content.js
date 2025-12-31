@@ -1,5 +1,22 @@
 // Content script for ScreenSense - handles recording and camera overlay
 
+// Global function to show floating panel (OUTSIDE IIFE so it's always available)
+window.__screensenseShowPanel = function() {
+  console.log('Showing floating panel');
+
+  // Check if FloatingPanel class is available
+  if (typeof window.FloatingPanel !== 'function') {
+    console.error('FloatingPanel class not loaded. Please refresh the page.');
+    alert('Please refresh the page to use the extension.');
+    return;
+  }
+
+  if (!window.__floatingPanelInstance) {
+    window.__floatingPanelInstance = new window.FloatingPanel();
+  }
+  window.__floatingPanelInstance.initialize();
+};
+
 // Prevent duplicate injection using IIFE
 (function() {
   // If already loaded, just show panel if requested and exit
@@ -8,9 +25,7 @@
     // Re-register message listener to ensure it works
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       if (message.action === 'showFloatingPanel') {
-        if (typeof window.__screensenseShowPanel === 'function') {
-          window.__screensenseShowPanel();
-        }
+        window.__screensenseShowPanel();
         sendResponse({ success: true });
       }
       return true;
@@ -41,6 +56,28 @@ let controlBarTimer = null;
 let isPaused = false;
 let recordingPanel = null;
 
+// Expose recording functions to floating panel
+window.__screensense = {
+  showPanel: window.__screensenseShowPanel,
+  startRecording: initRecording,
+  pauseRecording: pauseRecording,
+  resumeRecording: resumeRecording,
+  stopRecording: stopRecording,
+  deleteRecording: () => {
+    return stopRecording().then(() => {
+      // Clear recorded chunks to "delete" the recording
+      recordedChunks = [];
+    });
+  },
+  getRecordingState: () => ({
+    isRecording: mediaRecorder !== null && mediaRecorder.state !== 'inactive',
+    isPaused: mediaRecorder?.state === 'paused',
+    startTime: recordingStartTime
+  })
+};
+
+// Note: window.__screensenseShowPanel is defined globally at top of file
+
 // ============================================
 // Configuration - Change ENV to switch environments
 // ============================================
@@ -49,7 +86,7 @@ const ENV = 'local'; // Change to 'production' for live site
 
 const CONFIG = {
   local: {
-    APP_URL: 'http://localhost:5173',
+    APP_URL: 'http://localhost:3333',
     API_URL: 'http://localhost:8000'
   },
   production: {
@@ -422,12 +459,19 @@ async function initRecording(options) {
     let microphoneStream = null;
     if (options.microphone) {
       try {
+        const audioConstraints = {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true
+        };
+
+        // Use specific device if provided
+        if (options.microphoneDeviceId) {
+          audioConstraints.deviceId = { exact: options.microphoneDeviceId };
+        }
+
         microphoneStream = await navigator.mediaDevices.getUserMedia({
-          audio: {
-            echoCancellation: true,
-            noiseSuppression: true,
-            autoGainControl: true
-          },
+          audio: audioConstraints,
           video: false
         });
         console.log('Microphone access granted');
@@ -440,12 +484,20 @@ async function initRecording(options) {
     if (options.camera) {
       try {
         console.log('Requesting camera access...');
+        const videoConstraints = {
+          width: { ideal: 640 },
+          height: { ideal: 480 },
+          facingMode: 'user'
+        };
+
+        // Use specific device if provided
+        if (options.cameraDeviceId) {
+          videoConstraints.deviceId = { exact: options.cameraDeviceId };
+          delete videoConstraints.facingMode; // Remove facingMode when using specific device
+        }
+
         cameraStream = await navigator.mediaDevices.getUserMedia({
-          video: {
-            width: { ideal: 640 },
-            height: { ideal: 480 },
-            facingMode: 'user'
-          },
+          video: videoConstraints,
           audio: false // We get audio from microphoneStream now
         });
         console.log('Camera access granted, creating overlay...');
@@ -527,22 +579,18 @@ async function initRecording(options) {
 }
 
 function createCameraOverlay() {
-  // Create camera overlay container
+  // Create camera overlay - CIRCULAR bubble
   cameraOverlay = document.createElement('div');
   cameraOverlay.id = 'screensense-camera-overlay';
   cameraOverlay.style.cssText = `
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    width: 200px;
-    height: 150px;
-    border-radius: 16px;
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
     overflow: hidden;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2), 0 0 0 3px rgba(234, 88, 12, 0.3);
-    z-index: 999999;
-    border: 3px solid #ea580c;
-    cursor: move;
-    transition: all 0.3s ease;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    border: 4px solid #ea580c;
+    margin-bottom: 12px;
+    position: relative;
   `;
 
   // Create video element for camera
@@ -566,30 +614,29 @@ function createCameraOverlay() {
   const recordingIndicator = document.createElement('div');
   recordingIndicator.style.cssText = `
     position: absolute;
-    top: 10px;
-    left: 10px;
-    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+    top: 12px;
+    left: 12px;
+    background: #dc2626;
     color: white;
-    padding: 6px 10px;
-    border-radius: 6px;
-    font-size: 11px;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 10px;
     font-weight: 700;
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 4px;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    box-shadow: 0 2px 8px rgba(220, 38, 38, 0.4);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     letter-spacing: 0.5px;
   `;
 
   const dot = document.createElement('span');
   dot.style.cssText = `
-    width: 7px;
-    height: 7px;
+    width: 6px;
+    height: 6px;
     background: white;
     border-radius: 50%;
     animation: screensense-pulse 1.5s ease-in-out infinite;
-    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7);
   `;
 
   recordingIndicator.appendChild(dot);
@@ -597,12 +644,6 @@ function createCameraOverlay() {
 
   cameraOverlay.appendChild(cameraVideo);
   cameraOverlay.appendChild(recordingIndicator);
-
-  // Make draggable
-  makeDraggable(cameraOverlay);
-
-  // Add to page
-  document.body.appendChild(cameraOverlay);
 
   // Add animation
   const style = document.createElement('style');
@@ -621,41 +662,57 @@ function createControlBar() {
     controlBar.remove();
   }
 
+  // Create main container (bottom-left, draggable)
+  const mainContainer = document.createElement('div');
+  mainContainer.id = 'screensense-main-container';
+  mainContainer.style.cssText = `
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    z-index: 999999;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    cursor: move;
+    animation: screensense-slide-up 0.3s ease-out;
+  `;
+
+  // If camera exists, add it to container first
+  if (cameraOverlay) {
+    mainContainer.appendChild(cameraOverlay);
+  }
+
+  // Create control bar
   controlBar = document.createElement('div');
   controlBar.id = 'screensense-control-bar';
   controlBar.style.cssText = `
-    position: fixed;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
     background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
     border-radius: 50px;
     padding: 8px 16px;
     display: flex;
     align-items: center;
     gap: 12px;
-    z-index: 999999;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1);
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    cursor: move;
     user-select: none;
-    animation: screensense-slide-down 0.3s ease-out;
   `;
 
-  // Add slide-down animation
+  // Add slide-up animation
   const animStyle = document.createElement('style');
   animStyle.id = 'screensense-control-bar-styles';
   animStyle.textContent = `
-    @keyframes screensense-slide-down {
-      from { transform: translateX(-50%) translateY(-100%); opacity: 0; }
-      to { transform: translateX(-50%) translateY(0); opacity: 1; }
+    @keyframes screensense-slide-up {
+      from { transform: translateY(100%); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
     }
     @keyframes screensense-rec-pulse {
       0%, 100% { opacity: 1; }
       50% { opacity: 0.4; }
     }
   `;
-  document.head.appendChild(animStyle);
+  if (!document.getElementById('screensense-control-bar-styles')) {
+    document.head.appendChild(animStyle);
+  }
 
   // Drag handle / Logo
   const dragHandle = document.createElement('div');
@@ -721,19 +778,13 @@ function createControlBar() {
   pauseBtn.onclick = (e) => {
     e.stopPropagation();
     if (isPaused) {
-      // Send resume to background which will forward to the recording tab
-      safeSendMessage({ action: 'resumeRecording' }, (response) => {
-        if (response && response.success) {
-          updateControlBarPauseState(false);
-        }
-      });
+      // Resume recording directly
+      resumeRecording();
+      updateControlBarPauseState(false);
     } else {
-      // Send pause to background which will forward to the recording tab
-      safeSendMessage({ action: 'pauseRecording' }, (response) => {
-        if (response && response.success) {
-          updateControlBarPauseState(true);
-        }
-      });
+      // Pause recording directly
+      pauseRecording();
+      updateControlBarPauseState(true);
     }
   };
 
@@ -762,12 +813,55 @@ function createControlBar() {
   stopBtn.onmouseout = () => stopBtn.style.background = '#ef4444';
   stopBtn.onclick = (e) => {
     e.stopPropagation();
-    // Send stop to background which will forward to the recording tab
-    safeSendMessage({ action: 'stopRecording' }, (response) => {
-      if (response && response.success) {
-        removeControlBar();
-      }
+    // Stop recording directly
+    stopRecording().then(() => {
+      removeControlBar();
+    }).catch(err => {
+      console.error('Error stopping recording:', err);
+      removeControlBar();
     });
+  };
+
+  // Delete button
+  const deleteBtn = document.createElement('button');
+  deleteBtn.id = 'screensense-delete-btn';
+  deleteBtn.style.cssText = `
+    background: rgba(239, 68, 68, 0.2);
+    border: none;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  `;
+  deleteBtn.innerHTML = `
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2">
+      <polyline points="3 6 5 6 21 6"></polyline>
+      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+      <line x1="10" y1="11" x2="10" y2="17"></line>
+      <line x1="14" y1="11" x2="14" y2="17"></line>
+    </svg>
+  `;
+  deleteBtn.title = 'Delete Recording';
+  deleteBtn.onmouseover = () => deleteBtn.style.background = 'rgba(239, 68, 68, 0.3)';
+  deleteBtn.onmouseout = () => deleteBtn.style.background = 'rgba(239, 68, 68, 0.2)';
+  deleteBtn.onclick = (e) => {
+    e.stopPropagation();
+    if (confirm('Are you sure you want to delete this recording?')) {
+      // Clear recorded chunks first (delete)
+      recordedChunks = [];
+      // Stop recording directly
+      stopRecording().then(() => {
+        removeControlBar();
+        console.log('Recording deleted');
+      }).catch(err => {
+        console.error('Error deleting recording:', err);
+        removeControlBar();
+      });
+    }
   };
 
   // Assemble control bar
@@ -775,11 +869,16 @@ function createControlBar() {
   controlBar.appendChild(recIndicator);
   controlBar.appendChild(pauseBtn);
   controlBar.appendChild(stopBtn);
+  controlBar.appendChild(deleteBtn);
 
-  // Make the control bar draggable (but not the buttons)
-  makeDraggableControlBar(controlBar);
+  // Add control bar to main container
+  mainContainer.appendChild(controlBar);
 
-  document.body.appendChild(controlBar);
+  // Make the entire container draggable (camera + controls together)
+  makeDraggableControlBar(mainContainer);
+
+  // Append main container to body
+  document.body.appendChild(mainContainer);
 
   // Start the timer
   startControlBarTimer();
@@ -855,10 +954,21 @@ function removeControlBar() {
     clearInterval(controlBarTimer);
     controlBarTimer = null;
   }
+
+  // Remove main container (which contains both camera and control bar)
+  const mainContainer = document.getElementById('screensense-main-container');
+  if (mainContainer) {
+    mainContainer.remove();
+  }
+
+  // Clean up references
   if (controlBar) {
-    controlBar.remove();
     controlBar = null;
   }
+  if (cameraOverlay) {
+    cameraOverlay = null;
+  }
+
   const styles = document.getElementById('screensense-control-bar-styles');
   if (styles) {
     styles.remove();
@@ -1582,10 +1692,12 @@ function cleanup() {
 // ============================================
 // Floating Record Panel (Loom-style)
 // ============================================
+// Note: The old floating panel code has been removed
+// Now using the FloatingPanel class from floating-panel.js
 
-let floatingPanel = null;
-
-function showFloatingRecordPanel() {
+// Old showFloatingRecordPanel function removed - now handled at top of file
+function showFloatingRecordPanel_OLD() {
+  // This function is deprecated - using new FloatingPanel class
   // Remove existing panel if any
   if (floatingPanel) {
     floatingPanel.remove();
@@ -1596,14 +1708,16 @@ function showFloatingRecordPanel() {
   // Load saved options
   chrome.storage.local.get(['recordingOptions'], (result) => {
     const options = result.recordingOptions || { camera: false, microphone: true };
-    createFloatingPanel(options);
+    // createFloatingPanel(options); // Old code removed
   });
 }
 
-// Expose globally for duplicate script handling
-window.__screensenseShowPanel = showFloatingRecordPanel;
+// Note: window.__screensenseShowPanel is defined globally at top of file
 
-function createFloatingPanel(savedOptions) {
+function createFloatingPanel_OLD_DEPRECATED(savedOptions) {
+  // DEPRECATED: This function is no longer used
+  // Now using FloatingPanel class from floating-panel.js
+  return; // Exit early
   // Create overlay to detect outside clicks
   const overlay = document.createElement('div');
   overlay.id = 'screensense-floating-overlay';
