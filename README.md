@@ -36,13 +36,10 @@ _Coming soon_
 - Queue system for background jobs
 
 **Frontend:**
-- Vue 2
-- TypeScript
-- Vite
-- Tailwind CSS 4
-- Radix UI components
-- TanStack Query
-- Wouter (routing)
+- Vue 3
+- Vite 5
+- Tailwind CSS 3
+- Vue Router 4
 
 **Browser Extension:**
 - Chrome Extension Manifest V3
