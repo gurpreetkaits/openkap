@@ -148,25 +148,37 @@ public function store(Request $request): JsonResponse
 }
 ```
 
-### TypeScript/React (Frontend)
+### Vue 3 (Frontend)
 
-- Use TypeScript for type safety
-- Follow React best practices and hooks guidelines
-- Use functional components over class components
+- Use Vue 3 Composition API with `<script setup>`
 - Keep components small and focused
 - Use meaningful component and variable names
+- Use `ref()` and `reactive()` for reactivity
+- Extract reusable logic into composables
 
 **Example:**
 
-```typescript
-interface VideoCardProps {
-  video: Video;
-  onDelete: (id: number) => void;
-}
+```vue
+<script setup>
+import { ref, onMounted } from 'vue'
 
-export function VideoCard({ video, onDelete }: VideoCardProps) {
-  // Implementation...
+const props = defineProps({
+  video: Object,
+})
+
+const emit = defineEmits(['delete'])
+
+function handleDelete() {
+  emit('delete', props.video.id)
 }
+</script>
+
+<template>
+  <div class="video-card">
+    <h3>{{ video.title }}</h3>
+    <button @click="handleDelete">Delete</button>
+  </div>
+</template>
 ```
 
 ### Database
@@ -398,7 +410,7 @@ screensense/
 │   └── Jobs/              # Background jobs (video conversion)
 ├── database/
 │   └── migrations/        # Database migrations
-├── frontend/              # Vue.js frontend
+├── frontend/              # Vue 3 frontend
 │   └── src/
 │       ├── components/    # Vue components
 │       ├── views/         # Page views
@@ -477,7 +489,7 @@ public function it_uploads_video_successfully(): void
 - Update README.md if you change functionality
 - Add or update inline code comments for complex logic
 - Update API documentation for endpoint changes
-- Add JSDoc comments for TypeScript functions
+- Add comments for complex Vue component logic
 
 ## Need Help?
 
