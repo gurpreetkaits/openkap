@@ -4,8 +4,10 @@ use App\Http\Controllers\Auth\GoogleAuthController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\HlsController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReactionController;
+use App\Http\Controllers\SettingController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\VideoController;
 use App\Http\Controllers\VideoViewController;
@@ -72,6 +74,9 @@ Route::prefix('blogs')->group(function () {
 Route::get('/share/video/{token}/reactions', [ReactionController::class, 'indexByToken']);
 Route::post('/share/video/{token}/reactions', [ReactionController::class, 'storeByToken']); // Reactions don't require auth
 
+// App settings - public (subscription prices, limits, etc.)
+Route::get('/settings', [SettingController::class, 'publicSettings']);
+
 // ============================================
 // PROTECTED ROUTES (Authentication required)
 // ============================================
@@ -98,9 +103,19 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/portal', [SubscriptionController::class, 'getPortalUrl']);
     });
 
+    // Notification routes
+    Route::prefix('notifications')->group(function () {
+        Route::get('/', [NotificationController::class, 'index']);
+        Route::get('/unread-count', [NotificationController::class, 'unreadCount']);
+        Route::post('/mark-all-read', [NotificationController::class, 'markAllAsRead']);
+        Route::post('/{id}/read', [NotificationController::class, 'markAsRead']);
+        Route::delete('/{id}', [NotificationController::class, 'destroy']);
+    });
+
     // Video routes - all require authentication
     Route::prefix('videos')->group(function () {
         Route::get('/', [VideoController::class, 'index']);
+        Route::get('/favourites', [VideoController::class, 'favourites']);
 
         // Video upload requires subscription limit check
         Route::post('/', [VideoController::class, 'store'])
@@ -111,6 +126,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/{id}', [VideoController::class, 'update']);
         Route::delete('/{id}', [VideoController::class, 'destroy']);
         Route::post('/{id}/toggle-sharing', [VideoController::class, 'toggleSharing']);
+        Route::post('/{id}/toggle-favourite', [VideoController::class, 'toggleFavourite']);
         Route::post('/{id}/regenerate-token', [VideoController::class, 'regenerateShareToken']);
         Route::post('/{id}/trim', [VideoController::class, 'trim']);
         Route::get('/{id}/conversion-status', [VideoController::class, 'conversionStatus']);

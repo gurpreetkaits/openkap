@@ -70,6 +70,27 @@
               </div>
             </div>
 
+            <!-- Mic Waveform Visualizer -->
+            <div v-if="microphoneEnabled && !recordingInterrupted" class="mb-4 p-3 bg-gray-50 rounded-lg">
+              <div class="flex items-center gap-2 mb-2">
+                <svg class="w-4 h-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                </svg>
+                <span class="text-xs font-medium text-gray-700">Microphone Active</span>
+              </div>
+              <div class="flex items-center justify-center gap-0.5 h-8">
+                <div
+                  v-for="i in 16"
+                  :key="i"
+                  class="w-1 bg-green-500 rounded-full transition-all duration-75"
+                  :style="{
+                    height: isPaused ? '4px' : (4 + (micAudioLevel * 24 * Math.sin(i * 0.5 + Date.now() * 0.005))) + 'px',
+                    opacity: isPaused ? 0.3 : 0.5 + (micAudioLevel * 0.5)
+                  }"
+                ></div>
+              </div>
+            </div>
+
             <!-- Recording Settings Summary -->
             <div class="space-y-2 text-sm mb-4">
               <div class="flex items-center justify-between p-2.5 bg-gray-50 rounded-lg">
@@ -389,6 +410,7 @@ const {
   recordingDuration,
   formatDuration,
   formattedUploadedBytes,
+  micAudioLevel,
   selectedSource,
   microphoneEnabled,
   cameraEnabled,

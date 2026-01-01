@@ -34,6 +34,7 @@ class VideoManager
                 'thumbnail' => $thumbnailUrl,
                 'share_url' => $video->getShareUrl(),
                 'is_public' => $video->is_public,
+                'is_favourite' => $video->is_favourite ?? false,
                 'views_count' => $video->views_count ?? 0,
                 'comments_count' => $video->comments_count ?? 0,
                 'reactions_count' => $video->reactions_count ?? 0,
@@ -113,6 +114,7 @@ class VideoManager
             'thumbnail' => $video->getThumbnailUrl(),
             'share_url' => $video->getShareUrl(),
             'is_public' => $video->is_public,
+            'is_favourite' => $video->is_favourite ?? false,
             'views_count' => $video->views_count ?? 0,
             'comments_count' => $video->comments_count ?? 0,
             'reactions_count' => $video->reactions_count ?? 0,
@@ -393,5 +395,44 @@ class VideoManager
     public function findByShareTokenOrFail(string $token): Video
     {
         return $this->videos->findByShareTokenOrFail($token);
+    }
+
+    public function getFavouriteVideos(int $userId): array
+    {
+        $videos = $this->videos->findFavouritesByUserId($userId);
+
+        return $videos->map(function ($video) {
+            $thumbnail = $video->media->where('collection_name', 'thumbnails')->first();
+            $thumbnailUrl = $thumbnail ? $thumbnail->getUrl() : null;
+
+            return [
+                'id' => $video->id,
+                'title' => $video->title,
+                'description' => $video->description,
+                'duration' => $video->duration,
+                'url' => url("/api/share/video/{$video->share_token}/stream"),
+                'hls_url' => $video->getHlsUrl(),
+                'thumbnail' => $thumbnailUrl,
+                'share_url' => $video->getShareUrl(),
+                'is_public' => $video->is_public,
+                'is_favourite' => $video->is_favourite ?? false,
+                'views_count' => $video->views_count ?? 0,
+                'comments_count' => $video->comments_count ?? 0,
+                'reactions_count' => $video->reactions_count ?? 0,
+                'conversion_status' => $video->conversion_status,
+                'conversion_progress' => $video->conversion_progress,
+                'is_converting' => in_array($video->conversion_status, ['pending', 'processing']),
+                'hls_status' => $video->hls_status ?? 'pending',
+                'hls_progress' => $video->hls_progress ?? 0,
+                'is_hls_ready' => $video->isHlsReady(),
+                'created_at' => $video->created_at->toISOString(),
+                'updated_at' => $video->updated_at->toISOString(),
+            ];
+        })->toArray();
+    }
+
+    public function toggleFavourite(Video $video): Video
+    {
+        return $this->videos->toggleFavourite($video);
     }
 }

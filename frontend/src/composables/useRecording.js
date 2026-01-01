@@ -28,6 +28,11 @@ const chunksUploaded = ref(0);
 const uploadQueue = ref([]);
 let chunkIndex = 0;
 
+// Mic audio level for waveform
+const micAudioLevel = ref(0);
+let audioAnalyser = null;
+let audioLevelInterval = null;
+
 // Recording timer
 let timerInterval = null;
 
@@ -318,10 +323,25 @@ export function useRecording() {
                     source.connect(destination);
                 });
 
-                audioStream.getAudioTracks().forEach(track => {
-                    const source = audioContext.createMediaStreamSource(new MediaStream([track]));
-                    source.connect(destination);
-                });
+                // Set up audio analyser for mic waveform
+                const micSource = audioContext.createMediaStreamSource(audioStream);
+                audioAnalyser = audioContext.createAnalyser();
+                audioAnalyser.fftSize = 256;
+                micSource.connect(audioAnalyser);
+                micSource.connect(destination);
+
+                // Start monitoring mic levels
+                const dataArray = new Uint8Array(audioAnalyser.frequencyBinCount);
+                audioLevelInterval = setInterval(() => {
+                    if (audioAnalyser && isRecording.value && !isPaused.value) {
+                        audioAnalyser.getByteFrequencyData(dataArray);
+                        const sum = dataArray.reduce((a, b) => a + b, 0);
+                        const avg = sum / dataArray.length;
+                        micAudioLevel.value = Math.min(avg / 128, 1); // Normalize to 0-1
+                    } else {
+                        micAudioLevel.value = 0;
+                    }
+                }, 50);
 
                 // Replace audio track with mixed audio
                 const existingAudioTracks = stream.value.getAudioTracks();
@@ -416,11 +436,21 @@ export function useRecording() {
         }
     };
 
+    const stopAudioAnalysis = () => {
+        if (audioLevelInterval) {
+            clearInterval(audioLevelInterval);
+            audioLevelInterval = null;
+        }
+        audioAnalyser = null;
+        micAudioLevel.value = 0;
+    };
+
     const stopRecording = async () => {
         return new Promise((resolve, reject) => {
             if (mediaRecorder.value && mediaRecorder.value.state !== 'inactive') {
                 mediaRecorder.value.onstop = async () => {
                     stopTimer();
+                    stopAudioAnalysis();
 
                     // Stop all tracks
                     if (stream.value) {
@@ -488,6 +518,7 @@ export function useRecording() {
         recordingDuration.value = 0;
         recordingInterrupted.value = false;
         stopTimer();
+        stopAudioAnalysis();
         clearRecordingState();
     };
 
@@ -539,6 +570,9 @@ export function useRecording() {
         uploadedBytes,
         chunksUploaded,
         formattedUploadedBytes,
+
+        // Audio level for waveform
+        micAudioLevel,
 
         // Settings
         selectedSource,

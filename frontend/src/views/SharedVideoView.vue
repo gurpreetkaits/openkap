@@ -617,9 +617,16 @@ export default {
       if (!videoElement) return
 
       const hlsUrl = video.value.hls_url
+      const isHlsReady = video.value.is_hls_ready
+
+      // Check backend's is_hls_ready flag - if not ready, use raw URL
+      if (!isHlsReady || !hlsUrl) {
+        videoElement.src = video.value.url
+        return
+      }
 
       // If HLS URL available and HLS.js is supported
-      if (hlsUrl && Hls.isSupported()) {
+      if (Hls.isSupported()) {
         // Destroy existing instance
         if (hlsInstance.value) {
           hlsInstance.value.destroy()
@@ -629,6 +636,19 @@ export default {
           enableWorker: true,
           lowLatencyMode: false,
           backBufferLength: 90,
+          // Handle 404/403 errors gracefully
+          xhrSetup: function (xhr, url) {
+            xhr.onreadystatechange = function () {
+              if (xhr.readyState === 4) {
+                if (xhr.status === 404 || xhr.status === 403) {
+                  // Manifest missing or forbidden, fallback to raw
+                  console.warn('HLS manifest missing/forbidden, falling back to MP4')
+                  hls.destroy()
+                  videoElement.src = video.value.url
+                }
+              }
+            }
+          }
         })
 
         hls.loadSource(hlsUrl)
@@ -652,28 +672,23 @@ export default {
           }
         })
 
-        hls.on(Hls.Events.LEVEL_SWITCHED, (event, data) => {
-          const level = hls.levels[data.level]
-          if (level) {
-            console.log(`HLS switched to ${level.height}p`)
-          }
-        })
-
         hls.on(Hls.Events.ERROR, (event, data) => {
           if (data.fatal) {
             switch (data.type) {
               case Hls.ErrorTypes.NETWORK_ERROR:
-                console.error('HLS network error, trying to recover...')
-                hls.startLoad()
+                // If 404, we handled it in xhrSetup, but just in case:
+                if (data.response && (data.response.code === 404 || data.response.code === 403)) {
+                  hls.destroy()
+                  videoElement.src = video.value.url
+                } else {
+                  hls.startLoad()
+                }
                 break
               case Hls.ErrorTypes.MEDIA_ERROR:
-                console.error('HLS media error, trying to recover...')
                 hls.recoverMediaError()
                 break
               default:
-                console.error('HLS fatal error, falling back to MP4')
                 hls.destroy()
-                // Fallback to regular MP4
                 videoElement.src = video.value.url
                 break
             }
@@ -685,6 +700,11 @@ export default {
       } else if (hlsUrl && videoElement.canPlayType('application/vnd.apple.mpegurl')) {
         // Native HLS support (Safari)
         videoElement.src = hlsUrl
+        // Add simple error listener for native HLS
+        videoElement.onerror = () => {
+          console.warn('Native HLS failed, falling back to MP4')
+          videoElement.src = video.value.url
+        }
       } else {
         // Fallback to MP4
         videoElement.src = video.value.url

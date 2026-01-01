@@ -2,6 +2,7 @@
 
 namespace App\Managers;
 
+use App\Models\Setting;
 use App\Models\User;
 use App\Repositories\SubscriptionRepository;
 
@@ -15,13 +16,15 @@ class SubscriptionManager
     {
         // Get subscription from the package - this is the source of truth
         $subscription = $user->subscription();
+        $isActive = $subscription ? $subscription->active() : $user->hasActiveSubscription();
 
         // Use package methods where available, fall back to User fields for backward compatibility
         return [
             'status' => $subscription ? $subscription->status->value : ($user->subscription_status ?? 'free'),
-            'is_active' => $subscription ? $subscription->active() : $user->hasActiveSubscription(),
+            'is_active' => $isActive,
             'can_record' => $user->canRecordVideo(),
             'videos_count' => $user->getVideosCount(),
+            'max_videos' => $isActive ? null : Setting::getFreeVideoLimit(),
             'remaining_quota' => $user->getRemainingVideoQuota(),
             'started_at' => $subscription?->created_at ?? $user->subscription_started_at,
             'expires_at' => $subscription?->current_period_end ?? $user->subscription_expires_at,

@@ -644,6 +644,7 @@ export default {
           duration: fetchedVideo.duration,
           url: fetchedVideo.url,
           hls_url: fetchedVideo.hls_url,
+          is_hls_ready: fetchedVideo.is_hls_ready,
           shareUrl: fetchedVideo.share_url,
           createdAt: new Date(fetchedVideo.created_at),
         }
@@ -672,9 +673,10 @@ export default {
       if (!videoElement) return
 
       const hlsUrl = video.value.hls_url
-      
-      // If HLS URL is not available or empty, immediately fall back to raw URL
-      if (!hlsUrl) {
+      const isHlsReady = video.value.is_hls_ready
+
+      // Check backend's is_hls_ready flag - if not ready, use raw URL
+      if (!isHlsReady || !hlsUrl) {
         videoElement.src = video.value.url
         return
       }
@@ -730,12 +732,12 @@ export default {
           if (data.fatal) {
             switch (data.type) {
               case Hls.ErrorTypes.NETWORK_ERROR:
-                 // If 404, we handled it in xhrSetup, but just in case:
+                // If 404, we handled it in xhrSetup, but just in case:
                 if (data.response && (data.response.code === 404 || data.response.code === 403)) {
-                   hls.destroy()
-                   videoElement.src = video.value.url
+                  hls.destroy()
+                  videoElement.src = video.value.url
                 } else {
-                   hls.startLoad()
+                  hls.startLoad()
                 }
                 break
               case Hls.ErrorTypes.MEDIA_ERROR:
@@ -756,8 +758,8 @@ export default {
         videoElement.src = hlsUrl
         // Add simple error listener for native HLS
         videoElement.onerror = () => {
-             console.warn('Native HLS failed, falling back to MP4')
-             videoElement.src = video.value.url
+          console.warn('Native HLS failed, falling back to MP4')
+          videoElement.src = video.value.url
         }
       } else {
         // Fallback to MP4

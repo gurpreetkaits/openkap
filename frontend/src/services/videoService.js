@@ -373,6 +373,54 @@ class VideoService {
       return null
     }
   }
+
+  /**
+   * Get favourite videos for the current user
+   */
+  async getFavourites() {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/videos/favourites`, {
+        method: 'GET',
+        headers: getAuthHeaders()
+      })
+
+      if (handleUnauthorized(response)) return []
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch favourites: ${response.statusText}`)
+      }
+
+      const data = await response.json()
+      return data.videos || []
+    } catch (error) {
+      console.error('Error fetching favourites:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Toggle favourite status for a video
+   */
+  async toggleFavourite(id) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/videos/${id}/toggle-favourite`, {
+        method: 'POST',
+        headers: getAuthHeaders()
+      })
+
+      if (handleUnauthorized(response)) return null
+
+      if (!response.ok) {
+        throw new Error(`Failed to toggle favourite: ${response.statusText}`)
+      }
+
+      const data = await response.json()
+      return data
+    } catch (error) {
+      console.error('Error toggling favourite:', error)
+      throw error
+    }
+  }
 }
 
 export default new VideoService()

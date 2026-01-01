@@ -22,6 +22,31 @@ class VideoController extends Controller
         ]);
     }
 
+    public function favourites(Request $request)
+    {
+        $videos = $this->videoManager->getFavouriteVideos(Auth::id());
+
+        return response()->json([
+            'videos' => $videos,
+        ]);
+    }
+
+    public function toggleFavourite($id)
+    {
+        $video = $this->videoManager->findVideoOrFail($id);
+
+        if ($video->user_id !== Auth::id()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $video = $this->videoManager->toggleFavourite($video);
+
+        return response()->json([
+            'message' => $video->is_favourite ? 'Video added to favourites' : 'Video removed from favourites',
+            'is_favourite' => $video->is_favourite,
+        ]);
+    }
+
     public function store(Request $request)
     {
         Log::info('VideoController::store called', [
