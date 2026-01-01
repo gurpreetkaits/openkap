@@ -10,6 +10,17 @@
 
       <!-- Navigation -->
       <nav class="flex-1 px-4 py-6 space-y-2">
+        <!-- Record New Video Button -->
+        <button
+          @click="recording.openSetupPanel"
+          class="flex items-center justify-center w-full px-4 py-3 mb-4 text-sm font-semibold text-white bg-gradient-to-r from-orange-600 to-red-600 rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
+        >
+          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          Record New Video
+        </button>
+
         <router-link
           to="/videos"
           class="flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors duration-200"
@@ -155,6 +166,17 @@
 
         <!-- Mobile Navigation -->
         <nav class="flex-1 px-4 py-6 space-y-2">
+          <!-- Record New Video Button (Mobile) -->
+          <button
+            @click="recording.openSetupPanel(); sidebarOpen = false"
+            class="flex items-center justify-center w-full px-4 py-3 mb-4 text-sm font-semibold text-white bg-gradient-to-r from-orange-600 to-red-600 rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
+          >
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            Record New Video
+          </button>
+
           <router-link
             to="/videos"
             @click="sidebarOpen = false"
@@ -234,6 +256,10 @@
       :loading="logoutLoading"
       @confirm="handleLogout"
     />
+
+    <!-- Global Recording Components -->
+    <RecordingSetupPanel />
+    <!-- RecordingControlBar removed - controls now in RecordingSetupPanel -->
   </div>
 </template>
 
@@ -242,18 +268,22 @@ import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { SBLogoutModal } from '../Global'
 import SBSubscriptionBadge from '../Global/SBSubscriptionBadge.vue'
+import RecordingSetupPanel from '../Global/RecordingSetupPanel.vue'
 import { useAuth } from '@/stores/auth'
+import { useRecording } from '@/composables/useRecording'
 
 export default {
   name: 'AppLayout',
   components: {
     SBLogoutModal,
-    SBSubscriptionBadge
+    SBSubscriptionBadge,
+    RecordingSetupPanel
   },
   setup() {
     const route = useRoute()
     const router = useRouter()
     const auth = useAuth()
+    const recording = useRecording()
     const sidebarOpen = ref(false)
     const showLogoutModal = ref(false)
     const logoutLoading = ref(false)
@@ -298,6 +328,7 @@ export default {
     return {
       auth,
       router,
+      recording,
       sidebarOpen,
       showLogoutModal,
       logoutLoading,

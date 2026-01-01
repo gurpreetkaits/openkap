@@ -480,35 +480,27 @@
       @close="showUpgradeModal = false"
       @success="handleUpgradeSuccess"
     />
-
-    <!-- Recording Modal -->
-    <SBRecordingModal
-      :show="showRecordingModal"
-      @close="showRecordingModal = false"
-      @recording-complete="handleRecordingComplete"
-      @upgrade="handleRecordingUpgrade"
-    />
   </div>
 </template>
 
 <script>
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useAuth } from '@/stores/auth'
+import { useRecording } from '@/composables/useRecording'
 import videoService from '@/services/videoService'
 import toast from '@/services/toastService'
 import SBDeleteModal from '@/components/Global/SBDeleteModal.vue'
 import SBUpgradeModal from '@/components/Global/SBUpgradeModal.vue'
-import SBRecordingModal from '@/components/Global/SBRecordingModal.vue'
 
 export default {
   name: 'VideosView',
   components: {
     SBDeleteModal,
-    SBUpgradeModal,
-    SBRecordingModal
+    SBUpgradeModal
   },
   setup() {
     const auth = useAuth()
+    const recording = useRecording()
     const currentUser = computed(() => auth.user.value)
     const userInitial = computed(() => (currentUser.value?.name || 'U').charAt(0).toUpperCase())
 
@@ -531,9 +523,6 @@ export default {
 
     // Upgrade modal state
     const showUpgradeModal = ref(false)
-
-    // Recording modal state
-    const showRecordingModal = ref(false)
 
     // Sort state
     const sortBy = ref('date_desc')
@@ -753,18 +742,13 @@ export default {
     })
 
     const goToRecord = () => {
-      showRecordingModal.value = true
-    }
-
-    const handleRecordingComplete = (video) => {
-      // Video recorded successfully, will redirect to video page
-      showRecordingModal.value = false
-    }
-
-    const handleRecordingUpgrade = () => {
-      // User clicked upgrade in recording modal, open upgrade modal
-      showRecordingModal.value = false
-      showUpgradeModal.value = true
+      // Check if user can record
+      if (!canRecord.value) {
+        showUpgradeModal.value = true
+        return
+      }
+      // Open the new recording setup panel
+      recording.openSetupPanel()
     }
 
     const openVideo = (id) => {
@@ -931,11 +915,7 @@ export default {
       // Upgrade modal
       showUpgradeModal,
       handleUpgradeSuccess,
-      openUpgradeModal,
-      // Recording modal
-      showRecordingModal,
-      handleRecordingComplete,
-      handleRecordingUpgrade
+      openUpgradeModal
     }
   }
 }
