@@ -100,10 +100,22 @@
             <div
               class="relative overflow-hidden bg-black w-full"
               :class="isFullscreen ? 'rounded-none' : 'rounded-xl'"
+              :style="{ minHeight: isFullscreen ? 'auto' : '400px', aspectRatio: isFullscreen ? 'auto' : '16/9' }"
               @mousemove="showControls"
               @mouseleave="hideControlsDelayed"
               ref="playerContainer"
             >
+            <!-- Video Loading Skeleton -->
+            <div
+              v-if="videoLoading"
+              class="absolute inset-0 flex items-center justify-center bg-gray-900"
+            >
+              <div class="flex flex-col items-center gap-4">
+                <div class="w-16 h-16 border-4 border-gray-700 border-t-orange-500 rounded-full animate-spin"></div>
+                <p class="text-gray-400 text-sm">Loading video...</p>
+              </div>
+            </div>
+
             <video
               ref="videoRef"
               :key="video.id"
@@ -554,6 +566,7 @@ export default {
 
     const isPlaying = ref(false)
     const isBuffering = ref(false)
+    const videoLoading = ref(true)
     const isMuted = ref(false)
     const isFullscreen = ref(false)
     const volume = ref(1)
@@ -808,11 +821,13 @@ export default {
       if (isFinite(videoDuration) && videoDuration > 0) {
         duration.value = videoDuration
         isBuffering.value = false
+        videoLoading.value = false
       }
       // Priority 2: Use API duration (from database)
       else if (apiDuration && apiDuration > 0) {
         duration.value = apiDuration
         isBuffering.value = false
+        videoLoading.value = false
       }
 
       // Apply current playback speed
@@ -824,6 +839,7 @@ export default {
     const onVideoError = (event) => {
       console.error('❌ Video error:', event)
       isBuffering.value = false
+      videoLoading.value = false
       const video = videoRef.value
       if (video && video.error) {
         console.error('Error code:', video.error.code, 'Message:', video.error.message)
@@ -1388,7 +1404,7 @@ export default {
       currentUser, userInitial,
       // Video
       video, loading, error, videoRef, progressBar, speedMenuRef, playerContainer,
-      isPlaying, isBuffering, isMuted, isFullscreen, volume, currentTime, duration,
+      isPlaying, isBuffering, videoLoading, isMuted, isFullscreen, volume, currentTime, duration,
       bufferedPercent, progressPercent, playbackSpeed, controlsVisible, hoverTime,
       hoverPercent, showSpeedMenu, showBigPlayButton, copied, toast, showSkipBack,
       showSkipForward, skipBackAmount, skipForwardAmount, newComment, comments, reactions,

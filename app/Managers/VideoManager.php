@@ -73,7 +73,7 @@ class VideoManager
 
         $media = $video->getFirstMedia('videos');
         $originalExtension = pathinfo($media->file_name, PATHINFO_EXTENSION);
-        if ($data['duration']) {
+        if ($data['duration'] ?? null) {
             $video->duration = $data['duration'];
             $video->save();
         }
