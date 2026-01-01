@@ -100,6 +100,14 @@ class Video extends Model implements HasMedia
     }
 
     /**
+     * Alias for view_count to match frontend expectations.
+     */
+    public function getViewsCountAttribute(): int
+    {
+        return $this->view_count;
+    }
+
+    /**
      * Get unique viewer count.
      */
     public function getUniqueViewersAttribute(): int
@@ -332,6 +340,7 @@ class Video extends Model implements HasMedia
 
     /**
      * Get the HLS master playlist URL.
+     * Returns API-based URL to ensure CORS headers are included.
      */
     public function getHlsUrl(): ?string
     {
@@ -339,7 +348,8 @@ class Video extends Model implements HasMedia
             return null;
         }
 
-        return url('/storage/'.$this->hls_path.'/master.m3u8');
+        // Use API route for CORS support (cross-origin playback)
+        return url("/api/share/video/{$this->share_token}/hls/master.m3u8");
     }
 
     /**

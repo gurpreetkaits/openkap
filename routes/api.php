@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\GoogleAuthController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\CommentController;
+use App\Http\Controllers\HlsController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReactionController;
 use App\Http\Controllers\SubscriptionController;
@@ -55,6 +56,11 @@ Route::get('/test', function () {
 Route::get('/share/video/{token}', [VideoController::class, 'viewShared']);
 Route::get('/share/video/{token}/stream', [VideoController::class, 'streamShared']); // Public streaming for shared videos
 Route::get('/share/video/{token}/comments', [CommentController::class, 'indexByToken']);
+
+// HLS streaming with CORS support (for cross-origin playback)
+Route::get('/share/video/{token}/hls/master.m3u8', [HlsController::class, 'masterPlaylist']);
+Route::get('/share/video/{token}/hls/{variant}.m3u8', [HlsController::class, 'variantPlaylist']);
+Route::get('/share/video/{token}/hls/{segment}.ts', [HlsController::class, 'segment']);
 
 // Blog routes - public
 Route::prefix('blogs')->group(function () {

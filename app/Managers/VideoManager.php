@@ -207,6 +207,7 @@ class VideoManager
             'hls_url' => $video->getHlsUrl(),
             'thumbnail' => $video->getThumbnailUrl(),
             'created_at' => $video->created_at->toISOString(),
+            'views_count' => $video->views_count ?? 0,
             'reactions' => $reactions,
             'comments' => $comments,
             'is_hls_ready' => $video->isHlsReady(),

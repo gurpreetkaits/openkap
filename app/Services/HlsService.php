@@ -292,6 +292,7 @@ class HlsService
 
     /**
      * Get the URL for the master playlist.
+     * Returns API-based URL to ensure CORS headers are included.
      */
     public function getMasterPlaylistUrl(Video $video): ?string
     {
@@ -299,7 +300,8 @@ class HlsService
             return null;
         }
 
-        return url('/storage/hls/'.$video->id.'/master.m3u8');
+        // Use API route for CORS support (cross-origin playback)
+        return url("/api/share/video/{$video->share_token}/hls/master.m3u8");
     }
 
     /**
