@@ -1,4 +1,7 @@
 import { ref, computed, watch } from 'vue';
+import { useAuth } from '@/stores/auth';
+
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8888';
 
 // Global recording state
 const showSetupPanel = ref(false);
@@ -6,7 +9,6 @@ const isRecording = ref(false);
 const isPaused = ref(false);
 const recordingDuration = ref(0);
 const mediaRecorder = ref(null);
-const recordedChunks = ref([]);
 const stream = ref(null);
 const recordingInterrupted = ref(false);
 
@@ -18,6 +20,13 @@ const selectedMicrophone = ref(null);
 const selectedCamera = ref(null);
 const availableMicrophones = ref([]);
 const availableCameras = ref([]);
+
+// Chunk upload state
+const sessionId = ref(null);
+const uploadedBytes = ref(0);
+const chunksUploaded = ref(0);
+const uploadQueue = ref([]);
+let chunkIndex = 0;
 
 // Recording timer
 let timerInterval = null;
@@ -34,6 +43,7 @@ const saveRecordingState = () => {
         selectedSource: selectedSource.value,
         microphoneEnabled: microphoneEnabled.value,
         cameraEnabled: cameraEnabled.value,
+        sessionId: sessionId.value,
         timestamp: Date.now()
     };
     localStorage.setItem(RECORDING_STATE_KEY, JSON.stringify(state));
@@ -60,6 +70,7 @@ const restoreRecordingState = () => {
                 cameraEnabled.value = state.cameraEnabled;
                 recordingDuration.value = state.duration;
                 isPaused.value = state.isPaused;
+                sessionId.value = state.sessionId;
 
                 // Mark as interrupted since MediaRecorder can't persist
                 recordingInterrupted.value = true;
@@ -87,6 +98,12 @@ if (!initialized) {
     restoreRecordingState();
     initialized = true;
 }
+
+// Get auth token
+const getAuthToken = () => {
+    const auth = useAuth();
+    return auth.token.value;
+};
 
 export function useRecording() {
     const openSetupPanel = () => {
@@ -120,8 +137,138 @@ export function useRecording() {
         }
     };
 
+    // Start upload session
+    const startUploadSession = async () => {
+        const timestamp = new Date().toLocaleString();
+        const title = `Recording ${timestamp}`;
+
+        const response = await fetch(`${API_BASE_URL}/api/stream/start`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${getAuthToken()}`
+            },
+            body: JSON.stringify({
+                title,
+                mime_type: 'video/webm'
+            })
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            if (response.status === 403) {
+                throw new Error('upgrade_required');
+            }
+            throw new Error('Failed to start upload session');
+        }
+
+        const data = await response.json();
+        return data.session_id;
+    };
+
+    // Upload a chunk
+    const uploadChunk = async (chunk, index) => {
+        if (!sessionId.value) return;
+
+        const formData = new FormData();
+        formData.append('chunk', chunk, `chunk_${index}.webm`);
+        formData.append('chunk_index', index);
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/stream/${sessionId.value}/chunk`, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${getAuthToken()}`
+                },
+                body: formData
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                uploadedBytes.value = data.total_size;
+                chunksUploaded.value = data.chunks_received;
+            }
+        } catch (err) {
+            console.error('Failed to upload chunk:', err);
+            uploadQueue.value.push({ chunk, index });
+        }
+    };
+
+    // Process upload queue (retry failed chunks)
+    const processUploadQueue = async () => {
+        while (uploadQueue.value.length > 0) {
+            const { chunk, index } = uploadQueue.value.shift();
+            await uploadChunk(chunk, index);
+        }
+    };
+
+    // Complete upload
+    const completeUpload = async () => {
+        if (!sessionId.value) return null;
+
+        await processUploadQueue();
+
+        const response = await fetch(`${API_BASE_URL}/api/stream/${sessionId.value}/complete`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${getAuthToken()}`
+            },
+            body: JSON.stringify({
+                duration: recordingDuration.value
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to complete upload');
+        }
+
+        const data = await response.json();
+        return data.video;
+    };
+
+    // Cancel upload session
+    const cancelUpload = async () => {
+        if (!sessionId.value) return;
+
+        try {
+            await fetch(`${API_BASE_URL}/api/stream/${sessionId.value}/cancel`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${getAuthToken()}`
+                }
+            });
+        } catch (err) {
+            console.error('Failed to cancel upload:', err);
+        }
+    };
+
+    // Reset upload state
+    const resetUploadState = () => {
+        sessionId.value = null;
+        uploadedBytes.value = 0;
+        chunksUploaded.value = 0;
+        uploadQueue.value = [];
+        chunkIndex = 0;
+    };
+
     const startRecording = async () => {
         try {
+            // Start upload session FIRST
+            sessionId.value = await startUploadSession();
+            if (!sessionId.value) {
+                throw new Error('Failed to start upload session');
+            }
+
+            // Reset upload state
+            uploadedBytes.value = 0;
+            chunksUploaded.value = 0;
+            uploadQueue.value = [];
+            chunkIndex = 0;
+
             // Request screen capture based on selected source
             const displayMediaOptions = {
                 video: {
@@ -218,11 +365,11 @@ export function useRecording() {
                 videoBitsPerSecond
             });
 
-            recordedChunks.value = [];
-
-            mediaRecorder.value.ondataavailable = (event) => {
+            // Upload chunks as they come in
+            mediaRecorder.value.ondataavailable = async (event) => {
                 if (event.data.size > 0) {
-                    recordedChunks.value.push(event.data);
+                    uploadChunk(event.data, chunkIndex);
+                    chunkIndex++;
                 }
             };
 
@@ -230,13 +377,25 @@ export function useRecording() {
                 stopTimer();
             };
 
+            // Handle stream ending (user clicks "Stop sharing")
+            stream.value.getVideoTracks()[0].onended = () => {
+                if (isRecording.value) {
+                    // Stream ended by user, stop recording
+                    mediaRecorder.value.stop();
+                }
+            };
+
             mediaRecorder.value.start(1000); // Collect data every second
             isRecording.value = true;
-            // Don't close the panel - it will transform to show recording status
             startTimer();
 
         } catch (error) {
             console.error('Error starting recording:', error);
+            // Cancel upload session if we started one
+            if (sessionId.value) {
+                cancelUpload();
+                resetUploadState();
+            }
             throw error;
         }
     };
@@ -257,27 +416,31 @@ export function useRecording() {
         }
     };
 
-    const stopRecording = () => {
-        return new Promise((resolve) => {
-            if (mediaRecorder.value) {
-                mediaRecorder.value.onstop = () => {
+    const stopRecording = async () => {
+        return new Promise((resolve, reject) => {
+            if (mediaRecorder.value && mediaRecorder.value.state !== 'inactive') {
+                mediaRecorder.value.onstop = async () => {
                     stopTimer();
-                    isRecording.value = false;
-                    isPaused.value = false;
-                    recordingInterrupted.value = false;
-                    clearRecordingState(); // Clear from localStorage
-
-                    // Create blob from recorded chunks
-                    const blob = new Blob(recordedChunks.value, {
-                        type: mediaRecorder.value.mimeType
-                    });
 
                     // Stop all tracks
                     if (stream.value) {
                         stream.value.getTracks().forEach(track => track.stop());
                     }
 
-                    resolve(blob);
+                    try {
+                        // Complete the upload and get video info
+                        const video = await completeUpload();
+
+                        isRecording.value = false;
+                        isPaused.value = false;
+                        recordingInterrupted.value = false;
+                        clearRecordingState();
+                        resetUploadState();
+
+                        resolve(video);
+                    } catch (error) {
+                        reject(error);
+                    }
                 };
 
                 mediaRecorder.value.stop();
@@ -289,21 +452,35 @@ export function useRecording() {
                 recordingInterrupted.value = false;
                 recordingDuration.value = 0;
                 clearRecordingState();
+
+                // Cancel the upload session if there was one
+                if (sessionId.value) {
+                    cancelUpload();
+                    resetUploadState();
+                }
+
+                resolve(null);
+            } else {
                 resolve(null);
             }
         });
     };
 
-    const deleteRecording = () => {
+    const deleteRecording = async () => {
         if (mediaRecorder.value) {
             if (mediaRecorder.value.state !== 'inactive') {
                 mediaRecorder.value.stop();
             }
-            recordedChunks.value = [];
         }
 
         if (stream.value) {
             stream.value.getTracks().forEach(track => track.stop());
+        }
+
+        // Cancel the upload session
+        if (sessionId.value) {
+            await cancelUpload();
+            resetUploadState();
         }
 
         isRecording.value = false;
@@ -311,7 +488,7 @@ export function useRecording() {
         recordingDuration.value = 0;
         recordingInterrupted.value = false;
         stopTimer();
-        clearRecordingState(); // Clear from localStorage
+        clearRecordingState();
     };
 
     const startTimer = () => {
@@ -338,6 +515,17 @@ export function useRecording() {
         return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
     });
 
+    // Format bytes for display
+    const formatBytes = (bytes) => {
+        if (bytes === 0) return '0 B';
+        const k = 1024;
+        const sizes = ['B', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+    };
+
+    const formattedUploadedBytes = computed(() => formatBytes(uploadedBytes.value));
+
     return {
         // State
         showSetupPanel,
@@ -346,6 +534,11 @@ export function useRecording() {
         recordingDuration,
         recordingInterrupted,
         formatDuration,
+
+        // Upload state
+        uploadedBytes,
+        chunksUploaded,
+        formattedUploadedBytes,
 
         // Settings
         selectedSource,

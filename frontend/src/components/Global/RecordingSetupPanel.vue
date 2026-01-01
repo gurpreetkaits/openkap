@@ -58,11 +58,15 @@
                 <div v-if="!recordingInterrupted" class="absolute inset-0 w-2.5 h-2.5 bg-red-600 rounded-full animate-ping opacity-75"></div>
                 <div v-else class="w-2.5 h-2.5 bg-orange-600 rounded-full"></div>
               </div>
-              <div>
+              <div class="flex-1">
                 <div class="text-xl font-mono font-bold text-gray-900">{{ formatDuration }}</div>
                 <div class="text-xs text-gray-600">
                   {{ recordingInterrupted ? 'Interrupted' : (isPaused ? 'Paused' : 'Recording...') }}
                 </div>
+              </div>
+              <div class="text-right">
+                <div class="text-sm font-medium text-gray-700">{{ formattedUploadedBytes }}</div>
+                <div class="text-xs text-gray-500">uploaded</div>
               </div>
             </div>
 
@@ -374,7 +378,6 @@
 import { ref, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useRecording } from '../../composables/useRecording';
-import videoService from '../../services/videoService';
 
 const router = useRouter();
 
@@ -385,6 +388,7 @@ const {
   recordingInterrupted,
   recordingDuration,
   formatDuration,
+  formattedUploadedBytes,
   selectedSource,
   microphoneEnabled,
   cameraEnabled,
@@ -500,24 +504,17 @@ const handleStartRecording = async () => {
 const handleStopRecording = async () => {
   saving.value = true;
   try {
-    const blob = await stopRecording();
+    // stopRecording now completes the chunk upload and returns the video
+    const video = await stopRecording();
 
-    if (!blob) {
+    if (!video) {
       // Recording was interrupted, can't save
       alert('Recording was interrupted and cannot be saved. Please start a new recording.');
       return;
     }
 
-    // Upload the recording using the video service (handles auth and proper API URL)
-    const formData = new FormData();
-    formData.append('video', blob, 'recording.webm');
-    formData.append('title', `Recording ${new Date().toLocaleString()}`);
-    formData.append('duration', recordingDuration.value); // Add duration in seconds
-
-    const result = await videoService.uploadVideo(formData);
-
     // Navigate to the video page
-    router.push(`/video/${result.id}`);
+    router.push(`/video/${video.id}`);
   } catch (error) {
     console.error('Failed to save recording:', error);
     alert('Failed to save recording. Please try again.');
