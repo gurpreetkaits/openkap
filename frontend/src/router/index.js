@@ -46,6 +46,16 @@ const routes = [
         name: "SubscriptionSuccess",
         component: () => import("../views/SubscriptionSuccessView.vue"),
       },
+      {
+        path: "notifications",
+        name: "Notifications",
+        component: () => import("../views/NotificationsView.vue"),
+      },
+      {
+        path: "favourites",
+        name: "Favourites",
+        component: () => import("../views/FavouritesView.vue"),
+      },
     ]
   },
   {

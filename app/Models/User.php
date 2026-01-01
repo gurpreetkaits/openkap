@@ -102,11 +102,11 @@ class User extends Authenticatable
             return true;
         }
 
-        // Free users can record only 1 video
-        // Check actual video count from database to ensure accuracy
+        // Free users limited by admin setting
+        $limit = Setting::getFreeVideoLimit();
         $actualVideoCount = $this->videos()->count();
 
-        return $actualVideoCount < 1;
+        return $actualVideoCount < $limit;
     }
 
     /**
@@ -119,12 +119,24 @@ class User extends Authenticatable
             return null; // Unlimited
         }
 
-        // Free tier: max 1 video
-        // Use actual count from database
+        // Free tier: limited by admin setting
+        $limit = Setting::getFreeVideoLimit();
         $actualVideoCount = $this->videos()->count();
-        $remaining = 1 - $actualVideoCount;
+        $remaining = $limit - $actualVideoCount;
 
         return max(0, $remaining);
+    }
+
+    /**
+     * Get max videos allowed for free plan
+     */
+    public function getMaxVideos(): ?int
+    {
+        if ($this->hasActiveSubscription()) {
+            return null; // Unlimited
+        }
+
+        return Setting::getFreeVideoLimit();
     }
 
     /**
@@ -185,5 +197,21 @@ class User extends Authenticatable
     public function subscriptionHistory()
     {
         return $this->hasMany(SubscriptionHistory::class)->orderBy('created_at', 'desc');
+    }
+
+    /**
+     * Relationship: User has many notifications
+     */
+    public function notifications()
+    {
+        return $this->hasMany(\App\Models\Notification::class)->orderBy('created_at', 'desc');
+    }
+
+    /**
+     * Get unread notifications count
+     */
+    public function getUnreadNotificationsCount(): int
+    {
+        return $this->notifications()->where('read', false)->count();
     }
 }

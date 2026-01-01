@@ -18,6 +18,7 @@ class Video extends Model implements HasMedia
         'duration',
         'user_id',
         'is_public',
+        'is_favourite',
         'share_expires_at',
         'conversion_status',
         'original_extension',
@@ -34,6 +35,7 @@ class Video extends Model implements HasMedia
     protected $casts = [
         'duration' => 'integer',
         'is_public' => 'boolean',
+        'is_favourite' => 'boolean',
         'share_expires_at' => 'datetime',
         'conversion_progress' => 'integer',
         'converted_at' => 'datetime',

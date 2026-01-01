@@ -1,229 +1,285 @@
 <template>
-  <div class="bg-gray-50 min-h-full">
-    <div class="px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
-      <!-- Success Alert -->
-      <div v-if="showSuccessAlert" class="success-alert">
-        <div class="alert-content">
-          <svg class="success-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+  <div class="animate-fade-in max-w-5xl mx-auto p-6 lg:p-8">
+    <!-- Success Alert -->
+    <div v-if="showSuccessAlert" class="fixed top-20 left-1/2 -translate-x-1/2 z-50 animate-slide-down">
+      <div class="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-4 rounded-xl shadow-lg shadow-green-500/20 flex items-center gap-3">
+        <svg class="w-6 h-6 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+        </svg>
+        <div>
+          <h3 class="font-semibold">Welcome to ScreenSense Pro!</h3>
+          <p class="text-sm text-white/90">Your subscription is now active. Enjoy unlimited recordings!</p>
+        </div>
+        <button @click="showSuccessAlert = false" class="ml-4 p-1 hover:bg-white/20 rounded-lg transition-colors">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
           </svg>
-          <div>
-            <h3 class="alert-title">Welcome to ScreenSense Pro! 🎉</h3>
-            <p class="alert-message">Your subscription is now active. Enjoy unlimited video recordings!</p>
-          </div>
-          <button @click="showSuccessAlert = false" class="close-button">
-            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </button>
+      </div>
+    </div>
+
+    <!-- Header -->
+    <div class="mb-8 text-center">
+      <h2 class="text-2xl font-bold text-gray-900 tracking-tight mb-2">Upgrade your plan</h2>
+      <p class="text-gray-500 text-sm max-w-lg mx-auto">Unlock unlimited recording, higher resolution exports, and priority support.</p>
+    </div>
+
+    <!-- Billing Cycle Toggle -->
+    <div class="flex items-center justify-center gap-4 mb-10">
+      <button
+        @click="billingCycle = 'monthly'"
+        class="px-4 py-2 text-sm font-medium rounded-lg transition-all"
+        :class="billingCycle === 'monthly' ? 'bg-gray-900 text-white' : 'text-gray-600 hover:text-gray-900'"
+      >
+        Monthly
+      </button>
+      <button
+        @click="billingCycle = 'yearly'"
+        class="px-4 py-2 text-sm font-medium rounded-lg transition-all flex items-center gap-2"
+        :class="billingCycle === 'yearly' ? 'bg-gray-900 text-white' : 'text-gray-600 hover:text-gray-900'"
+      >
+        Yearly
+        <span class="text-[10px] px-1.5 py-0.5 rounded-full bg-green-500 text-white font-bold">Save {{ settings.subscription?.yearly_savings_percent || 5 }}%</span>
+      </button>
+    </div>
+
+    <!-- Loading State -->
+    <div v-if="loading" class="text-center py-24">
+      <div class="inline-block animate-spin rounded-full h-10 w-10 border-4 border-orange-600 border-t-transparent"></div>
+      <p class="mt-4 text-sm text-gray-500">Loading subscription details...</p>
+    </div>
+
+    <!-- Error State -->
+    <div v-else-if="error" class="text-center py-24">
+      <div class="w-16 h-16 mx-auto mb-6 bg-red-100 rounded-full flex items-center justify-center">
+        <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      </div>
+      <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ error }}</h3>
+      <button @click="loadSubscription" class="inline-flex items-center px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-lg font-medium text-sm shadow-sm transition-colors">
+        Try Again
+      </button>
+    </div>
+
+    <!-- Pricing Cards -->
+    <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+      <!-- Free Plan Card -->
+      <div class="bg-white rounded-2xl border border-gray-200 p-8 flex flex-col relative shadow-sm h-full">
+        <div class="mb-5">
+          <h3 class="text-lg font-semibold text-gray-900">Free Plan</h3>
+          <p class="text-sm text-gray-500 mt-1">Perfect for getting started</p>
+        </div>
+        <div class="mb-6">
+          <span class="text-4xl font-bold text-gray-900">$0</span>
+          <span class="text-gray-500 text-sm">/month</span>
+        </div>
+        <button
+          v-if="!hasActiveSubscription"
+          class="w-full py-2.5 rounded-lg border border-gray-200 text-sm font-medium text-gray-900 bg-gray-50 cursor-default mb-8"
+        >
+          Current Plan
+        </button>
+        <button
+          v-else
+          @click="cancelSubscription"
+          :disabled="canceling || subscription?.is_in_grace_period"
+          class="w-full py-2.5 rounded-lg border border-gray-200 text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors mb-8 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {{ canceling ? 'Processing...' : subscription?.is_in_grace_period ? 'Cancellation Pending' : 'Downgrade to Free' }}
+        </button>
+        <ul class="space-y-4 text-sm text-gray-600 flex-1">
+          <li class="flex items-center gap-3">
+            <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
             </svg>
+            {{ settings.free_plan?.max_videos || 1 }} video{{ (settings.free_plan?.max_videos || 1) > 1 ? 's' : '' }}
+          </li>
+          <li class="flex items-center gap-3">
+            <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            {{ settings.free_plan?.max_duration_minutes || 5 }} minute recording limit
+          </li>
+          <li class="flex items-center gap-3">
+            <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            720p Export quality
+          </li>
+          <li class="flex items-center gap-3">
+            <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            Standard Support
+          </li>
+        </ul>
+
+        <!-- Usage indicator for free plan -->
+        <div v-if="!hasActiveSubscription && subscription" class="mt-6 pt-6 border-t border-gray-100">
+          <div class="flex items-center justify-between text-xs text-gray-500 mb-2">
+            <span>Videos used</span>
+            <span class="font-medium text-gray-900">{{ subscription?.videos_count || 0 }} / {{ subscription?.max_videos || settings.free_plan?.max_videos || 1 }}</span>
+          </div>
+          <div class="w-full bg-gray-100 h-1.5 rounded-full overflow-hidden">
+            <div
+              class="bg-orange-500 h-full rounded-full transition-all duration-500"
+              :style="{ width: Math.min(((subscription?.videos_count || 0) / (subscription?.max_videos || settings.free_plan?.max_videos || 1)) * 100, 100) + '%' }"
+            ></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pro Plan Card -->
+      <div class="bg-gray-900 rounded-2xl border border-gray-800 p-8 flex flex-col relative shadow-xl shadow-orange-900/10 h-full ring-1 ring-orange-500/20">
+        <!-- Badge -->
+        <div class="absolute top-0 right-0 -mt-3 mr-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-lg tracking-wide uppercase">
+          Recommended
+        </div>
+        <div class="mb-5">
+          <h3 class="text-lg font-semibold text-white">Pro Plan</h3>
+          <p class="text-sm text-gray-400 mt-1">For power users and teams</p>
+        </div>
+        <div class="mb-6">
+          <template v-if="billingCycle === 'monthly'">
+            <span class="text-4xl font-bold text-white">${{ settings.subscription?.monthly_price || 7 }}</span>
+            <span class="text-gray-400 text-sm">/month</span>
+          </template>
+          <template v-else>
+            <span class="text-4xl font-bold text-white">${{ ((settings.subscription?.yearly_price || 80) / 12).toFixed(2) }}</span>
+            <span class="text-gray-400 text-sm">/month</span>
+            <div class="text-xs text-gray-400 mt-1">Billed ${{ settings.subscription?.yearly_price || 80 }}/year</div>
+          </template>
+        </div>
+        <button
+          v-if="hasActiveSubscription && !subscription?.is_in_grace_period"
+          class="w-full py-2.5 rounded-lg bg-green-600 text-sm font-medium text-white mb-8 flex items-center justify-center gap-2"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+          </svg>
+          Current Plan
+        </button>
+        <button
+          v-else
+          @click="showUpgradeModal = true"
+          class="w-full py-2.5 rounded-lg bg-orange-600 hover:bg-orange-500 text-sm font-medium text-white transition-all shadow-lg shadow-orange-900/20 mb-8 flex items-center justify-center gap-2 group"
+        >
+          {{ subscription?.is_in_grace_period ? 'Resubscribe' : 'Upgrade to Pro' }}
+          <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+          </svg>
+        </button>
+        <ul class="space-y-4 text-sm text-gray-300 flex-1">
+          <li class="flex items-center gap-3 text-white">
+            <div class="p-0.5 rounded-full bg-orange-500/20 text-orange-400 flex-shrink-0">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+              </svg>
+            </div>
+            Unlimited videos
+          </li>
+          <li class="flex items-center gap-3 text-white">
+            <div class="p-0.5 rounded-full bg-orange-500/20 text-orange-400 flex-shrink-0">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+              </svg>
+            </div>
+            Unlimited recording time
+          </li>
+          <li class="flex items-center gap-3 text-white">
+            <div class="p-0.5 rounded-full bg-orange-500/20 text-orange-400 flex-shrink-0">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+              </svg>
+            </div>
+            4K Export quality
+          </li>
+          <li class="flex items-center gap-3 text-white">
+            <div class="p-0.5 rounded-full bg-orange-500/20 text-orange-400 flex-shrink-0">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+              </svg>
+            </div>
+            Priority Support
+          </li>
+          <li class="flex items-center gap-3 text-white">
+            <div class="p-0.5 rounded-full bg-orange-500/20 text-orange-400 flex-shrink-0">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+              </svg>
+            </div>
+            Custom Branding
+          </li>
+        </ul>
+
+        <!-- Active subscription info -->
+        <div v-if="hasActiveSubscription" class="mt-6 pt-6 border-t border-gray-700">
+          <div class="flex items-center justify-between text-xs mb-2">
+            <span class="text-gray-400">Status</span>
+            <span class="font-medium" :class="subscription?.is_in_grace_period ? 'text-yellow-400' : 'text-green-400'">
+              {{ subscription?.is_in_grace_period ? 'Cancels ' + formatDate(subscription.expires_at) : 'Active' }}
+            </span>
+          </div>
+          <button
+            @click="openBillingPortal"
+            :disabled="loadingPortal"
+            class="w-full mt-3 py-2 rounded-lg bg-gray-800 hover:bg-gray-700 text-sm font-medium text-gray-300 transition-colors disabled:opacity-50"
+          >
+            {{ loadingPortal ? 'Loading...' : 'Manage Billing' }}
           </button>
         </div>
       </div>
+    </div>
 
-      <div class="mb-6 sm:mb-8">
-        <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Subscription</h1>
-      </div>
+    <!-- Enterprise Contact -->
+    <div class="mt-12 text-center p-6 bg-gray-100 rounded-xl border border-gray-200 max-w-4xl mx-auto">
+      <h4 class="text-sm font-semibold text-gray-900 mb-1">Need a custom plan?</h4>
+      <p class="text-sm text-gray-500 mb-3">For large organizations with specific security and control needs.</p>
+      <button class="text-sm font-medium text-gray-900 border-b border-gray-300 hover:border-gray-900 transition-colors">
+        Contact Sales
+      </button>
+    </div>
 
-      <!-- Loading State -->
-      <div v-if="loading" class="loading-state">
-        <div class="spinner"></div>
-        <p>Loading subscription details...</p>
-      </div>
-
-      <!-- Error State -->
-      <div v-else-if="error" class="error-state">
-        <p>{{ error }}</p>
-        <button @click="loadSubscription" class="retry-button">Retry</button>
-      </div>
-
-      <!-- No Subscription State -->
-      <div v-else-if="!hasActiveSubscription" class="no-subscription">
-        <div class="empty-state">
-          <div class="empty-icon">
-            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-            </svg>
-          </div>
-          <h2>No Active Subscription</h2>
-          <p>Upgrade to Pro to unlock unlimited video recordings and more features.</p>
-
-          <div class="free-tier-info">
-            <h3>Current Plan: Free</h3>
-            <ul>
-              <li>
-                <svg class="check" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                </svg>
-                1 video recording
-              </li>
-              <li class="disabled">
-                <svg class="x" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-                Unlimited recordings
-              </li>
-              <li class="disabled">
-                <svg class="x" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-                Priority support
-              </li>
-            </ul>
-            <p class="usage">Videos used: {{ subscription?.videos_count || 0 }}/1</p>
-          </div>
-
-          <button @click="showUpgradeModal = true" class="upgrade-button">
-            Upgrade to Pro
-          </button>
+    <!-- Subscription History -->
+    <div v-if="history.length > 0" class="mt-12 max-w-4xl mx-auto">
+      <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-100">
+          <h3 class="text-sm font-semibold text-gray-900">Subscription History</h3>
         </div>
-
-        <!-- Subscription History (for users with past subscriptions) -->
-        <div v-if="history.length > 0" class="history-section">
-          <h3 class="history-title">Subscription History</h3>
-          <div class="history-table-wrapper">
-            <table class="history-table">
-              <thead>
-                <tr>
-                  <th>Event</th>
-                  <th>Status</th>
-                  <th>Plan</th>
-                  <th>Amount</th>
-                  <th>Date</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="item in history" :key="item.id">
-                  <td>
-                    <span class="event-label" :class="getEventClass(item.event_type)">
-                      {{ item.event_label }}
-                    </span>
-                  </td>
-                  <td>
-                    <span class="status-pill" :class="getStatusClass(item.status)">
-                      {{ item.status }}
-                    </span>
-                  </td>
-                  <td>{{ item.plan_name || '-' }}</td>
-                  <td>{{ item.formatted_amount || '-' }}</td>
-                  <td>{{ formatHistoryDate(item.created_at) }}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      <!-- Active Subscription List -->
-      <div v-else class="subscription-list">
-        <div class="subscription-card">
-          <div class="subscription-header">
-            <div class="plan-info">
-              <span class="plan-badge">Pro</span>
-              <h2>ScreenSense Pro</h2>
-            </div>
-            <span class="status-badge" :class="statusClass">{{ statusText }}</span>
-          </div>
-
-          <div class="subscription-details">
-            <div class="detail-row">
-              <span class="label">Status</span>
-              <span class="value" :class="statusClass">{{ statusText }}</span>
-            </div>
-            <div class="detail-row" v-if="subscription?.started_at">
-              <span class="label">Started</span>
-              <span class="value">{{ formatDate(subscription.started_at) }}</span>
-            </div>
-            <div class="detail-row" v-if="subscription?.expires_at">
-              <span class="label">{{ subscription?.is_in_grace_period ? 'Expires' : 'Next billing' }}</span>
-              <span class="value">{{ formatDate(subscription.expires_at) }}</span>
-            </div>
-            <div class="detail-row">
-              <span class="label">Videos recorded</span>
-              <span class="value">{{ subscription?.videos_count || 0 }}</span>
-            </div>
-            <div class="detail-row">
-              <span class="label">Video limit</span>
-              <span class="value unlimited">Unlimited</span>
-            </div>
-          </div>
-
-          <div class="subscription-features">
-            <h3>Included Features</h3>
-            <ul>
-              <li>
-                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                </svg>
-                Unlimited video recordings
-              </li>
-              <li>
-                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                </svg>
-                HD video quality
-              </li>
-              <li>
-                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                </svg>
-                Unlimited storage
-              </li>
-              <li>
-                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                </svg>
-                Priority support
-              </li>
-            </ul>
-          </div>
-
-          <div class="subscription-actions">
-            <button @click="openBillingPortal" class="portal-button" :disabled="loadingPortal">
-              {{ loadingPortal ? 'Loading...' : 'Manage Billing' }}
-            </button>
-            <button
-              v-if="!subscription?.is_in_grace_period"
-              @click="cancelSubscription"
-              class="cancel-button"
-              :disabled="canceling"
-            >
-              {{ canceling ? 'Canceling...' : 'Cancel Subscription' }}
-            </button>
-          </div>
-        </div>
-
-        <!-- Subscription History -->
-        <div v-if="history.length > 0" class="history-section history-section-active">
-          <h3 class="history-title">Subscription History</h3>
-          <div class="history-table-wrapper">
-            <table class="history-table">
-              <thead>
-                <tr>
-                  <th>Event</th>
-                  <th>Status</th>
-                  <th>Plan</th>
-                  <th>Amount</th>
-                  <th>Date</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="item in history" :key="item.id">
-                  <td>
-                    <span class="event-label" :class="getEventClass(item.event_type)">
-                      {{ item.event_label }}
-                    </span>
-                  </td>
-                  <td>
-                    <span class="status-pill" :class="getStatusClass(item.status)">
-                      {{ item.status }}
-                    </span>
-                  </td>
-                  <td>{{ item.plan_name || '-' }}</td>
-                  <td>{{ item.formatted_amount || '-' }}</td>
-                  <td>{{ formatHistoryDate(item.created_at) }}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="bg-gray-50">
+                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Event</th>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Status</th>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Amount</th>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Date</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+              <tr v-for="item in history" :key="item.id" class="hover:bg-gray-50 transition-colors">
+                <td class="px-6 py-4">
+                  <span
+                    class="inline-flex px-2 py-1 text-xs font-medium rounded-md"
+                    :class="getEventClass(item.event_type)"
+                  >
+                    {{ item.event_label }}
+                  </span>
+                </td>
+                <td class="px-6 py-4">
+                  <span
+                    class="inline-flex px-2 py-1 text-xs font-medium rounded-full"
+                    :class="getStatusClass(item.status)"
+                  >
+                    {{ item.status }}
+                  </span>
+                </td>
+                <td class="px-6 py-4 text-gray-900 font-medium">{{ item.formatted_amount || '-' }}</td>
+                <td class="px-6 py-4 text-gray-500">{{ formatHistoryDate(item.created_at) }}</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
@@ -243,6 +299,7 @@ import { useRouter, useRoute } from 'vue-router'
 import SBUpgradeModal from '@/components/Global/SBUpgradeModal.vue'
 import { useAuth } from '@/stores/auth'
 import toast from '@/services/toastService'
+import settingsService from '@/services/settingsService'
 import confetti from 'canvas-confetti/dist/confetti.module.mjs'
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || ''
@@ -259,23 +316,24 @@ const showUpgradeModal = ref(false)
 const canceling = ref(false)
 const loadingPortal = ref(false)
 const showSuccessAlert = ref(false)
+const billingCycle = ref('monthly')
+
+// Settings from backend
+const settings = ref({
+  subscription: {
+    monthly_price: 7,
+    yearly_price: 80,
+    yearly_monthly_price: 6.67,
+    yearly_savings_percent: 5,
+  },
+  free_plan: {
+    max_videos: 1,
+    max_duration_minutes: 5,
+  }
+})
 
 const hasActiveSubscription = computed(() => {
   return subscription.value?.is_active === true
-})
-
-const statusText = computed(() => {
-  if (!subscription.value) return 'Free'
-  if (subscription.value.is_in_grace_period) return 'Canceled'
-  if (subscription.value.is_active) return 'Active'
-  return 'Inactive'
-})
-
-const statusClass = computed(() => {
-  if (!subscription.value) return 'status-free'
-  if (subscription.value.is_in_grace_period) return 'status-grace'
-  if (subscription.value.is_active) return 'status-active'
-  return 'status-inactive'
 })
 
 async function loadSubscription() {
@@ -285,7 +343,6 @@ async function loadSubscription() {
   try {
     const sub = await auth.fetchSubscription()
     subscription.value = sub
-    // Also fetch history
     await fetchHistory()
   } catch (e) {
     console.error('Error loading subscription:', e)
@@ -310,7 +367,6 @@ async function fetchHistory() {
     }
   } catch (e) {
     console.error('Error loading subscription history:', e)
-    // Don't show error for history, it's optional
   }
 }
 
@@ -318,28 +374,28 @@ function getEventClass(eventType) {
   switch (eventType) {
     case 'created':
     case 'activated':
-      return 'event-success'
+      return 'bg-green-100 text-green-700'
     case 'renewed':
-      return 'event-info'
+      return 'bg-blue-100 text-blue-700'
     case 'canceled':
-      return 'event-warning'
+      return 'bg-yellow-100 text-yellow-700'
     case 'revoked':
-      return 'event-error'
+      return 'bg-red-100 text-red-700'
     default:
-      return 'event-default'
+      return 'bg-gray-100 text-gray-700'
   }
 }
 
 function getStatusClass(status) {
   switch (status) {
     case 'active':
-      return 'status-active'
+      return 'bg-green-100 text-green-700'
     case 'canceled':
-      return 'status-canceled'
+      return 'bg-yellow-100 text-yellow-700'
     case 'expired':
-      return 'status-expired'
+      return 'bg-red-100 text-red-700'
     default:
-      return 'status-default'
+      return 'bg-gray-100 text-gray-700'
   }
 }
 
@@ -348,9 +404,7 @@ function formatHistoryDate(dateString) {
   return new Date(dateString).toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
+    day: 'numeric'
   })
 }
 
@@ -376,9 +430,8 @@ async function cancelSubscription() {
       throw new Error(errorData.error || 'Failed to cancel subscription')
     }
 
-    // Reload subscription data
     await loadSubscription()
-    toast.success('Subscription canceled successfully. You will keep access until ' + formatDate(subscription.value.expires_at))
+    toast.success('Subscription canceled. You will keep access until ' + formatDate(subscription.value.expires_at))
   } catch (e) {
     console.error('Error canceling subscription:', e)
     toast.error('Failed to cancel subscription: ' + e.message)
@@ -423,7 +476,7 @@ function formatDate(dateString) {
   if (!dateString) return 'N/A'
   return new Date(dateString).toLocaleDateString('en-US', {
     year: 'numeric',
-    month: 'long',
+    month: 'short',
     day: 'numeric'
   })
 }
@@ -459,658 +512,39 @@ function triggerConfetti() {
   }, 250)
 }
 
-onMounted(() => {
-  // Check if redirected from success page
+async function loadSettings() {
+  try {
+    const data = await settingsService.getSettings()
+    settings.value = data
+  } catch (e) {
+    console.error('Error loading settings:', e)
+  }
+}
+
+onMounted(async () => {
   if (route.query.success === 'true') {
     showSuccessAlert.value = true
     triggerConfetti()
-
-    // Clean up URL
     router.replace({ query: {} })
   }
 
+  await loadSettings()
   loadSubscription()
 })
 </script>
 
 <style scoped>
-/* Success Alert */
-.success-alert {
-  position: fixed;
-  top: 2rem;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 9998;
-  width: 90%;
-  max-width: 600px;
-  animation: slideDown 0.5s ease-out;
+/* Fade in animation */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
 }
+.animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
 
+/* Slide down animation for success alert */
 @keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateX(-50%) translateY(-2rem);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-  }
+  from { opacity: 0; transform: translate(-50%, -1rem); }
+  to { opacity: 1; transform: translate(-50%, 0); }
 }
-
-.alert-content {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  color: white;
-  padding: 1.5rem;
-  border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.success-icon {
-  width: 32px;
-  height: 32px;
-  flex-shrink: 0;
-  stroke-width: 3;
-}
-
-.alert-title {
-  font-size: 1.125rem;
-  font-weight: 700;
-  margin: 0 0 0.25rem 0;
-}
-
-.alert-message {
-  font-size: 0.875rem;
-  margin: 0;
-  opacity: 0.95;
-}
-
-.close-button {
-  margin-left: auto;
-  background: rgba(255, 255, 255, 0.2);
-  border: none;
-  border-radius: 8px;
-  padding: 0.5rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.2s;
-  flex-shrink: 0;
-}
-
-.close-button:hover {
-  background: rgba(255, 255, 255, 0.3);
-}
-
-.close-button svg {
-  width: 20px;
-  height: 20px;
-  color: white;
-}
-
-@media (max-width: 640px) {
-  .success-alert {
-    top: 1rem;
-    width: 95%;
-  }
-
-  .alert-content {
-    padding: 1rem;
-  }
-
-  .alert-title {
-    font-size: 1rem;
-  }
-
-  .alert-message {
-    font-size: 0.8125rem;
-  }
-
-  .success-icon {
-    width: 28px;
-    height: 28px;
-  }
-}
-
-/* Loading & Error States */
-.loading-state,
-.error-state {
-  text-align: center;
-  padding: 3rem 1rem;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-@media (min-width: 640px) {
-  .loading-state,
-  .error-state {
-    padding: 4rem 1.5rem;
-  }
-}
-
-@media (min-width: 1024px) {
-  .loading-state,
-  .error-state {
-    padding: 4rem 2rem;
-  }
-}
-
-.spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid #f3f4f6;
-  border-top-color: #3b82f6;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-  margin: 0 auto 1rem;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-.retry-button {
-  margin-top: 1rem;
-  background: #3b82f6;
-  color: white;
-  border: none;
-  padding: 0.75rem 2rem;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 500;
-  cursor: pointer;
-}
-
-/* No Subscription State */
-.no-subscription {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-}
-
-.empty-state {
-  padding: 2rem 1rem;
-  text-align: center;
-}
-
-@media (min-width: 640px) {
-  .empty-state {
-    padding: 3rem 1.5rem;
-  }
-}
-
-@media (min-width: 1024px) {
-  .empty-state {
-    padding: 3rem 2rem;
-  }
-}
-
-.empty-icon {
-  width: 64px;
-  height: 64px;
-  background: #f3f4f6;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 1.5rem;
-}
-
-.empty-icon svg {
-  width: 32px;
-  height: 32px;
-  color: #9ca3af;
-}
-
-.empty-state h2 {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #1a1a1a;
-  margin: 0 0 0.5rem;
-}
-
-.empty-state > p {
-  color: #6b7280;
-  margin: 0 0 1.5rem;
-}
-
-@media (min-width: 640px) {
-  .empty-state > p {
-    margin: 0 0 2rem;
-  }
-}
-
-.free-tier-info {
-  background: #f9fafb;
-  border-radius: 8px;
-  padding: 1.5rem;
-  margin-bottom: 1.5rem;
-  text-align: left;
-}
-
-@media (min-width: 640px) {
-  .free-tier-info {
-    margin-bottom: 2rem;
-  }
-}
-
-.free-tier-info h3 {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #6b7280;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin: 0 0 1rem;
-}
-
-.free-tier-info ul {
-  list-style: none;
-  padding: 0;
-  margin: 0 0 1rem;
-}
-
-.free-tier-info li {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.5rem 0;
-  color: #1a1a1a;
-  font-size: 0.9375rem;
-}
-
-.free-tier-info li.disabled {
-  color: #9ca3af;
-}
-
-.free-tier-info li svg {
-  width: 18px;
-  height: 18px;
-  flex-shrink: 0;
-}
-
-.free-tier-info li svg.check {
-  color: #10b981;
-}
-
-.free-tier-info li svg.x {
-  color: #d1d5db;
-}
-
-.free-tier-info .usage {
-  font-size: 0.875rem;
-  color: #6b7280;
-  margin: 0;
-  padding-top: 0.5rem;
-  border-top: 1px solid #e5e7eb;
-}
-
-.upgrade-button {
-  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
-  color: white;
-  border: none;
-  padding: 1rem 2rem;
-  border-radius: 8px;
-  font-size: 1.125rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.upgrade-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
-}
-
-/* Subscription List */
-.subscription-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-@media (min-width: 640px) {
-  .subscription-list {
-    gap: 2rem;
-  }
-}
-
-.subscription-card {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  border: 2px solid #3b82f6;
-  overflow: hidden;
-}
-
-.subscription-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1.5rem;
-  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
-  color: white;
-}
-
-.plan-info {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.plan-badge {
-  background: rgba(255, 255, 255, 0.2);
-  padding: 0.25rem 0.75rem;
-  border-radius: 9999px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-}
-
-.plan-info h2 {
-  font-size: 1.25rem;
-  font-weight: 600;
-  margin: 0;
-}
-
-.status-badge {
-  padding: 0.375rem 0.875rem;
-  border-radius: 9999px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  background: rgba(255, 255, 255, 0.2);
-}
-
-.status-badge.status-active {
-  background: rgba(16, 185, 129, 0.2);
-}
-
-.status-badge.status-grace {
-  background: rgba(245, 158, 11, 0.2);
-}
-
-.subscription-details {
-  padding: 1.5rem;
-  border-bottom: 1px solid #e5e7eb;
-}
-
-.detail-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.625rem 0;
-}
-
-.detail-row:not(:last-child) {
-  border-bottom: 1px solid #f3f4f6;
-}
-
-.detail-row .label {
-  color: #6b7280;
-  font-size: 0.875rem;
-}
-
-.detail-row .value {
-  font-weight: 600;
-  color: #1a1a1a;
-}
-
-.detail-row .value.status-active {
-  color: #10b981;
-}
-
-.detail-row .value.status-grace {
-  color: #f59e0b;
-}
-
-.detail-row .value.unlimited {
-  color: #8b5cf6;
-}
-
-.subscription-features {
-  padding: 1.5rem;
-  background: #f9fafb;
-}
-
-.subscription-features h3 {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: #6b7280;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin: 0 0 1rem;
-}
-
-.subscription-features ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0.5rem;
-}
-
-.subscription-features li {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.875rem;
-  color: #1a1a1a;
-}
-
-.subscription-features li svg {
-  width: 16px;
-  height: 16px;
-  color: #10b981;
-  flex-shrink: 0;
-}
-
-.subscription-actions {
-  padding: 1.5rem;
-  display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-.portal-button,
-.cancel-button {
-  flex: 1;
-  min-width: 150px;
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
-  font-size: 0.9375rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-  border: none;
-}
-
-.portal-button {
-  background: #1a1a1a;
-  color: white;
-}
-
-.portal-button:hover:not(:disabled) {
-  background: #333;
-}
-
-.portal-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.cancel-button {
-  background: #fee2e2;
-  color: #dc2626;
-}
-
-.cancel-button:hover:not(:disabled) {
-  background: #fecaca;
-}
-
-.cancel-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-@media (max-width: 640px) {
-  .subscription-features ul {
-    grid-template-columns: 1fr;
-  }
-
-  .subscription-actions {
-    flex-direction: column;
-  }
-
-  .portal-button,
-  .cancel-button {
-    min-width: 100%;
-  }
-}
-
-/* Subscription History Styles */
-.history-section {
-  padding: 1.5rem 2rem;
-  border-top: 1px solid #e5e7eb;
-}
-
-.history-section-active {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  margin-top: 1.5rem;
-  border-top: none;
-}
-
-@media (min-width: 640px) {
-  .history-section-active {
-    margin-top: 2rem;
-  }
-}
-
-.history-title {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #6b7280;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin: 0 0 1rem;
-}
-
-.history-table-wrapper {
-  overflow-x: auto;
-}
-
-.history-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.875rem;
-}
-
-.history-table th,
-.history-table td {
-  padding: 0.75rem 0.5rem;
-  text-align: left;
-  border-bottom: 1px solid #e5e7eb;
-}
-
-.history-table th {
-  font-weight: 600;
-  color: #6b7280;
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.history-table td {
-  color: #1a1a1a;
-}
-
-.history-table tbody tr:hover {
-  background: #f9fafb;
-}
-
-/* Event label styles */
-.event-label {
-  display: inline-block;
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  font-weight: 500;
-}
-
-.event-label.event-success {
-  background: #d1fae5;
-  color: #065f46;
-}
-
-.event-label.event-info {
-  background: #dbeafe;
-  color: #1e40af;
-}
-
-.event-label.event-warning {
-  background: #fef3c7;
-  color: #92400e;
-}
-
-.event-label.event-error {
-  background: #fee2e2;
-  color: #991b1b;
-}
-
-.event-label.event-default {
-  background: #f3f4f6;
-  color: #4b5563;
-}
-
-/* Status pill styles */
-.status-pill {
-  display: inline-block;
-  padding: 0.25rem 0.5rem;
-  border-radius: 9999px;
-  font-size: 0.75rem;
-  font-weight: 500;
-  text-transform: capitalize;
-}
-
-.status-pill.status-active {
-  background: #d1fae5;
-  color: #065f46;
-}
-
-.status-pill.status-canceled {
-  background: #fef3c7;
-  color: #92400e;
-}
-
-.status-pill.status-expired {
-  background: #fee2e2;
-  color: #991b1b;
-}
-
-.status-pill.status-default {
-  background: #f3f4f6;
-  color: #4b5563;
-}
-
-@media (max-width: 640px) {
-  .history-section {
-    padding: 1rem;
-  }
-
-  .history-table {
-    font-size: 0.75rem;
-  }
-
-  .history-table th,
-  .history-table td {
-    padding: 0.5rem 0.25rem;
-  }
-}
+.animate-slide-down { animation: slideDown 0.5s ease-out forwards; }
 </style>

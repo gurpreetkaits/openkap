@@ -76,4 +76,30 @@ class VideoRepository extends BaseRepository
             ->with('user:id,name,avatar_url')
             ->get();
     }
+
+    public function findFavouritesByUserId(int $userId): Collection
+    {
+        return Video::with('media')
+            ->where('user_id', $userId)
+            ->where('is_favourite', true)
+            ->latest()
+            ->withCount(['views', 'comments', 'reactions'])
+            ->get();
+    }
+
+    public function toggleFavourite(Video $video): Video
+    {
+        $video->is_favourite = ! $video->is_favourite;
+        $video->save();
+
+        return $video;
+    }
+
+    public function setFavourite(Video $video, bool $isFavourite): Video
+    {
+        $video->is_favourite = $isFavourite;
+        $video->save();
+
+        return $video;
+    }
 }

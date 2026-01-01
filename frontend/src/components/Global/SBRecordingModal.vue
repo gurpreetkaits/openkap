@@ -29,33 +29,6 @@
             <p class="text-gray-600">Checking your account...</p>
           </div>
 
-          <!-- Video Limit Reached -->
-          <div v-else-if="!canRecordVideo && !isRecording && !hasRecorded" class="p-8 text-center">
-            <div class="inline-flex items-center justify-center w-16 h-16 bg-red-100 rounded-full mb-4">
-              <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-              </svg>
-            </div>
-            <h2 class="text-2xl font-bold text-gray-900 mb-2">Video Limit Reached</h2>
-            <p class="text-gray-600 mb-6">
-              You've used all your free videos. Upgrade to Pro for unlimited recordings.
-            </p>
-            <div class="flex items-center justify-center gap-3">
-              <button
-                @click="closeModal"
-                class="px-5 py-2.5 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                @click="handleUpgrade"
-                class="px-5 py-2.5 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white rounded-lg font-medium transition-colors"
-              >
-                Upgrade to Pro
-              </button>
-            </div>
-          </div>
-
           <!-- Recording Setup -->
           <div v-else-if="!isRecording && !hasRecorded" class="p-8 text-center">
             <!-- Header -->

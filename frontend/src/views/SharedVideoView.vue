@@ -1,5 +1,9 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
+  <div class="bg-[#FAFAFA] text-slate-900 h-screen flex flex-col overflow-hidden selection:bg-orange-100 selection:text-orange-700">
+
+    <!-- Subtle Background Grid -->
+    <div class="fixed inset-0 z-0 pointer-events-none" style="background-image: radial-gradient(#e5e7eb 1px, transparent 1px); background-size: 32px 32px; opacity: 0.4;"></div>
+
     <!-- Loading State -->
     <div v-if="loading" class="flex items-center justify-center min-h-screen">
       <div class="animate-spin rounded-full h-12 w-12 border-4 border-orange-500 border-t-transparent"></div>
@@ -21,393 +25,395 @@
     </div>
 
     <!-- Main Content -->
-    <div v-else class="min-h-screen bg-gray-50">
-      <!-- Top Navigation Bar with Title -->
-      <div class="bg-white border-b border-gray-200 sticky top-0 z-50">
-        <div class="px-4 lg:px-6 py-3">
-          <div class="flex items-center justify-between">
-            <!-- Left: Logo and Title -->
-            <div class="flex items-center gap-4">
-              <a href="/" class="flex items-center gap-2 hover:opacity-80 transition-opacity">
-                <img src="/logo.png" alt="ScreenSense" class="h-8 w-auto" />
-              </a>
+    <template v-else>
+      <!-- Navigation -->
+      <nav class="h-14 border-b border-gray-200/60 bg-white/80 backdrop-blur-md flex items-center justify-between px-4 lg:px-6 z-50 fixed top-0 w-full">
+        <div class="flex items-center gap-3">
+          <a href="/" class="flex items-center gap-2 hover:opacity-80 transition-opacity">
+            <img src="/logo.png" alt="ScreenSense" class="w-8 h-8 rounded-lg shadow-sm" />
+          </a>
+          <div class="h-4 w-px bg-gray-200"></div>
+          <div class="flex flex-col justify-center">
+            <h1 class="text-sm font-semibold text-gray-900 tracking-tight leading-none">
+              {{ video.title }}
+            </h1>
+            <span class="text-[10px] text-gray-500 font-medium mt-0.5">{{ formatTimeAgo(video.created_at) }}</span>
+          </div>
+        </div>
 
-              <!-- Divider -->
-              <div class="w-px h-6 bg-gray-300 hidden sm:block"></div>
+        <div class="flex items-center gap-2">
+          <button @click="showShareModal = true" class="bg-orange-600 hover:bg-orange-700 text-white px-3 py-1.5 rounded-lg text-xs font-medium shadow-md shadow-orange-200 transition-all flex items-center gap-2 group">
+            Share Video
+            <div class="w-px h-3 bg-white/20"></div>
+            <svg class="w-3 h-3 text-white/70 group-hover:translate-y-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+        </div>
+      </nav>
 
-              <!-- Title and Meta -->
-              <div class="hidden sm:block">
-                <h1 class="text-sm font-semibold text-gray-900">
-                  {{ video.title }}
-                </h1>
-                <div class="flex items-center gap-2 text-xs text-gray-500 mt-0.5">
-                  <span>{{ video.views_count || 0 }} views</span>
-                  <span>•</span>
-                  <span>{{ formatDate(video.created_at) }}</span>
+      <!-- Share Modal -->
+      <div v-if="showShareModal" class="fixed inset-0 z-[60] flex items-center justify-center">
+        <div class="absolute inset-0 bg-gray-900/20 backdrop-blur-sm transition-opacity" @click="showShareModal = false"></div>
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md relative z-10 border border-gray-100 overflow-hidden transform transition-all duration-200">
+          <div class="p-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+            <h3 class="text-sm font-semibold text-gray-900">Share Recording</h3>
+            <button @click="showShareModal = false" class="text-gray-400 hover:text-gray-600">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
+          </div>
+          <div class="p-5">
+            <div class="flex gap-4 mb-6">
+              <button class="flex-1 flex flex-col items-center gap-2 p-3 rounded-lg border border-gray-200 hover:border-orange-500 hover:bg-orange-50/50 transition-all group">
+                <div class="w-8 h-8 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                  </svg>
                 </div>
-              </div>
+                <span class="text-xs font-medium text-gray-600 group-hover:text-orange-700">Email</span>
+              </button>
+              <button @click="copyEmbedCode" class="flex-1 flex flex-col items-center gap-2 p-3 rounded-lg border border-gray-200 hover:border-orange-500 hover:bg-orange-50/50 transition-all group">
+                <div class="w-8 h-8 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
+                  </svg>
+                </div>
+                <span class="text-xs font-medium text-gray-600 group-hover:text-pink-700">{{ copiedEmbed ? 'Copied!' : 'Embed' }}</span>
+              </button>
+              <button class="flex-1 flex flex-col items-center gap-2 p-3 rounded-lg border border-gray-200 hover:border-orange-500 hover:bg-orange-50/50 transition-all group">
+                <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                  </svg>
+                </div>
+                <span class="text-xs font-medium text-gray-600 group-hover:text-blue-700">Twitter</span>
+              </button>
             </div>
 
-            <!-- Right: Share buttons -->
-            <div class="flex items-center gap-2">
-              <button
-                @click="copyShareLink"
-                class="flex items-center gap-2 px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-sm font-medium transition-colors"
-              >
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
+            <label class="text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-2 block">Public Link</label>
+            <div class="flex gap-2">
+              <div class="flex-1 relative">
+                <input type="text" :value="shareUrl" class="w-full pl-9 pr-3 py-2 text-xs bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500 text-gray-600" readonly>
+                <svg class="w-3.5 h-3.5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
                 </svg>
-                {{ copied ? 'Copied!' : 'Share' }}
-              </button>
-              <button
-                @click="copyEmbedCode"
-                class="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition-colors"
-                title="Copy embed code for websites"
-              >
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
-                </svg>
-                {{ copiedEmbed ? 'Copied!' : 'Embed' }}
+              </div>
+              <button @click="copyShareLink" class="bg-orange-600 hover:bg-orange-700 text-white px-3 py-2 rounded-lg text-xs font-medium transition-colors">
+                {{ copied ? 'Copied!' : 'Copy' }}
               </button>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Main Content Container -->
-      <div class="flex h-[calc(100vh-64px)]">
-        <!-- Video Player Column (centered, larger) -->
-        <div class="flex-1 overflow-y-auto px-2 lg:px-4 py-4 flex flex-col items-center">
-          <!-- Video Card Container -->
-          <div class="w-full max-w-[1800px] bg-white rounded-2xl border border-gray-200 p-4 shadow-sm">
-            <!-- Video Player - Centered and larger -->
+      <!-- Main Layout -->
+      <main class="flex-1 flex flex-col lg:flex-row h-full pt-14 z-10 relative">
+
+        <!-- Center Stage: Video Player -->
+        <div class="flex-1 flex flex-col items-center justify-center p-2 lg:p-6 overflow-y-auto relative bg-[#FAFAFA]/50">
+
+          <div class="w-full max-w-7xl relative group perspective-1000">
+
+            <!-- Ambient Glow Behind Video -->
+            <div class="absolute -inset-0.5 bg-gradient-to-r from-orange-500 via-amber-500 to-orange-500 rounded-2xl blur-2xl opacity-[0.05] ambient-glow transition-opacity duration-1000 group-hover:opacity-20 z-0"></div>
+
+            <!-- Video Container -->
             <div
-              class="relative overflow-hidden bg-black w-full"
-              :class="isFullscreen ? 'rounded-none' : 'rounded-xl'"
-              :style="{ minHeight: isFullscreen ? 'auto' : '400px', aspectRatio: isFullscreen ? 'auto' : '16/9' }"
+              class="relative w-full aspect-video bg-black rounded-xl shadow-2xl ring-1 ring-black/10 overflow-hidden z-20 bg-cover bg-center"
+              :class="isFullscreen ? 'rounded-none' : ''"
+              :style="video.thumbnail ? { backgroundImage: `url(${video.thumbnail})` } : {}"
+              ref="playerContainer"
               @mousemove="showControls"
               @mouseleave="hideControlsDelayed"
-              ref="playerContainer"
             >
-            <!-- Video Loading Skeleton -->
-            <div
-              v-if="videoLoading"
-              class="absolute inset-0 flex items-center justify-center bg-gray-900"
-            >
-              <div class="flex flex-col items-center gap-4">
-                <div class="w-16 h-16 border-4 border-gray-700 border-t-orange-500 rounded-full animate-spin"></div>
-                <p class="text-gray-400 text-sm">Loading video...</p>
+
+              <!-- Video Loading Text -->
+              <div v-if="videoLoading" class="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
+                <p class="text-white/70 text-sm font-medium">Loading video...</p>
               </div>
-            </div>
 
-            <video
-              ref="videoRef"
-              class="w-full h-full object-contain"
-              :class="isFullscreen ? 'max-h-screen' : 'max-h-[80vh]'"
-              preload="metadata"
-              @click="togglePlay"
-              @dblclick="toggleFullscreen"
-              @timeupdate="updateProgress"
-              @loadedmetadata="onVideoLoaded"
-              @loadeddata="onVideoLoaded"
-              @durationchange="onVideoLoaded"
-              @canplay="onVideoLoaded"
-              @ended="onVideoEnded"
-              @seeking="isBuffering = true"
-              @seeked="isBuffering = false"
-              @waiting="isBuffering = true"
-              @play="isPlaying = true"
-              @pause="isPlaying = false"
-              @error="onVideoError"
-              playsinline
-            ></video>
-
-            <!-- Buffering -->
-            <div v-if="isBuffering" class="absolute inset-0 flex items-center justify-center bg-black/40 pointer-events-none">
-              <div class="w-14 h-14 border-4 border-white/20 border-t-orange-500 rounded-full animate-spin"></div>
-            </div>
-
-            <!-- Big Play Button -->
-            <transition name="fade">
-              <div
-                v-if="!isPlaying && !isBuffering && showBigPlayButton"
-                class="absolute inset-0 flex items-center justify-center bg-black/30 cursor-pointer"
+              <video
+                ref="videoRef"
+                class="w-full h-full object-contain"
+                :poster="video.thumbnail"
+                preload="metadata"
                 @click="togglePlay"
-              >
-                <div class="w-20 h-20 rounded-full bg-orange-600 hover:bg-orange-500 flex items-center justify-center shadow-2xl transform hover:scale-110 transition-all">
-                  <svg class="w-8 h-8 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M8 5v14l11-7z"/>
-                  </svg>
-                </div>
-              </div>
-            </transition>
+                @dblclick="toggleFullscreen"
+                @timeupdate="updateProgress"
+                @loadedmetadata="onVideoLoaded"
+                @loadeddata="onVideoLoaded"
+                @durationchange="onVideoLoaded"
+                @canplay="onVideoLoaded"
+                @ended="onVideoEnded"
+                @seeking="isBuffering = true"
+                @seeked="isBuffering = false"
+                @waiting="isBuffering = true"
+                @play="isPlaying = true"
+                @pause="isPlaying = false"
+                @error="onVideoError"
+                playsinline
+              ></video>
 
-            <!-- Skip Indicators -->
-            <transition name="skip-left">
-              <div v-if="showSkipBack" class="absolute left-8 top-1/2 -translate-y-1/2 pointer-events-none">
-                <div class="flex flex-col items-center text-white bg-black/70 backdrop-blur-sm rounded-full p-4 shadow-xl">
-                  <svg class="w-10 h-10" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M11 18V6l-8.5 6 8.5 6zm.5-6l8.5 6V6l-8.5 6z"/>
-                  </svg>
-                  <span class="text-sm font-bold mt-1">{{ skipBackAmount }}s</span>
-                </div>
+              <!-- Buffering -->
+              <div v-if="isBuffering" class="absolute inset-0 flex items-center justify-center bg-black/40 pointer-events-none">
+                <div class="w-14 h-14 border-4 border-white/20 border-t-orange-500 rounded-full animate-spin"></div>
               </div>
-            </transition>
 
-            <transition name="skip-right">
-              <div v-if="showSkipForward" class="absolute right-8 top-1/2 -translate-y-1/2 pointer-events-none">
-                <div class="flex flex-col items-center text-white bg-black/70 backdrop-blur-sm rounded-full p-4 shadow-xl">
-                  <svg class="w-10 h-10" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z"/>
-                  </svg>
-                  <span class="text-sm font-bold mt-1">{{ skipForwardAmount }}s</span>
-                </div>
-              </div>
-            </transition>
-
-            <!-- Controls -->
-            <transition name="fade">
-              <div
-                v-show="controlsVisible || !isPlaying"
-                class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent pt-16 pb-4 px-4"
-              >
-                <!-- Progress Bar -->
+              <!-- Big Play Button -->
+              <transition name="fade">
                 <div
-                  class="progress-bar group relative h-2 bg-white/30 rounded-full mb-4 cursor-pointer hover:h-3 transition-all"
-                  @click.stop="seek"
-                  @mousedown.stop="startSeeking"
-                  @mousemove="updateHoverTime"
-                  @mouseleave="hoverTime = null"
-                  ref="progressBar"
+                  v-if="!isPlaying && !isBuffering && showBigPlayButton"
+                  class="absolute inset-0 bg-black/40 flex items-center justify-center cursor-pointer"
+                  @click="togglePlay"
                 >
-                  <div class="absolute top-0 left-0 h-full bg-white/40 rounded-full pointer-events-none" :style="{ width: bufferedPercent + '%' }"></div>
-                  <div class="absolute top-0 left-0 h-full bg-orange-500 rounded-full pointer-events-none" :style="{ width: progressPercent + '%' }"></div>
-                  <div
-                    class="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-orange-500 rounded-full shadow-lg scale-0 group-hover:scale-100 transition-transform pointer-events-none"
-                    :style="{ left: `calc(${progressPercent}% - 8px)` }"
-                  ></div>
-                  <div
-                    v-if="hoverTime !== null"
-                    class="absolute -top-10 px-2 py-1 bg-black text-white text-xs rounded transform -translate-x-1/2 pointer-events-none"
-                    :style="{ left: hoverPercent + '%' }"
-                  >
-                    {{ formatTime(hoverTime) }}
-                  </div>
+                  <button class="group/btn relative flex items-center justify-center w-24 h-24 bg-white/5 backdrop-blur-sm rounded-full border border-white/10 hover:scale-105 hover:bg-orange-600 hover:border-orange-500 transition-all duration-300 shadow-2xl">
+                    <svg class="w-10 h-10 text-white fill-white ml-1" viewBox="0 0 24 24">
+                      <path d="M8 5v14l11-7z"/>
+                    </svg>
+                    <div class="absolute inset-0 rounded-full border border-white/10 animate-ping opacity-20 group-hover/btn:opacity-0"></div>
+                  </button>
                 </div>
+              </transition>
 
-                <!-- Controls Row -->
-                <div class="flex items-center justify-between">
-                  <div class="flex items-center gap-2">
-                    <!-- Play/Pause -->
-                    <button @click.stop="togglePlay" class="w-10 h-10 flex items-center justify-center text-white hover:text-orange-400 transition-colors">
-                      <svg v-if="isPlaying" class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
-                      </svg>
-                      <svg v-else class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M8 5v14l11-7z"/>
-                      </svg>
-                    </button>
-
-                    <!-- Rewind 5s -->
-                    <button @click.stop="skip(-5)" class="relative w-10 h-10 flex items-center justify-center text-white/80 hover:text-white transition-colors group" title="Rewind 5s">
-                      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12.066 11.2a1 1 0 000 1.6l5.334 4A1 1 0 0019 16V8a1 1 0 00-1.6-.8l-5.333 4zM4.066 11.2a1 1 0 000 1.6l5.334 4A1 1 0 0011 16V8a1 1 0 00-1.6-.8l-5.334 4z"/>
-                      </svg>
-                      <span class="absolute -bottom-0.5 text-[9px] font-bold">5</span>
-                    </button>
-
-                    <!-- Forward 5s -->
-                    <button @click.stop="skip(5)" class="relative w-10 h-10 flex items-center justify-center text-white/80 hover:text-white transition-colors group" title="Forward 5s">
-                      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M11.933 12.8a1 1 0 000-1.6L6.6 7.2A1 1 0 005 8v8a1 1 0 001.6.8l5.333-4zM19.933 12.8a1 1 0 000-1.6l-5.333-4A1 1 0 0013 8v8a1 1 0 001.6.8l5.333-4z"/>
-                      </svg>
-                      <span class="absolute -bottom-0.5 text-[9px] font-bold">5</span>
-                    </button>
-
-                    <!-- Volume -->
-                    <div class="flex items-center gap-1 group/vol">
-                      <button @click.stop="toggleMute" class="w-10 h-10 flex items-center justify-center text-white/80 hover:text-white transition-colors">
-                        <svg v-if="isMuted || volume === 0" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>
-                        </svg>
-                        <svg v-else class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
-                        </svg>
-                      </button>
-                      <input
-                        type="range" min="0" max="1" step="0.05" v-model="volume" @input="updateVolume"
-                        class="w-0 group-hover/vol:w-20 opacity-0 group-hover/vol:opacity-100 transition-all accent-orange-500"
-                      />
+              <!-- Custom Floating Controls -->
+              <transition name="fade">
+                <div
+                  v-show="controlsVisible"
+                  class="absolute bottom-4 left-4 right-4 z-30"
+                >
+                  <div class="flex flex-col gap-3 px-2">
+                    <!-- Progress -->
+                    <div
+                      class="relative h-1.5 w-full group/seek cursor-pointer flex items-center"
+                      @click.stop="seek"
+                      @mousedown.stop="startSeeking"
+                      @mousemove="updateHoverTime"
+                      @mouseleave="hoverTime = null"
+                      ref="progressBar"
+                    >
+                      <div class="absolute inset-0 bg-white/10 rounded-full"></div>
+                      <div class="absolute left-0 h-full bg-white/30 rounded-full" :style="{ width: bufferedPercent + '%' }"></div>
+                      <div class="absolute left-0 h-full bg-orange-500 rounded-full shadow-[0_0_10px_rgba(249,115,22,0.5)]" :style="{ width: progressPercent + '%' }"></div>
+                      <div
+                        class="absolute w-4 h-4 bg-white rounded-full shadow-lg scale-0 group-hover/seek:scale-100 transition-transform flex items-center justify-center"
+                        :style="{ left: `calc(${progressPercent}% - 8px)` }"
+                      >
+                        <div class="w-1.5 h-1.5 bg-orange-600 rounded-full"></div>
+                      </div>
+                      <!-- Hover time tooltip -->
+                      <div
+                        v-if="hoverTime !== null"
+                        class="absolute -top-10 px-2 py-1 bg-black text-white text-xs rounded transform -translate-x-1/2 pointer-events-none"
+                        :style="{ left: hoverPercent + '%' }"
+                      >
+                        {{ formatTime(hoverTime) }}
+                      </div>
                     </div>
 
-                    <!-- Time -->
-                    <span class="text-white/80 text-sm ml-2">
-                      {{ formatTime(currentTime) }} / {{ formatTime(duration) }}
-                    </span>
-                  </div>
-
-                  <div class="flex items-center gap-2">
-                    <!-- Quality Selector (only show when HLS qualities available) -->
-                    <div v-if="availableQualities.length > 0" class="relative" ref="qualityMenuRef">
-                      <button
-                        @click.stop.prevent="toggleQualityMenu"
-                        class="px-3 py-1.5 text-white/80 hover:text-white text-sm font-medium rounded hover:bg-white/10 transition-colors flex items-center gap-1"
-                        title="Video Quality"
-                      >
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                          <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
-                          <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                        </svg>
-                        {{ getCurrentQualityLabel() }}
-                      </button>
-                      <div
-                        v-show="showQualityMenu"
-                        class="absolute bottom-full right-0 mb-2 py-2 bg-gray-900 rounded-xl shadow-2xl border border-white/20 min-w-[120px] z-50"
-                      >
-                        <button
-                          v-for="quality in availableQualities"
-                          :key="quality.index"
-                          @click.stop.prevent="setQuality(quality.index)"
-                          class="w-full px-4 py-2.5 text-left text-sm hover:bg-white/10 transition-colors flex items-center justify-between"
-                          :class="currentQuality === quality.index ? 'text-orange-400 bg-white/5' : 'text-white'"
-                        >
-                          <span>{{ quality.label }}</span>
-                          <svg v-if="currentQuality === quality.index" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                    <!-- Control Buttons -->
+                    <div class="flex items-center justify-between text-white/90 pt-1 bg-black/40 backdrop-blur-sm rounded-lg px-3 py-2">
+                      <div class="flex items-center gap-5">
+                        <button @click.stop="togglePlay" class="hover:text-orange-400 hover:scale-110 transition-all">
+                          <svg v-if="isPlaying" class="w-6 h-6 fill-current" viewBox="0 0 24 24">
+                            <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
+                          </svg>
+                          <svg v-else class="w-6 h-6 fill-current" viewBox="0 0 24 24">
+                            <path d="M8 5v14l11-7z"/>
+                          </svg>
+                        </button>
+                        <span class="text-[12px] font-mono opacity-60 tracking-wider">
+                          {{ formatTime(currentTime) }} <span class="opacity-50">/</span> {{ formatTime(duration) }}
+                        </span>
+                        <div class="w-px h-5 bg-white/10"></div>
+                        <div class="flex items-center gap-4">
+                          <button @click.stop="skip(-5)" class="hover:text-white opacity-70 hover:opacity-100 transition-opacity" title="Rewind 5s">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                              <path stroke-linecap="round" stroke-linejoin="round" d="M12.066 11.2a1 1 0 000 1.6l5.334 4A1 1 0 0019 16V8a1 1 0 00-1.6-.8l-5.333 4zM4.066 11.2a1 1 0 000 1.6l5.334 4A1 1 0 0011 16V8a1 1 0 00-1.6-.8l-5.334 4z"/>
+                            </svg>
+                          </button>
+                          <button @click.stop="skip(5)" class="hover:text-white opacity-70 hover:opacity-100 transition-opacity" title="Forward 5s">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                              <path stroke-linecap="round" stroke-linejoin="round" d="M11.933 12.8a1 1 0 000-1.6L6.6 7.2A1 1 0 005 8v8a1 1 0 001.6.8l5.333-4zM19.933 12.8a1 1 0 000-1.6l-5.333-4A1 1 0 0013 8v8a1 1 0 001.6.8l5.333-4z"/>
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                      <div class="flex items-center gap-4">
+                        <!-- Volume -->
+                        <div class="flex items-center gap-1 group/vol">
+                          <button @click.stop="toggleMute" class="hover:text-white opacity-70 hover:opacity-100 transition-opacity">
+                            <svg v-if="isMuted || volume === 0" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>
+                            </svg>
+                            <svg v-else class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+                            </svg>
+                          </button>
+                          <input
+                            type="range" min="0" max="1" step="0.05" v-model="volume" @input="updateVolume"
+                            class="w-0 group-hover/vol:w-20 opacity-0 group-hover/vol:opacity-100 transition-all"
+                          />
+                        </div>
+                        <!-- Quality Selector -->
+                        <div v-if="availableQualities.length > 0" class="relative" ref="qualityMenuRef">
+                          <button
+                            @click.stop.prevent="toggleQualityMenu"
+                            class="text-[11px] font-bold bg-white/10 px-2 py-1 rounded hover:bg-orange-600 transition-colors"
+                          >
+                            {{ getCurrentQualityLabel() }}
+                          </button>
+                          <div
+                            v-show="showQualityMenu"
+                            class="absolute bottom-full right-0 mb-2 py-2 bg-gray-900 rounded-xl shadow-2xl border border-white/20 min-w-[100px] z-50"
+                          >
+                            <button
+                              v-for="quality in availableQualities"
+                              :key="quality.index"
+                              @click.stop.prevent="setQuality(quality.index)"
+                              class="w-full px-3 py-2 text-left text-xs hover:bg-white/10 transition-colors"
+                              :class="currentQuality === quality.index ? 'text-orange-400' : 'text-white'"
+                            >
+                              {{ quality.label }}
+                            </button>
+                          </div>
+                        </div>
+                        <!-- Speed -->
+                        <div class="relative" ref="speedMenuRef">
+                          <button
+                            @click.stop.prevent="toggleSpeedMenu"
+                            class="text-[11px] font-bold bg-white/10 px-2 py-1 rounded hover:bg-orange-600 transition-colors"
+                          >
+                            {{ playbackSpeed }}x
+                          </button>
+                          <div
+                            v-show="showSpeedMenu"
+                            class="absolute bottom-full right-0 mb-2 py-2 bg-gray-900 rounded-xl shadow-2xl border border-white/20 min-w-[80px] z-50"
+                          >
+                            <button
+                              v-for="speed in speedOptions"
+                              :key="speed"
+                              @click.stop.prevent="setPlaybackSpeed(speed)"
+                              class="w-full px-3 py-2 text-left text-xs hover:bg-white/10 transition-colors"
+                              :class="playbackSpeed === speed ? 'text-orange-400' : 'text-white'"
+                            >
+                              {{ speed }}x
+                            </button>
+                          </div>
+                        </div>
+                        <!-- PiP -->
+                        <button @click.stop="togglePiP" class="hover:text-white hover:scale-110 transition-transform opacity-70 hover:opacity-100" title="Picture in Picture">
+                          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <rect x="2" y="3" width="20" height="14" rx="2"/>
+                            <rect x="11" y="10" width="9" height="6" rx="1" fill="currentColor"/>
+                          </svg>
+                        </button>
+                        <!-- Fullscreen -->
+                        <button @click.stop="toggleFullscreen" class="hover:text-white hover:scale-110 transition-transform">
+                          <svg v-if="!isFullscreen" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/>
+                          </svg>
+                          <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 9V4.5M9 9H4.5M9 9L3.75 3.75M9 15v4.5M9 15H4.5M9 15l-5.25 5.25M15 9h4.5M15 9V4.5M15 9l5.25-5.25M15 15h4.5M15 15v4.5m0-4.5l5.25 5.25"/>
                           </svg>
                         </button>
                       </div>
                     </div>
-
-                    <!-- Speed -->
-                    <div class="relative" ref="speedMenuRef">
-                      <button
-                        @click.stop.prevent="toggleSpeedMenu"
-                        class="px-3 py-1.5 text-white/80 hover:text-white text-sm font-medium rounded hover:bg-white/10 transition-colors"
-                      >
-                        {{ playbackSpeed }}x
-                      </button>
-                      <div
-                        v-show="showSpeedMenu"
-                        class="absolute bottom-full right-0 mb-2 py-2 bg-gray-900 rounded-xl shadow-2xl border border-white/20 min-w-[120px] z-50"
-                      >
-                        <button
-                          v-for="speed in speedOptions"
-                          :key="speed"
-                          @click.stop.prevent="setPlaybackSpeed(speed)"
-                          class="w-full px-4 py-2.5 text-left text-sm hover:bg-white/10 transition-colors flex items-center justify-between"
-                          :class="playbackSpeed === speed ? 'text-orange-400 bg-white/5' : 'text-white'"
-                        >
-                          <span>{{ speed }}x</span>
-                          <svg v-if="playbackSpeed === speed" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                          </svg>
-                        </button>
-                      </div>
-                    </div>
-
-                    <!-- PiP -->
-                    <button @click.stop="togglePiP" class="w-10 h-10 flex items-center justify-center text-white/80 hover:text-white transition-colors" title="Picture in Picture">
-                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                        <rect x="2" y="3" width="20" height="14" rx="2"/>
-                        <rect x="11" y="10" width="9" height="6" rx="1" fill="currentColor"/>
-                      </svg>
-                    </button>
-
-                    <!-- Fullscreen -->
-                    <button @click.stop="toggleFullscreen" class="w-10 h-10 flex items-center justify-center text-white/80 hover:text-white transition-colors" title="Fullscreen (F)">
-                      <svg v-if="!isFullscreen" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/>
-                      </svg>
-                      <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 9V4.5M9 9H4.5M9 9L3.75 3.75M9 15v4.5M9 15H4.5M9 15l-5.25 5.25M15 9h4.5M15 9V4.5M15 9l5.25-5.25M15 15h4.5M15 15v4.5m0-4.5l5.25 5.25"/>
-                      </svg>
-                    </button>
                   </div>
                 </div>
-              </div>
-            </transition>
+              </transition>
             </div>
-          </div>
 
-          <!-- Reactions and Share Bar (centered below video in white card) -->
-          <div class="mt-6 flex justify-center">
-            <div class="inline-flex items-center gap-3 bg-white rounded-2xl shadow-sm border border-gray-200 px-5 py-3">
-              <!-- Reactions -->
-              <div class="flex items-center gap-1.5">
+            <!-- Action Bar Below Video -->
+            <div class="mt-6 flex flex-col sm:flex-row sm:items-center justify-between px-1 gap-4 z-30 relative">
+
+              <!-- Left: Reactions Card -->
+              <div class="bg-white border border-gray-200/60 rounded-full p-1 shadow-sm flex items-center gap-0.5">
                 <button
                   v-for="(data, type) in reactions"
                   :key="type"
                   @click="toggleReaction(type)"
-                  class="flex items-center gap-1 px-3 py-1.5 rounded-full transition-all text-base font-medium hover:scale-105"
-                  :class="userReactions.includes(type) ? 'bg-orange-600 text-white shadow-md' : 'hover:bg-gray-100 text-gray-700'"
+                  class="w-9 h-9 rounded-full hover:bg-gray-100 flex items-center justify-center text-lg transition-transform hover:-translate-y-0.5 active:scale-95 relative"
+                  :class="userReactions.includes(type) ? 'bg-orange-100' : ''"
+                  :title="type"
                 >
-                  <span class="text-lg">{{ data.emoji }}</span>
-                  <span v-if="data.count" class="text-sm font-semibold">{{ data.count }}</span>
+                  {{ data.emoji }}
+                  <span v-if="data.count > 0" class="absolute -top-1 -right-1 bg-orange-600 text-white text-[10px] font-bold rounded-full min-w-[16px] h-4 flex items-center justify-center px-1">{{ data.count }}</span>
                 </button>
               </div>
 
-              <!-- Divider -->
-              <div class="w-px h-6 bg-gray-200"></div>
-
-              <!-- Share Button -->
-              <button
-                @click="copyShareLink"
-                class="flex items-center gap-2 px-4 py-1.5 hover:bg-gray-100 text-gray-700 rounded-full font-medium transition-all hover:scale-105"
-              >
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
-                </svg>
-                <span class="text-sm">{{ copied ? 'Copied!' : 'Share' }}</span>
-              </button>
-
-              <!-- Embed Button -->
-              <button
-                @click="copyEmbedCode"
-                class="flex items-center gap-2 px-4 py-1.5 hover:bg-gray-100 text-gray-700 rounded-full font-medium transition-all hover:scale-105"
-                title="Copy embed code"
-              >
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
-                </svg>
-                <span class="text-sm">{{ copiedEmbed ? 'Copied!' : 'Embed' }}</span>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Comments Sidebar (right panel) -->
-        <div class="hidden lg:block w-[400px] flex-shrink-0 py-4 pr-4">
-          <div class="bg-white border border-gray-200 rounded-2xl shadow-sm h-full flex flex-col">
-            <!-- Comments Header -->
-            <div class="px-5 py-4 border-b border-gray-200 flex-shrink-0">
-              <h2 class="text-lg font-bold text-gray-900">Comments</h2>
-              <div class="flex items-center gap-4 text-sm text-gray-500 mt-2">
-                <div class="flex items-center gap-1.5">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <!-- Right: Tools Card -->
+              <div class="bg-white border border-gray-200/60 rounded-full p-1 shadow-sm flex items-center gap-1">
+                <!-- Views -->
+                <div class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-500 rounded-full">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                   </svg>
                   <span>{{ video.views_count || 0 }}</span>
                 </div>
-                <div class="flex items-center gap-1.5">
+
+                <div class="w-px h-4 bg-gray-200 mx-1"></div>
+
+                <!-- Copy Link -->
+                <button @click="copyShareLink" class="w-9 h-9 rounded-full hover:bg-gray-50 hover:text-orange-600 flex items-center justify-center text-gray-500 transition-colors group/copy relative">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
                   </svg>
-                  <span>{{ comments.length }}</span>
-                </div>
-                <div class="flex items-center gap-1.5">
+                  <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 text-[11px] font-medium text-white bg-gray-900 rounded opacity-0 group-hover/copy:opacity-100 transition-all pointer-events-none whitespace-nowrap z-50 shadow-md">Copy Link</span>
+                </button>
+
+                <!-- Embed -->
+                <button @click="copyEmbedCode" class="w-9 h-9 rounded-full hover:bg-gray-50 hover:text-orange-600 flex items-center justify-center text-gray-500 transition-colors group/embed relative">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
                   </svg>
-                  <span>{{ totalReactions }}</span>
-                </div>
+                  <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 text-[11px] font-medium text-white bg-gray-900 rounded opacity-0 group-hover/embed:opacity-100 transition-all pointer-events-none whitespace-nowrap z-50 shadow-md">Embed</span>
+                </button>
               </div>
             </div>
+          </div>
+        </div>
 
-            <!-- Comments List -->
-            <div class="flex-1 overflow-y-auto">
-              <div v-if="comments.length === 0" class="flex flex-col items-center justify-center h-full text-center px-5">
+        <!-- Sidebar -->
+        <aside class="w-full lg:w-[400px] bg-white border-l border-gray-200 flex flex-col z-40 shadow-[-4px_0_24px_rgba(0,0,0,0.02)]">
+
+          <!-- Functional Tabs -->
+          <div class="flex items-center border-b border-gray-100 px-2 sticky top-0 bg-white/95 backdrop-blur z-10">
+            <button
+              @click="activeTab = 'comments'"
+              class="flex-1 py-4 text-xs border-b-2 transition-colors flex items-center justify-center gap-2"
+              :class="activeTab === 'comments' ? 'border-orange-600 text-orange-600 font-semibold bg-orange-50/60' : 'border-transparent text-gray-500 font-medium hover:text-gray-900'"
+            >
+              Comments
+              <span v-if="comments.length" class="px-1.5 py-0.5 rounded-full bg-orange-100 text-orange-700 text-[10px] leading-none">{{ comments.length }}</span>
+            </button>
+            <button
+              @click="activeTab = 'transcript'"
+              class="flex-1 py-4 text-xs border-b-2 transition-colors"
+              :class="activeTab === 'transcript' ? 'border-orange-600 text-orange-600 font-semibold bg-orange-50/60' : 'border-transparent text-gray-500 font-medium hover:text-gray-900'"
+            >
+              Transcript
+            </button>
+            <button
+              @click="activeTab = 'summary'"
+              class="flex-1 py-4 text-xs border-b-2 transition-colors flex items-center justify-center gap-1"
+              :class="activeTab === 'summary' ? 'border-orange-600 text-orange-600 font-semibold bg-orange-50/60' : 'border-transparent text-gray-500 font-medium hover:text-gray-900'"
+            >
+              Summary
+              <svg class="w-3 h-3 text-amber-500" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456z"/>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Content Area -->
+          <div class="flex-1 overflow-y-auto relative">
+
+            <!-- TAB: COMMENTS -->
+            <div v-show="activeTab === 'comments'" class="flex flex-col min-h-full">
+              <div v-if="comments.length === 0" class="flex flex-col items-center justify-center h-64 text-center px-5">
                 <svg class="w-16 h-16 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
                 </svg>
@@ -415,90 +421,124 @@
                 <p class="text-sm text-gray-500 mt-1">Be the first to share your thoughts!</p>
               </div>
 
-              <div v-else class="divide-y divide-gray-100">
-                <div v-for="comment in comments" :key="comment.id" class="px-5 py-4 hover:bg-gray-50 transition-colors">
-                  <div class="flex gap-3">
-                    <img
-                      v-if="comment.author_avatar"
-                      :src="comment.author_avatar"
-                      :alt="comment.author_name"
-                      class="w-9 h-9 rounded-full object-cover flex-shrink-0"
-                    />
-                    <div v-else class="w-9 h-9 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white text-sm font-semibold flex-shrink-0">
+              <div v-else>
+                <div
+                  v-for="comment in comments"
+                  :key="comment.id"
+                  class="group p-5 hover:bg-gray-50/80 transition-colors border-b border-gray-50 flex gap-3 items-start relative"
+                >
+                  <div class="absolute left-0 top-0 bottom-0 w-0.5 bg-orange-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                  <div class="relative">
+                    <img v-if="comment.author_avatar" :src="comment.author_avatar" class="w-8 h-8 rounded-full object-cover border border-gray-100 shadow-sm">
+                    <div v-else class="w-8 h-8 rounded-full bg-gradient-to-br from-orange-100 to-amber-100 flex items-center justify-center border border-orange-200/50 text-orange-600 text-xs font-bold shadow-sm">
                       {{ comment.author_name.charAt(0).toUpperCase() }}
                     </div>
-                    <div class="flex-1 min-w-0">
-                      <div class="flex items-center gap-2 mb-1">
-                        <span class="text-gray-900 text-sm font-semibold">{{ comment.author_name }}</span>
-                        <span class="text-gray-400 text-xs">{{ formatCommentTime(comment.created_at) }}</span>
-                      </div>
-                      <p class="text-gray-700 text-sm leading-relaxed">{{ comment.content }}</p>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center justify-between mb-1">
+                      <span class="text-xs font-semibold text-gray-900">{{ comment.author_name }}</span>
+                      <span class="text-[10px] text-gray-400">{{ formatCommentTime(comment.created_at) }}</span>
                     </div>
+                    <p class="text-[13px] text-gray-600 leading-relaxed">{{ comment.content }}</p>
                   </div>
                 </div>
               </div>
             </div>
 
-            <!-- Comment Input (at bottom) -->
-            <div class="border-t border-gray-200 px-5 py-4 flex-shrink-0">
-              <!-- Authenticated users -->
-              <div v-if="isAuthenticated" class="flex gap-3 mb-3">
-                <img
-                  v-if="currentUser?.avatar"
-                  :src="currentUser.avatar"
-                  :alt="currentUser.name"
-                  class="w-9 h-9 rounded-full object-cover flex-shrink-0"
-                />
-                <div v-else class="w-9 h-9 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white text-sm font-semibold flex-shrink-0">
-                  {{ userInitial }}
-                </div>
-                <div class="flex-1">
-                  <textarea
-                    v-model="newComment"
-                    placeholder="Add a comment..."
-                    rows="3"
-                    @keydown.enter.exact.prevent="addComment"
-                    class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500 resize-none"
-                  ></textarea>
-                </div>
-              </div>
-              <div v-if="isAuthenticated" class="flex justify-end">
-                <button
-                  @click="addComment"
-                  :disabled="!newComment.trim() || isSavingComment"
-                  class="px-5 py-2 bg-orange-600 hover:bg-orange-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors"
-                >
-                  {{ isSavingComment ? 'Posting...' : 'Comment' }}
-                </button>
-              </div>
-
-              <!-- Sign In Prompt (Non-authenticated users) -->
-              <div v-else class="p-4 bg-gray-50 rounded-xl border border-gray-200">
-                <p class="text-gray-500 text-sm mb-3">Sign in to leave a comment</p>
-                <button
-                  @click="loginToComment"
-                  class="flex items-center justify-center w-full px-4 py-2.5 text-sm font-medium text-gray-700 bg-white rounded-lg hover:bg-gray-100 transition-colors border border-gray-200"
-                >
-                  <svg class="w-5 h-5 mr-2" viewBox="0 0 24 24">
-                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+            <!-- TAB: TRANSCRIPT -->
+            <div v-show="activeTab === 'transcript'" class="p-5">
+              <div class="flex flex-col items-center justify-center h-64 text-center">
+                <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+                  <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                   </svg>
-                  Sign in with Google
-                </button>
+                </div>
+                <p class="text-base font-semibold text-gray-900">Transcript Coming Soon</p>
+                <p class="text-sm text-gray-500 mt-1">Auto-generated transcripts will appear here</p>
               </div>
             </div>
+
+            <!-- TAB: SUMMARY -->
+            <div v-show="activeTab === 'summary'" class="p-5">
+              <div class="flex flex-col items-center justify-center h-64 text-center">
+                <div class="w-16 h-16 rounded-full bg-gradient-to-br from-orange-100 to-amber-100 flex items-center justify-center mb-4">
+                  <svg class="w-8 h-8 text-orange-500" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456z"/>
+                  </svg>
+                </div>
+                <p class="text-base font-semibold text-gray-900">AI Summary Coming Soon</p>
+                <p class="text-sm text-gray-500 mt-1">Get AI-powered insights about this recording</p>
+              </div>
+            </div>
+
           </div>
-        </div>
-      </div>
-    </div>
+
+          <!-- Comment Input -->
+          <div v-show="activeTab === 'comments'" class="p-4 bg-white border-t border-gray-100 z-20">
+            <!-- Authenticated users -->
+            <div v-if="isAuthenticated">
+              <div class="relative shadow-sm ring-1 ring-gray-200 rounded-xl bg-white focus-within:ring-2 focus-within:ring-orange-500/20 focus-within:border-orange-500 transition-all">
+                <textarea
+                  v-model="newComment"
+                  rows="1"
+                  placeholder="Add a comment..."
+                  @keydown.enter.exact.prevent="addComment"
+                  class="w-full bg-transparent border-none text-[13px] text-gray-900 placeholder:text-gray-400 focus:ring-0 p-3 resize-none min-h-[44px]"
+                ></textarea>
+
+                <div class="flex items-center justify-between px-2 pb-2">
+                  <div class="flex items-center gap-1">
+                    <button class="p-1.5 text-gray-400 hover:text-orange-600 hover:bg-orange-50 rounded-md transition-colors">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"/>
+                      </svg>
+                    </button>
+                    <button class="p-1.5 text-gray-400 hover:text-orange-600 hover:bg-orange-50 rounded-md transition-colors">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                      </svg>
+                    </button>
+                  </div>
+                  <button
+                    @click="addComment"
+                    :disabled="!newComment.trim() || isSavingComment"
+                    class="bg-orange-600 text-white p-1.5 rounded-lg hover:bg-orange-700 transition-colors shadow-sm shadow-orange-200 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                  >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Sign In Prompt (Non-authenticated users) -->
+            <div v-else class="p-4 bg-gray-50 rounded-xl border border-gray-200">
+              <p class="text-gray-500 text-sm mb-3 text-center">Sign in to leave a comment</p>
+              <button
+                @click="loginToComment"
+                class="flex items-center justify-center w-full px-4 py-2.5 text-sm font-medium text-gray-700 bg-white rounded-lg hover:bg-gray-100 transition-colors border border-gray-200"
+              >
+                <svg class="w-5 h-5 mr-2" viewBox="0 0 24 24">
+                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                </svg>
+                Sign in with Google
+              </button>
+            </div>
+          </div>
+        </aside>
+
+      </main>
+    </template>
 
     <!-- Toast -->
     <transition name="toast">
       <div
         v-if="toast"
-        class="fixed bottom-8 left-1/2 -translate-x-1/2 px-5 py-3 bg-white text-gray-900 rounded-xl text-sm font-medium shadow-2xl border border-gray-200 flex items-center gap-2"
+        class="fixed bottom-8 left-1/2 -translate-x-1/2 px-5 py-3 bg-white text-gray-900 rounded-xl text-sm font-medium shadow-2xl border border-gray-200 flex items-center gap-2 z-[100]"
       >
         <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
           <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
@@ -506,11 +546,12 @@
         {{ toast }}
       </div>
     </transition>
+
   </div>
 </template>
 
 <script>
-import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuth } from '@/stores/auth'
 import Hls from 'hls.js'
@@ -558,25 +599,22 @@ export default {
     const copied = ref(false)
     const copiedEmbed = ref(false)
     const toast = ref(null)
-    const showSkipBack = ref(false)
-    const showSkipForward = ref(false)
-    const skipBackAmount = ref(5)
-    const skipForwardAmount = ref(5)
 
     const newComment = ref('')
     const isSavingComment = ref(false)
 
+    const showShareModal = ref(false)
+    const activeTab = ref('comments')
+
     // HLS related
     const hlsInstance = ref(null)
     const availableQualities = ref([])
-    const currentQuality = ref(-1) // Will be set to 1080p in MANIFEST_PARSED
+    const currentQuality = ref(-1)
     const showQualityMenu = ref(false)
     const qualityMenuRef = ref(null)
-    const isHlsSupported = ref(Hls.isSupported())
 
     let controlsTimeout = null
     let toastTimeout = null
-    let skipTimeout = null
 
     const progressPercent = computed(() => {
       if (!duration.value) return 0
@@ -586,6 +624,8 @@ export default {
     const totalReactions = computed(() => {
       return Object.values(reactions.value).reduce((sum, r) => sum + (r.count || 0), 0)
     })
+
+    const shareUrl = computed(() => window.location.href)
 
     const sessionId = ref(localStorage.getItem('screensense_session') || Math.random().toString(36).substring(2))
     if (!localStorage.getItem('screensense_session')) {
@@ -617,9 +657,16 @@ export default {
       if (!videoElement) return
 
       const hlsUrl = video.value.hls_url
+      const isHlsReady = video.value.is_hls_ready
+
+      // Check backend's is_hls_ready flag - if not ready, use raw URL
+      if (!isHlsReady || !hlsUrl) {
+        videoElement.src = video.value.url
+        return
+      }
 
       // If HLS URL available and HLS.js is supported
-      if (hlsUrl && Hls.isSupported()) {
+      if (Hls.isSupported()) {
         // Destroy existing instance
         if (hlsInstance.value) {
           hlsInstance.value.destroy()
@@ -629,6 +676,19 @@ export default {
           enableWorker: true,
           lowLatencyMode: false,
           backBufferLength: 90,
+          // Handle 404/403 errors gracefully
+          xhrSetup: function (xhr, url) {
+            xhr.onreadystatechange = function () {
+              if (xhr.readyState === 4) {
+                if (xhr.status === 404 || xhr.status === 403) {
+                  // Manifest missing or forbidden, fallback to raw
+                  console.warn('HLS manifest missing/forbidden, falling back to MP4')
+                  hls.destroy()
+                  videoElement.src = video.value.url
+                }
+              }
+            }
+          }
         })
 
         hls.loadSource(hlsUrl)
@@ -644,7 +704,7 @@ export default {
             label: level.height >= 2160 ? '4K' : `${level.height}p`
           }))
 
-          // Set highest quality as default (usually 1080p or 720p)
+          // Set highest quality as default
           if (availableQualities.value.length > 0) {
             const highest = availableQualities.value[availableQualities.value.length - 1]
             currentQuality.value = highest.index
@@ -652,28 +712,22 @@ export default {
           }
         })
 
-        hls.on(Hls.Events.LEVEL_SWITCHED, (event, data) => {
-          const level = hls.levels[data.level]
-          if (level) {
-            console.log(`HLS switched to ${level.height}p`)
-          }
-        })
-
         hls.on(Hls.Events.ERROR, (event, data) => {
           if (data.fatal) {
             switch (data.type) {
               case Hls.ErrorTypes.NETWORK_ERROR:
-                console.error('HLS network error, trying to recover...')
-                hls.startLoad()
+                if (data.response && (data.response.code === 404 || data.response.code === 403)) {
+                  hls.destroy()
+                  videoElement.src = video.value.url
+                } else {
+                  hls.startLoad()
+                }
                 break
               case Hls.ErrorTypes.MEDIA_ERROR:
-                console.error('HLS media error, trying to recover...')
                 hls.recoverMediaError()
                 break
               default:
-                console.error('HLS fatal error, falling back to MP4')
                 hls.destroy()
-                // Fallback to regular MP4
                 videoElement.src = video.value.url
                 break
             }
@@ -685,6 +739,10 @@ export default {
       } else if (hlsUrl && videoElement.canPlayType('application/vnd.apple.mpegurl')) {
         // Native HLS support (Safari)
         videoElement.src = hlsUrl
+        videoElement.onerror = () => {
+          console.warn('Native HLS failed, falling back to MP4')
+          videoElement.src = video.value.url
+        }
       } else {
         // Fallback to MP4
         videoElement.src = video.value.url
@@ -693,24 +751,21 @@ export default {
 
     const setQuality = (qualityIndex) => {
       if (!hlsInstance.value) return
-
       currentQuality.value = qualityIndex
       showQualityMenu.value = false
-
       hlsInstance.value.currentLevel = qualityIndex
       const quality = availableQualities.value.find(q => q.index === qualityIndex)
-      showToast(`Quality: ${quality?.label || '1080p'}`)
+      showToast(`Quality: ${quality?.label || 'Auto'}`)
     }
 
     const toggleQualityMenu = () => {
       showQualityMenu.value = !showQualityMenu.value
-      // Close speed menu if open
       showSpeedMenu.value = false
     }
 
     const getCurrentQualityLabel = () => {
       const quality = availableQualities.value.find(q => q.index === currentQuality.value)
-      return quality?.label || '1080p'
+      return quality?.label || 'Auto'
     }
 
     const destroyHls = () => {
@@ -770,20 +825,17 @@ export default {
     }
 
     const seekToPosition = (clientX) => {
-      const video = videoRef.value
+      const vid = videoRef.value
       const bar = progressBar.value
-      if (!video || !bar) return
+      if (!vid || !bar) return
 
-      const videoDuration = isFinite(video.duration) && video.duration > 0
-        ? video.duration
-        : duration.value
-
+      const videoDuration = isFinite(vid.duration) && vid.duration > 0 ? vid.duration : duration.value
       if (!videoDuration || !isFinite(videoDuration) || videoDuration <= 0) return
 
       const rect = bar.getBoundingClientRect()
       const percent = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width))
       const newTime = percent * videoDuration
-      video.currentTime = newTime
+      vid.currentTime = newTime
       currentTime.value = newTime
     }
 
@@ -793,11 +845,11 @@ export default {
 
     const startSeeking = (e) => {
       e.preventDefault()
-      const video = videoRef.value
-      if (!video) return
+      const vid = videoRef.value
+      if (!vid) return
 
-      const wasPlaying = !video.paused
-      if (wasPlaying) video.pause()
+      const wasPlaying = !vid.paused
+      if (wasPlaying) vid.pause()
 
       const onMouseMove = (moveEvent) => {
         seekToPosition(moveEvent.clientX)
@@ -806,7 +858,7 @@ export default {
       const onMouseUp = () => {
         document.removeEventListener('mousemove', onMouseMove)
         document.removeEventListener('mouseup', onMouseUp)
-        if (wasPlaying && video) video.play()
+        if (wasPlaying && vid) vid.play()
       }
 
       document.addEventListener('mousemove', onMouseMove)
@@ -823,32 +875,16 @@ export default {
     }
 
     const skip = (seconds) => {
-      const video = videoRef.value
-      if (!video) return
+      const vid = videoRef.value
+      if (!vid) return
 
-      const videoDuration = isFinite(video.duration) && video.duration > 0
-        ? video.duration
-        : duration.value
-
+      const videoDuration = isFinite(vid.duration) && vid.duration > 0 ? vid.duration : duration.value
       if (!videoDuration || !isFinite(videoDuration) || videoDuration <= 0) return
 
-      const currentVideoTime = video.currentTime || 0
+      const currentVideoTime = vid.currentTime || 0
       const newTime = Math.max(0, Math.min(videoDuration, currentVideoTime + seconds))
-      video.currentTime = newTime
+      vid.currentTime = newTime
       currentTime.value = newTime
-
-      const actualSkip = Math.abs(Math.round(seconds))
-      if (seconds < 0) {
-        skipBackAmount.value = actualSkip
-        showSkipBack.value = true
-        if (skipTimeout) clearTimeout(skipTimeout)
-        skipTimeout = setTimeout(() => { showSkipBack.value = false }, 600)
-      } else if (seconds > 0) {
-        skipForwardAmount.value = actualSkip
-        showSkipForward.value = true
-        if (skipTimeout) clearTimeout(skipTimeout)
-        skipTimeout = setTimeout(() => { showSkipForward.value = false }, 600)
-      }
     }
 
     const toggleMute = () => {
@@ -865,6 +901,7 @@ export default {
 
     const toggleSpeedMenu = () => {
       showSpeedMenu.value = !showSpeedMenu.value
+      showQualityMenu.value = false
     }
 
     const setPlaybackSpeed = (speed) => {
@@ -905,7 +942,7 @@ export default {
     const hideControlsDelayed = () => {
       if (controlsTimeout) clearTimeout(controlsTimeout)
       controlsTimeout = setTimeout(() => {
-        if (isPlaying.value && !showSpeedMenu.value) controlsVisible.value = false
+        if (isPlaying.value && !showSpeedMenu.value && !showQualityMenu.value) controlsVisible.value = false
       }, 3000)
     }
 
@@ -916,10 +953,15 @@ export default {
       return `${mins}:${secs.toString().padStart(2, '0')}`
     }
 
-    const formatDate = (dateStr) => {
+    const formatTimeAgo = (dateStr) => {
       if (!dateStr) return ''
       const date = new Date(dateStr)
-      return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+      const seconds = Math.floor((new Date() - date) / 1000)
+      if (seconds < 60) return 'Just now'
+      if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`
+      if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`
+      if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`
+      return date.toLocaleDateString()
     }
 
     const formatCommentTime = (dateStr) => {
@@ -1022,47 +1064,7 @@ export default {
     const handleKeydown = (e) => {
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return
 
-      const key = e.key
-
-      if (key === 'ArrowLeft') {
-        e.preventDefault()
-        skip(-5)
-        return
-      }
-      if (key === 'ArrowRight') {
-        e.preventDefault()
-        skip(5)
-        return
-      }
-      if (key === 'ArrowUp') {
-        e.preventDefault()
-        volume.value = Math.min(1, Number(volume.value) + 0.1)
-        updateVolume()
-        showToast(`Volume: ${Math.round(volume.value * 100)}%`)
-        return
-      }
-      if (key === 'ArrowDown') {
-        e.preventDefault()
-        volume.value = Math.max(0, Number(volume.value) - 0.1)
-        updateVolume()
-        showToast(`Volume: ${Math.round(volume.value * 100)}%`)
-        return
-      }
-
-      if (key >= '0' && key <= '9') {
-        e.preventDefault()
-        const percent = parseInt(key) * 10
-        const video = videoRef.value
-        if (video && duration.value) {
-          const newTime = (percent / 100) * duration.value
-          video.currentTime = newTime
-          currentTime.value = newTime
-          showToast(`Jumped to ${percent}%`)
-        }
-        return
-      }
-
-      switch (key.toLowerCase()) {
+      switch (e.key.toLowerCase()) {
         case ' ':
         case 'k':
           e.preventDefault()
@@ -1077,6 +1079,14 @@ export default {
           toggleMute()
           showToast(isMuted.value ? 'Muted' : 'Unmuted')
           break
+        case 'arrowleft':
+          e.preventDefault()
+          skip(-5)
+          break
+        case 'arrowright':
+          e.preventDefault()
+          skip(5)
+          break
         case 'j':
           e.preventDefault()
           skip(-10)
@@ -1089,6 +1099,30 @@ export default {
           e.preventDefault()
           togglePiP()
           break
+        case 'arrowup':
+          e.preventDefault()
+          volume.value = Math.min(1, Number(volume.value) + 0.1)
+          updateVolume()
+          showToast(`Volume: ${Math.round(volume.value * 100)}%`)
+          break
+        case 'arrowdown':
+          e.preventDefault()
+          volume.value = Math.max(0, Number(volume.value) - 0.1)
+          updateVolume()
+          showToast(`Volume: ${Math.round(volume.value * 100)}%`)
+          break
+      }
+
+      if (e.key >= '0' && e.key <= '9') {
+        e.preventDefault()
+        const percent = parseInt(e.key) * 10
+        const vid = videoRef.value
+        if (vid && duration.value) {
+          const newTime = (percent / 100) * duration.value
+          vid.currentTime = newTime
+          currentTime.value = newTime
+          showToast(`Jumped to ${percent}%`)
+        }
       }
     }
 
@@ -1118,7 +1152,6 @@ export default {
       document.removeEventListener('fullscreenchange', handleFullscreenChange)
       if (controlsTimeout) clearTimeout(controlsTimeout)
       if (toastTimeout) clearTimeout(toastTimeout)
-      if (skipTimeout) clearTimeout(skipTimeout)
       destroyHls()
     })
 
@@ -1128,14 +1161,15 @@ export default {
       isPlaying, isBuffering, videoLoading, isMuted, isFullscreen, volume, currentTime, duration,
       bufferedPercent, progressPercent, playbackSpeed, speedOptions, controlsVisible,
       hoverTime, hoverPercent, showSpeedMenu, showBigPlayButton,
-      copied, copiedEmbed, toast, showSkipBack, showSkipForward, skipBackAmount, skipForwardAmount,
+      copied, copiedEmbed, toast, shareUrl,
       newComment, isSavingComment, isAuthenticated, currentUser, userInitial,
+      showShareModal, activeTab,
       // HLS
-      availableQualities, currentQuality, showQualityMenu, isHlsSupported,
+      availableQualities, currentQuality, showQualityMenu,
       togglePlay, updateProgress, onVideoLoaded, onVideoError, onVideoEnded, seek, startSeeking,
       updateHoverTime, skip, toggleMute, updateVolume, toggleSpeedMenu, setPlaybackSpeed,
       toggleFullscreen, togglePiP, showControls, hideControlsDelayed,
-      formatTime, formatDate, formatCommentTime, copyShareLink, copyEmbedCode, toggleReaction, addComment, loginToComment,
+      formatTime, formatTimeAgo, formatCommentTime, copyShareLink, copyEmbedCode, toggleReaction, addComment, loginToComment,
       // HLS functions
       setQuality, toggleQualityMenu, getCurrentQualityLabel
     }
@@ -1151,14 +1185,23 @@ export default {
 .toast-leave-active { transition: all 0.2s ease; }
 .toast-enter-from, .toast-leave-to { opacity: 0; transform: translate(-50%, 20px); }
 
-.skip-left-enter-active, .skip-left-leave-active,
-.skip-right-enter-active, .skip-right-leave-active { transition: all 0.3s ease; }
-.skip-left-enter-from, .skip-left-leave-to { opacity: 0; transform: translate(-20px, -50%); }
-.skip-right-enter-from, .skip-right-leave-to { opacity: 0; transform: translate(20px, -50%); }
+@keyframes pulse-glow {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.01); }
+}
+.ambient-glow { animation: pulse-glow 8s infinite ease-in-out; }
 
-.progress-bar { transition: height 0.15s ease; }
-.progress-bar:hover { height: 6px; }
-
-input[type="range"] { -webkit-appearance: none; height: 4px; background: rgba(255,255,255,0.2); border-radius: 2px; }
-input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; background: #f97316; border-radius: 50%; cursor: pointer; }
+input[type=range] { -webkit-appearance: none; background: transparent; }
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: 12px; width: 12px;
+  border-radius: 50%; background: white;
+  cursor: pointer; margin-top: -5px;
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 2px 4px rgba(0,0,0,0.1);
+}
+input[type=range]::-webkit-slider-runnable-track {
+  width: 100%; height: 2px;
+  cursor: pointer; background: rgba(255,255,255,0.3);
+  border-radius: 10px;
+}
 </style>
