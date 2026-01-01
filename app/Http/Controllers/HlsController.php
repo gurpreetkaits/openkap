@@ -66,8 +66,7 @@ class HlsController extends Controller
         if (! $filePath) {
             Log::error('HLS: Master playlist not found', [
                 'video_id' => $video->id,
-                'expected_path' => Storage::path('public/hls/'.$video->id.'/master.m3u8'),
-                'file_exists' => file_exists(Storage::path('public/hls/'.$video->id.'/master.m3u8')),
+                'expected_path' => Storage::disk('public')->path('hls/'.$video->id.'/master.m3u8'),
             ]);
             abort(404, 'Playlist not found');
         }
@@ -129,17 +128,15 @@ class HlsController extends Controller
 
     /**
      * Get the actual file path from storage.
-     * Laravel's public/storage symlinks to storage/app/public
+     * HLS files are stored in storage/app/public/hls/{id}/
      */
     protected function getFilePath(int $videoId, string $filename): ?string
     {
-        // Path relative to storage/app/ (Storage facade root)
-        // Files are at: storage/app/public/hls/{id}/{file}
-        // Accessible via symlink at: public/storage/hls/{id}/{file}
-        $storagePath = 'public/hls/'.$videoId.'/'.$filename;
+        // Use 'public' disk which has root at storage/app/public
+        $path = 'hls/'.$videoId.'/'.$filename;
 
-        if (Storage::exists($storagePath)) {
-            return Storage::path($storagePath);
+        if (Storage::disk('public')->exists($path)) {
+            return Storage::disk('public')->path($path);
         }
 
         return null;
