@@ -29,11 +29,8 @@
       <!-- Navigation -->
       <nav class="h-14 border-b border-gray-200/60 bg-white/80 backdrop-blur-md flex items-center justify-between px-4 lg:px-6 z-50 fixed top-0 w-full">
         <div class="flex items-center gap-3">
-          <a href="/" class="bg-orange-600 text-white w-8 h-8 rounded-lg flex items-center justify-center shadow-lg shadow-orange-500/20 hover:bg-orange-700 transition-colors">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <circle cx="12" cy="12" r="10" stroke-width="2"/>
-              <path stroke-linecap="round" stroke-width="2" d="M12 6v12M6 12h12"/>
-            </svg>
+          <a href="/" class="flex items-center gap-2 hover:opacity-80 transition-opacity">
+            <img src="/logo.png" alt="ScreenSense" class="w-8 h-8 rounded-lg shadow-sm" />
           </a>
           <div class="h-4 w-px bg-gray-200"></div>
           <div class="flex flex-col justify-center">

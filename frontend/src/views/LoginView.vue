@@ -3,11 +3,7 @@
     <div class="max-w-md w-full space-y-8">
       <!-- Logo and Title -->
       <div class="text-center">
-        <div class="mx-auto w-16 h-16 bg-orange-600 rounded-2xl flex items-center justify-center">
-          <svg class="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 20 20">
-            <path d="M2 6a2 2 0 012-2h6l2 2h6a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM5 8a1 1 0 000 2h8a1 1 0 100-2H5z"/>
-          </svg>
-        </div>
+        <img src="/logo.png" alt="ScreenSense" class="mx-auto w-16 h-16 rounded-2xl shadow-lg" />
         <h2 class="mt-6 text-3xl font-bold text-gray-900">
           Welcome to ScreenSense
         </h2>

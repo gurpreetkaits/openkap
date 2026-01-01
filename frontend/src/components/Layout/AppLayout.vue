@@ -4,14 +4,10 @@
     <aside class="hidden lg:flex w-[260px] bg-white border-r border-gray-200 flex-col flex-shrink-0 h-full z-30 transition-all duration-300 relative">
       <!-- Logo -->
       <div class="h-14 flex items-center px-5 border-b border-gray-100/50 flex-shrink-0">
-        <div class="flex items-center gap-2.5 group cursor-pointer">
-          <div class="bg-gradient-to-br from-orange-500 to-orange-600 text-white p-1.5 rounded-lg shadow-sm shadow-orange-200 group-hover:shadow-orange-300 transition-all duration-300">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
-            </svg>
-          </div>
+        <router-link to="/videos" class="flex items-center gap-2.5 group cursor-pointer">
+          <img src="/logo.png" alt="ScreenSense" class="w-7 h-7 rounded-lg shadow-sm group-hover:shadow-md transition-all duration-300" />
           <span class="text-gray-900 font-semibold tracking-tight text-[15px]">ScreenSense</span>
-        </div>
+        </router-link>
       </div>
 
       <!-- Navigation Scroll Area -->
@@ -196,14 +192,10 @@
         </div>
 
         <!-- Mobile Logo -->
-        <div class="lg:hidden flex items-center gap-2.5">
-          <div class="bg-gradient-to-br from-orange-500 to-orange-600 text-white p-1.5 rounded-lg">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
-            </svg>
-          </div>
+        <router-link to="/videos" class="lg:hidden flex items-center gap-2.5">
+          <img src="/logo.png" alt="ScreenSense" class="w-7 h-7 rounded-lg" />
           <span class="text-gray-900 font-semibold tracking-tight text-[15px]">ScreenSense</span>
-        </div>
+        </router-link>
 
         <!-- Global Search & Actions -->
         <div class="flex items-center gap-3">
@@ -252,16 +244,12 @@
       <div class="fixed inset-0 bg-gray-600 bg-opacity-75"></div>
 
       <aside class="fixed inset-y-0 left-0 w-[260px] bg-white border-r border-gray-200 flex flex-col">
-        <!-- Mobile Logo -->
+        <!-- Mobile Sidebar Logo -->
         <div class="h-14 flex items-center justify-between px-5 border-b border-gray-100/50">
-          <div class="flex items-center gap-2.5">
-            <div class="bg-gradient-to-br from-orange-500 to-orange-600 text-white p-1.5 rounded-lg">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
-              </svg>
-            </div>
+          <router-link to="/videos" class="flex items-center gap-2.5" @click="sidebarOpen = false">
+            <img src="/logo.png" alt="ScreenSense" class="w-7 h-7 rounded-lg" />
             <span class="text-gray-900 font-semibold tracking-tight text-[15px]">ScreenSense</span>
-          </div>
+          </router-link>
 
           <button
             @click="sidebarOpen = false"
