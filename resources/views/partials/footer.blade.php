@@ -11,6 +11,7 @@
             <a href="/privacy-policy" class="hover:text-white transition-colors">Privacy</a>
             <a href="/terms" class="hover:text-white transition-colors">Terms</a>
             <a href="https://github.com/gurpreetkaits/screensense" target="_blank" rel="noopener noreferrer" class="hover:text-white transition-colors">GitHub</a>
+            <a href="https://discord.gg/Y2mq4V5DBz" target="_blank" rel="noopener noreferrer" class="hover:text-white transition-colors">Discord</a>
         </div>
     </div>
 </footer>
