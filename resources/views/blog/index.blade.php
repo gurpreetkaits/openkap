@@ -1,4 +1,4 @@
-@extends('layouts.blog')
+@extends('layouts.app')
 
 @section('title', 'Blog | ScreenSense - Screen Recording Tips & Guides')
 @section('meta_description', 'Tips, guides, and insights about screen recording and async communication. Learn how to create better screen recordings for free.')

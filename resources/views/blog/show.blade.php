@@ -1,4 +1,4 @@
-@extends('layouts.blog')
+@extends('layouts.app')
 
 @section('title', $blog->meta_title ?? $blog->title . ' | ScreenSense Blog')
 @section('meta_description', $blog->meta_description ?? $blog->excerpt)
