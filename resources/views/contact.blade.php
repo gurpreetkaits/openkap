@@ -1,4 +1,4 @@
-@extends('layouts.blog')
+@extends('layouts.app')
 
 @section('title', 'Contact Us | ScreenSense')
 @section('meta_description', 'Get in touch with ScreenSense. We\'re here to help with questions, feedback, bug reports, and support.')

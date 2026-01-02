@@ -1,1019 +1,408 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ScreenSense - Screen Recording Made Simple</title>
-    <meta name="description" content="Record your screen, capture audio, and share instantly with ScreenSense. Simple, fast, and secure screen recording.">
-    <link rel="icon" type="image/png" href="/favicon.png">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: #0a0a0b;
-            min-height: 100vh;
-            color: #ffffff;
-        }
-
-        /* Navbar */
-        .navbar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 100;
-            padding: 1rem 2rem;
-            background: rgba(10, 10, 11, 0.8);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-        }
-
-        .navbar-inner {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .navbar-brand {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            text-decoration: none;
-            color: white;
-        }
-
-        .navbar-logo {
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
-        }
-
-        .navbar-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            letter-spacing: -0.02em;
-        }
-
-        .navbar-links {
-            display: flex;
-            align-items: center;
-            gap: 1.5rem;
-        }
-
-        .navbar-link {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            color: rgba(255, 255, 255, 0.7);
-            text-decoration: none;
-            font-size: 0.875rem;
-            font-weight: 500;
-            transition: color 0.2s;
-        }
-
-        .navbar-link:hover {
-            color: white;
-        }
-
-        .navbar-link svg {
-            width: 20px;
-            height: 20px;
-        }
-
-        .btn-signin {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            background: #ea580c;
-            color: white;
-            padding: 0.625rem 1.25rem;
-            border-radius: 8px;
-            font-size: 0.875rem;
-            font-weight: 600;
-            text-decoration: none;
-            transition: background 0.2s, transform 0.2s;
-        }
-
-        .btn-signin:hover {
-            background: #dc2626;
-            transform: translateY(-1px);
-        }
-
-        /* Hero Section */
-        .hero {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 8rem 2rem 4rem;
-            text-align: center;
-        }
-
-        .hero-content {
-            max-width: 800px;
-        }
-
-        .hero-badges {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.75rem;
-            margin-bottom: 2rem;
-            flex-wrap: wrap;
-        }
-
-        .hero-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            background: rgba(234, 88, 12, 0.1);
-            color: #ea580c;
-            padding: 0.5rem 1rem;
-            border-radius: 50px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            letter-spacing: 0.05em;
-            text-transform: uppercase;
-            border: 1px solid rgba(234, 88, 12, 0.2);
-        }
-
-        .hero-badge-dot {
-            width: 6px;
-            height: 6px;
-            background: #ea580c;
-            border-radius: 50%;
-        }
-
-        .github-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            background: rgba(255, 255, 255, 0.05);
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 50px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-decoration: none;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: all 0.2s;
-        }
-
-        .github-badge:hover {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: rgba(255, 255, 255, 0.2);
-            transform: translateY(-1px);
-        }
-
-        .github-badge svg {
-            width: 14px;
-            height: 14px;
-        }
-
-        .github-badge-star {
-            color: #fbbf24;
-        }
-
-        .hero-title {
-            font-size: clamp(2.5rem, 8vw, 4.5rem);
-            font-weight: 700;
-            line-height: 1.1;
-            letter-spacing: -0.03em;
-            margin-bottom: 1.5rem;
-        }
-
-        .hero-title-gradient {
-            background: linear-gradient(135deg, #ea580c 0%, #f97316 50%, #fbbf24 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .hero-description {
-            font-size: 1.25rem;
-            color: rgba(255, 255, 255, 0.6);
-            line-height: 1.6;
-            margin-bottom: 3rem;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .hero-cta {
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        .btn-primary {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            background: #ea580c;
-            color: white;
-            padding: 1rem 2rem;
-            border-radius: 12px;
-            font-size: 1rem;
-            font-weight: 600;
-            text-decoration: none;
-            transition: all 0.2s;
-            box-shadow: 0 4px 20px rgba(234, 88, 12, 0.3);
-        }
-
-        .btn-primary:hover {
-            background: #dc2626;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 30px rgba(234, 88, 12, 0.4);
-        }
-
-        .btn-secondary {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            background: rgba(255, 255, 255, 0.05);
-            color: white;
-            padding: 1rem 2rem;
-            border-radius: 12px;
-            font-size: 1rem;
-            font-weight: 600;
-            text-decoration: none;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: all 0.2s;
-        }
-
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: rgba(255, 255, 255, 0.2);
-        }
-
-        /* Demo Section */
-        .demo {
-            padding: 4rem 2rem;
-            background: #0a0a0b;
-        }
-
-        .demo-inner {
-            max-width: 900px;
-            margin: 0 auto;
-            text-align: center;
-        }
-
-        .demo-title {
-            font-size: 1.75rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-            letter-spacing: -0.02em;
-        }
-
-        .demo-subtitle {
-            color: rgba(255, 255, 255, 0.5);
-            margin-bottom: 2rem;
-        }
-
-        .demo-video-card {
-            background: linear-gradient(145deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 20px;
-            padding: 12px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-        }
-
-        .demo-video-header {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 12px 12px;
-        }
-
-        .demo-video-dots {
-            display: flex;
-            gap: 6px;
-        }
-
-        .demo-video-dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-        }
-
-        .demo-video-dot.red { background: #ff5f56; }
-        .demo-video-dot.yellow { background: #ffbd2e; }
-        .demo-video-dot.green { background: #27ca40; }
-
-        .demo-video-title {
-            flex: 1;
-            text-align: center;
-            font-size: 0.8rem;
-            color: rgba(255, 255, 255, 0.5);
-            font-weight: 500;
-        }
-
-        .demo-video-container {
-            position: relative;
-            border-radius: 12px;
-            overflow: hidden;
-            background: #000;
-            aspect-ratio: 16 / 9;
-        }
-
-        .demo-video {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            display: block;
-        }
-
-        /* Custom Video Controls */
-        .video-controls {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: linear-gradient(transparent, rgba(0,0,0,0.8));
-            padding: 2rem 1rem 1rem;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-
-        .demo-video-container:hover .video-controls {
-            opacity: 1;
-        }
-
-        .video-progress {
-            width: 100%;
-            height: 4px;
-            background: rgba(255,255,255,0.2);
-            border-radius: 2px;
-            margin-bottom: 12px;
-            cursor: pointer;
-            overflow: hidden;
-        }
-
-        .video-progress-bar {
-            height: 100%;
-            background: #ea580c;
-            border-radius: 2px;
-            width: 0%;
-            transition: width 0.1s;
-        }
-
-        .video-controls-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .video-controls-left,
-        .video-controls-right {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .video-btn {
-            background: none;
-            border: none;
-            color: white;
-            cursor: pointer;
-            padding: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: color 0.2s, transform 0.2s;
-        }
-
-        .video-btn:hover {
-            color: #ea580c;
-            transform: scale(1.1);
-        }
-
-        .video-btn svg {
-            width: 20px;
-            height: 20px;
-        }
-
-        .video-btn.play-btn svg {
-            width: 24px;
-            height: 24px;
-        }
-
-        .video-time {
-            font-size: 0.75rem;
-            color: rgba(255,255,255,0.7);
-            font-family: monospace;
-        }
-
-        /* Play overlay */
-        .video-play-overlay {
-            position: absolute;
-            inset: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(0,0,0,0.3);
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-
-        .video-play-overlay:hover {
-            background: rgba(0,0,0,0.4);
-        }
-
-        .video-play-overlay.hidden {
-            display: none;
-        }
-
-        .play-overlay-btn {
-            width: 80px;
-            height: 80px;
-            background: rgba(234, 88, 12, 0.9);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: transform 0.2s, background 0.2s;
-        }
-
-        .video-play-overlay:hover .play-overlay-btn {
-            transform: scale(1.1);
-            background: #ea580c;
-        }
-
-        .play-overlay-btn svg {
-            width: 32px;
-            height: 32px;
-            color: white;
-            margin-left: 4px;
-        }
-
-        /* Features Section */
-        .features {
-            padding: 4rem 2rem 6rem;
-            background: linear-gradient(180deg, #0a0a0b 0%, #111113 100%);
-        }
-
-        .features-inner {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 1.5rem;
-        }
-
-        .feature-card {
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            border-radius: 16px;
-            padding: 2rem;
-            transition: all 0.3s;
-        }
-
-        .feature-card:hover {
-            background: rgba(255, 255, 255, 0.04);
-            border-color: rgba(234, 88, 12, 0.3);
-            transform: translateY(-4px);
-        }
-
-        .feature-icon {
-            width: 48px;
-            height: 48px;
-            background: rgba(234, 88, 12, 0.1);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 1.25rem;
-            font-size: 1.5rem;
-        }
-
-        .feature-title {
-            font-size: 1.125rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-            color: white;
-        }
-
-        .feature-description {
-            font-size: 0.9375rem;
-            color: rgba(255, 255, 255, 0.5);
-            line-height: 1.6;
-        }
-
-        /* Pricing Section */
-        .pricing {
-            padding: 5rem 2rem;
-            background: #0a0a0b;
-        }
-
-        .pricing-inner {
-            max-width: 900px;
-            margin: 0 auto;
-            text-align: center;
-        }
-
-        .pricing-title {
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-            letter-spacing: -0.02em;
-        }
-
-        .pricing-subtitle {
-            color: rgba(255, 255, 255, 0.5);
-            margin-bottom: 3rem;
-        }
-
-        .pricing-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 1.5rem;
-            max-width: 900px;
-            margin: 0 auto;
-        }
-
-        .pricing-card {
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            border-radius: 16px;
-            padding: 2rem;
-            text-align: left;
-            transition: all 0.3s;
-        }
-
-        .pricing-card:hover {
-            border-color: rgba(255, 255, 255, 0.1);
-        }
-
-        .pricing-card.featured {
-            border-color: rgba(234, 88, 12, 0.4);
-            background: rgba(234, 88, 12, 0.05);
-        }
-
-        .pricing-card.featured:hover {
-            border-color: rgba(234, 88, 12, 0.6);
-        }
-
-        .pricing-card-badge {
-            display: inline-block;
-            background: #ea580c;
-            color: white;
-            font-size: 0.625rem;
-            font-weight: 600;
-            padding: 0.25rem 0.5rem;
-            border-radius: 50px;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-bottom: 1rem;
-        }
-
-        .pricing-card-name {
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-        }
-
-        .pricing-card-price {
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin-bottom: 0.25rem;
-        }
-
-        .pricing-card-price span {
-            font-size: 1rem;
-            font-weight: 400;
-            color: rgba(255, 255, 255, 0.5);
-        }
-
-        .pricing-card-description {
-            color: rgba(255, 255, 255, 0.5);
-            font-size: 0.875rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .pricing-features {
-            list-style: none;
-            margin-bottom: 1.5rem;
-        }
-
-        .pricing-features li {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.875rem;
-            color: rgba(255, 255, 255, 0.7);
-            margin-bottom: 0.75rem;
-        }
-
-        .pricing-features li svg {
-            width: 16px;
-            height: 16px;
-            color: #22c55e;
-            flex-shrink: 0;
-        }
-
-        .pricing-btn {
-            display: block;
-            width: 100%;
-            text-align: center;
-            padding: 0.75rem 1.5rem;
-            border-radius: 8px;
-            font-size: 0.875rem;
-            font-weight: 600;
-            text-decoration: none;
-            transition: all 0.2s;
-        }
-
-        .pricing-btn-outline {
-            background: transparent;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: white;
-        }
-
-        .pricing-btn-outline:hover {
-            background: rgba(255, 255, 255, 0.05);
-            border-color: rgba(255, 255, 255, 0.3);
-        }
-
-        .pricing-btn-primary {
-            background: #ea580c;
-            border: 1px solid #ea580c;
-            color: white;
-        }
-
-        .pricing-btn-primary:hover {
-            background: #dc2626;
-            border-color: #dc2626;
-        }
-
-        /* Footer */
-        .footer {
-            padding: 2rem;
-            text-align: center;
-            border-top: 1px solid rgba(255, 255, 255, 0.06);
-        }
-
-        .footer-content {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 2rem;
-            flex-wrap: wrap;
-            color: rgba(255, 255, 255, 0.4);
-            font-size: 0.875rem;
-        }
-
-        .footer-link {
-            color: rgba(255, 255, 255, 0.4);
-            text-decoration: none;
-            transition: color 0.2s;
-        }
-
-        .footer-link:hover {
-            color: rgba(255, 255, 255, 0.7);
-        }
-
-        .footer-divider {
-            width: 4px;
-            height: 4px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 50%;
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .navbar {
-                padding: 1rem;
-            }
-
-            .navbar-title {
-                display: none;
-            }
-
-            .navbar-links {
-                gap: 1rem;
-            }
-
-            .hero {
-                padding: 7rem 1.5rem 3rem;
-            }
-
-            .hero-description {
-                font-size: 1.1rem;
-            }
-
-            .hero-cta {
-                flex-direction: column;
-            }
-
-            .btn-primary, .btn-secondary {
-                width: 100%;
-                justify-content: center;
-            }
-
-            .features {
-                padding: 3rem 1.5rem 4rem;
-            }
-
-            .features-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .pricing-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
-</head>
-<body>
-    <!-- Navbar -->
-    <nav class="navbar">
-        <div class="navbar-inner">
-            <a href="/" class="navbar-brand">
-                <img src="/logo.png" alt="ScreenSense" class="navbar-logo">
-                <span class="navbar-title">ScreenSense</span>
-            </a>
-            <div class="navbar-links">
-                <a href="/blog" class="navbar-link">Blog</a>
-                <a href="https://github.com/gurpreetkaits/screensense" target="_blank" rel="noopener noreferrer" class="navbar-link">
-                    <svg viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
-                    </svg>
-                    <span>GitHub</span>
-                </a>
-                <a href="{{ config('app.frontend_url', config('app.url')) }}/login" class="btn-signin">
-                    Sign In
-                </a>
-            </div>
-        </div>
-    </nav>
+@extends('layouts.app')
+
+@section('title', 'ScreenSense - Screen Recording Made Simple')
+@section('meta_description', 'Record your screen, capture audio, and share instantly with ScreenSense. Simple, fast, and secure screen recording.')
+
+@push('styles')
+<style>
+    @keyframes float-up {
+        0% { transform: translateY(10px); opacity: 0; }
+        100% { transform: translateY(0); opacity: 1; }
+    }
+    @keyframes pulse-glow {
+        0%, 100% { box-shadow: 0 0 15px -3px rgba(234, 88, 12, 0.4); }
+        50% { box-shadow: 0 0 25px -5px rgba(234, 88, 12, 0.6); }
+    }
+    @keyframes cursorMove {
+        0% { transform: translate(0, 0); }
+        25% { transform: translate(100px, 50px); }
+        50% { transform: translate(100px, 50px) scale(0.9); }
+        75% { transform: translate(20px, 120px); }
+        100% { transform: translate(0, 0); }
+    }
+
+    .animate-float-up { animation: float-up 0.6s ease-out forwards; }
+    .animate-pulse-glow { animation: pulse-glow 2s infinite; }
+    .animate-cursor { animation: cursorMove 4s infinite ease-in-out; }
+
+    .faq-content {
+        transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
+        max-height: 0;
+        opacity: 0;
+        overflow: hidden;
+    }
+    .faq-content.active {
+        opacity: 1;
+    }
+</style>
+@endpush
+
+@section('content')
+    <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-brand-600/10 blur-[100px] rounded-full pointer-events-none -z-10 opacity-50"></div>
 
     <!-- Hero Section -->
-    <section class="hero">
-        <div class="hero-content">
-            <div class="hero-badges">
-                <div class="hero-badge">
-                    <span class="hero-badge-dot"></span>
-                    <span>Open Source</span>
-                </div>
-                <a href="https://github.com/gurpreetkaits/screensense" target="_blank" rel="noopener noreferrer" class="github-badge">
-                    <svg viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
-                    </svg>
-                    <svg class="github-badge-star" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                    </svg>
-                    <span id="github-stars">--</span>
-                </a>
-            </div>
-            <h1 class="hero-title">
-                Screen Recording<br>
-                <span class="hero-title-gradient">Made Simple</span>
-            </h1>
-            <p class="hero-description">
-                Capture your screen, record audio, and share instantly with secure links.
-                No complex software, just record and share.
-            </p>
-            <div class="hero-cta">
-                <a href="{{ config('app.frontend_url', config('app.url')) }}/login" class="btn-primary">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M13.8 12H3"/>
-                    </svg>
-                    Get Started
-                </a>
-                <a href="https://github.com/gurpreetkaits/screensense" target="_blank" rel="noopener noreferrer" class="btn-secondary">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
-                    </svg>
-                    View on GitHub
-                </a>
-            </div>
+    <div class="max-w-5xl mx-auto px-6 flex flex-col items-center text-center relative z-10 py-20 pt-8">
+
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-brand-500/20 bg-brand-500/5 text-brand-400 text-xs font-medium mb-8">
+            <span class="relative flex h-2 w-2">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-400 opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-2 w-2 bg-brand-500"></span>
+            </span>
+            Open Source
         </div>
-    </section>
 
-    <!-- Demo Section -->
-    <section class="demo">
-        <div class="demo-inner">
-            <h2 class="demo-title">See It in Action</h2>
-            <p class="demo-subtitle">Watch how easy it is to record and share your screen</p>
+        <h1 class="text-5xl md:text-7xl lg:text-8xl font-medium tracking-tight text-white mb-8 leading-[1]">
+            Screen Recording<br>
+            <span class="text-transparent bg-clip-text bg-gradient-to-b from-neutral-100 to-neutral-500">Made Simple</span>
+        </h1>
 
-            <div class="demo-video-card">
-                <div class="demo-video-header">
-                    <div class="demo-video-dots">
-                        <span class="demo-video-dot red"></span>
-                        <span class="demo-video-dot yellow"></span>
-                        <span class="demo-video-dot green"></span>
+        <p class="text-lg text-neutral-400 max-w-xl mx-auto mb-10 leading-relaxed font-light">
+            Capture your screen, record audio, and share instantly with secure links.
+            No complex software, just record and share.
+        </p>
+
+        <div class="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
+            <a href="{{ config('app.frontend_url', config('app.url')) }}/login" class="w-full sm:w-auto group relative inline-flex h-12 items-center justify-center overflow-hidden rounded-full bg-brand-600 px-8 font-medium text-white transition-all duration-300 hover:bg-brand-500 hover:shadow-[0_0_20px_-5px_rgba(234,88,12,0.4)] active:scale-95">
+                <span class="mr-2">Get Started Free</span>
+                <i data-lucide="arrow-right" class="size-4 transition-transform group-hover:translate-x-1"></i>
+            </a>
+            <a href="https://github.com/gurpreetkaits/screensense" target="_blank" rel="noopener noreferrer" class="w-full sm:w-auto inline-flex h-12 items-center justify-center gap-2 rounded-full border border-white/10 bg-white/5 px-6 font-medium text-white transition-colors hover:bg-white/10 group">
+                <i data-lucide="github" class="size-5"></i>
+                <span>View on GitHub</span>
+                <div class="w-px h-5 bg-white/10 mx-1"></div>
+                <i data-lucide="star" class="size-4 text-yellow-400 fill-yellow-400"></i>
+                <span id="github-stars" class="text-sm text-white group-hover:text-brand-400 transition-colors">--</span>
+            </a>
+        </div>
+
+        <!-- Demo Video Preview -->
+        <div class="mt-20 w-full max-w-4xl border border-white/10 rounded-2xl bg-[#0F0F0F] shadow-2xl overflow-hidden relative group">
+            <div class="absolute inset-0 bg-gradient-to-t from-brand-950 via-transparent to-transparent z-20 pointer-events-none"></div>
+            <div class="h-10 border-b border-white/5 flex items-center px-4 gap-2 bg-white/5">
+                <div class="flex gap-2">
+                    <div class="size-3 rounded-full bg-red-500/80"></div>
+                    <div class="size-3 rounded-full bg-yellow-500/80"></div>
+                    <div class="size-3 rounded-full bg-green-500/80"></div>
+                </div>
+                <span class="flex-1 text-center text-xs text-neutral-500 font-medium">ScreenSense Demo</span>
+                <div class="w-12"></div>
+            </div>
+            <div class="aspect-video bg-neutral-900/50 relative">
+                <video id="demoVideo" class="w-full h-full object-cover" playsinline preload="metadata">
+                    <source src="/demo/main-demo.mp4" type="video/mp4">
+                </video>
+
+                <!-- Play Overlay -->
+                <div id="playOverlay" class="absolute inset-0 flex items-center justify-center bg-black/30 cursor-pointer hover:bg-black/40 transition-colors z-10">
+                    <div class="size-20 rounded-full bg-brand-600/90 flex items-center justify-center hover:bg-brand-500 hover:scale-110 transition-all">
+                        <i data-lucide="play" class="size-8 text-white ml-1"></i>
                     </div>
-                    <span class="demo-video-title">ScreenSense Demo</span>
-                    <div style="width: 54px;"></div>
                 </div>
 
-                <div class="demo-video-container">
-                    <video id="demoVideo" class="demo-video" playsinline preload="metadata">
-                        <source src="/demo.webm" type="video/webm">
-                        <source src="/demo.mp4" type="video/mp4">
-                    </video>
-
-                    <!-- Play Overlay -->
-                    <div class="video-play-overlay" id="playOverlay">
-                        <div class="play-overlay-btn">
-                            <svg viewBox="0 0 24 24" fill="currentColor">
-                                <polygon points="5 3 19 12 5 21 5 3"></polygon>
-                            </svg>
-                        </div>
+                <!-- Video Controls -->
+                <div id="videoControls" class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 opacity-0 transition-opacity z-20">
+                    <div id="progressBar" class="w-full h-1 bg-white/20 rounded cursor-pointer mb-3 overflow-hidden">
+                        <div id="progressFill" class="h-full bg-brand-500 rounded" style="width: 0%"></div>
                     </div>
-
-                    <!-- Custom Controls -->
-                    <div class="video-controls" id="videoControls">
-                        <div class="video-progress" id="progressBar">
-                            <div class="video-progress-bar" id="progressFill"></div>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <button id="playPauseBtn" class="text-white hover:text-brand-400 transition-colors">
+                                <i data-lucide="play" id="playIcon" class="size-5"></i>
+                                <i data-lucide="pause" id="pauseIcon" class="size-5 hidden"></i>
+                            </button>
+                            <button id="muteBtn" class="text-white hover:text-brand-400 transition-colors">
+                                <i data-lucide="volume-2" id="volumeIcon" class="size-5"></i>
+                                <i data-lucide="volume-x" id="muteIcon" class="size-5 hidden"></i>
+                            </button>
+                            <span class="text-xs text-neutral-400 font-mono">
+                                <span id="currentTime">0:00</span> / <span id="duration">0:00</span>
+                            </span>
                         </div>
-                        <div class="video-controls-row">
-                            <div class="video-controls-left">
-                                <button class="video-btn play-btn" id="playPauseBtn">
-                                    <svg id="playIcon" viewBox="0 0 24 24" fill="currentColor">
-                                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
-                                    </svg>
-                                    <svg id="pauseIcon" viewBox="0 0 24 24" fill="currentColor" style="display:none;">
-                                        <rect x="6" y="4" width="4" height="16"></rect>
-                                        <rect x="14" y="4" width="4" height="16"></rect>
-                                    </svg>
-                                </button>
-                                <button class="video-btn" id="muteBtn">
-                                    <svg id="volumeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-                                        <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-                                    </svg>
-                                    <svg id="muteIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;">
-                                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-                                        <line x1="23" y1="9" x2="17" y2="15"></line>
-                                        <line x1="17" y1="9" x2="23" y2="15"></line>
-                                    </svg>
-                                </button>
-                                <span class="video-time"><span id="currentTime">0:00</span> / <span id="duration">0:00</span></span>
-                            </div>
-                            <div class="video-controls-right">
-                                <button class="video-btn" id="fullscreenBtn">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
+                        <button id="fullscreenBtn" class="text-white hover:text-brand-400 transition-colors">
+                            <i data-lucide="maximize" class="size-5"></i>
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- Workflow Simplified Section -->
+    <section id="how-it-works" class="max-w-6xl mx-auto px-6 py-24 border-t border-white/5">
+        <div class="mb-16 text-center">
+            <h2 class="text-3xl font-medium text-white mb-4">Workflow simplified</h2>
+            <p class="text-neutral-400">Designed for speed, built for clarity.</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+
+            <!-- Sidebar Controls -->
+            <div class="lg:col-span-4 flex flex-col gap-3">
+
+                <!-- Step 1: Capture -->
+                <button onclick="switchTab('capture')" id="btn-capture" class="group text-left p-6 rounded-xl border border-brand-500/20 bg-brand-900/10 transition-all duration-300 ring-1 ring-brand-500/50 relative overflow-hidden">
+                    <div class="flex items-center gap-3 mb-2 relative z-10">
+                        <div id="icon-capture" class="size-8 rounded-lg bg-brand-500/20 text-brand-500 flex items-center justify-center">
+                            <i data-lucide="video" class="size-4"></i>
+                        </div>
+                        <h3 class="font-medium text-white">1. Capture</h3>
+                    </div>
+                    <p class="text-sm text-neutral-400 pl-11 relative z-10">Select window or region. Recording starts instantly.</p>
+                </button>
+
+                <!-- Step 2: Share -->
+                <button onclick="switchTab('share')" id="btn-share" class="group text-left p-6 rounded-xl border border-transparent hover:bg-white/5 transition-all duration-300">
+                    <div class="flex items-center gap-3 mb-2">
+                        <div id="icon-share" class="size-8 rounded-lg bg-neutral-800 group-hover:bg-neutral-700 transition-colors flex items-center justify-center text-neutral-300">
+                            <i data-lucide="send" class="size-4"></i>
+                        </div>
+                        <h3 class="font-medium text-white">2. Share</h3>
+                    </div>
+                    <p class="text-sm text-neutral-400 pl-11">Get a secure link immediately. No upload wait times.</p>
+                </button>
+            </div>
+
+            <!-- Visual Demo Container -->
+            <div class="lg:col-span-8 h-[500px] bg-[#0A0A0A] border border-white/10 rounded-2xl shadow-2xl relative overflow-hidden">
+                <div class="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:32px_32px]"></div>
+
+                <!-- Header -->
+                <div class="absolute top-0 w-full h-12 border-b border-white/5 bg-white/5 flex items-center px-4 justify-between z-20 backdrop-blur-md">
+                    <div class="flex gap-2">
+                        <div class="size-2.5 rounded-full bg-neutral-700"></div>
+                        <div class="size-2.5 rounded-full bg-neutral-700"></div>
+                    </div>
+                    <div class="text-[10px] font-mono text-neutral-600 uppercase tracking-widest">Preview</div>
+                </div>
+
+                <!-- CAPTURE VIEW -->
+                <div id="tab-capture" class="absolute inset-0 pt-12 flex items-center justify-center transition-all duration-500">
+                    <img src="/demo/how-to-record-screen.gif" alt="How to record screen" class="w-full h-full object-cover">
+                </div>
+
+                <!-- SHARE VIEW -->
+                <div id="tab-share" class="absolute inset-0 pt-12 flex items-center justify-center transition-all duration-500 opacity-0 pointer-events-none translate-y-4">
+                    <img src="/demo/copy-share-link.gif" alt="Copy and share link" class="w-full h-full object-cover">
+                </div>
+
+            </div>
+        </div>
     </section>
 
-    <!-- Features Section -->
-    <section class="features">
-        <div class="features-inner">
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">🎥</div>
-                    <h3 class="feature-title">Screen Capture</h3>
-                    <p class="feature-description">Record your entire screen, application window, or browser tab with a single click.</p>
+    <!-- Features Bento Grid -->
+    <section id="features" class="py-24 relative border-t border-white/5">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="mb-16 md:text-center max-w-3xl mx-auto">
+                <h2 class="text-3xl md:text-5xl font-medium tracking-tight text-white mb-6">Designed for speed and clarity.</h2>
+                <p class="text-lg text-neutral-400">Everything you need to communicate effectively, without the bloat. Optimized for modern workflows.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+                <!-- Feature 1: Instant Sharing -->
+                <div class="md:col-span-2 group relative overflow-hidden rounded-2xl border border-white/10 bg-neutral-900/50 hover:bg-neutral-900/80 transition-all duration-500">
+                    <div class="absolute top-0 right-0 p-12 opacity-20 group-hover:opacity-10 transition-opacity">
+                        <div class="size-64 bg-brand-500 blur-[100px] rounded-full"></div>
+                    </div>
+                    <div class="p-8 md:p-10 h-full flex flex-col justify-between relative z-10">
+                        <div class="mb-8">
+                            <div class="inline-flex items-center justify-center size-12 rounded-lg bg-neutral-800 border border-white/10 mb-6 text-brand-500">
+                                <i data-lucide="zap" class="size-6"></i>
+                            </div>
+                            <h3 class="text-xl font-medium text-white mb-2">Instant Sharing</h3>
+                            <p class="text-neutral-400 text-lg">Links are generated instantly as you record. Paste into Slack, Linear, or Notion before the video even finishes processing.</p>
+                        </div>
+
+                        <!-- Mockup of Link UI -->
+                        <div class="bg-black/50 border border-white/10 rounded-lg p-4 flex items-center justify-between gap-4 max-w-md backdrop-blur-sm">
+                            <div class="flex items-center gap-3 overflow-hidden">
+                                <i data-lucide="link" class="size-4 text-neutral-500 shrink-0"></i>
+                                <span class="text-sm text-neutral-300 truncate font-mono">screensense.com/v/8x29a...</span>
+                            </div>
+                            <button class="text-xs font-medium bg-brand-600 text-white px-3 py-1.5 rounded hover:bg-brand-500 transition-colors">Copy</button>
+                        </div>
+                    </div>
                 </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🎙️</div>
-                    <h3 class="feature-title">Audio Recording</h3>
-                    <p class="feature-description">Add your voice with optional microphone recording to explain what's on screen.</p>
+
+                <!-- Feature 2: Audio Clarity -->
+                <div class="group relative overflow-hidden rounded-2xl border border-white/10 bg-neutral-900/50 hover:bg-neutral-900/80 transition-all duration-500">
+                    <div class="p-8 md:p-10 h-full relative z-10">
+                        <div class="inline-flex items-center justify-center size-12 rounded-lg bg-neutral-800 border border-white/10 mb-6 text-brand-500">
+                            <i data-lucide="mic" class="size-6"></i>
+                        </div>
+                        <h3 class="text-xl font-medium text-white mb-2">Crystal Clear Audio</h3>
+                        <p class="text-neutral-400 mb-8 text-lg">Capture your voice alongside screen recording with high-quality audio.</p>
+
+                        <!-- Audio Visualizer Mockup -->
+                        <div class="flex items-center justify-center gap-1 h-12">
+                            <div class="w-1.5 bg-brand-500/40 rounded-full h-4 animate-pulse"></div>
+                            <div class="w-1.5 bg-brand-500/70 rounded-full h-8 animate-pulse" style="animation-delay: 0.1s"></div>
+                            <div class="w-1.5 bg-brand-500 rounded-full h-10 animate-pulse" style="animation-delay: 0.2s"></div>
+                            <div class="w-1.5 bg-brand-500 rounded-full h-6 animate-pulse" style="animation-delay: 0.3s"></div>
+                            <div class="w-1.5 bg-brand-500/60 rounded-full h-9 animate-pulse" style="animation-delay: 0.15s"></div>
+                            <div class="w-1.5 bg-brand-500/30 rounded-full h-4 animate-pulse" style="animation-delay: 0.4s"></div>
+                        </div>
+                    </div>
                 </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🔗</div>
-                    <h3 class="feature-title">Instant Sharing</h3>
-                    <p class="feature-description">Get shareable links immediately after recording with secure token-based access.</p>
+
+                <!-- Feature 3: Browser Extension -->
+                <div class="group relative overflow-hidden rounded-2xl border border-white/10 bg-neutral-900/50 hover:bg-neutral-900/80 transition-all duration-500">
+                    <div class="p-8 md:p-10 h-full relative z-10">
+                        <div class="absolute top-8 right-8 px-2 py-0.5 rounded-full bg-brand-500/10 border border-brand-500/20 text-[10px] font-medium text-brand-400 uppercase tracking-wider">Coming Soon</div>
+                        <div class="inline-flex items-center justify-center size-12 rounded-lg bg-neutral-800 border border-white/10 mb-6 text-brand-500">
+                            <i data-lucide="puzzle" class="size-6"></i>
+                        </div>
+                        <h3 class="text-xl font-medium text-white mb-2">Browser Extension On The Way</h3>
+                        <p class="text-neutral-400 mb-8 text-lg">Record directly from Chrome with one click. No app needed.</p>
+
+                        <!-- Extension Preview -->
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between p-3 rounded bg-black/40 border border-white/5">
+                                <div class="flex items-center gap-2">
+                                    <i data-lucide="chrome" class="size-4 text-neutral-400"></i>
+                                    <span class="text-sm text-neutral-300">Chrome Extension</span>
+                                </div>
+                                <span class="text-xs text-neutral-500">Soon</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🧩</div>
-                    <h3 class="feature-title">
-                        Browser Extension
-                        <span style="display: inline-block; background: rgba(234, 88, 12, 0.2); color: #ea580c; font-size: 0.625rem; font-weight: 600; padding: 0.25rem 0.5rem; border-radius: 50px; margin-left: 0.5rem; vertical-align: middle; text-transform: uppercase; letter-spacing: 0.05em;">Coming Soon</span>
-                    </h3>
-                    <p class="feature-description">Record directly from your browser with our Chrome extension. One-click capture without leaving your workflow.</p>
+
+                <!-- Feature 4: High Res -->
+                <div class="md:col-span-2 group relative overflow-hidden rounded-2xl border border-white/10 bg-neutral-900/50 hover:bg-neutral-900/80 transition-all duration-500">
+                    <div class="absolute bottom-0 left-0 p-12 opacity-20 group-hover:opacity-10 transition-opacity">
+                        <div class="size-64 bg-blue-500 blur-[100px] rounded-full"></div>
+                    </div>
+                    <div class="p-8 md:p-10 h-full flex flex-col md:flex-row items-center gap-10 relative z-10">
+                        <div class="flex-1">
+                            <div class="inline-flex items-center justify-center size-12 rounded-lg bg-neutral-800 border border-white/10 mb-6 text-brand-500">
+                                <i data-lucide="monitor" class="size-6"></i>
+                            </div>
+                            <h3 class="text-xl font-medium text-white mb-2">High Quality Recording</h3>
+                            <p class="text-neutral-400 text-lg">Capture every pixel. ScreenSense supports high resolution recording for crystal clear demos and tutorials.</p>
+                        </div>
+
+                        <div class="relative shrink-0">
+                            <div class="bg-black border border-white/10 rounded-lg p-2 flex gap-2">
+                                <span class="px-2 py-1 rounded bg-neutral-800 text-neutral-400 text-xs font-mono">720p</span>
+                                <span class="px-2 py-1 rounded bg-brand-600 text-white text-xs font-mono shadow-lg shadow-brand-500/20">1080p</span>
+                                <span class="px-2 py-1 rounded bg-neutral-800 text-neutral-400 text-xs font-mono">4K</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+
             </div>
         </div>
     </section>
 
     <!-- Pricing Section -->
-    <section class="pricing">
-        <div class="pricing-inner">
-            <h2 class="pricing-title">Simple, Transparent Pricing</h2>
-            <p class="pricing-subtitle">Start free, upgrade when you need more</p>
-
-            <div class="pricing-grid">
-                <!-- Free Plan -->
-                <div class="pricing-card">
-                    <h3 class="pricing-card-name">Free</h3>
-                    <div class="pricing-card-price">$0</div>
-                    <p class="pricing-card-description">Perfect for trying out ScreenSense</p>
-                    <ul class="pricing-features">
-                        <li>
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <polyline points="20 6 9 17 4 12"></polyline>
-                            </svg>
-                            1 video recording
-                        </li>
-                        <li>
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <polyline points="20 6 9 17 4 12"></polyline>
-                            </svg>
-                            Screen + audio capture
-                        </li>
-                        <li>
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <polyline points="20 6 9 17 4 12"></polyline>
-                            </svg>
-                            Shareable links
-                        </li>
-                    </ul>
-                    <a href="{{ config('app.frontend_url', config('app.url')) }}/login" class="pricing-btn pricing-btn-outline">
+    <section id="pricing" class="py-24 border-t border-white/5 relative overflow-hidden">
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-brand-900/5 blur-[120px] rounded-full pointer-events-none -z-10"></div>
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center max-w-2xl mx-auto mb-16">
+                <h2 class="text-3xl font-medium text-white mb-4">Simple, Transparent Pricing</h2>
+                <p class="text-neutral-400">Start free, upgrade when you need more.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+                <!-- Free Tier -->
+                <div class="p-8 rounded-2xl border border-white/10 bg-neutral-900/40 hover:bg-neutral-900/60 transition-colors flex flex-col">
+                    <div class="mb-6">
+                        <h3 class="text-lg font-medium text-white">Free</h3>
+                        <div class="mt-2 flex items-baseline gap-1">
+                            <span class="text-4xl font-semibold text-white">$0</span>
+                        </div>
+                        <p class="mt-2 text-sm text-neutral-400">Perfect for trying out ScreenSense</p>
+                    </div>
+                    <div class="flex-1">
+                        <ul class="space-y-3 mb-8">
+                            <li class="flex items-center gap-3 text-sm text-neutral-300">
+                                <i data-lucide="check" class="size-4 text-green-500"></i>
+                                1 video recording
+                            </li>
+                            <li class="flex items-center gap-3 text-sm text-neutral-300">
+                                <i data-lucide="check" class="size-4 text-green-500"></i>
+                                Screen + audio capture
+                            </li>
+                            <li class="flex items-center gap-3 text-sm text-neutral-300">
+                                <i data-lucide="check" class="size-4 text-green-500"></i>
+                                Shareable links
+                            </li>
+                        </ul>
+                    </div>
+                    <a href="{{ config('app.frontend_url', config('app.url')) }}/login" class="w-full py-3 rounded-lg border border-white/10 bg-white/5 text-sm font-medium text-white hover:bg-white/10 transition-colors text-center">
                         Get Started
                     </a>
                 </div>
 
                 <!-- Pro Monthly -->
-                <div class="pricing-card featured">
-                    <span class="pricing-card-badge">Most Popular</span>
-                    <h3 class="pricing-card-name">Pro Monthly</h3>
-                    <div class="pricing-card-price">$7<span>/month</span></div>
-                    <p class="pricing-card-description">For creators who need more</p>
-                    <ul class="pricing-features">
-                        <li>
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <polyline points="20 6 9 17 4 12"></polyline>
-                            </svg>
-                            Unlimited recordings
-                        </li>
-                        <li>
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <polyline points="20 6 9 17 4 12"></polyline>
-                            </svg>
-                            Screen + audio capture
-                        </li>
-                        <li>
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <polyline points="20 6 9 17 4 12"></polyline>
-                            </svg>
-                            Shareable links
-                        </li>
-                        <li>
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <polyline points="20 6 9 17 4 12"></polyline>
-                            </svg>
-                            Priority support
-                        </li>
-                    </ul>
-                    <a href="{{ config('app.frontend_url', config('app.url')) }}/login" class="pricing-btn pricing-btn-primary">
+                <div class="p-8 rounded-2xl border border-brand-500/40 bg-brand-950/50 relative flex flex-col shadow-[0_0_50px_-15px_rgba(249,115,22,0.2)]">
+                    <span class="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-brand-600 text-[10px] font-semibold text-white uppercase tracking-wider">Most Popular</span>
+                    <div class="mb-6">
+                        <h3 class="text-lg font-medium text-white">Pro Monthly</h3>
+                        <div class="mt-2 flex items-baseline gap-1">
+                            <span class="text-4xl font-semibold text-white">$7</span>
+                            <span class="text-neutral-500">/month</span>
+                        </div>
+                        <p class="mt-2 text-sm text-brand-200/80">For creators who need more</p>
+                    </div>
+                    <div class="flex-1">
+                        <ul class="space-y-3 mb-8">
+                            <li class="flex items-center gap-3 text-sm text-white">
+                                <i data-lucide="check" class="size-4 text-brand-500"></i>
+                                Unlimited recordings
+                            </li>
+                            <li class="flex items-center gap-3 text-sm text-white">
+                                <i data-lucide="check" class="size-4 text-brand-500"></i>
+                                Screen + audio capture
+                            </li>
+                            <li class="flex items-center gap-3 text-sm text-white">
+                                <i data-lucide="check" class="size-4 text-brand-500"></i>
+                                Shareable links
+                            </li>
+                            <li class="flex items-center gap-3 text-sm text-white">
+                                <i data-lucide="check" class="size-4 text-brand-500"></i>
+                                Priority support
+                            </li>
+                        </ul>
+                    </div>
+                    <a href="{{ config('app.frontend_url', config('app.url')) }}/login" class="w-full py-3 rounded-lg bg-brand-600 text-sm font-medium text-white hover:bg-brand-500 transition-colors text-center">
                         Get Started
                     </a>
                 </div>
 
                 <!-- Pro Yearly -->
-                <div class="pricing-card">
-                    <span class="pricing-card-badge" style="background: #22c55e;">Save $4</span>
-                    <h3 class="pricing-card-name">Pro Yearly</h3>
-                    <div class="pricing-card-price">$80<span>/year</span></div>
-                    <p class="pricing-card-description">Best value for long-term use</p>
-                    <ul class="pricing-features">
-                        <li>
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <polyline points="20 6 9 17 4 12"></polyline>
-                            </svg>
-                            Unlimited recordings
-                        </li>
-                        <li>
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <polyline points="20 6 9 17 4 12"></polyline>
-                            </svg>
-                            Screen + audio capture
-                        </li>
-                        <li>
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <polyline points="20 6 9 17 4 12"></polyline>
-                            </svg>
-                            Shareable links
-                        </li>
-                        <li>
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <polyline points="20 6 9 17 4 12"></polyline>
-                            </svg>
-                            Priority support
-                        </li>
-                    </ul>
-                    <a href="{{ config('app.frontend_url', config('app.url')) }}/login" class="pricing-btn pricing-btn-outline">
+                <div class="p-8 rounded-2xl border border-white/10 bg-neutral-900/40 hover:bg-neutral-900/60 transition-colors flex flex-col">
+                    <span class="inline-block w-fit px-2 py-0.5 rounded-full bg-green-500/10 border border-green-500/20 text-[10px] font-medium text-green-400 uppercase tracking-wider mb-3">Save $4</span>
+                    <div class="mb-6">
+                        <h3 class="text-lg font-medium text-white">Pro Yearly</h3>
+                        <div class="mt-2 flex items-baseline gap-1">
+                            <span class="text-4xl font-semibold text-white">$80</span>
+                            <span class="text-neutral-500">/year</span>
+                        </div>
+                        <p class="mt-2 text-sm text-neutral-400">Best value for long-term use</p>
+                    </div>
+                    <div class="flex-1">
+                        <ul class="space-y-3 mb-8">
+                            <li class="flex items-center gap-3 text-sm text-neutral-300">
+                                <i data-lucide="check" class="size-4 text-green-500"></i>
+                                Unlimited recordings
+                            </li>
+                            <li class="flex items-center gap-3 text-sm text-neutral-300">
+                                <i data-lucide="check" class="size-4 text-green-500"></i>
+                                Screen + audio capture
+                            </li>
+                            <li class="flex items-center gap-3 text-sm text-neutral-300">
+                                <i data-lucide="check" class="size-4 text-green-500"></i>
+                                Shareable links
+                            </li>
+                            <li class="flex items-center gap-3 text-sm text-neutral-300">
+                                <i data-lucide="check" class="size-4 text-green-500"></i>
+                                Priority support
+                            </li>
+                        </ul>
+                    </div>
+                    <a href="{{ config('app.frontend_url', config('app.url')) }}/login" class="w-full py-3 rounded-lg border border-white/10 bg-white/5 text-sm font-medium text-white hover:bg-white/10 transition-colors text-center">
                         Get Started
                     </a>
                 </div>
@@ -1021,111 +410,216 @@
         </div>
     </section>
 
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="footer-content">
-            <span>&copy; {{ date('Y') }} ScreenSense</span>
-            <span class="footer-divider"></span>
-            <a href="/about" class="footer-link">About</a>
-            <span class="footer-divider"></span>
-            <a href="/contact" class="footer-link">Contact</a>
-            <span class="footer-divider"></span>
-            <a href="/privacy-policy" class="footer-link">Privacy</a>
-            <span class="footer-divider"></span>
-            <a href="/terms" class="footer-link">Terms</a>
-            <span class="footer-divider"></span>
-            <a href="https://github.com/gurpreetkaits/screensense" target="_blank" rel="noopener noreferrer" class="footer-link">GitHub</a>
+    <!-- FAQ Section -->
+    <section id="faq" class="py-24 border-t border-white/5 bg-neutral-950">
+        <div class="max-w-3xl mx-auto px-6">
+            <h2 class="text-3xl font-medium text-white mb-12 text-center">Frequently asked questions</h2>
+
+            <div class="space-y-4">
+                <!-- FAQ Item 1 -->
+                <div class="border border-white/5 rounded-lg bg-white/[0.02] overflow-hidden">
+                    <button onclick="toggleFaq(this)" class="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-white/[0.02] transition-colors">
+                        <span class="text-sm font-medium text-neutral-200">Is ScreenSense really free?</span>
+                        <i data-lucide="chevron-down" class="size-4 text-neutral-500 transition-transform duration-300"></i>
+                    </button>
+                    <div class="faq-content">
+                        <div class="px-6 pb-4 text-sm text-neutral-400">
+                            Yes! The free plan includes 1 video recording with full screen and audio capture. It's perfect for trying out ScreenSense before upgrading.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FAQ Item 2 -->
+                <div class="border border-white/5 rounded-lg bg-white/[0.02] overflow-hidden">
+                    <button onclick="toggleFaq(this)" class="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-white/[0.02] transition-colors">
+                        <span class="text-sm font-medium text-neutral-200">Is ScreenSense open source?</span>
+                        <i data-lucide="chevron-down" class="size-4 text-neutral-500 transition-transform duration-300"></i>
+                    </button>
+                    <div class="faq-content">
+                        <div class="px-6 pb-4 text-sm text-neutral-400">
+                            Yes! ScreenSense is fully open source. You can view, fork, and contribute to the code on our GitHub repository.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FAQ Item 3 -->
+                <div class="border border-white/5 rounded-lg bg-white/[0.02] overflow-hidden">
+                    <button onclick="toggleFaq(this)" class="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-white/[0.02] transition-colors">
+                        <span class="text-sm font-medium text-neutral-200">How do shareable links work?</span>
+                        <i data-lucide="chevron-down" class="size-4 text-neutral-500 transition-transform duration-300"></i>
+                    </button>
+                    <div class="faq-content">
+                        <div class="px-6 pb-4 text-sm text-neutral-400">
+                            After recording, you get a secure link with token-based access. Anyone with the link can view your video without needing an account.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FAQ Item 4 -->
+                <div class="border border-white/5 rounded-lg bg-white/[0.02] overflow-hidden">
+                    <button onclick="toggleFaq(this)" class="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-white/[0.02] transition-colors">
+                        <span class="text-sm font-medium text-neutral-200">What browsers are supported?</span>
+                        <i data-lucide="chevron-down" class="size-4 text-neutral-500 transition-transform duration-300"></i>
+                    </button>
+                    <div class="faq-content">
+                        <div class="px-6 pb-4 text-sm text-neutral-400">
+                            ScreenSense works on all modern browsers including Chrome, Firefox, Safari, and Edge. Our browser extension (coming soon) will be available for Chrome first.
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-    </footer>
+    </section>
+@endsection
 
-    <script>
-        // Fetch GitHub stars
-        fetch('https://api.github.com/repos/gurpreetkaits/screensense')
-            .then(response => response.json())
-            .then(data => {
-                const stars = data.stargazers_count || 0;
-                document.getElementById('github-stars').textContent = stars;
-            })
-            .catch(() => {
-                document.getElementById('github-stars').textContent = '0';
-            });
+@push('scripts')
+<script>
+    // Workflow Tab Switching
+    function switchTab(tabName) {
+        const btnCapture = document.getElementById('btn-capture');
+        const btnShare = document.getElementById('btn-share');
+        const iconCapture = document.getElementById('icon-capture');
+        const iconShare = document.getElementById('icon-share');
+        const tabCapture = document.getElementById('tab-capture');
+        const tabShare = document.getElementById('tab-share');
 
-        // Custom Video Controls
-        const video = document.getElementById('demoVideo');
-        const playOverlay = document.getElementById('playOverlay');
-        const playPauseBtn = document.getElementById('playPauseBtn');
-        const playIcon = document.getElementById('playIcon');
-        const pauseIcon = document.getElementById('pauseIcon');
-        const muteBtn = document.getElementById('muteBtn');
-        const volumeIcon = document.getElementById('volumeIcon');
-        const muteIcon = document.getElementById('muteIcon');
-        const progressBar = document.getElementById('progressBar');
-        const progressFill = document.getElementById('progressFill');
-        const currentTimeEl = document.getElementById('currentTime');
-        const durationEl = document.getElementById('duration');
-        const fullscreenBtn = document.getElementById('fullscreenBtn');
+        const inactiveClass = "group text-left p-6 rounded-xl border border-transparent hover:bg-white/5 transition-all duration-300";
+        const activeClass = "group text-left p-6 rounded-xl border border-brand-500/20 bg-brand-900/10 transition-all duration-300 ring-1 ring-brand-500/50 relative overflow-hidden";
+        const iconInactiveClass = "size-8 rounded-lg bg-neutral-800 group-hover:bg-neutral-700 transition-colors flex items-center justify-center text-neutral-300";
+        const iconActiveClass = "size-8 rounded-lg bg-brand-500/20 text-brand-500 flex items-center justify-center";
 
-        function formatTime(seconds) {
-            const mins = Math.floor(seconds / 60);
-            const secs = Math.floor(seconds % 60);
-            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        if (tabName === 'capture') {
+            btnCapture.className = activeClass;
+            iconCapture.className = iconActiveClass;
+            btnShare.className = inactiveClass;
+            iconShare.className = iconInactiveClass;
+
+            tabCapture.style.opacity = '1';
+            tabCapture.style.transform = 'translateY(0)';
+            tabCapture.style.pointerEvents = 'auto';
+            tabShare.style.opacity = '0';
+            tabShare.style.pointerEvents = 'none';
+            tabShare.style.transform = 'translateY(10px)';
+
+        } else if (tabName === 'share') {
+            btnShare.className = activeClass;
+            iconShare.className = iconActiveClass;
+            btnCapture.className = inactiveClass;
+            iconCapture.className = iconInactiveClass;
+
+            tabShare.style.opacity = '1';
+            tabShare.style.pointerEvents = 'auto';
+            tabShare.style.transform = 'translateY(0)';
+            tabCapture.style.opacity = '0';
+            tabCapture.style.pointerEvents = 'none';
+            tabCapture.style.transform = 'translateY(-10px)';
         }
+    }
 
-        function togglePlay() {
-            if (video.paused) {
-                video.play();
-                playOverlay.classList.add('hidden');
-                playIcon.style.display = 'none';
-                pauseIcon.style.display = 'block';
-            } else {
-                video.pause();
-                playIcon.style.display = 'block';
-                pauseIcon.style.display = 'none';
-            }
+    // FAQ Toggle
+    function toggleFaq(button) {
+        const content = button.nextElementSibling;
+        const icon = button.querySelector('i');
+
+        if (content.style.maxHeight) {
+            content.style.maxHeight = null;
+            content.classList.remove('active');
+            icon.style.transform = 'rotate(0deg)';
+        } else {
+            content.style.maxHeight = content.scrollHeight + "px";
+            content.classList.add('active');
+            icon.style.transform = 'rotate(180deg)';
         }
+    }
 
-        function toggleMute() {
-            video.muted = !video.muted;
-            volumeIcon.style.display = video.muted ? 'none' : 'block';
-            muteIcon.style.display = video.muted ? 'block' : 'none';
+    // Video Player Controls
+    const video = document.getElementById('demoVideo');
+    const playOverlay = document.getElementById('playOverlay');
+    const videoControls = document.getElementById('videoControls');
+    const playPauseBtn = document.getElementById('playPauseBtn');
+    const playIcon = document.getElementById('playIcon');
+    const pauseIcon = document.getElementById('pauseIcon');
+    const muteBtn = document.getElementById('muteBtn');
+    const volumeIcon = document.getElementById('volumeIcon');
+    const muteIcon = document.getElementById('muteIcon');
+    const progressBar = document.getElementById('progressBar');
+    const progressFill = document.getElementById('progressFill');
+    const currentTimeEl = document.getElementById('currentTime');
+    const durationEl = document.getElementById('duration');
+    const fullscreenBtn = document.getElementById('fullscreenBtn');
+
+    function formatTime(seconds) {
+        const mins = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+        return `${mins}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    function togglePlay() {
+        if (video.paused) {
+            video.play();
+            playOverlay.classList.add('hidden');
+            playIcon.classList.add('hidden');
+            pauseIcon.classList.remove('hidden');
+        } else {
+            video.pause();
+            playIcon.classList.remove('hidden');
+            pauseIcon.classList.add('hidden');
         }
+    }
 
-        function updateProgress() {
-            const percent = (video.currentTime / video.duration) * 100;
-            progressFill.style.width = percent + '%';
-            currentTimeEl.textContent = formatTime(video.currentTime);
+    function toggleMute() {
+        video.muted = !video.muted;
+        volumeIcon.classList.toggle('hidden', video.muted);
+        muteIcon.classList.toggle('hidden', !video.muted);
+    }
+
+    function updateProgress() {
+        const percent = (video.currentTime / video.duration) * 100;
+        progressFill.style.width = percent + '%';
+        currentTimeEl.textContent = formatTime(video.currentTime);
+    }
+
+    function setProgress(e) {
+        const rect = progressBar.getBoundingClientRect();
+        const percent = (e.clientX - rect.left) / rect.width;
+        video.currentTime = percent * video.duration;
+    }
+
+    function toggleFullscreen() {
+        if (document.fullscreenElement) {
+            document.exitFullscreen();
+        } else {
+            video.parentElement.requestFullscreen();
         }
+    }
 
-        function setProgress(e) {
-            const rect = progressBar.getBoundingClientRect();
-            const percent = (e.clientX - rect.left) / rect.width;
-            video.currentTime = percent * video.duration;
-        }
+    // Show/hide controls on hover
+    video.parentElement.addEventListener('mouseenter', () => {
+        if (!video.paused) videoControls.style.opacity = '1';
+    });
+    video.parentElement.addEventListener('mouseleave', () => {
+        if (!video.paused) videoControls.style.opacity = '0';
+    });
 
-        function toggleFullscreen() {
-            if (document.fullscreenElement) {
-                document.exitFullscreen();
-            } else {
-                video.parentElement.requestFullscreen();
-            }
-        }
-
-        // Event Listeners
-        playOverlay.addEventListener('click', togglePlay);
-        playPauseBtn.addEventListener('click', togglePlay);
-        muteBtn.addEventListener('click', toggleMute);
-        video.addEventListener('timeupdate', updateProgress);
-        video.addEventListener('loadedmetadata', () => {
-            durationEl.textContent = formatTime(video.duration);
-        });
-        video.addEventListener('ended', () => {
-            playOverlay.classList.remove('hidden');
-            playIcon.style.display = 'block';
-            pauseIcon.style.display = 'none';
-        });
-        progressBar.addEventListener('click', setProgress);
-        fullscreenBtn.addEventListener('click', toggleFullscreen);
-        video.addEventListener('click', togglePlay);
-    </script>
-</body>
-</html>
+    // Event Listeners
+    playOverlay.addEventListener('click', togglePlay);
+    playPauseBtn.addEventListener('click', togglePlay);
+    muteBtn.addEventListener('click', toggleMute);
+    video.addEventListener('timeupdate', updateProgress);
+    video.addEventListener('loadedmetadata', () => {
+        durationEl.textContent = formatTime(video.duration);
+    });
+    video.addEventListener('ended', () => {
+        playOverlay.classList.remove('hidden');
+        playIcon.classList.remove('hidden');
+        pauseIcon.classList.add('hidden');
+        videoControls.style.opacity = '0';
+    });
+    video.addEventListener('play', () => {
+        videoControls.style.opacity = '1';
+    });
+    progressBar.addEventListener('click', setProgress);
+    fullscreenBtn.addEventListener('click', toggleFullscreen);
+    video.addEventListener('click', togglePlay);
+</script>
+@endpush

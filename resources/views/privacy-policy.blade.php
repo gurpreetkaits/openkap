@@ -1,4 +1,4 @@
-@extends('layouts.blog')
+@extends('layouts.app')
 
 @section('title', 'Privacy Policy | ScreenSense')
 @section('meta_description', 'Privacy policy for ScreenSense. Learn how we handle your data, protect your privacy, and what permissions our Chrome extension uses.')

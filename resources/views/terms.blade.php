@@ -1,4 +1,4 @@
-@extends('layouts.blog')
+@extends('layouts.app')
 
 @section('title', 'Terms and Conditions | ScreenSense')
 @section('meta_description', 'Terms and conditions for using ScreenSense. Read our usage policy, subscription terms, and legal agreements.')
