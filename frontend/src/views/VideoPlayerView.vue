@@ -140,11 +140,15 @@
             <!-- Ambient Glow Behind Video -->
             <div class="absolute -inset-0.5 bg-gradient-to-r from-orange-500 via-amber-500 to-orange-500 rounded-2xl blur-2xl opacity-[0.05] ambient-glow transition-opacity duration-1000 group-hover:opacity-20 z-0"></div>
 
-            <!-- Video Container -->
+            <!-- Video Container - Fixed 16:9 aspect ratio regardless of video content -->
             <div
-              class="relative w-full aspect-video bg-black rounded-xl shadow-2xl ring-1 ring-black/10 overflow-hidden z-20 bg-cover bg-center"
-              :class="isFullscreen ? 'rounded-none' : ''"
-              :style="video.thumbnail ? { backgroundImage: `url(${video.thumbnail})` } : {}"
+              class="relative w-full bg-black rounded-xl shadow-2xl ring-1 ring-black/10 overflow-hidden z-20"
+              :class="isFullscreen ? 'rounded-none !aspect-auto h-full' : ''"
+              :style="{
+                aspectRatio: isFullscreen ? 'auto' : '16 / 9',
+                maxHeight: isFullscreen ? 'none' : '80vh',
+                ...(video.thumbnail && !isFullscreen ? { backgroundImage: `url(${video.thumbnail})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {})
+              }"
               ref="playerContainer"
               @mousemove="showControls"
               @mouseleave="hideControlsDelayed"
