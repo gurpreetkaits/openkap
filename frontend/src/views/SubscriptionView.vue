@@ -162,13 +162,20 @@
         </button>
         <button
           v-else
-          @click="showUpgradeModal = true"
-          class="w-full py-2.5 rounded-lg bg-orange-600 hover:bg-orange-500 text-sm font-medium text-white transition-all shadow-lg shadow-orange-900/20 mb-8 flex items-center justify-center gap-2 group"
+          @click="startCheckout"
+          :disabled="checkingOut"
+          class="w-full py-2.5 rounded-lg bg-orange-600 hover:bg-orange-500 text-sm font-medium text-white transition-all shadow-lg shadow-orange-900/20 mb-8 flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {{ subscription?.is_in_grace_period ? 'Resubscribe' : 'Upgrade to Pro' }}
-          <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
-          </svg>
+          <template v-if="checkingOut">
+            <div class="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+            Redirecting...
+          </template>
+          <template v-else>
+            {{ subscription?.is_in_grace_period ? 'Resubscribe' : 'Upgrade to Pro' }}
+            <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+            </svg>
+          </template>
         </button>
         <ul class="space-y-4 text-sm text-gray-300 flex-1">
           <li class="flex items-center gap-3 text-white">
@@ -284,19 +291,12 @@
       </div>
     </div>
 
-    <!-- Upgrade Modal -->
-    <SBUpgradeModal
-      :show="showUpgradeModal"
-      @close="showUpgradeModal = false"
-      @success="handleUpgradeSuccess"
-    />
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import SBUpgradeModal from '@/components/Global/SBUpgradeModal.vue'
 import { useAuth } from '@/stores/auth'
 import toast from '@/services/toastService'
 import settingsService from '@/services/settingsService'
@@ -312,7 +312,7 @@ const subscription = ref(null)
 const history = ref([])
 const loading = ref(false)
 const error = ref(null)
-const showUpgradeModal = ref(false)
+const checkingOut = ref(false)
 const canceling = ref(false)
 const loadingPortal = ref(false)
 const showSuccessAlert = ref(false)
@@ -467,9 +467,39 @@ async function openBillingPortal() {
   }
 }
 
-function handleUpgradeSuccess() {
-  showUpgradeModal.value = false
-  loadSubscription()
+async function startCheckout() {
+  checkingOut.value = true
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/subscription/checkout`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${auth.token.value}`,
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        plan: billingCycle.value,
+      }),
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      throw new Error(errorData.error || 'Failed to create checkout session')
+    }
+
+    const data = await response.json()
+
+    if (data.checkout_url) {
+      window.location.href = data.checkout_url
+    } else {
+      throw new Error('Checkout URL not received')
+    }
+  } catch (e) {
+    console.error('Error starting checkout:', e)
+    toast.error(e.message || 'Failed to start checkout. Please try again.')
+    checkingOut.value = false
+  }
 }
 
 function formatDate(dateString) {
