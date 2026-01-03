@@ -235,6 +235,38 @@ export function useRecording() {
         return data.video;
     };
 
+    // Complete upload with retry logic (3 attempts)
+    const completeUploadWithRetry = async (maxRetries = 3) => {
+        let lastError = null;
+
+        for (let attempt = 1; attempt <= maxRetries; attempt++) {
+            try {
+                console.log(`Attempting to complete upload (attempt ${attempt}/${maxRetries})...`);
+                const video = await completeUpload();
+                console.log('Upload completed successfully');
+                return video;
+            } catch (error) {
+                console.error(`Upload completion attempt ${attempt} failed:`, error);
+                lastError = error;
+
+                // Don't retry on auth errors
+                if (error.message?.includes('401') || error.message?.includes('403')) {
+                    throw error;
+                }
+
+                // Wait before retrying (exponential backoff: 1s, 2s, 4s)
+                if (attempt < maxRetries) {
+                    const delay = Math.pow(2, attempt - 1) * 1000;
+                    console.log(`Retrying in ${delay}ms...`);
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                }
+            }
+        }
+
+        // All retries failed - but recording is safe on server (will be auto-recovered)
+        throw lastError;
+    };
+
     // Cancel upload session
     const cancelUpload = async () => {
         if (!sessionId.value) return;
@@ -458,8 +490,8 @@ export function useRecording() {
                     }
 
                     try {
-                        // Complete the upload and get video info
-                        const video = await completeUpload();
+                        // Complete the upload and get video info (with retry logic)
+                        const video = await completeUploadWithRetry();
 
                         isRecording.value = false;
                         isPaused.value = false;
@@ -469,6 +501,8 @@ export function useRecording() {
 
                         resolve(video);
                     } catch (error) {
+                        // Even if completion fails, recording is safe on server
+                        console.error('Failed to complete upload after retries, but recording is safe:', error);
                         reject(error);
                     }
                 };
