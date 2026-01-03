@@ -21,7 +21,7 @@ class MarkdownBlogManager
 
     public function __construct()
     {
-        $this->blogPath = storage_path('app/blog');
+        $this->blogPath = public_path('blogs');
         $this->initializeConverter();
     }
 
