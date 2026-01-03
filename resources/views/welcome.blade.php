@@ -1,11 +1,11 @@
 @extends('layouts.app')
 
-@section('title', 'ScreenSense - Free Open Source Screen Recording | Loom Alternative')
-@section('meta_description', 'ScreenSense is a free, open source screen recording tool and the best Loom alternative. Record your screen with audio and share instantly. No account required.')
-@section('meta_keywords', 'screen recording, loom alternative, open source screen recording, open source loom alternative, free screen recorder, screen capture tool, video recording software, share screen recordings, loom free alternative')
+@section('title', 'ScreenSense - Open Source Screen Recording | Loom Alternative')
+@section('meta_description', 'ScreenSense , open source screen recording tool and the best Loom alternative. Record your screen with audio and share instantly. No account required.')
+@section('meta_keywords', 'screen recording, loom alternative, open source screen recording, open source loom alternative, screen recorder, screen capture tool, video recording software, share screen recordings, loom free alternative')
 
-@section('og_title', 'ScreenSense - Free Open Source Loom Alternative')
-@section('og_description', 'The best open source screen recording tool. Record your screen, capture audio, and share instantly - completely free.')
+@section('og_title', 'ScreenSense - Open Source Loom Alternative')
+@section('og_description', 'The best open source screen recording tool. Record your screen, capture audio, and share instantly.')
 
 @push('styles')
 <style>
