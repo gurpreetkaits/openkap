@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\BlogController;
+use App\Http\Controllers\MarkdownBlogController;
 use App\Models\Video;
 use Illuminate\Support\Facades\Route;
 
@@ -28,9 +28,12 @@ Route::get('/terms', function () {
     return view('terms');
 });
 
-// Blog routes (SEO-friendly server-rendered pages)
-Route::get('/blog', [BlogController::class, 'webIndex'])->name('blog.index');
-Route::get('/blog/{slug}', [BlogController::class, 'webShow'])->name('blog.show');
+// Blog routes (markdown file-driven from storage/app/blog/*.md)
+Route::prefix('blog')->name('blog.')->group(function () {
+    Route::get('/', [MarkdownBlogController::class, 'index'])->name('index');
+    Route::get('/category/{category}', [MarkdownBlogController::class, 'byCategory'])->name('category');
+    Route::get('/{slug}', [MarkdownBlogController::class, 'show'])->name('show');
+});
 
 // Public video sharing page (for social media crawlers - returns OG meta tags)
 Route::get('/share/video/{token}', function ($token) {

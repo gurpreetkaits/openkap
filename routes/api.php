@@ -1,9 +1,9 @@
 <?php
 
 use App\Http\Controllers\Auth\GoogleAuthController;
-use App\Http\Controllers\BlogController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\HlsController;
+use App\Http\Controllers\MarkdownBlogController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReactionController;
@@ -64,12 +64,12 @@ Route::get('/share/video/{token}/hls/master.m3u8', [HlsController::class, 'maste
 Route::get('/share/video/{token}/hls/{variant}.m3u8', [HlsController::class, 'variantPlaylist']);
 Route::get('/share/video/{token}/hls/{segment}.ts', [HlsController::class, 'segment']);
 
-// Blog routes - public
+// Blog routes - public (markdown file-driven)
 Route::prefix('blogs')->group(function () {
-    Route::get('/', [BlogController::class, 'index']);
-    Route::get('/recent', [BlogController::class, 'recent']);
-    Route::get('/category/{category}', [BlogController::class, 'byCategory']);
-    Route::get('/{slug}', [BlogController::class, 'show']);
+    Route::get('/', [MarkdownBlogController::class, 'apiIndex']);
+    Route::get('/recent', [MarkdownBlogController::class, 'recent']);
+    Route::get('/category/{category}', [MarkdownBlogController::class, 'apiByCategory']);
+    Route::get('/{slug}', [MarkdownBlogController::class, 'apiShow']);
 });
 Route::get('/share/video/{token}/reactions', [ReactionController::class, 'indexByToken']);
 Route::post('/share/video/{token}/reactions', [ReactionController::class, 'storeByToken']); // Reactions don't require auth
