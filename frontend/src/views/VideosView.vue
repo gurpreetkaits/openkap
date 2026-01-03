@@ -188,13 +188,14 @@
         <!-- Thumbnail -->
         <div
           class="relative aspect-video bg-gray-900 rounded-xl overflow-hidden mb-3 border border-gray-200/50 shadow-sm group-hover:shadow-md transition-all cursor-pointer"
+          style="aspect-ratio: 16 / 9;"
           @click="openVideo(video.id)"
         >
           <img
             v-if="video.thumbnail"
             :src="video.thumbnail"
             :alt="video.title"
-            class="w-full h-full object-cover opacity-90 group-hover:scale-105 group-hover:opacity-100 transition-all duration-500"
+            class="absolute inset-0 w-full h-full object-cover opacity-90 group-hover:scale-105 group-hover:opacity-100 transition-all duration-500"
             loading="lazy"
           />
           <div v-else class="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900">
@@ -289,12 +290,12 @@
         @click="openVideo(video.id)"
       >
         <!-- Thumbnail -->
-        <div class="relative w-40 flex-shrink-0 aspect-video rounded-lg overflow-hidden bg-gray-900">
+        <div class="relative w-40 flex-shrink-0 aspect-video rounded-lg overflow-hidden bg-gray-900" style="aspect-ratio: 16 / 9;">
           <img
             v-if="video.thumbnail"
             :src="video.thumbnail"
             :alt="video.title"
-            class="w-full h-full object-cover"
+            class="absolute inset-0 w-full h-full object-cover"
             loading="lazy"
           />
           <div v-else class="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900">
@@ -563,7 +564,7 @@ export default {
 
     // Pagination
     const currentPage = ref(1)
-    const itemsPerPage = 15
+    const itemsPerPage = 20
 
     // Filtered and sorted videos
     const filteredVideos = computed(() => {
