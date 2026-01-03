@@ -4,18 +4,27 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'ScreenSense - Screen Recording Made Simple')</title>
-    <meta name="description" content="@yield('meta_description', 'Record your screen, capture audio, and share instantly with ScreenSense. Simple, fast, and secure screen recording.')">
+    <meta name="description" content="@yield('meta_description', 'Free open source screen recording tool. The best Loom alternative for capturing your screen with audio. Record, share instantly - no account needed.')">
+    <meta name="keywords" content="@yield('meta_keywords', 'screen recording, loom alternative, open source screen recording, open source loom alternative, free screen recorder, screen capture, video recording, share screen recordings')">
+    <meta name="robots" content="index, follow">
+    <meta name="author" content="ScreenSense">
 
     <!-- Open Graph -->
-    <meta property="og:title" content="@yield('og_title', 'ScreenSense')">
-    <meta property="og:description" content="@yield('og_description', 'Record your screen, capture audio, and share instantly.')">
+    <meta property="og:title" content="@yield('og_title', 'ScreenSense - Free Open Source Loom Alternative')">
+    <meta property="og:description" content="@yield('og_description', 'Free open source screen recording tool. The best Loom alternative - record your screen, capture audio, and share instantly.')">
     <meta property="og:type" content="@yield('og_type', 'website')">
     <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:image" content="@yield('og_image', url('/demo/website-preview.png'))">
+    <meta property="og:image:alt" content="ScreenSense - Open Source Screen Recording Tool">
+    <meta property="og:site_name" content="ScreenSense">
+    <meta property="og:locale" content="en_US">
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="@yield('twitter_title', 'ScreenSense')">
-    <meta name="twitter:description" content="@yield('twitter_description', 'Record your screen, capture audio, and share instantly.')">
+    <meta name="twitter:title" content="@yield('twitter_title', 'ScreenSense - Free Open Source Loom Alternative')">
+    <meta name="twitter:description" content="@yield('twitter_description', 'Free open source screen recording tool. The best Loom alternative - record your screen, capture audio, and share instantly.')">
+    <meta name="twitter:image" content="@yield('twitter_image', url('/demo/website-preview.png'))">
+    <meta name="twitter:image:alt" content="ScreenSense - Open Source Screen Recording Tool">
 
     <!-- Canonical URL -->
     <link rel="canonical" href="{{ url()->current() }}">
