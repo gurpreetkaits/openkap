@@ -444,6 +444,38 @@ export default {
       return data.video
     }
 
+    // Complete upload with retry logic (3 attempts)
+    const completeUploadWithRetry = async (maxRetries = 3) => {
+      let lastError = null
+
+      for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+          console.log(`Attempting to complete upload (attempt ${attempt}/${maxRetries})...`)
+          const video = await completeUpload()
+          console.log('Upload completed successfully')
+          return video
+        } catch (error) {
+          console.error(`Upload completion attempt ${attempt} failed:`, error)
+          lastError = error
+
+          // Don't retry on 401 (auth error)
+          if (error.message?.includes('401')) {
+            throw error
+          }
+
+          // Wait before retrying (exponential backoff: 1s, 2s, 4s)
+          if (attempt < maxRetries) {
+            const delay = Math.pow(2, attempt - 1) * 1000
+            console.log(`Retrying in ${delay}ms...`)
+            await new Promise(resolve => setTimeout(resolve, delay))
+          }
+        }
+      }
+
+      // All retries failed - but recording is safe on server (will be auto-recovered)
+      throw lastError
+    }
+
     // Cancel upload session (discard)
     const cancelUpload = async () => {
       if (!sessionId.value) return
@@ -664,13 +696,21 @@ export default {
     const saveRecording = async () => {
       isSaving.value = true
       try {
-        const video = await completeUpload()
+        const video = await completeUploadWithRetry()
         emit('recording-complete', video)
         window.location.href = `/video/${video.id}`
       } catch (err) {
-        console.error('Failed to save recording:', err)
-        toast.error('Failed to save video. Please try again.')
+        console.error('Failed to save recording after retries:', err)
         isSaving.value = false
+
+        // Show user-friendly message - recording is safe!
+        toast.warning('Your recording is being processed and will appear in your library within 5 minutes.', 8000)
+
+        // Redirect to videos page after 3 seconds
+        setTimeout(() => {
+          emit('close')
+          window.location.href = '/videos'
+        }, 3000)
       }
     }
 

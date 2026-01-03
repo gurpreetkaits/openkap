@@ -13,3 +13,8 @@ Schedule::command('queue:work --stop-when-empty --max-time=50')
     ->everyMinute()
     ->withoutOverlapping()
     ->runInBackground();
+
+// Auto-complete stale upload sessions (5 min inactive = auto-complete, 1 hour = cleanup)
+Schedule::command('uploads:process-stale --timeout=300 --cleanup=3600')
+    ->everyFiveMinutes()
+    ->withoutOverlapping();
