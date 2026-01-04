@@ -57,4 +57,9 @@ return [
             : 'https://sandbox-api.polar.sh',
     ],
 
+    'posthog' => [
+        'key' => env('POSTHOG_KEY'),
+        'host' => env('POSTHOG_HOST', 'https://us.i.posthog.com'),
+    ],
+
 ];
