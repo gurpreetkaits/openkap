@@ -421,6 +421,78 @@ class VideoService {
       throw error
     }
   }
+
+  /**
+   * Request transcription for a video
+   */
+  async requestTranscription(id, generateSummary = true, generateTitle = true) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/videos/${id}/transcription`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({
+          generate_summary: generateSummary,
+          generate_title: generateTitle
+        })
+      })
+
+      if (handleUnauthorized(response)) return null
+
+      const data = await response.json()
+      return data
+    } catch (error) {
+      console.error('Error requesting transcription:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Get transcription and summary for a video
+   */
+  async getTranscription(id) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/videos/${id}/transcription`, {
+        method: 'GET',
+        headers: getAuthHeaders()
+      })
+
+      if (handleUnauthorized(response)) return null
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch transcription: ${response.statusText}`)
+      }
+
+      const data = await response.json()
+      return data
+    } catch (error) {
+      console.error('Error fetching transcription:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Get transcription status for a video
+   */
+  async getTranscriptionStatus(id) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/videos/${id}/transcription/status`, {
+        method: 'GET',
+        headers: getAuthHeaders()
+      })
+
+      if (handleUnauthorized(response)) return null
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch transcription status: ${response.statusText}`)
+      }
+
+      const data = await response.json()
+      return data
+    } catch (error) {
+      console.error('Error fetching transcription status:', error)
+      throw error
+    }
+  }
 }
 
 export default new VideoService()

@@ -407,31 +407,31 @@
         <aside class="w-full lg:w-[400px] bg-white border-l border-gray-200 flex flex-col z-40 shadow-[-4px_0_24px_rgba(0,0,0,0.02)]">
 
           <!-- Functional Tabs -->
-          <div class="flex items-center border-b border-gray-100 px-2 sticky top-0 bg-white/95 backdrop-blur z-10">
+          <div class="flex items-center gap-1 px-4 py-3 border-b border-gray-100 sticky top-0 bg-white z-10">
             <button
               @click="activeTab = 'comments'"
-              class="flex-1 py-4 text-xs border-b-2 transition-colors flex items-center justify-center gap-2"
-              :class="activeTab === 'comments' ? 'border-orange-600 text-orange-600 font-semibold bg-orange-50/60' : 'border-transparent text-gray-500 font-medium hover:text-gray-900'"
+              class="px-4 py-2 text-[13px] rounded-lg transition-all flex items-center gap-2"
+              :class="activeTab === 'comments' ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'"
             >
               Comments
-              <span v-if="comments.length" class="px-1.5 py-0.5 rounded-full bg-orange-100 text-orange-700 text-[10px] leading-none">{{ comments.length }}</span>
+              <span v-if="comments.length" class="text-[11px] text-gray-400 font-normal">{{ comments.length }}</span>
             </button>
             <button
               @click="activeTab = 'transcript'"
-              class="flex-1 py-4 text-xs border-b-2 transition-colors"
-              :class="activeTab === 'transcript' ? 'border-orange-600 text-orange-600 font-semibold bg-orange-50/60' : 'border-transparent text-gray-500 font-medium hover:text-gray-900'"
+              class="px-4 py-2 text-[13px] rounded-lg transition-all"
+              :class="activeTab === 'transcript' ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'"
             >
               Transcript
             </button>
             <button
               @click="activeTab = 'summary'"
-              class="flex-1 py-4 text-xs border-b-2 transition-colors flex items-center justify-center gap-1"
-              :class="activeTab === 'summary' ? 'border-orange-600 text-orange-600 font-semibold bg-orange-50/60' : 'border-transparent text-gray-500 font-medium hover:text-gray-900'"
+              class="px-4 py-2 text-[13px] rounded-lg transition-all flex items-center gap-1.5"
+              :class="activeTab === 'summary' ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'"
             >
-              Summary
-              <svg class="w-3 h-3 text-amber-500" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456z"/>
+              <svg class="w-3.5 h-3.5 text-amber-500" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/>
               </svg>
+              Summary
             </button>
           </div>
 
@@ -473,28 +473,273 @@
             </div>
 
             <!-- TAB: TRANSCRIPT -->
-            <div v-show="activeTab === 'transcript'" class="p-5">
-              <div class="flex flex-col items-center justify-center h-64 text-center">
+            <div v-show="activeTab === 'transcript'" class="flex flex-col min-h-full">
+              <!-- Loading state -->
+              <div v-if="transcriptionStatus === 'processing'" class="flex flex-col items-center justify-center h-64 text-center px-5">
+                <div class="w-16 h-16 rounded-full bg-orange-100 flex items-center justify-center mb-4 animate-pulse">
+                  <svg class="w-8 h-8 text-orange-500 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                </div>
+                <p class="text-base font-semibold text-gray-900">Generating Transcript...</p>
+                <p class="text-sm text-gray-500 mt-1">{{ transcriptionProgress }}% complete</p>
+                <div class="w-48 h-1.5 bg-gray-200 rounded-full mt-3 overflow-hidden">
+                  <div class="h-full bg-orange-500 rounded-full transition-all duration-300" :style="{ width: transcriptionProgress + '%' }"></div>
+                </div>
+              </div>
+
+              <!-- Empty state - not started -->
+              <div v-else-if="transcriptionStatus === 'pending'" class="flex flex-col items-center justify-center h-64 text-center px-5">
                 <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
                   <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                   </svg>
                 </div>
-                <p class="text-base font-semibold text-gray-900">Transcript Coming Soon</p>
-                <p class="text-sm text-gray-500 mt-1">Auto-generated transcripts will appear here</p>
+                <p class="text-base font-semibold text-gray-900">No Transcript Yet</p>
+                <p class="text-sm text-gray-500 mt-1 mb-4">Generate an AI transcript of your video</p>
+                <button
+                  @click="requestTranscription"
+                  :disabled="isRequestingTranscription || !video.conversion_status || video.conversion_status !== 'completed'"
+                  class="px-4 py-2 bg-orange-600 text-white text-sm font-medium rounded-lg hover:bg-orange-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center gap-2"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/>
+                  </svg>
+                  {{ isRequestingTranscription ? 'Starting...' : 'Generate Transcript' }}
+                </button>
+              </div>
+
+              <!-- Error state -->
+              <div v-else-if="transcriptionStatus === 'failed'" class="flex flex-col items-center justify-center h-64 text-center px-5">
+                <div class="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mb-4">
+                  <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                  </svg>
+                </div>
+                <p class="text-base font-semibold text-gray-900">Transcription Failed</p>
+                <p class="text-sm text-gray-500 mt-1 mb-4">{{ transcriptionError || 'Something went wrong' }}</p>
+                <button
+                  @click="requestTranscription"
+                  :disabled="isRequestingTranscription"
+                  class="px-4 py-2 bg-orange-600 text-white text-sm font-medium rounded-lg hover:bg-orange-700 transition-colors disabled:bg-gray-300"
+                >
+                  Try Again
+                </button>
+              </div>
+
+              <!-- Transcript content with timestamps -->
+              <div v-else-if="transcriptionSegments && transcriptionSegments.length > 0" class="flex flex-col h-full">
+                <!-- Enhanced header with search & actions -->
+                <div class="sticky top-0 bg-white/95 backdrop-blur-sm z-10 border-b border-gray-100">
+                  <!-- Search bar -->
+                  <div class="px-4 pt-3 pb-2">
+                    <div class="relative">
+                      <svg class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                      </svg>
+                      <input
+                        v-model="transcriptSearch"
+                        type="text"
+                        placeholder="Search transcript..."
+                        class="w-full pl-10 pr-8 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400 transition-colors"
+                      />
+                      <button
+                        v-if="transcriptSearch"
+                        @click="transcriptSearch = ''"
+                        class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      >
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                  <!-- Stats & Actions row -->
+                  <div class="flex items-center justify-between px-4 py-2">
+                    <div class="flex items-center gap-3 text-[11px] text-gray-400">
+                      <span>{{ transcriptWordCount }} words</span>
+                      <span class="w-1 h-1 rounded-full bg-gray-300"></span>
+                      <span>{{ transcriptReadTime }} min read</span>
+                      <span v-if="transcriptSearch && filteredSegments.length !== transcriptionSegments.length" class="text-orange-500 font-medium">
+                        {{ filteredSegments.length }} matches
+                      </span>
+                    </div>
+                    <div class="flex items-center gap-1">
+                      <!-- Export dropdown -->
+                      <div class="relative export-menu-container">
+                        <button
+                          @click="showExportMenu = !showExportMenu"
+                          class="flex items-center gap-1 px-2 py-1.5 text-xs font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+                        >
+                          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                          </svg>
+                          Export
+                        </button>
+                        <div v-if="showExportMenu" class="absolute right-0 mt-1 w-36 bg-white rounded-lg shadow-lg border border-gray-100 py-1 z-20">
+                          <button @click="exportTranscript('txt')" class="w-full px-3 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2">
+                            <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                            Plain Text (.txt)
+                          </button>
+                          <button @click="exportTranscript('srt')" class="w-full px-3 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2">
+                            <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z"/>
+                            </svg>
+                            Subtitles (.srt)
+                          </button>
+                        </div>
+                      </div>
+                      <!-- Copy all -->
+                      <button
+                        @click="copyTranscript"
+                        class="flex items-center gap-1 px-2 py-1.5 text-xs font-medium text-gray-500 hover:text-orange-600 hover:bg-orange-50 rounded-md transition-colors"
+                      >
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                        </svg>
+                        {{ copiedTranscript ? 'Copied!' : 'Copy' }}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <!-- Segments list -->
+                <div class="flex-1 overflow-y-auto" ref="transcriptContainer">
+                  <div
+                    v-for="(segment, index) in filteredSegments"
+                    :key="segment.originalIndex"
+                    :ref="el => { if (el) segmentRefs[segment.originalIndex] = el }"
+                    @click="seekToTime(segment.start)"
+                    class="group relative px-4 py-3 cursor-pointer transition-all duration-200 border-l-2"
+                    :class="activeSegmentIndex === segment.originalIndex
+                      ? 'bg-orange-50 border-l-orange-500'
+                      : 'hover:bg-gray-50 border-l-transparent'"
+                  >
+                    <div class="flex gap-3">
+                      <span
+                        class="text-[11px] font-medium tabular-nums tracking-wide flex-shrink-0 transition-colors min-w-[36px] pt-0.5"
+                        :class="activeSegmentIndex === segment.originalIndex ? 'text-orange-500' : 'text-gray-400'"
+                      >
+                        {{ formatTime(segment.start) }}
+                      </span>
+                      <p
+                        class="text-[13px] leading-relaxed transition-colors flex-1"
+                        :class="activeSegmentIndex === segment.originalIndex ? 'text-gray-900' : 'text-gray-600'"
+                        v-html="highlightSearch(segment.text)"
+                      ></p>
+                    </div>
+                    <!-- Hover actions -->
+                    <div class="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+                      <button
+                        @click.stop="copySegment(segment)"
+                        class="p-1.5 rounded-md bg-white shadow-sm border border-gray-200 text-gray-400 hover:text-orange-500 hover:border-orange-200 transition-colors"
+                        title="Copy this segment"
+                      >
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                  <!-- No results -->
+                  <div v-if="transcriptSearch && filteredSegments.length === 0" class="flex flex-col items-center justify-center py-12 text-center">
+                    <svg class="w-12 h-12 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                    <p class="text-sm text-gray-500">No matches found for "{{ transcriptSearch }}"</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Fallback: show full transcript if no segments -->
+              <div v-else-if="transcription" class="p-5">
+                <div class="flex items-center justify-between mb-3">
+                  <span class="text-xs font-medium text-gray-500">Full transcript</span>
+                  <button
+                    @click="copyTranscript"
+                    class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
+                  >
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                    </svg>
+                    {{ copiedTranscript ? 'Copied!' : 'Copy' }}
+                  </button>
+                </div>
+                <p class="text-[13px] text-gray-700 leading-relaxed whitespace-pre-wrap">{{ transcription }}</p>
               </div>
             </div>
 
             <!-- TAB: SUMMARY -->
-            <div v-show="activeTab === 'summary'" class="p-5">
-              <div class="flex flex-col items-center justify-center h-64 text-center">
-                <div class="w-16 h-16 rounded-full bg-gradient-to-br from-orange-100 to-amber-100 flex items-center justify-center mb-4">
-                  <svg class="w-8 h-8 text-orange-500" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456z"/>
+            <div v-show="activeTab === 'summary'" class="flex flex-col min-h-full">
+              <!-- Loading state -->
+              <div v-if="summaryStatus === 'processing'" class="flex flex-col items-center justify-center h-64 text-center px-5">
+                <div class="w-16 h-16 rounded-full bg-gradient-to-br from-orange-100 to-amber-100 flex items-center justify-center mb-4 animate-pulse">
+                  <svg class="w-8 h-8 text-orange-500 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
                 </div>
-                <p class="text-base font-semibold text-gray-900">AI Summary Coming Soon</p>
-                <p class="text-sm text-gray-500 mt-1">Get AI-powered insights about your recording</p>
+                <p class="text-base font-semibold text-gray-900">Generating Summary...</p>
+                <p class="text-sm text-gray-500 mt-1">AI is analyzing your video</p>
+              </div>
+
+              <!-- Empty state - waiting for transcript -->
+              <div v-else-if="summaryStatus === 'pending' && transcriptionStatus !== 'completed'" class="flex flex-col items-center justify-center h-64 text-center px-5">
+                <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+                  <svg class="w-8 h-8 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/>
+                  </svg>
+                </div>
+                <p class="text-base font-semibold text-gray-900">Summary Requires Transcript</p>
+                <p class="text-sm text-gray-500 mt-1">Generate a transcript first to get an AI summary</p>
+              </div>
+
+              <!-- Error state -->
+              <div v-else-if="summaryStatus === 'failed'" class="flex flex-col items-center justify-center h-64 text-center px-5">
+                <div class="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mb-4">
+                  <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                  </svg>
+                </div>
+                <p class="text-base font-semibold text-gray-900">Summary Failed</p>
+                <p class="text-sm text-gray-500 mt-1">{{ summaryError || 'Something went wrong' }}</p>
+              </div>
+
+              <!-- Summary content -->
+              <div v-else-if="summary" class="p-5">
+                <div class="flex items-center justify-between mb-4">
+                  <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-orange-100 to-amber-100 flex items-center justify-center">
+                      <svg class="w-4 h-4 text-orange-500" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/>
+                      </svg>
+                    </div>
+                    <span class="text-sm font-semibold text-gray-900">AI Summary</span>
+                  </div>
+                  <button
+                    @click="copySummary"
+                    class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
+                  >
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                    </svg>
+                    {{ copiedSummary ? 'Copied!' : 'Copy' }}
+                  </button>
+                </div>
+                <div class="prose prose-sm max-w-none text-gray-700 leading-relaxed" v-html="formattedSummary"></div>
+              </div>
+
+              <!-- Pending state - transcript complete but no summary yet -->
+              <div v-else-if="summaryStatus === 'pending' && transcriptionStatus === 'completed'" class="flex flex-col items-center justify-center h-64 text-center px-5">
+                <div class="w-16 h-16 rounded-full bg-orange-100 flex items-center justify-center mb-4">
+                  <svg class="w-8 h-8 text-orange-500" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/>
+                  </svg>
+                </div>
+                <p class="text-base font-semibold text-gray-900">Summary Available Soon</p>
+                <p class="text-sm text-gray-500 mt-1">AI summary is being generated...</p>
               </div>
             </div>
 
@@ -568,7 +813,7 @@
 </template>
 
 <script>
-import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed, watch, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuth } from '@/stores/auth'
 import videoService from '@/services/videoService'
@@ -631,6 +876,41 @@ export default {
     const showShareModal = ref(false)
     const activeTab = ref('comments')
 
+    // Transcription state
+    const transcription = ref(null)
+    const transcriptionSegments = ref([])
+    const transcriptionStatus = ref('pending')
+    const transcriptionProgress = ref(0)
+    const transcriptionError = ref(null)
+    const isRequestingTranscription = ref(false)
+
+    // Summary state
+    const summary = ref(null)
+    const summaryStatus = ref('pending')
+    const summaryError = ref(null)
+
+    // Copy states
+    const copiedTranscript = ref(false)
+    const copiedSummary = ref(false)
+
+    // Transcript sync state
+    const transcriptContainer = ref(null)
+    const segmentRefs = ref({})
+    const autoScrollEnabled = ref(true)
+
+    // Enhanced transcript features
+    const transcriptSearch = ref('')
+    const showExportMenu = ref(false)
+
+    // Close export menu on click outside
+    const closeExportMenu = (e) => {
+      if (showExportMenu.value && !e.target.closest('.export-menu-container')) {
+        showExportMenu.value = false
+      }
+    }
+
+    let transcriptionPollInterval = null
+
     const reactions = ref([
       { icon: '👍', count: 0, selected: false },
       { icon: '❤️', count: 0, selected: false },
@@ -651,6 +931,120 @@ export default {
       return (currentTime.value / duration.value) * 100
     })
 
+    // Find the active transcript segment based on current video time
+    const activeSegmentIndex = computed(() => {
+      if (!transcriptionSegments.value || transcriptionSegments.value.length === 0) return -1
+
+      const time = currentTime.value
+      for (let i = transcriptionSegments.value.length - 1; i >= 0; i--) {
+        const segment = transcriptionSegments.value[i]
+        if (time >= segment.start) {
+          return i
+        }
+      }
+      return -1
+    })
+
+    // Auto-scroll to active segment when it changes
+    watch(activeSegmentIndex, (newIndex) => {
+      if (newIndex >= 0 && autoScrollEnabled.value && activeTab.value === 'transcript') {
+        nextTick(() => {
+          const segmentEl = segmentRefs.value[newIndex]
+          if (segmentEl && transcriptContainer.value) {
+            segmentEl.scrollIntoView({
+              behavior: 'smooth',
+              block: 'center'
+            })
+          }
+        })
+      }
+    })
+
+    // Filtered segments based on search
+    const filteredSegments = computed(() => {
+      if (!transcriptionSegments.value) return []
+      const segments = transcriptionSegments.value.map((seg, idx) => ({ ...seg, originalIndex: idx }))
+      if (!transcriptSearch.value.trim()) return segments
+      const search = transcriptSearch.value.toLowerCase()
+      return segments.filter(seg => seg.text.toLowerCase().includes(search))
+    })
+
+    // Word count
+    const transcriptWordCount = computed(() => {
+      if (!transcriptionSegments.value) return 0
+      const allText = transcriptionSegments.value.map(s => s.text).join(' ')
+      return allText.split(/\s+/).filter(w => w.length > 0).length
+    })
+
+    // Estimated read time (avg 200 words per minute)
+    const transcriptReadTime = computed(() => {
+      return Math.max(1, Math.ceil(transcriptWordCount.value / 200))
+    })
+
+    // Highlight search matches in text
+    const highlightSearch = (text) => {
+      if (!transcriptSearch.value.trim()) return text
+      const search = transcriptSearch.value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      const regex = new RegExp(`(${search})`, 'gi')
+      return text.replace(regex, '<mark class="bg-yellow-200 text-yellow-900 rounded px-0.5">$1</mark>')
+    }
+
+    // Copy individual segment
+    const copySegment = async (segment) => {
+      try {
+        await navigator.clipboard.writeText(`[${formatTime(segment.start)}] ${segment.text}`)
+        showToast('Segment copied!')
+      } catch (err) {
+        console.error('Failed to copy segment:', err)
+      }
+    }
+
+    // Export transcript
+    const exportTranscript = (format) => {
+      showExportMenu.value = false
+      if (!transcriptionSegments.value) return
+
+      let content = ''
+      const filename = `${video.value?.title || 'transcript'}`
+
+      if (format === 'txt') {
+        content = transcriptionSegments.value
+          .map(seg => `[${formatTime(seg.start)}] ${seg.text}`)
+          .join('\n\n')
+        downloadFile(content, `${filename}.txt`, 'text/plain')
+      } else if (format === 'srt') {
+        content = transcriptionSegments.value
+          .map((seg, idx) => {
+            const startSrt = formatSrtTime(seg.start)
+            const endSrt = formatSrtTime(seg.end || seg.start + 5)
+            return `${idx + 1}\n${startSrt} --> ${endSrt}\n${seg.text}\n`
+          })
+          .join('\n')
+        downloadFile(content, `${filename}.srt`, 'text/plain')
+      }
+    }
+
+    const formatSrtTime = (seconds) => {
+      const hrs = Math.floor(seconds / 3600)
+      const mins = Math.floor((seconds % 3600) / 60)
+      const secs = Math.floor(seconds % 60)
+      const ms = Math.floor((seconds % 1) * 1000)
+      return `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')},${String(ms).padStart(3, '0')}`
+    }
+
+    const downloadFile = (content, filename, mimeType) => {
+      const blob = new Blob([content], { type: mimeType })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = filename
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+      showToast(`Downloaded ${filename}`)
+    }
+
     const fetchVideo = async () => {
       loading.value = true
       error.value = null
@@ -670,6 +1064,7 @@ export default {
           shareUrl: fetchedVideo.share_url,
           views_count: fetchedVideo.views_count,
           createdAt: new Date(fetchedVideo.created_at),
+          conversion_status: fetchedVideo.conversion_status,
         }
 
         setTimeout(() => initHls(), 100)
@@ -1012,14 +1407,32 @@ export default {
       }
     }
 
-    const downloadVideo = () => {
-      if (video.value.url) {
+    const downloadVideo = async () => {
+      if (!video.value.url) return
+
+      try {
+        showToast('Starting download...')
+
+        // Fetch the video as a blob
+        const response = await fetch(video.value.url)
+        const blob = await response.blob()
+
+        // Create a blob URL and trigger download
+        const blobUrl = window.URL.createObjectURL(blob)
         const link = document.createElement('a')
-        link.href = video.value.url
+        link.href = blobUrl
         link.download = `${video.value.title || 'video'}.mp4`
         document.body.appendChild(link)
         link.click()
         document.body.removeChild(link)
+
+        // Clean up the blob URL
+        window.URL.revokeObjectURL(blobUrl)
+
+        showToast('Download complete!')
+      } catch (err) {
+        console.error('Failed to download:', err)
+        showToast('Failed to download video')
       }
     }
 
@@ -1143,6 +1556,156 @@ export default {
       }
     }
 
+    // Transcription methods
+    const loadTranscriptionData = async () => {
+      if (!video.value.id) return
+
+      try {
+        const data = await videoService.getTranscription(video.value.id)
+        if (data) {
+          transcription.value = data.transcription?.transcription || null
+          transcriptionSegments.value = data.transcription?.segments || []
+          summary.value = data.summary?.summary || null
+
+          // Update status from response
+          if (data.status) {
+            transcriptionStatus.value = data.status.transcription_status || 'pending'
+            transcriptionProgress.value = data.status.transcription_progress || 0
+            transcriptionError.value = data.status.transcription_error || null
+            summaryStatus.value = data.status.summary_status || 'pending'
+            summaryError.value = data.status.summary_error || null
+          }
+
+          // If still processing, start polling
+          if (transcriptionStatus.value === 'processing' || summaryStatus.value === 'processing') {
+            startTranscriptionPolling()
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load transcription:', err)
+      }
+    }
+
+    const requestTranscription = async () => {
+      if (isRequestingTranscription.value) return
+
+      isRequestingTranscription.value = true
+      try {
+        const result = await videoService.requestTranscription(video.value.id, true, true)
+        if (result.success) {
+          transcriptionStatus.value = 'processing'
+          transcriptionProgress.value = 0
+          summaryStatus.value = 'pending'
+          showToast('Transcription started')
+          startTranscriptionPolling()
+        } else {
+          showToast(result.message || 'Failed to start transcription')
+        }
+      } catch (err) {
+        console.error('Failed to request transcription:', err)
+        showToast('Failed to start transcription')
+      } finally {
+        isRequestingTranscription.value = false
+      }
+    }
+
+    const startTranscriptionPolling = () => {
+      if (transcriptionPollInterval) return
+
+      transcriptionPollInterval = setInterval(async () => {
+        try {
+          const status = await videoService.getTranscriptionStatus(video.value.id)
+          if (status) {
+            transcriptionStatus.value = status.transcription_status || 'pending'
+            transcriptionProgress.value = status.transcription_progress || 0
+            transcriptionError.value = status.transcription_error || null
+            summaryStatus.value = status.summary_status || 'pending'
+            summaryError.value = status.summary_error || null
+
+            // If transcription completed, fetch the full data
+            if (status.is_transcription_ready) {
+              await loadTranscriptionData()
+
+              // Also update the video title if it changed
+              const updatedVideo = await videoService.getVideo(video.value.id)
+              if (updatedVideo && updatedVideo.title !== video.value.title) {
+                video.value.title = updatedVideo.title
+              }
+            }
+
+            // Stop polling if both are done
+            if (!status.is_transcribing && !status.is_summarizing) {
+              stopTranscriptionPolling()
+            }
+          }
+        } catch (err) {
+          console.error('Failed to poll transcription status:', err)
+        }
+      }, 3000) // Poll every 3 seconds
+    }
+
+    const stopTranscriptionPolling = () => {
+      if (transcriptionPollInterval) {
+        clearInterval(transcriptionPollInterval)
+        transcriptionPollInterval = null
+      }
+    }
+
+    const seekToTime = (seconds) => {
+      if (videoRef.value) {
+        videoRef.value.currentTime = seconds
+        if (!isPlaying.value) {
+          togglePlay()
+        }
+      }
+    }
+
+    const copyTranscript = async () => {
+      if (!transcription.value && (!transcriptionSegments.value || transcriptionSegments.value.length === 0)) return
+
+      let textToCopy = transcription.value || ''
+      if (transcriptionSegments.value && transcriptionSegments.value.length > 0) {
+        textToCopy = transcriptionSegments.value
+          .map(segment => `[${formatTime(segment.start)}] ${segment.text}`)
+          .join('\n')
+      }
+
+      try {
+        await navigator.clipboard.writeText(textToCopy)
+        copiedTranscript.value = true
+        showToast('Transcript copied!')
+        setTimeout(() => { copiedTranscript.value = false }, 3000)
+      } catch (err) {
+        console.error('Failed to copy transcript:', err)
+      }
+    }
+
+    const copySummary = async () => {
+      if (!summary.value) return
+
+      try {
+        await navigator.clipboard.writeText(summary.value)
+        copiedSummary.value = true
+        showToast('Summary copied!')
+        setTimeout(() => { copiedSummary.value = false }, 3000)
+      } catch (err) {
+        console.error('Failed to copy summary:', err)
+      }
+    }
+
+    const formattedSummary = computed(() => {
+      if (!summary.value) return ''
+      // Convert markdown-style bullet points to HTML
+      return summary.value
+        .replace(/^[-•]\s+/gm, '<li>')
+        .replace(/<li>/g, '</li><li>')
+        .replace(/^<\/li>/, '')
+        .replace(/<li>([^<]+)$/gm, '<li>$1</li>')
+        .replace(/(<li>.*<\/li>)/gs, '<ul class="list-disc pl-4 space-y-1">$1</ul>')
+        .replace(/\n\n/g, '</p><p class="mt-3">')
+        .replace(/\n/g, '<br>')
+    })
+
     const handleKeydown = (e) => {
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return
 
@@ -1186,6 +1749,10 @@ export default {
       if (qualityMenuRef.value && !qualityMenuRef.value.contains(e.target)) {
         showQualityMenu.value = false
       }
+      // Close export menu
+      if (showExportMenu.value && !e.target.closest('.export-menu-container')) {
+        showExportMenu.value = false
+      }
     }
 
     const handleFullscreenChange = () => {
@@ -1195,6 +1762,7 @@ export default {
     onMounted(async () => {
       await fetchVideo()
       await loadComments()
+      await loadTranscriptionData()
 
       document.addEventListener('keydown', handleKeydown)
       document.addEventListener('click', handleClickOutside)
@@ -1207,6 +1775,7 @@ export default {
       document.removeEventListener('fullscreenchange', handleFullscreenChange)
       if (controlsTimeout) clearTimeout(controlsTimeout)
       if (toastTimeout) clearTimeout(toastTimeout)
+      stopTranscriptionPolling()
       destroyHls()
     })
 
@@ -1228,6 +1797,18 @@ export default {
       isEditingTitle, editedTitle, isSavingTitle, titleInput,
       startEditingTitle, saveTitle, cancelEditingTitle,
       showShareModal, activeTab,
+      // Transcription
+      transcription, transcriptionSegments, transcriptionStatus, transcriptionProgress, transcriptionError,
+      isRequestingTranscription, requestTranscription, seekToTime,
+      // Transcript sync & search
+      transcriptContainer, segmentRefs, activeSegmentIndex,
+      transcriptSearch, showExportMenu, filteredSegments,
+      transcriptWordCount, transcriptReadTime,
+      highlightSearch, copySegment, exportTranscript,
+      // Summary
+      summary, summaryStatus, summaryError, formattedSummary,
+      // Copy
+      copiedTranscript, copiedSummary, copyTranscript, copySummary,
     }
   }
 }

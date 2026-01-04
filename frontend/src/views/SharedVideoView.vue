@@ -384,31 +384,31 @@
         <aside class="w-full lg:w-[400px] bg-white border-l border-gray-200 flex flex-col z-40 shadow-[-4px_0_24px_rgba(0,0,0,0.02)]">
 
           <!-- Functional Tabs -->
-          <div class="flex items-center border-b border-gray-100 px-2 sticky top-0 bg-white/95 backdrop-blur z-10">
+          <div class="flex items-center gap-1 px-4 py-3 border-b border-gray-100 sticky top-0 bg-white z-10">
             <button
               @click="activeTab = 'comments'"
-              class="flex-1 py-4 text-xs border-b-2 transition-colors flex items-center justify-center gap-2"
-              :class="activeTab === 'comments' ? 'border-orange-600 text-orange-600 font-semibold bg-orange-50/60' : 'border-transparent text-gray-500 font-medium hover:text-gray-900'"
+              class="px-4 py-2 text-[13px] rounded-lg transition-all flex items-center gap-2"
+              :class="activeTab === 'comments' ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'"
             >
               Comments
-              <span v-if="comments.length" class="px-1.5 py-0.5 rounded-full bg-orange-100 text-orange-700 text-[10px] leading-none">{{ comments.length }}</span>
+              <span v-if="comments.length" class="text-[11px] text-gray-400 font-normal">{{ comments.length }}</span>
             </button>
             <button
               @click="activeTab = 'transcript'"
-              class="flex-1 py-4 text-xs border-b-2 transition-colors"
-              :class="activeTab === 'transcript' ? 'border-orange-600 text-orange-600 font-semibold bg-orange-50/60' : 'border-transparent text-gray-500 font-medium hover:text-gray-900'"
+              class="px-4 py-2 text-[13px] rounded-lg transition-all"
+              :class="activeTab === 'transcript' ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'"
             >
               Transcript
             </button>
             <button
               @click="activeTab = 'summary'"
-              class="flex-1 py-4 text-xs border-b-2 transition-colors flex items-center justify-center gap-1"
-              :class="activeTab === 'summary' ? 'border-orange-600 text-orange-600 font-semibold bg-orange-50/60' : 'border-transparent text-gray-500 font-medium hover:text-gray-900'"
+              class="px-4 py-2 text-[13px] rounded-lg transition-all flex items-center gap-1.5"
+              :class="activeTab === 'summary' ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'"
             >
-              Summary
-              <svg class="w-3 h-3 text-amber-500" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456z"/>
+              <svg class="w-3.5 h-3.5 text-amber-500" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/>
               </svg>
+              Summary
             </button>
           </div>
 
@@ -450,28 +450,113 @@
             </div>
 
             <!-- TAB: TRANSCRIPT -->
-            <div v-show="activeTab === 'transcript'" class="p-5">
-              <div class="flex flex-col items-center justify-center h-64 text-center">
+            <div v-show="activeTab === 'transcript'" class="flex flex-col min-h-full">
+              <!-- Transcript content with timestamps -->
+              <div v-if="transcriptionSegments && transcriptionSegments.length > 0">
+                <!-- Copy header -->
+                <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100 sticky top-0 bg-white/95 backdrop-blur-sm z-10">
+                  <span class="text-xs font-medium text-gray-500">{{ transcriptionSegments.length }} segments</span>
+                  <button
+                    @click="copyTranscript"
+                    class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
+                  >
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                    </svg>
+                    {{ copiedTranscript ? 'Copied!' : 'Copy All' }}
+                  </button>
+                </div>
+                <div class="divide-y divide-gray-50" ref="transcriptContainer">
+                  <button
+                    v-for="(segment, index) in transcriptionSegments"
+                    :key="index"
+                    :ref="el => { if (el) segmentRefs[index] = el }"
+                    @click="seekToTime(segment.start)"
+                    class="w-full text-left p-4 transition-all duration-300 group flex gap-3"
+                    :class="activeSegmentIndex === index
+                      ? 'bg-orange-100 border-l-4 border-orange-500'
+                      : 'hover:bg-orange-50/60 border-l-4 border-transparent'"
+                  >
+                    <span
+                      class="text-[11px] font-medium tabular-nums tracking-wide flex-shrink-0 transition-colors min-w-[36px]"
+                      :class="activeSegmentIndex === index ? 'text-orange-500' : 'text-gray-400'"
+                    >
+                      {{ formatTime(segment.start) }}
+                    </span>
+                    <p
+                      class="text-[13px] leading-relaxed transition-colors"
+                      :class="activeSegmentIndex === index ? 'text-gray-900 font-medium' : 'text-gray-700'"
+                    >
+                      {{ segment.text }}
+                    </p>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Fallback: show full transcript if no segments -->
+              <div v-else-if="transcription" class="p-5">
+                <div class="flex items-center justify-between mb-3">
+                  <span class="text-xs font-medium text-gray-500">Full transcript</span>
+                  <button
+                    @click="copyTranscript"
+                    class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
+                  >
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                    </svg>
+                    {{ copiedTranscript ? 'Copied!' : 'Copy' }}
+                  </button>
+                </div>
+                <p class="text-[13px] text-gray-700 leading-relaxed whitespace-pre-wrap">{{ transcription }}</p>
+              </div>
+
+              <!-- Empty state - no transcript available -->
+              <div v-else class="flex flex-col items-center justify-center h-64 text-center px-5">
                 <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
                   <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                   </svg>
                 </div>
-                <p class="text-base font-semibold text-gray-900">Transcript Coming Soon</p>
-                <p class="text-sm text-gray-500 mt-1">Auto-generated transcripts will appear here</p>
+                <p class="text-base font-semibold text-gray-900">No Transcript Available</p>
+                <p class="text-sm text-gray-500 mt-1">The video owner has not generated a transcript yet</p>
               </div>
             </div>
 
             <!-- TAB: SUMMARY -->
-            <div v-show="activeTab === 'summary'" class="p-5">
-              <div class="flex flex-col items-center justify-center h-64 text-center">
+            <div v-show="activeTab === 'summary'" class="flex flex-col min-h-full">
+              <!-- Summary content -->
+              <div v-if="summary" class="p-5">
+                <div class="flex items-center justify-between mb-4">
+                  <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-orange-100 to-amber-100 flex items-center justify-center">
+                      <svg class="w-4 h-4 text-orange-500" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/>
+                      </svg>
+                    </div>
+                    <span class="text-sm font-semibold text-gray-900">AI Summary</span>
+                  </div>
+                  <button
+                    @click="copySummary"
+                    class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
+                  >
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                    </svg>
+                    {{ copiedSummary ? 'Copied!' : 'Copy' }}
+                  </button>
+                </div>
+                <div class="prose prose-sm max-w-none text-gray-700 leading-relaxed" v-html="formattedSummary"></div>
+              </div>
+
+              <!-- Empty state - no summary available -->
+              <div v-else class="flex flex-col items-center justify-center h-64 text-center px-5">
                 <div class="w-16 h-16 rounded-full bg-gradient-to-br from-orange-100 to-amber-100 flex items-center justify-center mb-4">
                   <svg class="w-8 h-8 text-orange-500" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456z"/>
+                    <path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/>
                   </svg>
                 </div>
-                <p class="text-base font-semibold text-gray-900">AI Summary Coming Soon</p>
-                <p class="text-sm text-gray-500 mt-1">Get AI-powered insights about this recording</p>
+                <p class="text-base font-semibold text-gray-900">No Summary Available</p>
+                <p class="text-sm text-gray-500 mt-1">The video owner has not generated a summary yet</p>
               </div>
             </div>
 
@@ -555,7 +640,7 @@
 </template>
 
 <script>
-import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed, watch, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuth } from '@/stores/auth'
 import Hls from 'hls.js'
@@ -610,6 +695,20 @@ export default {
     const showShareModal = ref(false)
     const activeTab = ref('comments')
 
+    // Transcription state (read-only for shared videos)
+    const transcription = ref(null)
+    const transcriptionSegments = ref([])
+    const summary = ref(null)
+
+    // Copy states
+    const copiedTranscript = ref(false)
+    const copiedSummary = ref(false)
+
+    // Transcript sync state
+    const transcriptContainer = ref(null)
+    const segmentRefs = ref({})
+    const autoScrollEnabled = ref(true)
+
     // HLS related
     const hlsInstance = ref(null)
     const availableQualities = ref([])
@@ -623,6 +722,35 @@ export default {
     const progressPercent = computed(() => {
       if (!duration.value) return 0
       return (currentTime.value / duration.value) * 100
+    })
+
+    // Find the active transcript segment based on current video time
+    const activeSegmentIndex = computed(() => {
+      if (!transcriptionSegments.value || transcriptionSegments.value.length === 0) return -1
+
+      const time = currentTime.value
+      for (let i = transcriptionSegments.value.length - 1; i >= 0; i--) {
+        const segment = transcriptionSegments.value[i]
+        if (time >= segment.start) {
+          return i
+        }
+      }
+      return -1
+    })
+
+    // Auto-scroll to active segment when it changes
+    watch(activeSegmentIndex, (newIndex) => {
+      if (newIndex >= 0 && autoScrollEnabled.value && activeTab.value === 'transcript') {
+        nextTick(() => {
+          const segmentEl = segmentRefs.value[newIndex]
+          if (segmentEl && transcriptContainer.value) {
+            segmentEl.scrollIntoView({
+              behavior: 'smooth',
+              block: 'center'
+            })
+          }
+        })
+      }
     })
 
     const totalReactions = computed(() => {
@@ -647,6 +775,11 @@ export default {
         reactions.value = data.video.reactions || {}
         duration.value = data.video.duration || 0
 
+        // Load transcription/summary if available
+        transcription.value = data.video.transcription || null
+        transcriptionSegments.value = data.video.transcription_segments || []
+        summary.value = data.video.summary || null
+
         // Initialize HLS after video data is loaded
         setTimeout(() => initHls(), 100)
       } catch (err) {
@@ -655,6 +788,61 @@ export default {
         loading.value = false
       }
     }
+
+    const seekToTime = (seconds) => {
+      if (videoRef.value) {
+        videoRef.value.currentTime = seconds
+        if (!isPlaying.value) {
+          togglePlay()
+        }
+      }
+    }
+
+    const copyTranscript = async () => {
+      if (!transcription.value && (!transcriptionSegments.value || transcriptionSegments.value.length === 0)) return
+
+      let textToCopy = transcription.value || ''
+      if (transcriptionSegments.value && transcriptionSegments.value.length > 0) {
+        textToCopy = transcriptionSegments.value
+          .map(segment => `[${formatTime(segment.start)}] ${segment.text}`)
+          .join('\n')
+      }
+
+      try {
+        await navigator.clipboard.writeText(textToCopy)
+        copiedTranscript.value = true
+        showToast('Transcript copied!')
+        setTimeout(() => { copiedTranscript.value = false }, 3000)
+      } catch (err) {
+        console.error('Failed to copy transcript:', err)
+      }
+    }
+
+    const copySummary = async () => {
+      if (!summary.value) return
+
+      try {
+        await navigator.clipboard.writeText(summary.value)
+        copiedSummary.value = true
+        showToast('Summary copied!')
+        setTimeout(() => { copiedSummary.value = false }, 3000)
+      } catch (err) {
+        console.error('Failed to copy summary:', err)
+      }
+    }
+
+    const formattedSummary = computed(() => {
+      if (!summary.value) return ''
+      // Convert markdown-style bullet points to HTML
+      return summary.value
+        .replace(/^[-•]\s+/gm, '<li>')
+        .replace(/<li>/g, '</li><li>')
+        .replace(/^<\/li>/, '')
+        .replace(/<li>([^<]+)$/gm, '<li>$1</li>')
+        .replace(/(<li>.*<\/li>)/gs, '<ul class="list-disc pl-4 space-y-1">$1</ul>')
+        .replace(/\n\n/g, '</p><p class="mt-3">')
+        .replace(/\n/g, '<br>')
+    })
 
     const initHls = () => {
       const videoElement = videoRef.value
@@ -1168,6 +1356,12 @@ export default {
       copied, copiedEmbed, toast, shareUrl,
       newComment, isSavingComment, isAuthenticated, currentUser, userInitial,
       showShareModal, activeTab,
+      // Transcription (read-only for shared view)
+      transcription, transcriptionSegments, summary, formattedSummary, seekToTime,
+      // Transcript sync
+      transcriptContainer, segmentRefs, activeSegmentIndex,
+      // Copy
+      copiedTranscript, copiedSummary, copyTranscript, copySummary,
       // HLS
       availableQualities, currentQuality, showQualityMenu,
       togglePlay, updateProgress, onVideoLoaded, onVideoError, onVideoEnded, seek, startSeeking,

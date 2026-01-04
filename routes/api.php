@@ -144,6 +144,13 @@ Route::middleware('auth:sanctum')->group(function () {
         // Views tracking
         Route::post('/{id}/view', [VideoViewController::class, 'recordView']);
         Route::get('/{id}/stats', [VideoViewController::class, 'getStats']);
+
+        // Transcription and summary
+        Route::post('/{id}/transcription', [VideoController::class, 'requestTranscription']);
+        Route::get('/{id}/transcription', [VideoController::class, 'getTranscription']);
+        Route::get('/{id}/transcription/status', [VideoController::class, 'transcriptionStatus']);
+        Route::post('/{id}/summary', [VideoController::class, 'requestSummary']);
+        Route::get('/{id}/summary', [VideoController::class, 'getSummary']);
     });
 });
 

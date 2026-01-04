@@ -95,6 +95,14 @@ class ProcessHlsConversionJob implements ShouldQueue
                 'variants' => $result['variants'],
             ]);
 
+            // Auto-dispatch transcription job after HLS conversion
+            if ($video->transcription_status === 'pending' || $video->transcription_status === null) {
+                Log::info('Auto-dispatching transcription job after HLS conversion', [
+                    'video_id' => $video->id,
+                ]);
+                GenerateTranscriptionJob::dispatch($video, true, true)->delay(now()->addSeconds(5));
+            }
+
         } catch (\Exception $e) {
             Log::error('HLS conversion failed', [
                 'video_id' => $video->id,
