@@ -102,4 +102,67 @@ class VideoRepository extends BaseRepository
 
         return $video;
     }
+
+    public function updateTranscriptionStatus(Video $video, string $status, ?int $progress = null, ?string $error = null): bool
+    {
+        $data = ['transcription_status' => $status];
+
+        if ($progress !== null) {
+            $data['transcription_progress'] = $progress;
+        }
+
+        if ($error !== null) {
+            $data['transcription_error'] = $error;
+        }
+
+        if ($status === 'completed') {
+            $data['transcription_generated_at'] = now();
+        }
+
+        return $video->update($data);
+    }
+
+    public function updateSummaryStatus(Video $video, string $status, ?string $error = null): bool
+    {
+        $data = ['summary_status' => $status];
+
+        if ($error !== null) {
+            $data['summary_error'] = $error;
+        }
+
+        if ($status === 'completed') {
+            $data['summary_generated_at'] = now();
+        }
+
+        return $video->update($data);
+    }
+
+    public function saveTranscription(Video $video, string $transcription): bool
+    {
+        return $video->update([
+            'transcription' => $transcription,
+            'transcription_status' => 'completed',
+            'transcription_progress' => 100,
+            'transcription_error' => null,
+            'transcription_generated_at' => now(),
+        ]);
+    }
+
+    public function saveSummary(Video $video, string $summary): bool
+    {
+        return $video->update([
+            'summary' => $summary,
+            'summary_status' => 'completed',
+            'summary_error' => null,
+            'summary_generated_at' => now(),
+        ]);
+    }
+
+    public function findPendingTranscription(): Collection
+    {
+        return Video::where('transcription_status', 'pending')
+            ->where('conversion_status', 'completed')
+            ->latest()
+            ->get();
+    }
 }

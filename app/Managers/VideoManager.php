@@ -3,6 +3,8 @@
 namespace App\Managers;
 
 use App\Jobs\ConvertVideoToMp4Job;
+use App\Jobs\GenerateSummaryJob;
+use App\Jobs\GenerateTranscriptionJob;
 use App\Models\Reaction;
 use App\Models\User;
 use App\Models\Video;
@@ -44,6 +46,11 @@ class VideoManager
                 'hls_status' => $video->hls_status ?? 'pending',
                 'hls_progress' => $video->hls_progress ?? 0,
                 'is_hls_ready' => $video->isHlsReady(),
+                'transcription_status' => $video->transcription_status ?? 'pending',
+                'transcription_progress' => $video->transcription_progress ?? 0,
+                'is_transcription_ready' => $video->isTranscriptionReady(),
+                'summary_status' => $video->summary_status ?? 'pending',
+                'is_summary_ready' => $video->isSummaryReady(),
                 'created_at' => $video->created_at->toISOString(),
                 'updated_at' => $video->updated_at->toISOString(),
             ];
@@ -75,8 +82,7 @@ class VideoManager
         $media = $video->getFirstMedia('videos');
         $originalExtension = pathinfo($media->file_name, PATHINFO_EXTENSION);
         if ($data['duration'] ?? null) {
-            $video->duration = $data['duration'];
-            $video->save();
+            $this->videos->updateVideo($video, ['duration' => $data['duration']]);
         }
 
         $video->generateThumbnailFromMidpoint();
@@ -124,6 +130,11 @@ class VideoManager
             'hls_status' => $video->hls_status ?? 'pending',
             'hls_progress' => $video->hls_progress ?? 0,
             'is_hls_ready' => $video->isHlsReady(),
+            'transcription_status' => $video->transcription_status ?? 'pending',
+            'transcription_progress' => $video->transcription_progress ?? 0,
+            'is_transcription_ready' => $video->isTranscriptionReady(),
+            'summary_status' => $video->summary_status ?? 'pending',
+            'is_summary_ready' => $video->isSummaryReady(),
             'created_at' => $video->created_at->toISOString(),
             'updated_at' => $video->updated_at->toISOString(),
         ];
@@ -213,6 +224,9 @@ class VideoManager
             'reactions' => $reactions,
             'comments' => $comments,
             'is_hls_ready' => $video->isHlsReady(),
+            'transcription' => $video->isTranscriptionReady() ? $video->transcription : null,
+            'transcription_segments' => $video->isTranscriptionReady() ? $video->transcription_segments : null,
+            'summary' => $video->isSummaryReady() ? $video->summary : null,
         ];
     }
 
@@ -257,8 +271,7 @@ class VideoManager
 
         $video->clearMediaCollection('videos');
         $video->addMedia($tempPath)->toMediaCollection('videos');
-        $video->duration = (int) round($newDuration);
-        $video->save();
+        $this->videos->updateVideo($video, ['duration' => (int) round($newDuration)]);
         $video->refresh();
 
         $video->generateThumbnailFromMidpoint();
@@ -425,6 +438,11 @@ class VideoManager
                 'hls_status' => $video->hls_status ?? 'pending',
                 'hls_progress' => $video->hls_progress ?? 0,
                 'is_hls_ready' => $video->isHlsReady(),
+                'transcription_status' => $video->transcription_status ?? 'pending',
+                'transcription_progress' => $video->transcription_progress ?? 0,
+                'is_transcription_ready' => $video->isTranscriptionReady(),
+                'summary_status' => $video->summary_status ?? 'pending',
+                'is_summary_ready' => $video->isSummaryReady(),
                 'created_at' => $video->created_at->toISOString(),
                 'updated_at' => $video->updated_at->toISOString(),
             ];
@@ -434,5 +452,145 @@ class VideoManager
     public function toggleFavourite(Video $video): Video
     {
         return $this->videos->toggleFavourite($video);
+    }
+
+    public function requestTranscription(Video $video, bool $generateSummary = true, bool $generateTitle = true): array
+    {
+        // Check if video conversion is complete
+        if (! $video->isConversionComplete()) {
+            return [
+                'success' => false,
+                'message' => 'Video is still being processed. Please wait for conversion to complete.',
+                'status' => $video->conversion_status,
+            ];
+        }
+
+        // Check if already processing
+        if ($video->transcription_status === 'processing') {
+            return [
+                'success' => false,
+                'message' => 'Transcription is already in progress.',
+                'status' => $video->transcription_status,
+                'progress' => $video->transcription_progress,
+            ];
+        }
+
+        // Reset status if previously failed or already completed (allow re-generation)
+        $this->videos->updateVideo($video, [
+            'transcription_status' => 'pending',
+            'transcription_progress' => 0,
+            'transcription_error' => null,
+            'transcription_segments' => null,
+            'summary_status' => 'pending',
+            'summary_error' => null,
+        ]);
+
+        // Dispatch the job
+        Log::info('Dispatching transcription job', [
+            'video_id' => $video->id,
+            'generate_summary' => $generateSummary,
+            'generate_title' => $generateTitle,
+        ]);
+
+        GenerateTranscriptionJob::dispatch($video, $generateSummary, $generateTitle);
+
+        return [
+            'success' => true,
+            'message' => 'Transcription started. This may take a few minutes.',
+            'status' => 'pending',
+        ];
+    }
+
+    public function requestSummary(Video $video): array
+    {
+        // Check if transcription is available
+        if (! $video->isTranscriptionReady()) {
+            return [
+                'success' => false,
+                'message' => 'Transcription is not available. Please generate transcription first.',
+                'transcription_status' => $video->transcription_status,
+            ];
+        }
+
+        // Check if already processing
+        if ($video->summary_status === 'processing') {
+            return [
+                'success' => false,
+                'message' => 'Summary is already being generated.',
+                'status' => $video->summary_status,
+            ];
+        }
+
+        // Reset status if previously failed or completed
+        $this->videos->updateVideo($video, [
+            'summary_status' => 'pending',
+            'summary_error' => null,
+        ]);
+
+        // Dispatch the job
+        Log::info('Dispatching summary job', ['video_id' => $video->id]);
+
+        GenerateSummaryJob::dispatch($video);
+
+        return [
+            'success' => true,
+            'message' => 'Summary generation started.',
+            'status' => 'pending',
+        ];
+    }
+
+    public function getTranscriptionStatus(Video $video): array
+    {
+        return [
+            'transcription_status' => $video->transcription_status,
+            'transcription_progress' => $video->transcription_progress,
+            'transcription_error' => $video->transcription_error,
+            'is_transcribing' => $video->isTranscribing(),
+            'is_transcription_ready' => $video->isTranscriptionReady(),
+            'is_transcription_failed' => $video->isTranscriptionFailed(),
+            'transcription_message' => $video->getTranscriptionStatusMessage(),
+            'transcription_generated_at' => $video->transcription_generated_at?->toISOString(),
+            'summary_status' => $video->summary_status,
+            'summary_error' => $video->summary_error,
+            'is_summarizing' => $video->isSummarizing(),
+            'is_summary_ready' => $video->isSummaryReady(),
+            'is_summary_failed' => $video->isSummaryFailed(),
+            'summary_message' => $video->getSummaryStatusMessage(),
+            'summary_generated_at' => $video->summary_generated_at?->toISOString(),
+        ];
+    }
+
+    public function getTranscription(Video $video): ?array
+    {
+        if (! $video->isTranscriptionReady()) {
+            return null;
+        }
+
+        return [
+            'transcription' => $video->transcription,
+            'segments' => $video->transcription_segments,
+            'generated_at' => $video->transcription_generated_at?->toISOString(),
+        ];
+    }
+
+    public function getSummary(Video $video): ?array
+    {
+        if (! $video->isSummaryReady()) {
+            return null;
+        }
+
+        return [
+            'summary' => $video->summary,
+            'generated_at' => $video->summary_generated_at?->toISOString(),
+        ];
+    }
+
+    public function getTranscriptionAndSummary(Video $video): array
+    {
+        return [
+            'transcription' => $this->getTranscription($video),
+            'summary' => $this->getSummary($video),
+            'status' => $this->getTranscriptionStatus($video),
+        ];
     }
 }

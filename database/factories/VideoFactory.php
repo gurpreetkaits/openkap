@@ -51,4 +51,33 @@ class VideoFactory extends Factory
             'hls_converted_at' => now(),
         ]);
     }
+
+    public function withTranscription(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'transcription_status' => 'completed',
+            'transcription' => fake()->paragraphs(3, true),
+            'transcription_segments' => [
+                ['start' => 0, 'end' => 10, 'text' => fake()->sentence()],
+                ['start' => 10, 'end' => 20, 'text' => fake()->sentence()],
+                ['start' => 20, 'end' => 30, 'text' => fake()->sentence()],
+            ],
+            'transcription_progress' => 100,
+            'transcription_generated_at' => now(),
+        ]);
+    }
+
+    public function withSummary(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'summary_status' => 'completed',
+            'summary' => fake()->paragraph(),
+            'summary_generated_at' => now(),
+        ]);
+    }
+
+    public function withTranscriptionAndSummary(): static
+    {
+        return $this->withTranscription()->withSummary();
+    }
 }

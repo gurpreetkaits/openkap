@@ -336,4 +336,77 @@ class VideoController extends Controller
             ->header('Accept-Ranges', 'bytes')
             ->header('Cache-Control', 'public, max-age=31536000');
     }
+
+    public function requestTranscription(Request $request, $id)
+    {
+        $video = $this->videoManager->findVideoOrFail($id);
+
+        if ($video->user_id !== Auth::id()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $generateSummary = $request->boolean('generate_summary', true);
+        $generateTitle = $request->boolean('generate_title', true);
+
+        $result = $this->videoManager->requestTranscription($video, $generateSummary, $generateTitle);
+
+        return response()->json($result, $result['success'] ? 200 : 400);
+    }
+
+    public function getTranscription($id)
+    {
+        $video = $this->videoManager->findVideoOrFail($id);
+
+        if ($video->user_id !== Auth::id()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $data = $this->videoManager->getTranscriptionAndSummary($video);
+
+        return response()->json($data);
+    }
+
+    public function transcriptionStatus($id)
+    {
+        $video = $this->videoManager->findVideoOrFail($id);
+
+        if ($video->user_id !== Auth::id()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        return response()->json($this->videoManager->getTranscriptionStatus($video));
+    }
+
+    public function requestSummary($id)
+    {
+        $video = $this->videoManager->findVideoOrFail($id);
+
+        if ($video->user_id !== Auth::id()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $result = $this->videoManager->requestSummary($video);
+
+        return response()->json($result, $result['success'] ? 200 : 400);
+    }
+
+    public function getSummary($id)
+    {
+        $video = $this->videoManager->findVideoOrFail($id);
+
+        if ($video->user_id !== Auth::id()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $summary = $this->videoManager->getSummary($video);
+
+        if (! $summary) {
+            return response()->json([
+                'message' => 'Summary not available',
+                'status' => $this->videoManager->getTranscriptionStatus($video),
+            ], 404);
+        }
+
+        return response()->json($summary);
+    }
 }

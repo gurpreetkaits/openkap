@@ -30,6 +30,16 @@ class Video extends Model implements HasMedia
         'hls_path',
         'hls_error',
         'hls_converted_at',
+        'transcription_status',
+        'transcription',
+        'transcription_segments',
+        'transcription_error',
+        'transcription_progress',
+        'transcription_generated_at',
+        'summary_status',
+        'summary',
+        'summary_error',
+        'summary_generated_at',
     ];
 
     protected $casts = [
@@ -41,6 +51,10 @@ class Video extends Model implements HasMedia
         'converted_at' => 'datetime',
         'hls_progress' => 'integer',
         'hls_converted_at' => 'datetime',
+        'transcription_progress' => 'integer',
+        'transcription_generated_at' => 'datetime',
+        'transcription_segments' => 'array',
+        'summary_generated_at' => 'datetime',
     ];
 
     protected $hidden = [
@@ -364,6 +378,82 @@ class Video extends Model implements HasMedia
             'processing' => "Converting to HLS... {$this->hls_progress}%",
             'completed' => 'HLS streaming ready',
             'failed' => 'HLS conversion failed: '.($this->hls_error ?? 'Unknown error'),
+            default => 'Unknown status',
+        };
+    }
+
+    /**
+     * Check if transcription is in progress.
+     */
+    public function isTranscribing(): bool
+    {
+        return in_array($this->transcription_status, ['pending', 'processing']);
+    }
+
+    /**
+     * Check if transcription is complete.
+     */
+    public function isTranscriptionReady(): bool
+    {
+        return $this->transcription_status === 'completed' && $this->transcription !== null;
+    }
+
+    /**
+     * Check if transcription failed.
+     */
+    public function isTranscriptionFailed(): bool
+    {
+        return $this->transcription_status === 'failed';
+    }
+
+    /**
+     * Check if summary is in progress.
+     */
+    public function isSummarizing(): bool
+    {
+        return in_array($this->summary_status, ['pending', 'processing']);
+    }
+
+    /**
+     * Check if summary is complete.
+     */
+    public function isSummaryReady(): bool
+    {
+        return $this->summary_status === 'completed' && $this->summary !== null;
+    }
+
+    /**
+     * Check if summary failed.
+     */
+    public function isSummaryFailed(): bool
+    {
+        return $this->summary_status === 'failed';
+    }
+
+    /**
+     * Get transcription status message.
+     */
+    public function getTranscriptionStatusMessage(): string
+    {
+        return match ($this->transcription_status) {
+            'pending' => 'Waiting for transcription...',
+            'processing' => "Transcribing... {$this->transcription_progress}%",
+            'completed' => 'Transcription ready',
+            'failed' => 'Transcription failed: '.($this->transcription_error ?? 'Unknown error'),
+            default => 'Unknown status',
+        };
+    }
+
+    /**
+     * Get summary status message.
+     */
+    public function getSummaryStatusMessage(): string
+    {
+        return match ($this->summary_status) {
+            'pending' => 'Waiting for summary...',
+            'processing' => 'Generating summary...',
+            'completed' => 'Summary ready',
+            'failed' => 'Summary failed: '.($this->summary_error ?? 'Unknown error'),
             default => 'Unknown status',
         };
     }
