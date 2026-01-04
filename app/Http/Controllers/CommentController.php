@@ -27,6 +27,7 @@ class CommentController extends Controller
             'content' => 'required|string|max:2000',
             'author_name' => 'nullable|string|max:100',
             'timestamp_seconds' => 'nullable|integer|min:0',
+            'parent_id' => 'nullable|integer|exists:comments,id',
         ]);
 
         $comment = $this->commentManager->createComment(
@@ -41,12 +42,45 @@ class CommentController extends Controller
         ], 201);
     }
 
+    public function update(Request $request, $videoId, $commentId)
+    {
+        $validated = $request->validate([
+            'content' => 'required|string|max:2000',
+        ]);
+
+        $userId = Auth::id();
+        if (! $userId) {
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
+
+        $comment = $this->commentManager->updateComment($commentId, $validated, $userId);
+
+        if (! $comment) {
+            return response()->json(['message' => 'Comment not found or unauthorized'], 403);
+        }
+
+        return response()->json([
+            'message' => 'Comment updated successfully',
+            'comment' => $this->commentManager->formatComment($comment),
+        ]);
+    }
+
+    public function commenters($videoId)
+    {
+        $commenters = $this->commentManager->getVideoCommenters($videoId);
+
+        return response()->json([
+            'commenters' => $commenters,
+        ]);
+    }
+
     public function destroy($videoId, $commentId)
     {
-        $deleted = $this->commentManager->deleteComment($videoId, $commentId);
+        $userId = Auth::id();
+        $deleted = $this->commentManager->deleteComment($videoId, $commentId, $userId);
 
         if (! $deleted) {
-            return response()->json(['message' => 'Comment not found'], 404);
+            return response()->json(['message' => 'Comment not found or unauthorized'], 403);
         }
 
         return response()->json([
@@ -73,6 +107,7 @@ class CommentController extends Controller
             'content' => 'required|string|max:2000',
             'author_name' => 'nullable|string|max:100',
             'timestamp_seconds' => 'nullable|integer|min:0',
+            'parent_id' => 'nullable|integer|exists:comments,id',
         ]);
 
         $comment = $this->commentManager->createSharedVideoComment(
@@ -89,5 +124,18 @@ class CommentController extends Controller
             'message' => 'Comment added successfully',
             'comment' => $this->commentManager->formatComment($comment),
         ], 201);
+    }
+
+    public function commentersByToken($token)
+    {
+        $commenters = $this->commentManager->getSharedVideoCommenters($token);
+
+        if ($commenters === null) {
+            return response()->json(['message' => 'Video not available'], 403);
+        }
+
+        return response()->json([
+            'commenters' => $commenters,
+        ]);
     }
 }
