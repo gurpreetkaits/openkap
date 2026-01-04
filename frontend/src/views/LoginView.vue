@@ -5,10 +5,13 @@
       <div class="text-center">
         <img src="/logo.png" alt="ScreenSense" class="mx-auto w-16 h-16 rounded-2xl shadow-lg" />
         <h2 class="mt-6 text-3xl font-bold text-gray-900">
-          Welcome to ScreenSense
+          Open-source Loom alternative
         </h2>
         <p class="mt-2 text-sm text-gray-600">
-          Record, share, and collaborate on screen recordings
+          Unlimited recordings. Fair pricing. No lock-in.
+        </p>
+        <p class="mt-1 text-xs text-gray-500">
+          Built for developers, founders, and small teams.
         </p>
       </div>
 
@@ -58,19 +61,19 @@
               <svg class="w-5 h-5 text-green-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
               </svg>
-              Record your screen in high quality
+              Unlimited screen recordings
             </div>
             <div class="flex items-center text-sm text-gray-600">
               <svg class="w-5 h-5 text-green-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
               </svg>
-              Share videos with secure links
+              One-click shareable links
             </div>
             <div class="flex items-center text-sm text-gray-600">
               <svg class="w-5 h-5 text-green-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
               </svg>
-              Comment and collaborate with your team
+              Self-host or use our cloud
             </div>
           </div>
         </div>

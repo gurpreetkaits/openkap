@@ -56,13 +56,15 @@
         </div>
 
         <h1 class="text-5xl md:text-7xl lg:text-8xl font-medium tracking-tight text-white mb-8 leading-[1]">
-            Screen Recording<br>
-            <span class="text-transparent bg-clip-text bg-gradient-to-b from-neutral-100 to-neutral-500">Made Simple</span>
+            Open-source<br>
+            <span class="text-transparent bg-clip-text bg-gradient-to-b from-neutral-100 to-neutral-500">Loom Alternative</span>
         </h1>
 
-        <p class="text-lg text-neutral-400 max-w-xl mx-auto mb-10 leading-relaxed font-light">
-            Capture your screen, record audio, and share instantly with secure links.
-            No complex software, just record and share.
+        <p class="text-xl text-neutral-300 max-w-xl mx-auto mb-4 leading-relaxed font-medium">
+            Unlimited recordings. Fair pricing. No lock-in.
+        </p>
+        <p class="text-base text-neutral-500 max-w-xl mx-auto mb-10 leading-relaxed font-light">
+            Built for developers, founders, and small teams.
         </p>
 
         <div class="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
@@ -79,55 +81,57 @@
             </a>
         </div>
 
-        <!-- Demo Video Preview -->
-        <div class="mt-20 w-full max-w-4xl border border-white/10 rounded-2xl bg-[#0F0F0F] shadow-2xl overflow-hidden relative group">
-            <div class="absolute inset-0 bg-gradient-to-t from-brand-950 via-transparent to-transparent z-20 pointer-events-none"></div>
-            <div class="h-10 border-b border-white/5 flex items-center px-4 gap-2 bg-white/5">
-                <div class="flex gap-2">
-                    <div class="size-3 rounded-full bg-red-500/80"></div>
-                    <div class="size-3 rounded-full bg-yellow-500/80"></div>
-                    <div class="size-3 rounded-full bg-green-500/80"></div>
-                </div>
-                <span class="flex-1 text-center text-xs text-neutral-500 font-medium">ScreenSense Demo</span>
-                <div class="w-12"></div>
-            </div>
-            <div class="aspect-video bg-neutral-900/50 relative">
-                <video id="demoVideo" class="w-full h-full object-cover" playsinline preload="metadata">
-                    <source src="/demo/main-demo.mp4" type="video/mp4">
-                </video>
+        <!-- UI Visualization / Screenshots -->
+        <div class="relative w-full max-w-6xl mx-auto h-[350px] sm:h-[450px] md:h-[550px] lg:h-[650px] mt-16" style="perspective: 2000px;">
 
-                <!-- Play Overlay -->
-                <div id="playOverlay" class="absolute inset-0 flex items-center justify-center bg-black/30 cursor-pointer hover:bg-black/40 transition-colors z-10">
-                    <div class="size-20 rounded-full bg-brand-600/90 flex items-center justify-center hover:bg-brand-500 hover:scale-110 transition-all">
-                        <i data-lucide="play" class="size-8 text-white ml-1"></i>
-                    </div>
-                </div>
+            <!-- Glow behind images -->
+            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60%] h-[60%] bg-brand-500/20 blur-[100px] rounded-full"></div>
 
-                <!-- Video Controls -->
-                <div id="videoControls" class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 opacity-0 transition-opacity z-20">
-                    <div id="progressBar" class="w-full h-1 bg-white/20 rounded cursor-pointer mb-3 overflow-hidden">
-                        <div id="progressFill" class="h-full bg-brand-500 rounded" style="width: 0%"></div>
-                    </div>
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-3">
-                            <button id="playPauseBtn" class="text-white hover:text-brand-400 transition-colors">
-                                <i data-lucide="play" id="playIcon" class="size-5"></i>
-                                <i data-lucide="pause" id="pauseIcon" class="size-5 hidden"></i>
-                            </button>
-                            <button id="muteBtn" class="text-white hover:text-brand-400 transition-colors">
-                                <i data-lucide="volume-2" id="volumeIcon" class="size-5"></i>
-                                <i data-lucide="volume-x" id="muteIcon" class="size-5 hidden"></i>
-                            </button>
-                            <span class="text-xs text-neutral-400 font-mono">
-                                <span id="currentTime">0:00</span> / <span id="duration">0:00</span>
-                            </span>
-                        </div>
-                        <button id="fullscreenBtn" class="text-white hover:text-brand-400 transition-colors">
-                            <i data-lucide="maximize" class="size-5"></i>
-                        </button>
-                    </div>
+            <!-- Left Card (Faded Background) -->
+            <div class="absolute top-10 left-1/2 w-[95%] md:w-[70%] rounded-xl border border-white/5 bg-[#0a0a0a] shadow-2xl opacity-40 z-0 hidden sm:block overflow-hidden" style="transform: translateX(-50%) translateX(-15%) rotate(-6deg);">
+                <!-- Browser Header -->
+                <div class="h-10 border-b border-white/5 bg-[#111] flex items-center px-4 gap-2">
+                    <div class="w-2.5 h-2.5 rounded-full bg-red-500/20"></div>
+                    <div class="w-2.5 h-2.5 rounded-full bg-yellow-500/20"></div>
+                    <div class="w-2.5 h-2.5 rounded-full bg-green-500/20"></div>
                 </div>
+                <!-- Screenshot -->
+                <img src="/demo/images/dashboard.png" alt="ScreenSense Dashboard" class="w-full h-auto block">
             </div>
+
+            <!-- Right Card (Faded Background) -->
+            <div class="absolute top-10 left-1/2 w-[95%] md:w-[70%] rounded-xl border border-white/5 bg-[#0a0a0a] shadow-2xl opacity-40 z-0 hidden sm:block overflow-hidden" style="transform: translateX(-50%) translateX(15%) rotate(6deg);">
+                <!-- Browser Header -->
+                <div class="h-10 border-b border-white/5 bg-[#111] flex items-center px-4 gap-2">
+                    <div class="w-2.5 h-2.5 rounded-full bg-red-500/20"></div>
+                    <div class="w-2.5 h-2.5 rounded-full bg-yellow-500/20"></div>
+                    <div class="w-2.5 h-2.5 rounded-full bg-green-500/20"></div>
+                </div>
+                <!-- Screenshot -->
+                <img src="/demo/images/single-video-page.png" alt="ScreenSense Video Page" class="w-full h-auto block">
+            </div>
+
+            <!-- Center Main Card -->
+            <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[98%] md:w-[85%] lg:w-[80%] rounded-xl border border-white/10 bg-[#0c0c0c] shadow-[0_0_50px_-12px_rgba(0,0,0,0.8)] z-10 overflow-hidden transition-transform duration-500 hover:scale-[1.02]">
+                <!-- Window Header -->
+                <div class="h-10 border-b border-white/5 bg-[#141414] flex items-center justify-between px-4">
+                    <div class="flex items-center gap-2">
+                        <div class="w-2.5 h-2.5 rounded-full bg-[#FF5F57]"></div>
+                        <div class="w-2.5 h-2.5 rounded-full bg-[#FEBC2E]"></div>
+                        <div class="w-2.5 h-2.5 rounded-full bg-[#28C840]"></div>
+                    </div>
+                    <div class="px-3 py-1 bg-[#1f1f1f] rounded text-[10px] text-neutral-500 font-medium border border-white/5 flex items-center gap-2">
+                        <i data-lucide="lock" class="w-2.5 h-2.5"></i>
+                        record.screensense.in
+                    </div>
+                    <div class="w-10"></div>
+                </div>
+                <!-- Main Screenshot -->
+                <img src="/demo/images/dashboard-with-recording-dialog.png" alt="ScreenSense Recording" class="w-full h-auto block">
+            </div>
+
+            <!-- Bottom Fade Gradient -->
+            <div class="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-brand-950 to-transparent z-20"></div>
         </div>
     </div>
 
@@ -536,94 +540,5 @@
         }
     }
 
-    // Video Player Controls
-    const video = document.getElementById('demoVideo');
-    const playOverlay = document.getElementById('playOverlay');
-    const videoControls = document.getElementById('videoControls');
-    const playPauseBtn = document.getElementById('playPauseBtn');
-    const playIcon = document.getElementById('playIcon');
-    const pauseIcon = document.getElementById('pauseIcon');
-    const muteBtn = document.getElementById('muteBtn');
-    const volumeIcon = document.getElementById('volumeIcon');
-    const muteIcon = document.getElementById('muteIcon');
-    const progressBar = document.getElementById('progressBar');
-    const progressFill = document.getElementById('progressFill');
-    const currentTimeEl = document.getElementById('currentTime');
-    const durationEl = document.getElementById('duration');
-    const fullscreenBtn = document.getElementById('fullscreenBtn');
-
-    function formatTime(seconds) {
-        const mins = Math.floor(seconds / 60);
-        const secs = Math.floor(seconds % 60);
-        return `${mins}:${secs.toString().padStart(2, '0')}`;
-    }
-
-    function togglePlay() {
-        if (video.paused) {
-            video.play();
-            playOverlay.classList.add('hidden');
-            playIcon.classList.add('hidden');
-            pauseIcon.classList.remove('hidden');
-        } else {
-            video.pause();
-            playIcon.classList.remove('hidden');
-            pauseIcon.classList.add('hidden');
-        }
-    }
-
-    function toggleMute() {
-        video.muted = !video.muted;
-        volumeIcon.classList.toggle('hidden', video.muted);
-        muteIcon.classList.toggle('hidden', !video.muted);
-    }
-
-    function updateProgress() {
-        const percent = (video.currentTime / video.duration) * 100;
-        progressFill.style.width = percent + '%';
-        currentTimeEl.textContent = formatTime(video.currentTime);
-    }
-
-    function setProgress(e) {
-        const rect = progressBar.getBoundingClientRect();
-        const percent = (e.clientX - rect.left) / rect.width;
-        video.currentTime = percent * video.duration;
-    }
-
-    function toggleFullscreen() {
-        if (document.fullscreenElement) {
-            document.exitFullscreen();
-        } else {
-            video.parentElement.requestFullscreen();
-        }
-    }
-
-    // Show/hide controls on hover
-    video.parentElement.addEventListener('mouseenter', () => {
-        if (!video.paused) videoControls.style.opacity = '1';
-    });
-    video.parentElement.addEventListener('mouseleave', () => {
-        if (!video.paused) videoControls.style.opacity = '0';
-    });
-
-    // Event Listeners
-    playOverlay.addEventListener('click', togglePlay);
-    playPauseBtn.addEventListener('click', togglePlay);
-    muteBtn.addEventListener('click', toggleMute);
-    video.addEventListener('timeupdate', updateProgress);
-    video.addEventListener('loadedmetadata', () => {
-        durationEl.textContent = formatTime(video.duration);
-    });
-    video.addEventListener('ended', () => {
-        playOverlay.classList.remove('hidden');
-        playIcon.classList.remove('hidden');
-        pauseIcon.classList.add('hidden');
-        videoControls.style.opacity = '0';
-    });
-    video.addEventListener('play', () => {
-        videoControls.style.opacity = '1';
-    });
-    progressBar.addEventListener('click', setProgress);
-    fullscreenBtn.addEventListener('click', toggleFullscreen);
-    video.addEventListener('click', togglePlay);
 </script>
 @endpush
