@@ -6,6 +6,7 @@
             <span class="text-lg font-medium tracking-tight text-white">ScreenSense</span>
         </a>
 
+        <!-- Desktop Nav Links -->
         <div class="hidden md:flex items-center gap-6 text-sm font-medium text-neutral-400">
             <a href="/#how-it-works" class="hover:text-white transition-colors">How it works</a>
             <a href="/#features" class="hover:text-white transition-colors">Features</a>
@@ -13,7 +14,7 @@
             <a href="/blog" class="hover:text-white transition-colors {{ request()->is('blog*') ? 'text-white' : '' }}">Blog</a>
         </div>
 
-        <div class="flex items-center gap-4">
+        <div class="flex items-center gap-3">
             <!-- GitHub Button -->
             <a href="https://github.com/gurpreetkaits/screensense" target="_blank" rel="noopener noreferrer" class="hidden sm:flex items-center gap-2 text-xs font-medium bg-white/5 border border-white/10 px-3 py-1.5 rounded-full hover:bg-white/10 transition-colors group">
                 <i data-lucide="github" class="size-4 text-neutral-400 group-hover:text-white transition-colors"></i>
@@ -22,9 +23,74 @@
                 <span id="github-stars-nav" class="text-neutral-500 group-hover:text-brand-400 transition-colors">--</span>
             </a>
 
-            <a href="{{ config('app.frontend_url', config('app.url')) }}/login" class="text-sm font-medium bg-white text-black px-4 py-2 rounded-full hover:bg-neutral-200 transition-colors shadow-[0_0_15px_-3px_rgba(255,255,255,0.3)]">
+            <!-- Sign In Button -->
+            <a href="{{ config('app.frontend_url', config('app.url')) }}/login" class="hidden sm:block text-sm font-medium bg-white text-black px-4 py-2 rounded-full hover:bg-neutral-200 transition-colors shadow-[0_0_15px_-3px_rgba(255,255,255,0.3)]">
                 Sign In
             </a>
+
+            <!-- Mobile Hamburger Button -->
+            <button id="mobile-menu-btn" class="md:hidden flex items-center justify-center size-10 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
+                <i data-lucide="menu" class="size-5 text-white" id="menu-icon"></i>
+                <i data-lucide="x" class="size-5 text-white hidden" id="close-icon"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="md:hidden hidden border-t border-white/5 bg-brand-950/95 backdrop-blur-xl">
+        <div class="px-6 py-4 space-y-1">
+            <a href="/#how-it-works" class="block px-4 py-3 rounded-lg text-sm font-medium text-neutral-300 hover:text-white hover:bg-white/5 transition-colors">
+                How it works
+            </a>
+            <a href="/#features" class="block px-4 py-3 rounded-lg text-sm font-medium text-neutral-300 hover:text-white hover:bg-white/5 transition-colors">
+                Features
+            </a>
+            <a href="/#pricing" class="block px-4 py-3 rounded-lg text-sm font-medium text-neutral-300 hover:text-white hover:bg-white/5 transition-colors">
+                Pricing
+            </a>
+            <a href="/blog" class="block px-4 py-3 rounded-lg text-sm font-medium text-neutral-300 hover:text-white hover:bg-white/5 transition-colors {{ request()->is('blog*') ? 'text-white bg-white/5' : '' }}">
+                Blog
+            </a>
+
+            <div class="pt-4 mt-4 border-t border-white/5 space-y-3">
+                <!-- GitHub Link Mobile -->
+                <a href="https://github.com/gurpreetkaits/screensense" target="_blank" rel="noopener noreferrer" class="flex items-center justify-center gap-2 w-full px-4 py-3 rounded-lg text-sm font-medium bg-white/5 border border-white/10 text-neutral-300 hover:bg-white/10 transition-colors">
+                    <i data-lucide="github" class="size-4"></i>
+                    <span>Star on GitHub</span>
+                </a>
+
+                <!-- Sign In Mobile -->
+                <a href="{{ config('app.frontend_url', config('app.url')) }}/login" class="flex items-center justify-center w-full px-4 py-3 rounded-lg text-sm font-medium bg-white text-black hover:bg-neutral-200 transition-colors">
+                    Sign In
+                </a>
+            </div>
         </div>
     </div>
 </nav>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const menuIcon = document.getElementById('menu-icon');
+        const closeIcon = document.getElementById('close-icon');
+
+        if (mobileMenuBtn && mobileMenu) {
+            mobileMenuBtn.addEventListener('click', function() {
+                mobileMenu.classList.toggle('hidden');
+                menuIcon.classList.toggle('hidden');
+                closeIcon.classList.toggle('hidden');
+            });
+
+            // Close menu when clicking a link
+            const mobileLinks = mobileMenu.querySelectorAll('a');
+            mobileLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    mobileMenu.classList.add('hidden');
+                    menuIcon.classList.remove('hidden');
+                    closeIcon.classList.add('hidden');
+                });
+            });
+        }
+    });
+</script>

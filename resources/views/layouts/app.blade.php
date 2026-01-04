@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="en" class="scroll-smooth overflow-x-hidden">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -74,12 +74,12 @@
 
     @stack('styles')
 </head>
-<body class="bg-brand-950 text-neutral-300 antialiased selection:bg-brand-500/30 selection:text-brand-100 flex flex-col min-h-screen">
+<body class="bg-brand-950 text-neutral-300 antialiased selection:bg-brand-500/30 selection:text-brand-100 flex flex-col min-h-screen overflow-x-hidden">
 
     @include('partials.navbar')
 
     <!-- Main Content -->
-    <main class="relative flex-grow pt-16">
+    <main class="relative flex-grow pt-16 overflow-x-hidden">
         @yield('content')
     </main>
 

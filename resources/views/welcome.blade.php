@@ -42,10 +42,10 @@
 @endpush
 
 @section('content')
-    <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-brand-600/10 blur-[100px] rounded-full pointer-events-none -z-10 opacity-50"></div>
+    <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] max-w-[100vw] h-[400px] bg-brand-600/10 blur-[100px] rounded-full pointer-events-none -z-10 opacity-50"></div>
 
     <!-- Hero Section -->
-    <div class="max-w-5xl mx-auto px-6 flex flex-col items-center text-center relative z-10 py-20 pt-8">
+    <div class="max-w-5xl mx-auto px-6 flex flex-col items-center text-center relative z-10 py-20 pt-8 overflow-hidden">
 
         <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-brand-500/20 bg-brand-500/5 text-brand-400 text-xs font-medium mb-8">
             <span class="relative flex h-2 w-2">
@@ -82,7 +82,7 @@
         </div>
 
         <!-- UI Visualization / Screenshots -->
-        <div class="relative w-full max-w-6xl mx-auto h-[350px] sm:h-[450px] md:h-[550px] lg:h-[650px] mt-16" style="perspective: 2000px;">
+        <div class="relative w-full max-w-6xl mx-auto h-[350px] sm:h-[450px] md:h-[550px] lg:h-[650px] mt-16 overflow-hidden" style="perspective: 2000px;">
 
             <!-- Glow behind images -->
             <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60%] h-[60%] bg-brand-500/20 blur-[100px] rounded-full"></div>
