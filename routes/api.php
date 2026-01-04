@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\GoogleAuthController;
 use App\Http\Controllers\CommentController;
+use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\HlsController;
 use App\Http\Controllers\MarkdownBlogController;
 use App\Http\Controllers\NotificationController;
@@ -58,6 +59,8 @@ Route::get('/test', function () {
 Route::get('/share/video/{token}', [VideoController::class, 'viewShared']);
 Route::get('/share/video/{token}/stream', [VideoController::class, 'streamShared']); // Public streaming for shared videos
 Route::get('/share/video/{token}/comments', [CommentController::class, 'indexByToken']);
+Route::get('/share/video/{token}/commenters', [CommentController::class, 'commentersByToken']);
+Route::post('/share/video/{token}/view', [VideoViewController::class, 'recordSharedView']);
 
 // HLS streaming with CORS support (for cross-origin playback)
 Route::get('/share/video/{token}/hls/master.m3u8', [HlsController::class, 'masterPlaylist']);
@@ -112,6 +115,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/{id}', [NotificationController::class, 'destroy']);
     });
 
+    // Feedback routes (rate limited: 3 per hour)
+    Route::prefix('feedback')->group(function () {
+        Route::get('/', [FeedbackController::class, 'index']);
+        Route::post('/', [FeedbackController::class, 'store']);
+    });
+
     // Video routes - all require authentication
     Route::prefix('videos')->group(function () {
         Route::get('/', [VideoController::class, 'index']);
@@ -133,7 +142,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // Comments
         Route::get('/{id}/comments', [CommentController::class, 'index']);
+        Route::get('/{id}/commenters', [CommentController::class, 'commenters']);
         Route::post('/{id}/comments', [CommentController::class, 'store']);
+        Route::put('/{id}/comments/{commentId}', [CommentController::class, 'update']);
         Route::delete('/{id}/comments/{commentId}', [CommentController::class, 'destroy']);
 
         // Reactions

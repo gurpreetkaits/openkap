@@ -2,6 +2,7 @@
 
 namespace App\Managers;
 
+use App\Models\Feedback;
 use App\Models\Notification;
 use App\Models\User;
 use App\Models\Video;
@@ -124,6 +125,50 @@ class NotificationManager
             'notifiable_type' => null,
             'notifiable_id' => null,
             'actor_id' => null,
+        ]);
+    }
+
+    public function createFeedbackReplyNotification(Feedback $feedback): Notification
+    {
+        $message = "Your feedback \"<span class=\"font-medium text-gray-900\">{$feedback->title}</span>\" has received a reply";
+
+        return $this->notifications->createNotification([
+            'user_id' => $feedback->user_id,
+            'type' => Notification::TYPE_FEEDBACK,
+            'message' => $message,
+            'notifiable_type' => Feedback::class,
+            'notifiable_id' => $feedback->id,
+            'actor_id' => null,
+        ]);
+    }
+
+    public function createMentionNotification(\App\Models\Comment $comment, User $mentionedUser, string $authorName): Notification
+    {
+        $video = $comment->video;
+        $message = "<span class=\"font-medium text-gray-900\">{$authorName}</span> mentioned you in a comment on \"{$video->title}\"";
+
+        return $this->notifications->createNotification([
+            'user_id' => $mentionedUser->id,
+            'type' => Notification::TYPE_COMMENT,
+            'message' => $message,
+            'notifiable_type' => Video::class,
+            'notifiable_id' => $video->id,
+            'actor_id' => $comment->user_id,
+        ]);
+    }
+
+    public function createReplyNotification(\App\Models\Comment $comment, User $parentAuthor, string $authorName): Notification
+    {
+        $video = $comment->video;
+        $message = "<span class=\"font-medium text-gray-900\">{$authorName}</span> replied to your comment on \"{$video->title}\"";
+
+        return $this->notifications->createNotification([
+            'user_id' => $parentAuthor->id,
+            'type' => Notification::TYPE_COMMENT,
+            'message' => $message,
+            'notifiable_type' => Video::class,
+            'notifiable_id' => $video->id,
+            'actor_id' => $comment->user_id,
         ]);
     }
 

@@ -322,6 +322,29 @@ class VideoService {
   }
 
   /**
+   * Record a view for a shared video
+   */
+  async recordSharedView(shareToken) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/share/video/${shareToken}/view`, {
+        method: 'POST',
+        headers: getAuthHeaders()
+      })
+
+      if (!response.ok) {
+        console.warn('Failed to record shared view:', response.statusText)
+        return null
+      }
+
+      const data = await response.json()
+      return data
+    } catch (error) {
+      console.warn('Error recording shared view:', error)
+      return null
+    }
+  }
+
+  /**
    * Trim a video to specified start and end times
    */
   async trimVideo(videoId, startTime, endTime) {
