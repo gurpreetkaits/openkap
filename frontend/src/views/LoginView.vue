@@ -4,15 +4,9 @@
       <!-- Logo and Title -->
       <div class="text-center">
         <img src="/logo.png" alt="ScreenSense" class="mx-auto w-16 h-16 rounded-2xl shadow-lg" />
-        <h2 class="mt-6 text-3xl font-bold text-gray-900">
-          Open-source Loom alternative
+        <h2 class="mt-6 text-2xl font-bold text-gray-900">
+          Welcome to ScreenSense
         </h2>
-        <p class="mt-2 text-sm text-gray-600">
-          Unlimited recordings. Fair pricing. No lock-in.
-        </p>
-        <p class="mt-1 text-xs text-gray-500">
-          Built for developers, founders, and small teams.
-        </p>
       </div>
 
       <!-- Error Message -->
