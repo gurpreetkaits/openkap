@@ -21,12 +21,15 @@ class Notification extends Model
 
     public const TYPE_INFO = 'info';
 
+    public const TYPE_FEEDBACK = 'feedback';
+
     public const TYPES = [
         self::TYPE_VIEWER,
         self::TYPE_COMMENT,
         self::TYPE_WARNING,
         self::TYPE_SUCCESS,
         self::TYPE_INFO,
+        self::TYPE_FEEDBACK,
     ];
 
     protected $fillable = [

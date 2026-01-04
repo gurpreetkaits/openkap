@@ -59,7 +59,13 @@
             <svg class="w-4 h-4 transition-colors" :class="isActive('/notifications') ? 'text-orange-600' : 'text-gray-400 group-hover:text-gray-600'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
             </svg>
-            Notifications
+            <span class="flex-1">Notifications</span>
+            <span
+              v-if="unreadCount > 0"
+              class="min-w-[18px] h-[18px] px-1 flex items-center justify-center text-[10px] font-bold text-white bg-orange-500 rounded-full"
+            >
+              {{ unreadCount > 99 ? '99+' : unreadCount }}
+            </span>
           </router-link>
         </nav>
 
@@ -88,6 +94,17 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
             </svg>
             Subscription
+          </router-link>
+
+          <router-link
+            to="/feedback"
+            class="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all group"
+            :class="isActive('/feedback') ? 'text-gray-900 bg-gray-50' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'"
+          >
+            <svg class="w-4 h-4 transition-colors" :class="isActive('/feedback') ? 'text-orange-600' : 'text-gray-400 group-hover:text-gray-600'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+            </svg>
+            Feedback
           </router-link>
         </nav>
       </div>
@@ -224,7 +241,12 @@
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
             </svg>
-            <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-orange-500 rounded-full border-2 border-white"></span>
+            <span
+              v-if="unreadCount > 0"
+              class="absolute -top-0.5 -right-0.5 min-w-[16px] h-[16px] px-1 flex items-center justify-center text-[9px] font-bold text-white bg-orange-500 rounded-full border-2 border-white"
+            >
+              {{ unreadCount > 9 ? '9+' : unreadCount }}
+            </span>
           </router-link>
         </div>
       </header>
@@ -311,7 +333,13 @@
               <svg class="w-4 h-4 transition-colors" :class="isActive('/notifications') ? 'text-orange-600' : 'text-gray-400 group-hover:text-gray-600'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
               </svg>
-              Notifications
+              <span class="flex-1">Notifications</span>
+              <span
+                v-if="unreadCount > 0"
+                class="min-w-[18px] h-[18px] px-1 flex items-center justify-center text-[10px] font-bold text-white bg-orange-500 rounded-full"
+              >
+                {{ unreadCount > 99 ? '99+' : unreadCount }}
+              </span>
             </router-link>
           </nav>
 
@@ -342,6 +370,18 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
               </svg>
               Subscription
+            </router-link>
+
+            <router-link
+              to="/feedback"
+              @click="sidebarOpen = false"
+              class="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all group"
+              :class="isActive('/feedback') ? 'text-gray-900 bg-gray-50' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'"
+            >
+              <svg class="w-4 h-4 transition-colors" :class="isActive('/feedback') ? 'text-orange-600' : 'text-gray-400 group-hover:text-gray-600'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+              </svg>
+              Feedback
             </router-link>
           </nav>
         </div>
@@ -401,12 +441,13 @@
 </template>
 
 <script>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { SBLogoutModal } from '../Global'
 import RecordingSetupPanel from '../Global/RecordingSetupPanel.vue'
 import { useAuth } from '@/stores/auth'
 import { useRecording } from '@/composables/useRecording'
+import notificationService from '@/services/notificationService'
 
 export default {
   name: 'AppLayout',
@@ -422,6 +463,8 @@ export default {
     const sidebarOpen = ref(false)
     const showLogoutModal = ref(false)
     const logoutLoading = ref(false)
+    const unreadCount = ref(0)
+    let pollInterval = null
 
     // Subscription from auth store
     const subscription = computed(() => auth.subscription.value)
@@ -456,7 +499,8 @@ export default {
         '/notifications': 'Notifications',
         '/profile': 'Profile',
         '/subscription': 'Subscription',
-        '/record': 'Record'
+        '/record': 'Record',
+        '/feedback': 'Feedback'
       }
       return pathMap[route.path] || 'Library'
     })
@@ -477,10 +521,30 @@ export default {
       }
     }
 
+    // Fetch unread notification count
+    const fetchUnreadCount = async () => {
+      if (isAuthenticated.value) {
+        try {
+          unreadCount.value = await notificationService.getUnreadCount()
+        } catch (error) {
+          console.error('Failed to fetch unread count:', error)
+        }
+      }
+    }
+
     // Fetch subscription status on mount
     onMounted(() => {
       if (isAuthenticated.value) {
         auth.fetchSubscription()
+        fetchUnreadCount()
+        // Poll for new notifications every 30 seconds
+        pollInterval = setInterval(fetchUnreadCount, 30000)
+      }
+    })
+
+    onUnmounted(() => {
+      if (pollInterval) {
+        clearInterval(pollInterval)
       }
     })
 
@@ -497,6 +561,7 @@ export default {
       isAuthenticated,
       isActive,
       currentPageName,
+      unreadCount,
       handleLogin,
       handleLogout
     }

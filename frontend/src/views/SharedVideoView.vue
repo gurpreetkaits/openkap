@@ -490,19 +490,7 @@
                   class="w-full bg-transparent border-none text-[13px] text-gray-900 placeholder:text-gray-400 focus:ring-0 p-3 resize-none min-h-[44px]"
                 ></textarea>
 
-                <div class="flex items-center justify-between px-2 pb-2">
-                  <div class="flex items-center gap-1">
-                    <button class="p-1.5 text-gray-400 hover:text-orange-600 hover:bg-orange-50 rounded-md transition-colors">
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"/>
-                      </svg>
-                    </button>
-                    <button class="p-1.5 text-gray-400 hover:text-orange-600 hover:bg-orange-50 rounded-md transition-colors">
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                      </svg>
-                    </button>
-                  </div>
+                <div class="flex items-center justify-end px-2 pb-2">
                   <button
                     @click="addComment"
                     :disabled="!newComment.trim() || isSavingComment"
@@ -558,6 +546,7 @@
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuth } from '@/stores/auth'
+import videoService from '@/services/videoService'
 import Hls from 'hls.js'
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8888'
@@ -1143,8 +1132,14 @@ export default {
       isFullscreen.value = !!document.fullscreenElement
     }
 
-    onMounted(() => {
-      fetchVideo()
+    onMounted(async () => {
+      await fetchVideo()
+
+      // Record view (non-blocking)
+      if (token.value) {
+        videoService.recordSharedView(token.value).catch(() => {})
+      }
+
       document.addEventListener('keydown', handleKeydown)
       document.addEventListener('click', handleClickOutside)
       document.addEventListener('fullscreenchange', handleFullscreenChange)

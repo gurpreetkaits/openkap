@@ -2,112 +2,77 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Video;
-use App\Models\VideoView;
+use App\Managers\VideoViewManager;
+use App\Repositories\VideoRepository;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class VideoViewController extends Controller
 {
+    public function __construct(
+        protected VideoViewManager $viewManager,
+        protected VideoRepository $videoRepository
+    ) {}
+
     /**
      * Record a video view.
      */
-    public function recordView(Request $request, $id)
+    public function recordView(Request $request, $id): JsonResponse
     {
         $request->validate([
             'watch_duration' => 'nullable|integer|min:0',
             'completed' => 'nullable|boolean',
         ]);
 
-        $video = Video::findOrFail($id);
-        $userId = Auth::check() ? Auth::id() : null;
-        $ipAddress = $request->ip();
-        $userAgent = $request->header('User-Agent');
+        $video = $this->videoRepository->findOrFail($id);
 
-        // Check if this view already exists (within last hour to prevent spam)
-        $existingView = VideoView::where('video_id', $video->id)
-            ->where(function ($query) use ($userId, $ipAddress) {
-                if ($userId) {
-                    $query->where('user_id', $userId);
-                } else {
-                    $query->where('ip_address', $ipAddress);
-                }
-            })
-            ->where('viewed_at', '>', now()->subHour())
-            ->first();
+        $result = $this->viewManager->recordView(
+            $video,
+            Auth::check() ? Auth::id() : null,
+            $request->ip(),
+            $request->header('User-Agent'),
+            $request->input('watch_duration', 0),
+            $request->input('completed', false)
+        );
 
-        if ($existingView) {
-            // Update existing view with new watch duration
-            $existingView->update([
-                'watch_duration' => max($existingView->watch_duration, $request->input('watch_duration', 0)),
-                'completed' => $request->input('completed', false) || $existingView->completed,
-            ]);
+        $statusCode = isset($result['created']) && $result['created'] ? 201 : 200;
 
-            return response()->json([
-                'message' => 'View updated',
-                'view' => $existingView,
-            ]);
-        }
-
-        // Create new view
-        $view = VideoView::create([
-            'video_id' => $video->id,
-            'user_id' => $userId,
-            'ip_address' => $userId ? null : $ipAddress, // Only store IP for anonymous users
-            'user_agent' => $userAgent,
-            'watch_duration' => $request->input('watch_duration', 0),
-            'completed' => $request->input('completed', false),
-            'viewed_at' => now(),
-        ]);
-
-        return response()->json([
-            'message' => 'View recorded',
-            'view' => $view,
-        ], 201);
+        return response()->json($result, $statusCode);
     }
 
     /**
      * Get view statistics for a video.
      */
-    public function getStats($id)
+    public function getStats($id): JsonResponse
     {
-        $video = Video::findOrFail($id);
+        $video = $this->videoRepository->findOrFail($id);
 
-        $totalViews = $video->views()->count();
-        $uniqueViewers = $video->views()
-            ->selectRaw('COUNT(DISTINCT COALESCE(user_id, ip_address)) as count')
-            ->value('count');
+        $stats = $this->viewManager->getVideoStats($video);
 
-        $authenticatedViews = $video->views()->whereNotNull('user_id')->count();
-        $anonymousViews = $video->views()->whereNull('user_id')->count();
+        return response()->json($stats);
+    }
 
-        $averageWatchDuration = $video->views()->avg('watch_duration');
-        $completionRate = $video->views()->where('completed', true)->count() / max($totalViews, 1) * 100;
+    /**
+     * Record a view for a shared video.
+     */
+    public function recordSharedView(Request $request, $token): JsonResponse
+    {
+        $video = $this->videoRepository->findByShareToken($token);
 
-        // Recent viewers (authenticated only)
-        $recentViewers = $video->views()
-            ->whereNotNull('user_id')
-            ->with('user:id,name')
-            ->latest('viewed_at')
-            ->limit(10)
-            ->get()
-            ->map(function ($view) {
-                return [
-                    'user_name' => $view->user->name ?? 'Unknown',
-                    'viewed_at' => $view->viewed_at->toISOString(),
-                    'watch_duration' => $view->watch_duration,
-                    'completed' => $view->completed,
-                ];
-            });
+        if (! $video || ! $video->is_public || ! $video->isShareLinkValid()) {
+            return response()->json(['message' => 'Video not available'], 403);
+        }
 
-        return response()->json([
-            'total_views' => $totalViews,
-            'unique_viewers' => $uniqueViewers,
-            'authenticated_views' => $authenticatedViews,
-            'anonymous_views' => $anonymousViews,
-            'average_watch_duration' => round($averageWatchDuration, 2),
-            'completion_rate' => round($completionRate, 2),
-            'recent_viewers' => $recentViewers,
-        ]);
+        $result = $this->viewManager->recordSharedView(
+            $video,
+            Auth::check() ? Auth::id() : null,
+            $request->ip(),
+            $request->header('User-Agent')
+        );
+
+        $statusCode = isset($result['created']) && $result['created'] ? 201 : 200;
+
+        return response()->json($result, $statusCode);
     }
 }
