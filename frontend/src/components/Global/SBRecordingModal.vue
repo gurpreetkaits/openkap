@@ -500,6 +500,10 @@ export default {
         sessionId.value = await startUploadSession()
         if (!sessionId.value) {
           isStartingRecording.value = false
+          // Check if it was due to video limit
+          if (!canRecordVideo.value) {
+            toast.error('You\'ve reached your video limit. Please upgrade your plan to record more videos.')
+          }
           return
         }
 

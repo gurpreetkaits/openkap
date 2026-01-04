@@ -161,9 +161,11 @@ export function useRecording() {
         });
 
         if (!response.ok) {
-            const error = await response.json();
-            if (response.status === 403) {
-                throw new Error('upgrade_required');
+            const errorData = await response.json().catch(() => ({}));
+            if (response.status === 403 && errorData.error === 'video_limit_reached') {
+                const error = new Error(errorData.message || 'You have reached your video limit. Please upgrade to continue.');
+                error.code = 'VIDEO_LIMIT_REACHED';
+                throw error;
             }
             throw new Error('Failed to start upload session');
         }

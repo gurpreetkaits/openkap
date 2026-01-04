@@ -399,6 +399,7 @@
 import { ref, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useRecording } from '../../composables/useRecording';
+import toast from '@/services/toastService';
 
 const router = useRouter();
 
@@ -517,7 +518,13 @@ const handleStartRecording = async () => {
     await startRecording();
   } catch (error) {
     console.error('Failed to start recording:', error);
-    alert('Failed to start recording. Please ensure you have granted the necessary permissions.');
+    if (error.code === 'VIDEO_LIMIT_REACHED') {
+      toast.error(error.message || 'You\'ve reached your video limit. Please upgrade your plan to record more videos.');
+    } else if (error.name === 'NotAllowedError') {
+      toast.error('Screen sharing was cancelled or denied.');
+    } else {
+      toast.error('Failed to start recording. Please make sure you grant screen sharing permissions.');
+    }
   } finally {
     loading.value = false;
   }
@@ -531,7 +538,7 @@ const handleStopRecording = async () => {
 
     if (!video) {
       // Recording was interrupted, can't save
-      alert('Recording was interrupted and cannot be saved. Please start a new recording.');
+      toast.error('Recording was interrupted and cannot be saved. Please start a new recording.');
       return;
     }
 
@@ -539,7 +546,7 @@ const handleStopRecording = async () => {
     router.push(`/video/${video.id}`);
   } catch (error) {
     console.error('Failed to save recording:', error);
-    alert('Failed to save recording. Please try again.');
+    toast.error('Failed to save recording. Please try again.');
   } finally {
     saving.value = false;
   }
