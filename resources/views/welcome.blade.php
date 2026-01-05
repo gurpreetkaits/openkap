@@ -133,6 +133,25 @@
             <!-- Bottom Fade Gradient -->
             <div class="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-brand-950 to-transparent z-20"></div>
         </div>
+
+        <!-- Launch Badges -->
+        <div class="flex flex-wrap justify-center items-center gap-4 mt-8">
+            <a href="https://peerlist.io/gurpreet/project/screensense--open-source-screen-recording" target="_blank" rel="noreferrer">
+                <img
+                    src="https://peerlist.io/api/v1/projects/embed/PRJH9OBGM78Q7867EC6ADDNQGK799G?showUpvote=false&theme=light"
+                    alt="ScreenSense - Open Source Screen Recording"
+                    style="width: auto; height: 72px;"
+                />
+            </a>
+            <a href="https://www.producthunt.com/products/screensense-2?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-screensense-2" target="_blank" rel="noopener noreferrer">
+                <img
+                    src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1058090&theme=light&t=1767617780370"
+                    alt="ScreenSense - Open Source Loom Alternative | Product Hunt"
+                    width="250"
+                    height="54"
+                />
+            </a>
+        </div>
     </div>
 
     <!-- Workflow Simplified Section -->
