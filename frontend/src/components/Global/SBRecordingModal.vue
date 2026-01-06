@@ -1,8 +1,8 @@
 <template>
   <Teleport to="body">
     <div v-if="show" class="fixed inset-0 z-50 overflow-y-auto">
-      <!-- Backdrop -->
-      <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity" @click="handleBackdropClick"></div>
+      <!-- Backdrop with blur -->
+      <div class="fixed inset-0 bg-black/60 backdrop-blur-md transition-opacity" @click="handleBackdropClick"></div>
 
       <!-- Modal -->
       <div class="flex min-h-full items-center justify-center p-4">

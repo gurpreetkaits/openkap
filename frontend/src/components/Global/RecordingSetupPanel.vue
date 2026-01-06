@@ -1,5 +1,19 @@
 <template>
   <Teleport to="body">
+    <!-- Backdrop with blur (shown while panel is open, including during recording) -->
+    <Transition
+      enter-active-class="transition-opacity duration-300"
+      leave-active-class="transition-opacity duration-300"
+      enter-from-class="opacity-0"
+      leave-to-class="opacity-0"
+    >
+      <div
+        v-if="showSetupPanel || isRecording"
+        class="fixed inset-0 bg-black/40 backdrop-blur-md z-40"
+        @click="!isRecording && closeSetupPanel()"
+      ></div>
+    </Transition>
+
     <Transition
       enter-active-class="transition-all duration-300"
       leave-active-class="transition-all duration-300"
