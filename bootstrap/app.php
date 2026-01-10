@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\AddSecurityHeadersMiddleware;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -20,6 +21,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'api/*',
             'polar/*',
         ]);
+
+        // Add security headers (X-Frame-Options, CSP, etc.) to prevent clickjacking
+        $middleware->append(AddSecurityHeadersMiddleware::class);
 
         // Configure auth middleware to return JSON 401 for API routes instead of redirecting
         $middleware->redirectGuestsTo(function (Request $request) {
