@@ -201,6 +201,10 @@ class VideoController extends Controller
     {
         $video = $this->videoManager->findVideoOrFail($id);
 
+        if ($video->user_id !== Auth::id()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
         try {
             $streamData = $this->videoManager->streamVideo($video, request()->header('Range'));
         } catch (\Exception $e) {

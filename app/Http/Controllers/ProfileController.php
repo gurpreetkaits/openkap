@@ -14,7 +14,11 @@ class ProfileController extends Controller
 
     public function show(Request $request)
     {
-        $userId = Auth::check() ? Auth::id() : 1;
+        $userId = Auth::id();
+
+        if (! $userId) {
+            return response()->json(['message' => 'Unauthenticated'], 401);
+        }
 
         return response()->json([
             'user' => $this->profileManager->getProfile($userId),
@@ -23,7 +27,11 @@ class ProfileController extends Controller
 
     public function update(Request $request)
     {
-        $userId = Auth::check() ? Auth::id() : 1;
+        $userId = Auth::id();
+
+        if (! $userId) {
+            return response()->json(['message' => 'Unauthenticated'], 401);
+        }
 
         $validated = $request->validate([
             'name' => 'sometimes|string|max:255',
@@ -48,7 +56,11 @@ class ProfileController extends Controller
 
     public function deleteAvatar(Request $request)
     {
-        $userId = Auth::check() ? Auth::id() : 1;
+        $userId = Auth::id();
+
+        if (! $userId) {
+            return response()->json(['message' => 'Unauthenticated'], 401);
+        }
 
         $user = $this->profileManager->deleteAvatar($userId);
 

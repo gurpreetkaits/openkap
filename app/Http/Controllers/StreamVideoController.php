@@ -52,7 +52,7 @@ class StreamVideoController extends Controller
 
         // Store session metadata
         $metadata = [
-            'user_id' => Auth::id() ?? 1,
+            'user_id' => Auth::id(),
             'title' => $request->title,
             'mime_type' => $request->mime_type ?? 'video/webm',
             'started_at' => now()->toISOString(),
@@ -94,8 +94,8 @@ class StreamVideoController extends Controller
         $metadata = json_decode(file_get_contents($metadataPath), true);
 
         // Verify user owns this session
-        $userId = Auth::id() ?? 1;
-        if ($metadata['user_id'] !== $userId) {
+        $userId = Auth::id();
+        if (! $userId || $metadata['user_id'] !== $userId) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
@@ -178,8 +178,8 @@ class StreamVideoController extends Controller
         $metadata = json_decode(file_get_contents($metadataPath), true);
 
         // Verify user owns this session
-        $userId = Auth::id() ?? 1;
-        if ($metadata['user_id'] !== $userId) {
+        $userId = Auth::id();
+        if (! $userId || $metadata['user_id'] !== $userId) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
@@ -275,9 +275,9 @@ class StreamVideoController extends Controller
         if (file_exists("{$chunkDir}/metadata.json")) {
             $metadata = json_decode(file_get_contents("{$chunkDir}/metadata.json"), true);
 
-            // Verify user owns this session (skip check for MVP mode)
-            $userId = Auth::id() ?? 1;
-            if ($metadata['user_id'] !== $userId) {
+            // Verify user owns this session
+            $userId = Auth::id();
+            if (! $userId || $metadata['user_id'] !== $userId) {
                 return response()->json(['message' => 'Unauthorized'], 403);
             }
         }
@@ -302,9 +302,9 @@ class StreamVideoController extends Controller
 
         $metadata = json_decode(file_get_contents("{$chunkDir}/metadata.json"), true);
 
-        // Verify user owns this session (skip check for MVP mode)
-        $userId = Auth::id() ?? 1;
-        if ($metadata['user_id'] !== $userId) {
+        // Verify user owns this session
+        $userId = Auth::id();
+        if (! $userId || $metadata['user_id'] !== $userId) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
