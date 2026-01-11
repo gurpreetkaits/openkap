@@ -184,12 +184,13 @@
         <h2>Permissions Explained</h2>
         <p>Our Chrome extension requires certain permissions to function:</p>
         <ul>
-            <li><strong>activeTab & tabs:</strong> To capture the current browser tab for recording</li>
-            <li><strong>desktopCapture:</strong> To record your screen and windows</li>
-            <li><strong>tabCapture:</strong> To record browser tab audio and video</li>
-            <li><strong>storage:</strong> To save your recording preferences locally</li>
-            <li><strong>scripting:</strong> To inject the camera overlay interface</li>
-            <li><strong>host permissions:</strong> To allow recording on any website you visit</li>
+            <li><strong>activeTab & tabs:</strong> To display recording controls on the current tab and track tab changes during recording</li>
+            <li><strong>desktopCapture:</strong> To record your screen and windows when you initiate a recording</li>
+            <li><strong>storage:</strong> To save your recording preferences (quality, audio settings) locally in your browser</li>
+            <li><strong>unlimitedStorage:</strong> To temporarily buffer video chunks locally before upload, ensuring no data loss during longer recordings</li>
+            <li><strong>scripting:</strong> To inject the recording control bar interface into web pages</li>
+            <li><strong>offscreen:</strong> To process video encoding in the background using browser media APIs</li>
+            <li><strong>host permissions:</strong> To display the floating recording controls on any website during an active recording session</li>
         </ul>
         <p>
             <strong>Important:</strong> These permissions are used solely for recording functionality.
