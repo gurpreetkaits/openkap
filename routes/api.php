@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\GoogleAuthController;
+use App\Http\Controllers\BunnyVideoController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\HlsController;
@@ -212,4 +213,33 @@ Route::middleware('auth:sanctum')->prefix('stream')->group(function () {
     Route::post('/{sessionId}/complete', [\App\Http\Controllers\StreamVideoController::class, 'completeUpload']);
     Route::post('/{sessionId}/cancel', [\App\Http\Controllers\StreamVideoController::class, 'cancelUpload']);
     Route::get('/{sessionId}/status', [\App\Http\Controllers\StreamVideoController::class, 'getStatus']);
+});
+
+// ============================================
+// BUNNY STREAM ROUTES (Direct upload to Bunny CDN)
+// ============================================
+
+// Bunny webhook (no auth - Bunny sends these automatically)
+Route::post('/webhooks/bunny', [\App\Http\Controllers\BunnyWebhookController::class, 'handle']);
+
+// Public routes for shared video playback
+Route::get('/bunny/share/{token}/playback', [BunnyVideoController::class, 'sharedPlayback']);
+
+// Protected routes for video management
+Route::middleware('auth:sanctum')->prefix('bunny/videos')->group(function () {
+    // Create video and get upload credentials (requires subscription check)
+    Route::post('/create', [BunnyVideoController::class, 'create'])
+        ->middleware(CheckSubscriptionLimit::class);
+
+    // Mark upload as complete
+    Route::post('/{id}/complete', [BunnyVideoController::class, 'complete']);
+
+    // Get video processing status
+    Route::get('/{id}/status', [BunnyVideoController::class, 'status']);
+
+    // Get signed playback URLs
+    Route::get('/{id}/playback', [BunnyVideoController::class, 'playback']);
+
+    // Delete video
+    Route::delete('/{id}', [BunnyVideoController::class, 'destroy']);
 });

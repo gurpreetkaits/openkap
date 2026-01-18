@@ -2,1081 +2,378 @@
 
 ## Overview
 
-This guide covers secure video recording, uploading to Bunny Stream, and controlled access for users.
+This document describes the Bunny Stream integration implemented in ScreenBuddy. It covers secure video uploading via TUS protocol and signed URL playback.
 
 ---
 
 ## Table of Contents
 
-1. [Bunny Stream Setup](#1-bunny-stream-setup)
+1. [Setup](#1-setup)
 2. [Architecture](#2-architecture)
-3. [Backend Implementation](#3-backend-implementation)
-4. [Extension Changes](#4-extension-changes)
-5. [Secure Video Access](#5-secure-video-access)
-6. [Database Schema](#6-database-schema)
-7. [API Endpoints](#7-api-endpoints)
-8. [Security Considerations](#8-security-considerations)
+3. [API Endpoints](#3-api-endpoints)
+4. [Extension Integration](#4-extension-integration)
+5. [Webhook Setup](#5-webhook-setup)
+6. [Security](#6-security)
 
 ---
 
-## 1. Bunny Stream Setup
+## 1. Setup
 
-### Step 1: Create Bunny Account
-1. Sign up at [bunny.net](https://bunny.net)
-2. Go to **Stream** → **Video Libraries**
-3. Create a new Video Library
+### Environment Variables
 
-### Step 2: Get Credentials
-From your Video Library settings, note down:
-- **Library ID**: `123456`
-- **API Key**: `your-api-key-here`
-- **CDN Hostname**: `vz-xxxxxx-xxx.b-cdn.net`
+Add these to your `.env` file:
 
-### Step 3: Configure Security Settings
-In Video Library → Security:
-- ✅ Enable **Token Authentication**
-- ✅ Enable **Signed URLs** (for private videos)
-- Set **Token Expiry Time**: 3600 seconds (1 hour)
-- Copy the **Security Key** for generating signed URLs
+```env
+# Bunny Stream Configuration
+BUNNY_STREAM_LIBRARY_ID=123456
+BUNNY_STREAM_API_KEY=your-api-key-here
+BUNNY_STREAM_CDN_HOSTNAME=vz-xxxxxx-xxx.b-cdn.net
+BUNNY_STREAM_SECURITY_KEY=your-security-key-for-signed-urls
+BUNNY_STREAM_PLAYBACK_EXPIRY=3600
+BUNNY_STREAM_UPLOAD_EXPIRY=7200
+```
+
+### Run Migration
+
+```bash
+php artisan migrate
+```
+
+This adds the following fields to the `videos` table:
+- `bunny_video_id` - Bunny's video GUID
+- `bunny_library_id` - Library ID
+- `bunny_status` - Status (pending, uploading, processing, transcoding, ready, error)
+- `bunny_error` - Error message if any
+- `bunny_resolution` - Video resolution (e.g., "1080p")
+- `bunny_file_size` - File size in bytes
+- `storage_type` - Either "local" or "bunny"
 
 ---
 
 ## 2. Architecture
 
 ```
-┌──────────────────────────────────────────────────────────────────────┐
-│                         RECORDING FLOW                                │
-├──────────────────────────────────────────────────────────────────────┤
-│                                                                       │
-│   ┌─────────────┐      ┌─────────────┐      ┌─────────────────┐     │
-│   │  Extension  │ ───▶ │ Your Server │ ───▶ │  Bunny Stream   │     │
-│   │  (Record)   │      │ (Auth+Meta) │      │  (Store+HLS)    │     │
-│   └─────────────┘      └─────────────┘      └─────────────────┘     │
-│         │                    │                      │                │
-│         │                    ▼                      │                │
-│         │              ┌───────────┐                │                │
-│         │              │ Database  │                │                │
-│         │              │ (Metadata)│                │                │
-│         │              └───────────┘                │                │
-│         │                                           │                │
-│         └───────────────────────────────────────────┘                │
-│                    Direct TUS Upload                                  │
-│                                                                       │
-└──────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│                      UPLOAD FLOW                                 │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│  Extension              Backend                    Bunny         │
+│      │                     │                         │           │
+│      │  1. POST /create    │                         │           │
+│      │ ───────────────────▶│                         │           │
+│      │                     │  Create video entry     │           │
+│      │                     │ ───────────────────────▶│           │
+│      │                     │                         │           │
+│      │  2. Upload creds    │                         │           │
+│      │ ◀───────────────────│                         │           │
+│      │                     │                         │           │
+│      │  3. TUS Upload (direct) ─────────────────────▶│           │
+│      │     500MB video                               │           │
+│      │                                               │           │
+│      │  4. POST /complete  │                         │           │
+│      │ ───────────────────▶│                         │           │
+│      │                     │                         │           │
+│      │  5. Share URL       │                         │           │
+│      │ ◀───────────────────│                         │           │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
 
-┌──────────────────────────────────────────────────────────────────────┐
-│                         PLAYBACK FLOW                                 │
-├──────────────────────────────────────────────────────────────────────┤
-│                                                                       │
-│   ┌─────────────┐      ┌─────────────┐      ┌─────────────────┐     │
-│   │   Viewer    │ ───▶ │ Your Server │ ───▶ │  Bunny CDN      │     │
-│   │  (Browser)  │      │(Signed URL) │      │  (Deliver)      │     │
-│   └─────────────┘      └─────────────┘      └─────────────────┘     │
-│                              │                                       │
-│                              ▼                                       │
-│                    Check permissions                                 │
-│                    Generate signed URL                               │
-│                    Return to viewer                                  │
-│                                                                       │
-└──────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│                      PLAYBACK FLOW                               │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│  Viewer               Backend                    Bunny CDN       │
+│     │                    │                          │            │
+│     │  GET /playback     │                          │            │
+│     │ ──────────────────▶│                          │            │
+│     │                    │  Check access            │            │
+│     │                    │  Generate signed URL     │            │
+│     │  Signed HLS URL    │                          │            │
+│     │ ◀──────────────────│                          │            │
+│     │                                               │            │
+│     │  Stream video (direct) ──────────────────────▶│            │
+│     │                                               │            │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 3. Backend Implementation
+## 3. API Endpoints
 
-### Environment Variables
+### Create Video & Get Upload Credentials
 
-```env
-# .env
-BUNNY_LIBRARY_ID=123456
-BUNNY_API_KEY=your-api-key-here
-BUNNY_CDN_HOSTNAME=vz-xxxxxx-xxx.b-cdn.net
-BUNNY_SECURITY_KEY=your-security-key-for-signed-urls
+**POST** `/api/bunny/videos/create`
+
+Creates a video entry and returns TUS upload credentials.
+
+**Request:**
+```json
+{
+  "title": "My Recording",
+  "description": "Optional description"
+}
 ```
 
-### Bunny Service (Node.js)
-
-```javascript
-// services/bunnyService.js
-const crypto = require('crypto');
-
-class BunnyService {
-  constructor() {
-    this.libraryId = process.env.BUNNY_LIBRARY_ID;
-    this.apiKey = process.env.BUNNY_API_KEY;
-    this.cdnHostname = process.env.BUNNY_CDN_HOSTNAME;
-    this.securityKey = process.env.BUNNY_SECURITY_KEY;
-    this.baseUrl = 'https://video.bunnycdn.com';
-  }
-
-  /**
-   * Create a new video entry in Bunny
-   * Call this before uploading
-   */
-  async createVideo(title, userId) {
-    const response = await fetch(
-      `${this.baseUrl}/library/${this.libraryId}/videos`,
-      {
-        method: 'POST',
-        headers: {
-          'AccessKey': this.apiKey,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          title: title,
-          collectionId: userId // Optional: organize by user
-        })
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error(`Failed to create video: ${response.statusText}`);
-    }
-
-    return response.json();
-  }
-
-  /**
-   * Generate TUS upload credentials for direct upload from extension
-   * This keeps your API key secure on the server
-   */
-  generateUploadCredentials(videoId, expiresInSeconds = 3600) {
-    const expireTime = Math.floor(Date.now() / 1000) + expiresInSeconds;
-
-    // Create signature for TUS upload
-    const signatureString = `${this.libraryId}${this.apiKey}${expireTime}${videoId}`;
-    const signature = crypto
-      .createHash('sha256')
-      .update(signatureString)
-      .digest('hex');
-
-    return {
-      uploadUrl: `${this.baseUrl}/tusupload`,
-      libraryId: this.libraryId,
-      videoId: videoId,
-      expireTime: expireTime,
-      signature: signature
-    };
-  }
-
-  /**
-   * Generate signed URL for secure video playback
-   * Only users with valid signed URLs can watch
-   */
-  generateSignedPlaybackUrl(videoId, expiresInSeconds = 3600) {
-    const expireTime = Math.floor(Date.now() / 1000) + expiresInSeconds;
-    const path = `/${videoId}/playlist.m3u8`;
-
-    // Create token hash
-    const tokenString = `${this.securityKey}${path}${expireTime}`;
-    const token = crypto
-      .createHash('sha256')
-      .update(tokenString)
-      .digest('hex');
-
-    return {
-      hlsUrl: `https://${this.cdnHostname}${path}?token=${token}&expires=${expireTime}`,
-      embedUrl: `https://iframe.mediadelivery.net/embed/${this.libraryId}/${videoId}?token=${token}&expires=${expireTime}`,
-      expiresAt: new Date(expireTime * 1000).toISOString()
-    };
-  }
-
-  /**
-   * Generate signed thumbnail URL
-   */
-  generateSignedThumbnailUrl(videoId, expiresInSeconds = 86400) {
-    const expireTime = Math.floor(Date.now() / 1000) + expiresInSeconds;
-    const path = `/${videoId}/thumbnail.jpg`;
-
-    const tokenString = `${this.securityKey}${path}${expireTime}`;
-    const token = crypto
-      .createHash('sha256')
-      .update(tokenString)
-      .digest('hex');
-
-    return `https://${this.cdnHostname}${path}?token=${token}&expires=${expireTime}`;
-  }
-
-  /**
-   * Get video status from Bunny
-   */
-  async getVideoStatus(videoId) {
-    const response = await fetch(
-      `${this.baseUrl}/library/${this.libraryId}/videos/${videoId}`,
-      {
-        headers: {
-          'AccessKey': this.apiKey
-        }
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error(`Failed to get video: ${response.statusText}`);
-    }
-
-    const data = await response.json();
-
-    // Status codes: 0=created, 1=uploaded, 2=processing, 3=transcoding, 4=finished, 5=error
-    const statusMap = {
-      0: 'created',
-      1: 'uploaded',
-      2: 'processing',
-      3: 'transcoding',
-      4: 'ready',
-      5: 'error'
-    };
-
-    return {
-      videoId: data.guid,
-      status: statusMap[data.status] || 'unknown',
-      duration: data.length,
-      size: data.storageSize,
-      width: data.width,
-      height: data.height,
-      availableResolutions: data.availableResolutions
-    };
-  }
-
-  /**
-   * Delete a video from Bunny
-   */
-  async deleteVideo(videoId) {
-    const response = await fetch(
-      `${this.baseUrl}/library/${this.libraryId}/videos/${videoId}`,
-      {
-        method: 'DELETE',
-        headers: {
-          'AccessKey': this.apiKey
-        }
-      }
-    );
-
-    return response.ok;
+**Response:**
+```json
+{
+  "success": true,
+  "video": {
+    "id": 123,
+    "title": "My Recording",
+    "share_token": "abc123..."
+  },
+  "bunny_video_id": "guid-from-bunny",
+  "upload_credentials": {
+    "uploadUrl": "https://video.bunnycdn.com/tusupload",
+    "libraryId": "123456",
+    "videoId": "guid-from-bunny",
+    "expireTime": 1705590000,
+    "signature": "sha256-signature"
   }
 }
-
-module.exports = new BunnyService();
 ```
+
+### Mark Upload Complete
+
+**POST** `/api/bunny/videos/{id}/complete`
+
+Called after TUS upload finishes.
+
+**Response:**
+```json
+{
+  "success": true,
+  "video": {
+    "id": 123,
+    "title": "My Recording",
+    "status": "processing",
+    "share_url": "https://your-app.com/share/video/abc123",
+    "share_token": "abc123..."
+  },
+  "message": "Upload complete. Video is being processed."
+}
+```
+
+### Get Video Status
+
+**GET** `/api/bunny/videos/{id}/status`
+
+Check processing status.
+
+**Response:**
+```json
+{
+  "status": "ready",
+  "progress": 100,
+  "duration": 120,
+  "resolution": "1080p",
+  "is_ready": true
+}
+```
+
+### Get Playback URLs (Authenticated)
+
+**GET** `/api/bunny/videos/{id}/playback`
+
+Returns signed playback URLs for the video owner.
+
+**Response:**
+```json
+{
+  "video": {
+    "id": 123,
+    "title": "My Recording",
+    "duration": 120,
+    "resolution": "1080p"
+  },
+  "playback": {
+    "hlsUrl": "https://cdn.example.com/video-id/playlist.m3u8?token=xxx&expires=xxx",
+    "embedUrl": "https://iframe.mediadelivery.net/embed/lib-id/video-id?token=xxx",
+    "thumbnailUrl": "https://cdn.example.com/video-id/thumbnail.jpg?token=xxx",
+    "expiresAt": "2024-01-18T12:00:00Z"
+  }
+}
+```
+
+### Get Shared Video Playback (Public)
+
+**GET** `/api/bunny/share/{token}/playback`
+
+Returns signed playback URLs for shared videos.
+
+### Delete Video
+
+**DELETE** `/api/bunny/videos/{id}`
+
+Deletes video from both database and Bunny.
 
 ---
 
-## 4. Extension Changes
+## 4. Extension Integration
 
 ### TUS Upload Client
 
-Install the TUS client library or use the CDN version:
-
-```html
-<!-- In offscreen.html or include in extension -->
-<script src="https://cdn.jsdelivr.net/npm/tus-js-client@latest/dist/tus.min.js"></script>
-```
-
-### Upload Manager
+Use tus-js-client for resumable uploads:
 
 ```javascript
-// extension/uploadManager.js
-
-class BunnyUploadManager {
-  constructor() {
-    this.currentUpload = null;
-  }
-
-  /**
-   * Initialize upload - call your server first to get credentials
-   */
-  async initializeUpload(title, authToken) {
-    const response = await fetch('https://your-api.com/api/videos/create', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${authToken}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ title })
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to initialize upload');
-    }
-
-    return response.json();
-    // Returns: { videoId, internalId, uploadCredentials: { uploadUrl, libraryId, videoId, expireTime, signature } }
-  }
-
-  /**
-   * Upload video blob to Bunny using TUS protocol
-   */
-  async uploadVideo(videoBlob, uploadCredentials, onProgress) {
-    return new Promise((resolve, reject) => {
-      const { uploadUrl, libraryId, videoId, expireTime, signature } = uploadCredentials;
-
-      this.currentUpload = new tus.Upload(videoBlob, {
-        endpoint: uploadUrl,
-        retryDelays: [0, 1000, 3000, 5000, 10000],
-        chunkSize: 5 * 1024 * 1024, // 5MB chunks
-        metadata: {
-          filetype: videoBlob.type,
-          title: videoId
-        },
-        headers: {
-          'AuthorizationSignature': signature,
-          'AuthorizationExpire': expireTime.toString(),
-          'VideoId': videoId,
-          'LibraryId': libraryId.toString()
-        },
-        onError: (error) => {
-          console.error('Upload failed:', error);
-          reject(error);
-        },
-        onProgress: (bytesUploaded, bytesTotal) => {
-          const percentage = Math.round((bytesUploaded / bytesTotal) * 100);
-          if (onProgress) {
-            onProgress(percentage, bytesUploaded, bytesTotal);
-          }
-        },
-        onSuccess: () => {
-          console.log('Upload complete!');
-          resolve({ success: true, videoId });
-        }
-      });
-
-      // Check for previous uploads to resume
-      this.currentUpload.findPreviousUploads().then((previousUploads) => {
-        if (previousUploads.length > 0) {
-          this.currentUpload.resumeFromPreviousUpload(previousUploads[0]);
-        }
-        this.currentUpload.start();
-      });
-    });
-  }
-
-  /**
-   * Pause current upload
-   */
-  pauseUpload() {
-    if (this.currentUpload) {
-      this.currentUpload.abort();
-    }
-  }
-
-  /**
-   * Resume paused upload
-   */
-  resumeUpload() {
-    if (this.currentUpload) {
-      this.currentUpload.start();
-    }
-  }
-
-  /**
-   * Full upload flow
-   */
-  async uploadRecording(videoBlob, title, authToken, onProgress) {
-    try {
-      // Step 1: Get upload credentials from your server
-      const { internalId, uploadCredentials } = await this.initializeUpload(title, authToken);
-
-      // Step 2: Upload to Bunny
-      await this.uploadVideo(videoBlob, uploadCredentials, onProgress);
-
-      // Step 3: Notify your server that upload is complete
-      await fetch('https://your-api.com/api/videos/upload-complete', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${authToken}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ videoId: internalId })
-      });
-
-      return { success: true, videoId: internalId };
-    } catch (error) {
-      console.error('Upload flow failed:', error);
-      throw error;
-    }
-  }
-}
-
-// Export for use in extension
-window.BunnyUploadManager = BunnyUploadManager;
-```
-
-### Integration with Recording
-
-```javascript
-// In your recording completion handler (e.g., offscreen.js)
-
-async function onRecordingComplete(videoBlob) {
-  const uploadManager = new BunnyUploadManager();
-  const authToken = await getAuthToken(); // Your auth implementation
-
-  try {
-    // Show upload progress UI
-    showUploadProgress(0);
-
-    const result = await uploadManager.uploadRecording(
-      videoBlob,
-      `Recording ${new Date().toISOString()}`,
-      authToken,
-      (percentage) => {
-        showUploadProgress(percentage);
-      }
-    );
-
-    // Show success and share link
-    const shareUrl = `https://your-app.com/v/${result.videoId}`;
-    showSuccess(shareUrl);
-
-    // Copy to clipboard
-    navigator.clipboard.writeText(shareUrl);
-
-  } catch (error) {
-    showError('Upload failed. Please try again.');
-  }
-}
-```
-
----
-
-## 5. Secure Video Access
-
-### Video Access Levels
-
-```javascript
-// models/Video.js or similar
-
-const VIDEO_ACCESS = {
-  PRIVATE: 'private',      // Only owner can view
-  UNLISTED: 'unlisted',    // Anyone with link can view
-  PUBLIC: 'public',        // Listed publicly
-  PASSWORD: 'password'     // Requires password
-};
-```
-
-### Access Control Middleware
-
-```javascript
-// middleware/videoAccess.js
-
-const bunnyService = require('../services/bunnyService');
-const Video = require('../models/Video');
-
-async function checkVideoAccess(req, res, next) {
-  const { videoId } = req.params;
-  const userId = req.user?.id; // From auth middleware, may be null
-
-  try {
-    const video = await Video.findById(videoId);
-
-    if (!video) {
-      return res.status(404).json({ error: 'Video not found' });
-    }
-
-    // Check access based on video settings
-    switch (video.accessLevel) {
-      case 'private':
-        if (!userId || video.userId !== userId) {
-          return res.status(403).json({ error: 'Access denied' });
-        }
-        break;
-
-      case 'password':
-        const providedPassword = req.headers['x-video-password'] || req.query.password;
-        if (video.password && video.password !== providedPassword) {
-          return res.status(403).json({ error: 'Password required', requiresPassword: true });
-        }
-        break;
-
-      case 'unlisted':
-      case 'public':
-        // Anyone with the link can access
-        break;
-    }
-
-    // Attach video to request
-    req.video = video;
-    next();
-
-  } catch (error) {
-    res.status(500).json({ error: 'Server error' });
-  }
-}
-
-module.exports = checkVideoAccess;
-```
-
-### Secure Playback Endpoint
-
-```javascript
-// routes/videos.js
-
-const express = require('express');
-const router = express.Router();
-const bunnyService = require('../services/bunnyService');
-const checkVideoAccess = require('../middleware/videoAccess');
-const authMiddleware = require('../middleware/auth');
-
-/**
- * Get video playback URLs
- * Returns signed URLs that expire
- */
-router.get('/:videoId/playback',
-  authMiddleware.optional, // Allow both authenticated and anonymous
-  checkVideoAccess,
-  async (req, res) => {
-    const { video } = req;
-
-    try {
-      // Generate signed URLs (expire in 1 hour)
-      const playbackUrls = bunnyService.generateSignedPlaybackUrl(
-        video.bunnyVideoId,
-        3600
-      );
-
-      const thumbnailUrl = bunnyService.generateSignedThumbnailUrl(
-        video.bunnyVideoId,
-        86400 // 24 hours for thumbnail
-      );
-
-      // Increment view count
-      await video.incrementViews();
-
-      res.json({
-        video: {
-          id: video.id,
-          title: video.title,
-          duration: video.duration,
-          createdAt: video.createdAt,
-          owner: {
-            name: video.user.name,
-            avatar: video.user.avatar
-          }
-        },
-        playback: {
-          ...playbackUrls,
-          thumbnailUrl
-        }
-      });
-
-    } catch (error) {
-      console.error('Playback error:', error);
-      res.status(500).json({ error: 'Failed to generate playback URL' });
-    }
-  }
-);
-
-/**
- * Update video settings (owner only)
- */
-router.patch('/:videoId',
-  authMiddleware.required,
-  async (req, res) => {
-    const { videoId } = req.params;
-    const userId = req.user.id;
-    const { title, accessLevel, password } = req.body;
-
-    try {
-      const video = await Video.findOne({
-        where: { id: videoId, userId }
-      });
-
-      if (!video) {
-        return res.status(404).json({ error: 'Video not found' });
-      }
-
-      // Update fields
-      if (title) video.title = title;
-      if (accessLevel) video.accessLevel = accessLevel;
-      if (accessLevel === 'password' && password) {
-        video.password = password; // Hash in production
-      }
-
-      await video.save();
-
-      res.json({ success: true, video });
-
-    } catch (error) {
-      res.status(500).json({ error: 'Update failed' });
-    }
-  }
-);
-
-module.exports = router;
-```
-
----
-
-## 6. Database Schema
-
-### PostgreSQL Schema
-
-```sql
--- Users table (if not exists)
-CREATE TABLE users (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  email VARCHAR(255) UNIQUE NOT NULL,
-  name VARCHAR(255),
-  avatar_url TEXT,
-  plan VARCHAR(50) DEFAULT 'free', -- 'free', 'pro', 'team'
-  created_at TIMESTAMP DEFAULT NOW(),
-  updated_at TIMESTAMP DEFAULT NOW()
-);
-
--- Videos table
-CREATE TABLE videos (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-
-  -- Bunny Stream reference
-  bunny_video_id VARCHAR(255) NOT NULL,
-  bunny_library_id VARCHAR(50) NOT NULL,
-
-  -- Video metadata
-  title VARCHAR(255) NOT NULL,
-  description TEXT,
-  duration_seconds INTEGER,
-  file_size_bytes BIGINT,
-  resolution VARCHAR(20), -- '1080p', '720p', etc.
-
-  -- Status
-  status VARCHAR(50) DEFAULT 'uploading', -- 'uploading', 'processing', 'ready', 'error'
-
-  -- Access control
-  access_level VARCHAR(20) DEFAULT 'unlisted', -- 'private', 'unlisted', 'public', 'password'
-  password VARCHAR(255), -- Hashed password for protected videos
-
-  -- Analytics
-  views_count INTEGER DEFAULT 0,
-  unique_views_count INTEGER DEFAULT 0,
-
-  -- Timestamps
-  created_at TIMESTAMP DEFAULT NOW(),
-  updated_at TIMESTAMP DEFAULT NOW(),
-  deleted_at TIMESTAMP -- Soft delete
-);
-
--- Indexes
-CREATE INDEX idx_videos_user_id ON videos(user_id);
-CREATE INDEX idx_videos_bunny_video_id ON videos(bunny_video_id);
-CREATE INDEX idx_videos_status ON videos(status);
-CREATE INDEX idx_videos_created_at ON videos(created_at DESC);
-
--- Video views tracking (for analytics)
-CREATE TABLE video_views (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  video_id UUID REFERENCES videos(id) ON DELETE CASCADE,
-  viewer_id UUID REFERENCES users(id) ON DELETE SET NULL, -- NULL for anonymous
-  ip_hash VARCHAR(64), -- Hashed IP for unique view counting
-  user_agent TEXT,
-  referrer TEXT,
-  watch_duration_seconds INTEGER,
-  created_at TIMESTAMP DEFAULT NOW()
-);
-
-CREATE INDEX idx_video_views_video_id ON video_views(video_id);
-CREATE INDEX idx_video_views_created_at ON video_views(created_at);
-```
-
-### Sequelize Model Example
-
-```javascript
-// models/Video.js
-const { Model, DataTypes } = require('sequelize');
-
-class Video extends Model {
-  static init(sequelize) {
-    return super.init({
-      id: {
-        type: DataTypes.UUID,
-        defaultValue: DataTypes.UUIDV4,
-        primaryKey: true
-      },
-      userId: {
-        type: DataTypes.UUID,
-        allowNull: false,
-        field: 'user_id'
-      },
-      bunnyVideoId: {
-        type: DataTypes.STRING,
-        allowNull: false,
-        field: 'bunny_video_id'
-      },
-      bunnyLibraryId: {
-        type: DataTypes.STRING,
-        allowNull: false,
-        field: 'bunny_library_id'
-      },
-      title: {
-        type: DataTypes.STRING,
-        allowNull: false
-      },
-      description: DataTypes.TEXT,
-      durationSeconds: {
-        type: DataTypes.INTEGER,
-        field: 'duration_seconds'
-      },
-      fileSizeBytes: {
-        type: DataTypes.BIGINT,
-        field: 'file_size_bytes'
-      },
-      resolution: DataTypes.STRING,
-      status: {
-        type: DataTypes.ENUM('uploading', 'processing', 'ready', 'error'),
-        defaultValue: 'uploading'
-      },
-      accessLevel: {
-        type: DataTypes.ENUM('private', 'unlisted', 'public', 'password'),
-        defaultValue: 'unlisted',
-        field: 'access_level'
-      },
-      password: DataTypes.STRING,
-      viewsCount: {
-        type: DataTypes.INTEGER,
-        defaultValue: 0,
-        field: 'views_count'
-      }
-    }, {
-      sequelize,
-      tableName: 'videos',
-      underscored: true,
-      paranoid: true // Soft deletes
-    });
-  }
-
-  async incrementViews() {
-    this.viewsCount += 1;
-    await this.save();
-  }
-}
-
-module.exports = Video;
-```
-
----
-
-## 7. API Endpoints
-
-### Complete API Reference
-
-```
-POST   /api/videos/create          - Initialize video upload
-POST   /api/videos/upload-complete - Mark upload as complete
-GET    /api/videos                 - List user's videos
-GET    /api/videos/:id             - Get video details
-GET    /api/videos/:id/playback    - Get signed playback URLs
-PATCH  /api/videos/:id             - Update video settings
-DELETE /api/videos/:id             - Delete video
-GET    /api/videos/:id/analytics   - Get video analytics
-```
-
-### Full Implementation
-
-```javascript
-// routes/videos.js
-
-const express = require('express');
-const router = express.Router();
-const bunnyService = require('../services/bunnyService');
-const Video = require('../models/Video');
-const auth = require('../middleware/auth');
-
-/**
- * POST /api/videos/create
- * Initialize a new video upload
- */
-router.post('/create', auth.required, async (req, res) => {
-  const { title } = req.body;
-  const userId = req.user.id;
-
-  try {
-    // Create video in Bunny
-    const bunnyVideo = await bunnyService.createVideo(title, userId);
-
-    // Create video record in our database
-    const video = await Video.create({
-      userId,
-      bunnyVideoId: bunnyVideo.guid,
-      bunnyLibraryId: process.env.BUNNY_LIBRARY_ID,
-      title: title || 'Untitled Recording',
-      status: 'uploading'
-    });
-
-    // Generate upload credentials for extension
-    const uploadCredentials = bunnyService.generateUploadCredentials(
-      bunnyVideo.guid,
-      7200 // 2 hours to complete upload
-    );
-
-    res.json({
-      videoId: video.id,
-      bunnyVideoId: bunnyVideo.guid,
-      uploadCredentials
-    });
-
-  } catch (error) {
-    console.error('Create video error:', error);
-    res.status(500).json({ error: 'Failed to create video' });
-  }
-});
-
-/**
- * POST /api/videos/upload-complete
- * Called by extension when upload finishes
- */
-router.post('/upload-complete', auth.required, async (req, res) => {
-  const { videoId } = req.body;
-  const userId = req.user.id;
-
-  try {
-    const video = await Video.findOne({
-      where: { id: videoId, userId }
-    });
-
-    if (!video) {
-      return res.status(404).json({ error: 'Video not found' });
-    }
-
-    // Update status to processing
-    video.status = 'processing';
-    await video.save();
-
-    // Start polling for transcoding completion (or use webhook)
-    pollVideoStatus(video.id, video.bunnyVideoId);
-
-    res.json({
-      success: true,
-      shareUrl: `${process.env.APP_URL}/v/${video.id}`
-    });
-
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to complete upload' });
-  }
-});
-
-/**
- * GET /api/videos
- * List user's videos
- */
-router.get('/', auth.required, async (req, res) => {
-  const userId = req.user.id;
-  const { page = 1, limit = 20, status } = req.query;
-
-  try {
-    const where = { userId };
-    if (status) where.status = status;
-
-    const videos = await Video.findAndCountAll({
-      where,
-      order: [['createdAt', 'DESC']],
-      limit: parseInt(limit),
-      offset: (parseInt(page) - 1) * parseInt(limit)
-    });
-
-    // Add thumbnail URLs
-    const videosWithThumbnails = videos.rows.map(video => ({
-      ...video.toJSON(),
-      thumbnailUrl: bunnyService.generateSignedThumbnailUrl(video.bunnyVideoId)
-    }));
-
-    res.json({
-      videos: videosWithThumbnails,
-      total: videos.count,
-      page: parseInt(page),
-      totalPages: Math.ceil(videos.count / parseInt(limit))
-    });
-
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch videos' });
-  }
-});
-
-/**
- * DELETE /api/videos/:id
- */
-router.delete('/:id', auth.required, async (req, res) => {
-  const { id } = req.params;
-  const userId = req.user.id;
-
-  try {
-    const video = await Video.findOne({ where: { id, userId } });
-
-    if (!video) {
-      return res.status(404).json({ error: 'Video not found' });
-    }
-
-    // Delete from Bunny
-    await bunnyService.deleteVideo(video.bunnyVideoId);
-
-    // Soft delete from database
-    await video.destroy();
-
-    res.json({ success: true });
-
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to delete video' });
-  }
-});
-
-// Helper: Poll video status until ready
-async function pollVideoStatus(videoId, bunnyVideoId) {
-  const maxAttempts = 60; // 5 minutes max
-  let attempts = 0;
-
-  const poll = async () => {
-    attempts++;
-
-    try {
-      const status = await bunnyService.getVideoStatus(bunnyVideoId);
-
-      if (status.status === 'ready') {
-        await Video.update(
-          {
-            status: 'ready',
-            durationSeconds: status.duration,
-            fileSizeBytes: status.size,
-            resolution: `${status.height}p`
-          },
-          { where: { id: videoId } }
-        );
-        return;
-      }
-
-      if (status.status === 'error') {
-        await Video.update(
-          { status: 'error' },
-          { where: { id: videoId } }
-        );
-        return;
-      }
-
-      if (attempts < maxAttempts) {
-        setTimeout(poll, 5000); // Poll every 5 seconds
-      }
-
-    } catch (error) {
-      console.error('Poll error:', error);
-    }
-  };
-
-  poll();
-}
-
-module.exports = router;
-```
-
----
-
-## 8. Security Considerations
-
-### Checklist
-
-- [ ] **Never expose Bunny API key to client/extension**
-  - Always generate upload credentials on your server
-  - Use signed URLs for playback
-
-- [ ] **Use HTTPS everywhere**
-  - Your API must use HTTPS
-  - Bunny CDN uses HTTPS by default
-
-- [ ] **Validate user ownership**
-  - Always check `userId` matches before any operation
-  - Don't trust client-provided user IDs
-
-- [ ] **Implement rate limiting**
-  ```javascript
-  const rateLimit = require('express-rate-limit');
-
-  const uploadLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 10 // 10 uploads per 15 minutes
+import * as tus from 'tus-js-client';
+
+async function uploadToBunny(videoBlob, authToken) {
+  // Step 1: Get upload credentials from your backend
+  const response = await fetch('https://your-api.com/api/bunny/videos/create', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${authToken}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ title: 'My Recording' })
   });
 
-  router.post('/create', uploadLimiter, auth.required, createVideo);
-  ```
+  const { video, upload_credentials } = await response.json();
 
-- [ ] **Set URL expiration appropriately**
-  - Upload credentials: 1-2 hours
-  - Playback URLs: 1-4 hours
-  - Thumbnails: 24 hours
-
-- [ ] **Monitor for abuse**
-  - Track upload sizes per user
-  - Set maximum video duration limits
-  - Implement storage quotas per plan
-
-### Storage Quotas Example
-
-```javascript
-// middleware/checkQuota.js
-
-const PLAN_LIMITS = {
-  free: {
-    maxVideos: 25,
-    maxDurationSeconds: 300, // 5 minutes per video
-    totalStorageBytes: 1 * 1024 * 1024 * 1024 // 1GB
-  },
-  pro: {
-    maxVideos: 1000,
-    maxDurationSeconds: 3600, // 1 hour per video
-    totalStorageBytes: 100 * 1024 * 1024 * 1024 // 100GB
-  }
-};
-
-async function checkUploadQuota(req, res, next) {
-  const user = req.user;
-  const limits = PLAN_LIMITS[user.plan] || PLAN_LIMITS.free;
-
-  const videoCount = await Video.count({ where: { userId: user.id } });
-
-  if (videoCount >= limits.maxVideos) {
-    return res.status(403).json({
-      error: 'Video limit reached',
-      limit: limits.maxVideos,
-      upgrade: true
+  // Step 2: Upload directly to Bunny using TUS
+  return new Promise((resolve, reject) => {
+    const upload = new tus.Upload(videoBlob, {
+      endpoint: upload_credentials.uploadUrl,
+      retryDelays: [0, 1000, 3000, 5000],
+      chunkSize: 5 * 1024 * 1024, // 5MB chunks
+      headers: {
+        'AuthorizationSignature': upload_credentials.signature,
+        'AuthorizationExpire': upload_credentials.expireTime.toString(),
+        'VideoId': upload_credentials.videoId,
+        'LibraryId': upload_credentials.libraryId
+      },
+      metadata: {
+        filetype: videoBlob.type,
+        title: 'recording'
+      },
+      onError: (error) => reject(error),
+      onProgress: (bytesUploaded, bytesTotal) => {
+        const percentage = Math.round((bytesUploaded / bytesTotal) * 100);
+        console.log(`Upload progress: ${percentage}%`);
+      },
+      onSuccess: async () => {
+        // Step 3: Notify backend that upload is complete
+        await fetch(`https://your-api.com/api/bunny/videos/${video.id}/complete`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+        resolve(video);
+      }
     });
-  }
 
-  req.quotaLimits = limits;
-  next();
+    upload.start();
+  });
 }
 ```
 
 ---
 
-## Quick Start Checklist
+## 5. Webhook Setup
 
-1. [ ] Create Bunny Stream account and Video Library
-2. [ ] Enable Token Authentication in Bunny settings
-3. [ ] Set environment variables
-4. [ ] Implement backend BunnyService
-5. [ ] Create database tables
-6. [ ] Add API routes
-7. [ ] Update extension with TUS upload
-8. [ ] Test end-to-end flow
-9. [ ] Add error handling and retry logic
-10. [ ] Implement analytics tracking
+### Configure in Bunny Dashboard
+
+1. Go to your Video Library settings
+2. Navigate to **Webhooks**
+3. Add webhook URL: `https://your-api.com/api/webhooks/bunny`
+4. Select events: VideoProcessingFinished, VideoProcessingFailed
+
+### Webhook Handler
+
+The webhook handler at `/api/webhooks/bunny` automatically:
+- Updates video status when encoding completes
+- Captures video duration and resolution
+- Logs any processing errors
 
 ---
 
-## Webhook Alternative (Optional)
+## 6. Security
 
-Instead of polling, Bunny can send webhooks when encoding completes:
+### Upload Security
 
-```javascript
-// routes/webhooks.js
+- **Signed Credentials**: Upload credentials include a SHA256 signature
+- **Time-Limited**: Credentials expire after 2 hours (configurable)
+- **Formula**: `sha256(library_id + api_key + expiration_time + video_id)`
 
-router.post('/bunny', express.raw({ type: '*/*' }), async (req, res) => {
-  const event = JSON.parse(req.body);
+### Playback Security
 
-  if (event.VideoGuid && event.Status === 4) { // 4 = finished
-    await Video.update(
-      { status: 'ready' },
-      { where: { bunnyVideoId: event.VideoGuid } }
-    );
-  }
+- **Signed URLs**: All playback URLs are signed and time-limited
+- **Token Authentication**: Enabled in Bunny dashboard
+- **Expiry**: URLs expire after 1 hour (configurable)
+- **Formula**: `sha256(security_key + path + expiration)`
 
-  res.status(200).send('OK');
-});
+### Access Control
+
+- Private videos: Only owner can access
+- Public videos: Anyone with share link
+- Password-protected: Requires password (future feature)
+
+---
+
+## Files Created
+
+| File | Purpose |
+|------|---------|
+| `app/Services/BunnyStreamService.php` | Core Bunny API integration |
+| `app/Http/Controllers/BunnyVideoController.php` | Video upload/playback endpoints |
+| `app/Http/Controllers/BunnyWebhookController.php` | Webhook handler |
+| `database/migrations/..._add_bunny_stream_fields_to_videos_table.php` | Database migration |
+| `config/services.php` | Bunny configuration (added) |
+
+---
+
+## Testing
+
+### Manual Test Flow
+
+1. Create video:
+```bash
+curl -X POST https://your-api.com/api/bunny/videos/create \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"title": "Test Video"}'
 ```
 
-Configure webhook URL in Bunny dashboard: `https://your-api.com/webhooks/bunny`
+2. Upload via TUS (use tus-js-client or similar)
+
+3. Mark complete:
+```bash
+curl -X POST https://your-api.com/api/bunny/videos/123/complete \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+4. Check status:
+```bash
+curl https://your-api.com/api/bunny/videos/123/status \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+5. Get playback URL:
+```bash
+curl https://your-api.com/api/bunny/videos/123/playback \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+---
+
+## Troubleshooting
+
+### Video stuck in "processing"
+
+1. Check Bunny dashboard for the video status
+2. Verify webhook is configured correctly
+3. Check logs for webhook errors: `storage/logs/laravel.log`
+
+### Upload fails
+
+1. Verify credentials haven't expired
+2. Check signature generation
+3. Ensure video format is supported (MP4, WebM, MOV)
+
+### Playback URL not working
+
+1. Verify security key is correct
+2. Check URL hasn't expired
+3. Ensure Token Authentication is enabled in Bunny

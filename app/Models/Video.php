@@ -20,6 +20,7 @@ class Video extends Model implements HasMedia
         'is_public',
         'is_favourite',
         'share_expires_at',
+        'share_token',
         'conversion_status',
         'original_extension',
         'conversion_progress',
@@ -40,6 +41,14 @@ class Video extends Model implements HasMedia
         'summary',
         'summary_error',
         'summary_generated_at',
+        // Bunny Stream fields
+        'bunny_video_id',
+        'bunny_library_id',
+        'bunny_status',
+        'bunny_error',
+        'bunny_resolution',
+        'bunny_file_size',
+        'storage_type',
     ];
 
     protected $casts = [
@@ -55,6 +64,7 @@ class Video extends Model implements HasMedia
         'transcription_generated_at' => 'datetime',
         'transcription_segments' => 'array',
         'summary_generated_at' => 'datetime',
+        'bunny_file_size' => 'integer',
     ];
 
     protected $hidden = [
@@ -466,5 +476,120 @@ class Video extends Model implements HasMedia
             'failed' => 'Summary failed: '.($this->summary_error ?? 'Unknown error'),
             default => 'Unknown status',
         };
+    }
+
+    // ============================================
+    // BUNNY STREAM METHODS
+    // ============================================
+
+    /**
+     * Check if this video is stored on Bunny Stream.
+     */
+    public function isBunnyVideo(): bool
+    {
+        return $this->storage_type === 'bunny';
+    }
+
+    /**
+     * Check if this video is stored locally.
+     */
+    public function isLocalVideo(): bool
+    {
+        return $this->storage_type === 'local' || $this->storage_type === null;
+    }
+
+    /**
+     * Check if Bunny video is ready for playback.
+     */
+    public function isBunnyReady(): bool
+    {
+        return $this->isBunnyVideo() && $this->bunny_status === 'ready';
+    }
+
+    /**
+     * Check if Bunny video is still processing.
+     */
+    public function isBunnyProcessing(): bool
+    {
+        return $this->isBunnyVideo() && in_array($this->bunny_status, ['pending', 'uploading', 'processing', 'transcoding']);
+    }
+
+    /**
+     * Check if Bunny video has an error.
+     */
+    public function isBunnyError(): bool
+    {
+        return $this->isBunnyVideo() && $this->bunny_status === 'error';
+    }
+
+    /**
+     * Get Bunny status message.
+     */
+    public function getBunnyStatusMessage(): string
+    {
+        if (! $this->isBunnyVideo()) {
+            return 'Not a Bunny video';
+        }
+
+        return match ($this->bunny_status) {
+            'pending' => 'Waiting to upload...',
+            'uploading' => 'Uploading...',
+            'processing' => 'Processing video...',
+            'transcoding' => 'Transcoding to HLS...',
+            'ready' => 'Ready for playback',
+            'error' => 'Error: '.($this->bunny_error ?? 'Unknown error'),
+            default => 'Unknown status',
+        };
+    }
+
+    /**
+     * Get the appropriate HLS URL based on storage type.
+     * Returns Bunny URL for bunny videos, local URL for local videos.
+     */
+    public function getPlaybackUrl(): ?string
+    {
+        if ($this->isBunnyVideo()) {
+            // For Bunny videos, playback URLs are generated dynamically via API
+            // Return null here - use BunnyStreamService to get signed URLs
+            return null;
+        }
+
+        // For local videos, return the existing HLS URL
+        return $this->getHlsUrl();
+    }
+
+    /**
+     * Check if the video is ready for playback (works for both storage types).
+     */
+    public function isReadyForPlayback(): bool
+    {
+        if ($this->isBunnyVideo()) {
+            return $this->isBunnyReady();
+        }
+
+        return $this->isHlsReady();
+    }
+
+    /**
+     * Get a unified status for the video (works for both storage types).
+     */
+    public function getUnifiedStatus(): string
+    {
+        if ($this->isBunnyVideo()) {
+            return $this->bunny_status ?? 'pending';
+        }
+
+        // For local videos, derive status from conversion/HLS status
+        if ($this->isHlsReady()) {
+            return 'ready';
+        }
+        if ($this->isHlsFailed() || $this->isConversionFailed()) {
+            return 'error';
+        }
+        if ($this->isHlsConverting() || $this->isConverting()) {
+            return 'processing';
+        }
+
+        return 'pending';
     }
 }

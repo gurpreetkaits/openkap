@@ -69,4 +69,15 @@ return [
         'chat_model' => env('OPENAI_CHAT_MODEL', 'gpt-4o-mini'),
     ],
 
+    'bunny' => [
+        'library_id' => env('BUNNY_STREAM_LIBRARY_ID'),
+        'api_key' => env('BUNNY_STREAM_API_KEY'),
+        'cdn_hostname' => env('BUNNY_STREAM_CDN_HOSTNAME'),
+        'security_key' => env('BUNNY_STREAM_SECURITY_KEY'),
+        'playback_expiry' => (int) env('BUNNY_STREAM_PLAYBACK_EXPIRY', 3600),
+        'upload_expiry' => (int) env('BUNNY_STREAM_UPLOAD_EXPIRY', 7200),
+        'base_url' => 'https://video.bunnycdn.com',
+        'tus_endpoint' => 'https://video.bunnycdn.com/tusupload',
+    ],
+
 ];
