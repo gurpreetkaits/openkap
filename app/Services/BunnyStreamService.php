@@ -2,37 +2,58 @@
 
 namespace App\Services;
 
-use Illuminate\Support\Facades\Http;
+use App\Http\Integrations\Bunny\BunnyConnector;
+use App\Http\Integrations\Bunny\Requests\CreateVideoRequest;
+use App\Http\Integrations\Bunny\Requests\DeleteVideoRequest;
+use App\Http\Integrations\Bunny\Requests\GetVideoRequest;
+use App\Http\Integrations\Bunny\Requests\ListVideosRequest;
+use App\Http\Integrations\Bunny\Requests\UpdateVideoRequest;
+use App\Models\User;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class BunnyStreamService
 {
-    private string $libraryId;
+    protected BunnyConnector $connector;
 
-    private string $apiKey;
+    protected ?User $user = null;
 
-    private string $cdnHostname;
+    protected ?string $correlationId = null;
 
-    private string $securityKey;
-
-    private int $playbackExpiry;
-
-    private int $uploadExpiry;
-
-    private string $baseUrl;
-
-    private string $tusEndpoint;
-
-    public function __construct()
+    public function __construct(?BunnyConnector $connector = null)
     {
-        $this->libraryId = config('services.bunny.library_id') ?? '';
-        $this->apiKey = config('services.bunny.api_key') ?? '';
-        $this->cdnHostname = config('services.bunny.cdn_hostname') ?? '';
-        $this->securityKey = config('services.bunny.security_key') ?? '';
-        $this->playbackExpiry = (int) (config('services.bunny.playback_expiry') ?? 3600);
-        $this->uploadExpiry = (int) (config('services.bunny.upload_expiry') ?? 7200);
-        $this->baseUrl = config('services.bunny.base_url') ?? 'https://video.bunnycdn.com';
-        $this->tusEndpoint = config('services.bunny.tus_endpoint') ?? 'https://video.bunnycdn.com/tusupload';
+        $this->connector = $connector ?? new BunnyConnector;
+        $this->correlationId = Str::uuid()->toString();
+    }
+
+    /**
+     * Set the user for logging
+     */
+    public function forUser(?User $user): self
+    {
+        $this->user = $user;
+
+        return $this;
+    }
+
+    /**
+     * Set correlation ID for tracing related requests
+     */
+    public function withCorrelationId(string $correlationId): self
+    {
+        $this->correlationId = $correlationId;
+
+        return $this;
+    }
+
+    /**
+     * Get the connector with logging configured
+     */
+    protected function getConnector(): BunnyConnector
+    {
+        return $this->connector
+            ->forUser($this->user)
+            ->withCorrelationId($this->correlationId);
     }
 
     /**
@@ -40,7 +61,7 @@ class BunnyStreamService
      */
     public function isConfigured(): bool
     {
-        return ! empty($this->libraryId) && ! empty($this->apiKey);
+        return $this->connector->isConfigured();
     }
 
     /**
@@ -55,16 +76,19 @@ class BunnyStreamService
      */
     public function createVideo(string $title, ?string $collectionId = null): array
     {
-        $payload = ['title' => $title];
+        $connector = $this->getConnector()
+            ->withLogContext([
+                'operation' => 'create_video',
+                'title' => $title,
+            ]);
 
-        if ($collectionId) {
-            $payload['collectionId'] = $collectionId;
-        }
+        $request = new CreateVideoRequest(
+            libraryId: $this->connector->getLibraryId(),
+            title: $title,
+            collectionId: $collectionId
+        );
 
-        $response = Http::withHeaders([
-            'AccessKey' => $this->apiKey,
-            'Content-Type' => 'application/json',
-        ])->post("{$this->baseUrl}/library/{$this->libraryId}/videos", $payload);
+        $response = $connector->send($request);
 
         if (! $response->successful()) {
             Log::error('Bunny Stream: Failed to create video', [
@@ -81,28 +105,13 @@ class BunnyStreamService
      * Generate TUS upload credentials for direct upload from client
      * The signature ensures secure, time-limited upload authorization
      *
-     * Formula: sha256(library_id + api_key + expiration_time + video_id)
-     *
      * @param  string  $videoId  Bunny video GUID
      * @param  int|null  $expiresInSeconds  Custom expiry time
      * @return array{uploadUrl: string, libraryId: string, videoId: string, expireTime: int, signature: string}
      */
     public function generateUploadCredentials(string $videoId, ?int $expiresInSeconds = null): array
     {
-        $expireTime = time() + ($expiresInSeconds ?? $this->uploadExpiry);
-
-        // Generate SHA256 signature as per Bunny docs
-        // Formula: sha256(library_id + api_key + expiration_time + video_id)
-        $signatureString = $this->libraryId.$this->apiKey.$expireTime.$videoId;
-        $signature = hash('sha256', $signatureString);
-
-        return [
-            'uploadUrl' => $this->tusEndpoint,
-            'libraryId' => $this->libraryId,
-            'videoId' => $videoId,
-            'expireTime' => $expireTime,
-            'signature' => $signature,
-        ];
+        return $this->connector->generateUploadCredentials($videoId, $expiresInSeconds);
     }
 
     /**
@@ -115,37 +124,7 @@ class BunnyStreamService
      */
     public function generateSignedPlaybackUrl(string $videoId, ?int $expiresInSeconds = null): array
     {
-        $expireTime = time() + ($expiresInSeconds ?? $this->playbackExpiry);
-
-        // Generate signed HLS URL
-        $hlsPath = "/{$videoId}/playlist.m3u8";
-        $hlsToken = $this->generateUrlToken($hlsPath, $expireTime);
-
-        // Generate signed thumbnail URL (longer expiry)
-        $thumbnailExpireTime = time() + 86400; // 24 hours for thumbnails
-        $thumbnailPath = "/{$videoId}/thumbnail.jpg";
-        $thumbnailToken = $this->generateUrlToken($thumbnailPath, $thumbnailExpireTime);
-
-        return [
-            'hlsUrl' => "https://{$this->cdnHostname}{$hlsPath}?token={$hlsToken}&expires={$expireTime}",
-            'embedUrl' => "https://iframe.mediadelivery.net/embed/{$this->libraryId}/{$videoId}?token={$hlsToken}&expires={$expireTime}",
-            'thumbnailUrl' => "https://{$this->cdnHostname}{$thumbnailPath}?token={$thumbnailToken}&expires={$thumbnailExpireTime}",
-            'expiresAt' => date('c', $expireTime),
-        ];
-    }
-
-    /**
-     * Generate URL token for signed URLs
-     *
-     * @param  string  $path  URL path (e.g., /video-id/playlist.m3u8)
-     * @param  int  $expireTime  Unix timestamp
-     */
-    private function generateUrlToken(string $path, int $expireTime): string
-    {
-        // Token formula: sha256(security_key + path + expiration)
-        $tokenString = $this->securityKey.$path.$expireTime;
-
-        return hash('sha256', $tokenString);
+        return $this->connector->generateSignedPlaybackUrl($videoId, $expiresInSeconds);
     }
 
     /**
@@ -158,9 +137,18 @@ class BunnyStreamService
      */
     public function getVideoStatus(string $videoId): array
     {
-        $response = Http::withHeaders([
-            'AccessKey' => $this->apiKey,
-        ])->get("{$this->baseUrl}/library/{$this->libraryId}/videos/{$videoId}");
+        $connector = $this->getConnector()
+            ->withLogContext([
+                'operation' => 'get_video_status',
+                'video_id' => $videoId,
+            ]);
+
+        $request = new GetVideoRequest(
+            libraryId: $this->connector->getLibraryId(),
+            videoId: $videoId
+        );
+
+        $response = $connector->send($request);
 
         if (! $response->successful()) {
             Log::error('Bunny Stream: Failed to get video status', [
@@ -204,9 +192,18 @@ class BunnyStreamService
      */
     public function deleteVideo(string $videoId): bool
     {
-        $response = Http::withHeaders([
-            'AccessKey' => $this->apiKey,
-        ])->delete("{$this->baseUrl}/library/{$this->libraryId}/videos/{$videoId}");
+        $connector = $this->getConnector()
+            ->withLogContext([
+                'operation' => 'delete_video',
+                'video_id' => $videoId,
+            ]);
+
+        $request = new DeleteVideoRequest(
+            libraryId: $this->connector->getLibraryId(),
+            videoId: $videoId
+        );
+
+        $response = $connector->send($request);
 
         if (! $response->successful()) {
             Log::error('Bunny Stream: Failed to delete video', [
@@ -229,10 +226,19 @@ class BunnyStreamService
      */
     public function updateVideo(string $videoId, array $data): bool
     {
-        $response = Http::withHeaders([
-            'AccessKey' => $this->apiKey,
-            'Content-Type' => 'application/json',
-        ])->post("{$this->baseUrl}/library/{$this->libraryId}/videos/{$videoId}", $data);
+        $connector = $this->getConnector()
+            ->withLogContext([
+                'operation' => 'update_video',
+                'video_id' => $videoId,
+            ]);
+
+        $request = new UpdateVideoRequest(
+            libraryId: $this->connector->getLibraryId(),
+            videoId: $videoId,
+            data: $data
+        );
+
+        $response = $connector->send($request);
 
         if (! $response->successful()) {
             Log::error('Bunny Stream: Failed to update video', [
@@ -257,22 +263,22 @@ class BunnyStreamService
      */
     public function listVideos(int $page = 1, int $perPage = 100, ?string $search = null, ?string $collectionId = null): array
     {
-        $params = [
-            'page' => $page,
-            'itemsPerPage' => min($perPage, 100),
-        ];
+        $connector = $this->getConnector()
+            ->withLogContext([
+                'operation' => 'list_videos',
+                'page' => $page,
+                'per_page' => $perPage,
+            ]);
 
-        if ($search) {
-            $params['search'] = $search;
-        }
+        $request = new ListVideosRequest(
+            libraryId: $this->connector->getLibraryId(),
+            page: $page,
+            perPage: $perPage,
+            search: $search,
+            collectionId: $collectionId
+        );
 
-        if ($collectionId) {
-            $params['collection'] = $collectionId;
-        }
-
-        $response = Http::withHeaders([
-            'AccessKey' => $this->apiKey,
-        ])->get("{$this->baseUrl}/library/{$this->libraryId}/videos", $params);
+        $response = $connector->send($request);
 
         if (! $response->successful()) {
             Log::error('Bunny Stream: Failed to list videos', [
@@ -291,7 +297,7 @@ class BunnyStreamService
      */
     public function getLibraryId(): string
     {
-        return $this->libraryId;
+        return $this->connector->getLibraryId();
     }
 
     /**
@@ -299,6 +305,6 @@ class BunnyStreamService
      */
     public function getCdnHostname(): string
     {
-        return $this->cdnHostname;
+        return $this->connector->getCdnHostname();
     }
 }
