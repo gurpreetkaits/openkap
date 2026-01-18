@@ -279,17 +279,27 @@ class BunnyVideoController extends Controller
         }
 
         try {
+            // Get current status from Bunny for available resolutions
+            $bunnyStatus = $this->bunnyService->getVideoStatus($video->bunny_video_id);
             $playbackUrls = $this->bunnyService->generateSignedPlaybackUrl($video->bunny_video_id);
+
+            // Parse available resolutions (Bunny returns "360p,480p,720p,1080p")
+            $availableResolutions = [];
+            if (! empty($bunnyStatus['availableResolutions'])) {
+                $availableResolutions = array_map('trim', explode(',', $bunnyStatus['availableResolutions']));
+            }
 
             return response()->json([
                 'video' => [
                     'id' => $video->id,
                     'title' => $video->title,
                     'description' => $video->description,
-                    'duration' => $video->duration,
+                    'duration' => $bunnyStatus['duration'] ?: $video->duration,
                     'resolution' => $video->bunny_resolution,
                     'created_at' => $video->created_at->toISOString(),
-                    'status' => $video->bunny_status,
+                    'status' => $bunnyStatus['status'],
+                    'encode_progress' => $bunnyStatus['encodeProgress'],
+                    'available_resolutions' => $availableResolutions,
                 ],
                 'playback' => $playbackUrls,
             ]);
@@ -351,17 +361,27 @@ class BunnyVideoController extends Controller
         }
 
         try {
+            // Get current status from Bunny for available resolutions
+            $bunnyStatus = $this->bunnyService->getVideoStatus($video->bunny_video_id);
             $playbackUrls = $this->bunnyService->generateSignedPlaybackUrl($video->bunny_video_id);
+
+            // Parse available resolutions (Bunny returns "360p,480p,720p,1080p")
+            $availableResolutions = [];
+            if (! empty($bunnyStatus['availableResolutions'])) {
+                $availableResolutions = array_map('trim', explode(',', $bunnyStatus['availableResolutions']));
+            }
 
             return response()->json([
                 'video' => [
                     'id' => $video->id,
                     'title' => $video->title,
                     'description' => $video->description,
-                    'duration' => $video->duration,
+                    'duration' => $bunnyStatus['duration'] ?: $video->duration,
                     'resolution' => $video->bunny_resolution,
                     'created_at' => $video->created_at->toISOString(),
-                    'status' => $video->bunny_status,
+                    'status' => $bunnyStatus['status'],
+                    'encode_progress' => $bunnyStatus['encodeProgress'],
+                    'available_resolutions' => $availableResolutions,
                     'owner' => [
                         'name' => $video->user->name,
                         'avatar' => $video->user->avatar_url,

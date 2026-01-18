@@ -369,6 +369,20 @@ class BunnyStreamIntegrationTest extends TestCase
         ]);
 
         $this->mock(BunnyStreamService::class, function ($mock) {
+            $mock->shouldReceive('getVideoStatus')
+                ->once()
+                ->andReturn([
+                    'videoId' => 'video-123',
+                    'status' => 'ready',
+                    'rawStatus' => 4,
+                    'duration' => 120,
+                    'size' => 1024000,
+                    'width' => 1920,
+                    'height' => 1080,
+                    'availableResolutions' => '360p,480p,720p,1080p',
+                    'encodeProgress' => 100,
+                    'title' => 'Test Video',
+                ]);
             $mock->shouldReceive('generateSignedPlaybackUrl')
                 ->once()
                 ->andReturn([
@@ -390,6 +404,8 @@ class BunnyStreamIntegrationTest extends TestCase
                     'duration',
                     'resolution',
                     'status',
+                    'encode_progress',
+                    'available_resolutions',
                 ],
                 'playback' => [
                     'hlsUrl',
@@ -398,7 +414,9 @@ class BunnyStreamIntegrationTest extends TestCase
                     'expiresAt',
                 ],
             ])
-            ->assertJsonPath('video.status', 'ready');
+            ->assertJsonPath('video.status', 'ready')
+            ->assertJsonPath('video.encode_progress', 100)
+            ->assertJsonPath('video.available_resolutions', ['360p', '480p', '720p', '1080p']);
     }
 
     #[Test]
@@ -412,6 +430,20 @@ class BunnyStreamIntegrationTest extends TestCase
         ]);
 
         $this->mock(BunnyStreamService::class, function ($mock) {
+            $mock->shouldReceive('getVideoStatus')
+                ->once()
+                ->andReturn([
+                    'videoId' => 'transcoding-video-123',
+                    'status' => 'transcoding',
+                    'rawStatus' => 3,
+                    'duration' => 120,
+                    'size' => 1024000,
+                    'width' => 1920,
+                    'height' => 1080,
+                    'availableResolutions' => '360p,480p',
+                    'encodeProgress' => 45,
+                    'title' => 'Test Video',
+                ]);
             $mock->shouldReceive('generateSignedPlaybackUrl')
                 ->once()
                 ->andReturn([
@@ -427,6 +459,8 @@ class BunnyStreamIntegrationTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJsonPath('video.status', 'transcoding')
+            ->assertJsonPath('video.encode_progress', 45)
+            ->assertJsonPath('video.available_resolutions', ['360p', '480p'])
             ->assertJsonStructure([
                 'playback' => [
                     'hlsUrl',
@@ -464,6 +498,20 @@ class BunnyStreamIntegrationTest extends TestCase
         ]);
 
         $this->mock(BunnyStreamService::class, function ($mock) {
+            $mock->shouldReceive('getVideoStatus')
+                ->once()
+                ->andReturn([
+                    'videoId' => 'video-123',
+                    'status' => 'ready',
+                    'rawStatus' => 4,
+                    'duration' => 120,
+                    'size' => 1024000,
+                    'width' => 1920,
+                    'height' => 1080,
+                    'availableResolutions' => '360p,480p,720p,1080p',
+                    'encodeProgress' => 100,
+                    'title' => 'Test Video',
+                ]);
             $mock->shouldReceive('generateSignedPlaybackUrl')
                 ->once()
                 ->andReturn([
@@ -482,6 +530,9 @@ class BunnyStreamIntegrationTest extends TestCase
                 'video' => [
                     'id',
                     'title',
+                    'status',
+                    'encode_progress',
+                    'available_resolutions',
                     'owner' => [
                         'name',
                     ],
@@ -729,6 +780,19 @@ class BunnyStreamIntegrationTest extends TestCase
 
         // Step 5: Verify playback works
         $this->mock(BunnyStreamService::class, function ($mock) {
+            $mock->shouldReceive('getVideoStatus')
+                ->andReturn([
+                    'videoId' => 'test-bunny-video-id',
+                    'status' => 'ready',
+                    'rawStatus' => 4,
+                    'duration' => 180,
+                    'size' => 1024000,
+                    'width' => 1920,
+                    'height' => 1080,
+                    'availableResolutions' => '360p,480p,720p,1080p',
+                    'encodeProgress' => 100,
+                    'title' => 'Test Video',
+                ]);
             $mock->shouldReceive('generateSignedPlaybackUrl')
                 ->andReturn([
                     'hlsUrl' => 'https://cdn.bunny.net/test/playlist.m3u8',
@@ -744,6 +808,7 @@ class BunnyStreamIntegrationTest extends TestCase
         $playbackResponse->assertStatus(200)
             ->assertJsonStructure([
                 'playback' => ['hlsUrl'],
+                'video' => ['available_resolutions', 'encode_progress'],
             ]);
     }
 
