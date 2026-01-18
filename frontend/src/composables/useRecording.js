@@ -21,7 +21,7 @@ const selectedCamera = ref(null);
 const availableMicrophones = ref([]);
 const availableCameras = ref([]);
 
-// Chunk upload state
+// Upload state
 const sessionId = ref(null);
 const uploadedBytes = ref(0);
 const chunksUploaded = ref(0);
@@ -174,7 +174,7 @@ export function useRecording() {
         return data.session_id;
     };
 
-    // Upload a chunk
+    // Upload a chunk to backend
     const uploadChunk = async (chunk, index) => {
         if (!sessionId.value) return;
 
@@ -211,10 +211,11 @@ export function useRecording() {
         }
     };
 
-    // Complete upload
+    // Complete upload - returns instantly, Bunny upload happens in background
     const completeUpload = async () => {
         if (!sessionId.value) return null;
 
+        // Process any remaining chunks in queue
         await processUploadQueue();
 
         const response = await fetch(`${API_BASE_URL}/api/stream/${sessionId.value}/complete`, {
@@ -419,7 +420,8 @@ export function useRecording() {
                 videoBitsPerSecond
             });
 
-            // Upload chunks as they come in
+            // Stream chunks to backend during recording (fast, instant)
+            // Backend handles Bunny upload in background after recording completes
             mediaRecorder.value.ondataavailable = async (event) => {
                 if (event.data.size > 0) {
                     uploadChunk(event.data, chunkIndex);

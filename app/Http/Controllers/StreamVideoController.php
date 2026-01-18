@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Jobs\ConvertVideoToMp4Job;
 use App\Jobs\GenerateThumbnailJob;
+use App\Jobs\UploadToBunnyJob;
 use App\Models\User;
 use App\Models\Video;
+use App\Services\BunnyStreamService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -13,9 +15,14 @@ use Illuminate\Support\Str;
 
 class StreamVideoController extends Controller
 {
+    public function __construct(
+        protected BunnyStreamService $bunnyService
+    ) {}
+
     /**
      * Start a new streaming upload session.
-     * Returns a session ID that will be used to upload chunks.
+     * Always uses local chunked upload for speed during recording.
+     * Bunny upload happens in background after recording completes.
      */
     public function startUpload(Request $request)
     {
@@ -38,7 +45,8 @@ class StreamVideoController extends Controller
             ], 403);
         }
 
-        // Generate a unique session ID
+        // Always use local chunked upload for fast recording
+        // Bunny upload happens in background after complete
         $sessionId = Str::uuid()->toString();
 
         // Create temp directory
@@ -59,13 +67,16 @@ class StreamVideoController extends Controller
             'chunks_received' => 0,
             'next_expected_chunk' => 0,
             'total_size' => 0,
-            'pending_chunks' => [], // For out-of-order chunks
+            'pending_chunks' => [],
+            'use_bunny' => $this->bunnyService->isConfigured(), // Flag for Bunny upload
         ];
 
         file_put_contents("{$sessionDir}/metadata.json", json_encode($metadata));
 
         return response()->json([
             'session_id' => $sessionId,
+            'storage_type' => 'local', // Always local during recording
+            'will_use_bunny' => $this->bunnyService->isConfigured(),
             'message' => 'Upload session started',
         ]);
     }
@@ -156,7 +167,8 @@ class StreamVideoController extends Controller
 
     /**
      * Complete the streaming upload.
-     * Video is already assembled - just create the record and dispatch jobs.
+     * Returns immediately with share URL.
+     * Bunny upload happens in background.
      */
     public function completeUpload(Request $request, $sessionId)
     {
@@ -188,8 +200,7 @@ class StreamVideoController extends Controller
             return response()->json(['message' => 'No video data received'], 400);
         }
 
-        // Append any remaining pending chunks (handle out-of-order arrivals)
-        // This is fast - just appending any late-arriving chunks
+        // Append any remaining pending chunks
         if (! empty($metadata['pending_chunks'])) {
             ksort($metadata['pending_chunks']);
             foreach ($metadata['pending_chunks'] as $index => $size) {
@@ -201,6 +212,9 @@ class StreamVideoController extends Controller
             }
         }
 
+        // Determine storage type based on Bunny availability
+        $useBunny = $metadata['use_bunny'] ?? $this->bunnyService->isConfigured();
+
         // Create Video record
         $title = $request->title ?? $metadata['title'];
         $video = Video::create([
@@ -209,10 +223,11 @@ class StreamVideoController extends Controller
             'description' => null,
             'duration' => $request->duration ?? 0,
             'is_public' => true,
+            'storage_type' => $useBunny ? 'bunny' : 'local',
+            'bunny_status' => $useBunny ? 'pending' : null,
         ]);
 
-        // Add video to media library (already assembled from chunks!)
-        // This is fast - just copying the file, no processing
+        // Add video to media library
         $video->addMedia($videoPath)
             ->usingFileName("video_{$video->id}.webm")
             ->toMediaCollection('videos');
@@ -226,8 +241,7 @@ class StreamVideoController extends Controller
         // Clean up session directory
         $this->cleanupSession($sessionId);
 
-        // NOW return response immediately - video is ready to play!
-        // Background jobs will generate thumbnail and convert to MP4/HLS
+        // Return response immediately - video is ready to share!
         $response = response()->json([
             'message' => 'Video uploaded successfully',
             'video' => [
@@ -237,29 +251,29 @@ class StreamVideoController extends Controller
                 'url' => url("/api/share/video/{$video->share_token}/stream"),
                 'thumbnail' => $video->getThumbnailUrl(),
                 'share_url' => $video->getShareUrl(),
+                'share_token' => $video->share_token,
                 'is_public' => $video->is_public,
+                'storage_type' => $video->storage_type,
+                'bunny_status' => $video->bunny_status,
                 'created_at' => $video->created_at->toISOString(),
             ],
         ], 201);
 
         // Dispatch background jobs AFTER response is sent
-        // These are the slow operations (FFmpeg)
-        dispatch(function () use ($video, $userId) {
-            // Dispatch thumbnail generation job
-            Log::info('Dispatching GenerateThumbnailJob from StreamVideoController', [
-                'video_id' => $video->id,
-                'title' => $video->title,
-                'user_id' => $userId,
-            ]);
+        dispatch(function () use ($video, $useBunny) {
+            // Generate thumbnail
+            Log::info('Dispatching GenerateThumbnailJob', ['video_id' => $video->id]);
             GenerateThumbnailJob::dispatch($video);
 
-            // Dispatch conversion job
-            Log::info('Dispatching ConvertVideoToMp4Job from StreamVideoController', [
-                'video_id' => $video->id,
-                'title' => $video->title,
-                'user_id' => $userId,
-            ]);
-            ConvertVideoToMp4Job::dispatch($video);
+            if ($useBunny) {
+                // Upload to Bunny in background (HLS will be ready from Bunny)
+                Log::info('Dispatching UploadToBunnyJob', ['video_id' => $video->id]);
+                UploadToBunnyJob::dispatch($video);
+            } else {
+                // Convert locally
+                Log::info('Dispatching ConvertVideoToMp4Job', ['video_id' => $video->id]);
+                ConvertVideoToMp4Job::dispatch($video);
+            }
         })->afterResponse();
 
         return $response;
@@ -311,7 +325,7 @@ class StreamVideoController extends Controller
         return response()->json([
             'session_id' => $sessionId,
             'title' => $metadata['title'],
-            'chunks_received' => count($metadata['chunks']),
+            'chunks_received' => $metadata['chunks_received'] ?? 0,
             'total_size' => $metadata['total_size'],
             'started_at' => $metadata['started_at'],
             'last_chunk_at' => $metadata['last_chunk_at'] ?? null,
@@ -326,14 +340,12 @@ class StreamVideoController extends Controller
         $chunkDir = storage_path("app/temp/stream-uploads/{$sessionId}");
 
         if (file_exists($chunkDir)) {
-            // Delete all files in directory
             $files = glob("{$chunkDir}/*");
             foreach ($files as $file) {
                 if (is_file($file)) {
                     unlink($file);
                 }
             }
-            // Remove directory
             rmdir($chunkDir);
         }
     }
