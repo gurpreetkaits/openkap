@@ -799,13 +799,11 @@ export default {
             try {
               const bunnyData = await videoService.getBunnySharedPlayback(token.value)
 
-              // Update video with Bunny playback URLs
+              // Update video with Bunny HLS URL only (keep local thumbnail)
               if (bunnyData.playback) {
                 video.value.hls_url = bunnyData.playback.hlsUrl
                 video.value.is_hls_ready = true
-                if (bunnyData.playback.thumbnailUrl) {
-                  video.value.thumbnail = bunnyData.playback.thumbnailUrl
-                }
+                // Note: Keep local thumbnail, don't use Bunny's
               }
 
               // Store Bunny-specific data
@@ -821,9 +819,11 @@ export default {
                 }
               }
             } catch (bunnyErr) {
-              console.warn('Failed to fetch Bunny playback, using fallback:', bunnyErr)
+              console.warn('Failed to fetch Bunny playback, falling back to local file:', bunnyErr)
+              // Fallback to local webm file - keep video.url as is
             }
           }
+          // If Bunny video is not ready, fallback to local webm file (video.url is already set)
         }
 
         // Initialize HLS after video data is loaded
