@@ -25,14 +25,14 @@ class BunnyStreamService
 
     public function __construct()
     {
-        $this->libraryId = config('services.bunny.library_id', '');
-        $this->apiKey = config('services.bunny.api_key', '');
-        $this->cdnHostname = config('services.bunny.cdn_hostname', '');
-        $this->securityKey = config('services.bunny.security_key', '');
-        $this->playbackExpiry = config('services.bunny.playback_expiry', 3600);
-        $this->uploadExpiry = config('services.bunny.upload_expiry', 7200);
-        $this->baseUrl = config('services.bunny.base_url', 'https://video.bunnycdn.com');
-        $this->tusEndpoint = config('services.bunny.tus_endpoint', 'https://video.bunnycdn.com/tusupload');
+        $this->libraryId = config('services.bunny.library_id') ?? '';
+        $this->apiKey = config('services.bunny.api_key') ?? '';
+        $this->cdnHostname = config('services.bunny.cdn_hostname') ?? '';
+        $this->securityKey = config('services.bunny.security_key') ?? '';
+        $this->playbackExpiry = (int) (config('services.bunny.playback_expiry') ?? 3600);
+        $this->uploadExpiry = (int) (config('services.bunny.upload_expiry') ?? 7200);
+        $this->baseUrl = config('services.bunny.base_url') ?? 'https://video.bunnycdn.com';
+        $this->tusEndpoint = config('services.bunny.tus_endpoint') ?? 'https://video.bunnycdn.com/tusupload';
     }
 
     /**

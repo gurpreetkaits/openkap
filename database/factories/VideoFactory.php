@@ -80,4 +80,59 @@ class VideoFactory extends Factory
     {
         return $this->withTranscription()->withSummary();
     }
+
+    /**
+     * Video stored on Bunny (pending upload)
+     */
+    public function bunnyPending(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'storage_type' => 'bunny',
+            'bunny_status' => 'pending',
+            'bunny_video_id' => null,
+            'bunny_library_id' => null,
+        ]);
+    }
+
+    /**
+     * Video uploaded to Bunny (processing)
+     */
+    public function bunnyProcessing(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'storage_type' => 'bunny',
+            'bunny_status' => 'processing',
+            'bunny_video_id' => fake()->uuid(),
+            'bunny_library_id' => 'test-library-id',
+        ]);
+    }
+
+    /**
+     * Video ready on Bunny CDN
+     */
+    public function bunnyReady(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'storage_type' => 'bunny',
+            'bunny_status' => 'ready',
+            'bunny_video_id' => fake()->uuid(),
+            'bunny_library_id' => 'test-library-id',
+            'bunny_resolution' => '1080p',
+            'bunny_file_size' => fake()->numberBetween(1000000, 100000000),
+        ]);
+    }
+
+    /**
+     * Video failed on Bunny
+     */
+    public function bunnyError(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'storage_type' => 'bunny',
+            'bunny_status' => 'error',
+            'bunny_video_id' => fake()->uuid(),
+            'bunny_library_id' => 'test-library-id',
+            'bunny_error' => 'Transcoding failed: Invalid video format',
+        ]);
+    }
 }
