@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Data\SummaryData;
 use App\Data\TranscriptionData;
+use App\Http\Integrations\OpenAi\OpenAiConnector;
+use App\Http\Integrations\OpenAi\Requests\ChatCompletionRequest;
+use App\Http\Integrations\OpenAi\Requests\TranscribeAudioRequest;
 use App\Models\User;
 use App\Models\Video;
 use Illuminate\Support\Facades\Log;
@@ -11,11 +14,11 @@ use Illuminate\Support\Str;
 
 class TranscriptionService
 {
-    protected ApiLogger $logger;
-
     protected ?User $user = null;
 
     protected ?string $correlationId = null;
+
+    protected ?OpenAiConnector $connector = null;
 
     public function __construct()
     {
@@ -34,6 +37,23 @@ class TranscriptionService
         $this->correlationId = $correlationId;
 
         return $this;
+    }
+
+    /**
+     * Get or create the OpenAI connector with logging configured
+     */
+    protected function getConnector(): OpenAiConnector
+    {
+        if ($this->connector === null) {
+            $this->connector = new OpenAiConnector;
+        }
+
+        // Configure logging context
+        $this->connector
+            ->forUser($this->user)
+            ->withCorrelationId($this->correlationId);
+
+        return $this->connector;
     }
 
     /**
@@ -86,10 +106,16 @@ class TranscriptionService
      */
     public function transcribe(string $audioPath, Video $video): TranscriptionData
     {
-        $apiKey = config('services.openai.api_key');
         $model = config('services.openai.whisper_model', 'whisper-1');
 
-        if (! $apiKey) {
+        $connector = $this->getConnector()
+            ->withLogContext([
+                'video_id' => $video->id,
+                'operation' => 'transcription',
+                'model' => $model,
+            ]);
+
+        if (! $connector->isConfigured()) {
             throw new \RuntimeException('OpenAI API key not configured');
         }
 
@@ -101,27 +127,14 @@ class TranscriptionService
             'model' => $model,
         ]);
 
-        $logger = ApiLogger::make()
-            ->forService('openai')
-            ->forUser($this->user)
-            ->withCorrelationId($this->correlationId)
-            ->withContext([
-                'video_id' => $video->id,
-                'operation' => 'transcription',
-                'model' => $model,
-            ]);
+        $request = new TranscribeAudioRequest(
+            audioPath: $audioPath,
+            model: $model,
+            language: 'en',
+            responseFormat: 'verbose_json'
+        );
 
-        $response = $logger->http()
-            ->timeout(600) // 10 minutes for long videos
-            ->withHeaders([
-                'Authorization' => 'Bearer '.$apiKey,
-            ])
-            ->attach('file', file_get_contents($audioPath), basename($audioPath))
-            ->post('https://api.openai.com/v1/audio/transcriptions', [
-                'model' => $model,
-                'response_format' => 'verbose_json',
-                'language' => 'en',
-            ]);
+        $response = $connector->send($request);
 
         if (! $response->successful()) {
             $error = $response->json('error.message') ?? $response->body();
@@ -155,10 +168,16 @@ class TranscriptionService
      */
     public function generateSummary(string $transcription, Video $video): SummaryData
     {
-        $apiKey = config('services.openai.api_key');
         $model = config('services.openai.chat_model', 'gpt-4o-mini');
 
-        if (! $apiKey) {
+        $connector = $this->getConnector()
+            ->withLogContext([
+                'video_id' => $video->id,
+                'operation' => 'summary',
+                'model' => $model,
+            ]);
+
+        if (! $connector->isConfigured()) {
             throw new \RuntimeException('OpenAI API key not configured');
         }
 
@@ -168,52 +187,8 @@ class TranscriptionService
             'model' => $model,
         ]);
 
-        $logger = ApiLogger::make()
-            ->forService('openai')
-            ->forUser($this->user)
-            ->withCorrelationId($this->correlationId)
-            ->withContext([
-                'video_id' => $video->id,
-                'operation' => 'summary',
-                'model' => $model,
-            ]);
-
-        $systemPrompt = <<<'PROMPT'
-You are an expert at summarizing video content. Given a video transcription, create a clear and concise summary that captures the key points, main topics discussed, and any important details.
-
-Guidelines:
-- Keep the summary between 100-300 words
-- Use bullet points for key takeaways if appropriate
-- Highlight any action items or important conclusions
-- Maintain a professional tone
-- If the transcription is unclear or contains errors, do your best to infer meaning
-PROMPT;
-
-        $userPrompt = <<<PROMPT
-Please summarize the following video transcription:
-
----
-{$transcription}
----
-
-Provide a clear, concise summary of the main points.
-PROMPT;
-
-        $response = $logger->http()
-            ->timeout(120)
-            ->withHeaders([
-                'Authorization' => 'Bearer '.$apiKey,
-                'Content-Type' => 'application/json',
-            ])
-            ->post('https://api.openai.com/v1/chat/completions', [
-                'model' => $model,
-                'messages' => [
-                    ['role' => 'system', 'content' => $systemPrompt],
-                    ['role' => 'user', 'content' => $userPrompt],
-                ],
-                'max_tokens' => 1000,
-                'temperature' => 0.5,
-            ]);
+        $request = ChatCompletionRequest::forSummary($transcription, $model);
+        $response = $connector->send($request);
 
         if (! $response->successful()) {
             $error = $response->json('error.message') ?? $response->body();
@@ -248,10 +223,16 @@ PROMPT;
      */
     public function generateTitle(string $transcription, Video $video): string
     {
-        $apiKey = config('services.openai.api_key');
         $model = config('services.openai.chat_model', 'gpt-4o-mini');
 
-        if (! $apiKey) {
+        $connector = $this->getConnector()
+            ->withLogContext([
+                'video_id' => $video->id,
+                'operation' => 'title_generation',
+                'model' => $model,
+            ]);
+
+        if (! $connector->isConfigured()) {
             throw new \RuntimeException('OpenAI API key not configured');
         }
 
@@ -260,53 +241,8 @@ PROMPT;
             'transcription_length' => strlen($transcription),
         ]);
 
-        $logger = ApiLogger::make()
-            ->forService('openai')
-            ->forUser($this->user)
-            ->withCorrelationId($this->correlationId)
-            ->withContext([
-                'video_id' => $video->id,
-                'operation' => 'title_generation',
-                'model' => $model,
-            ]);
-
-        $systemPrompt = <<<'PROMPT'
-You are an expert at creating concise, descriptive titles for videos. Given a video transcription, create a short, engaging title that captures the main topic or purpose of the video.
-
-Guidelines:
-- Keep the title between 5-12 words
-- Make it descriptive and specific
-- Avoid generic titles like "Video Recording" or "Screen Recording"
-- Use sentence case (capitalize first word and proper nouns only)
-- Do not use quotes or punctuation at the end
-- Focus on the main topic or action in the video
-PROMPT;
-
-        $userPrompt = <<<PROMPT
-Based on this video transcription, generate a concise title:
-
----
-{$transcription}
----
-
-Respond with ONLY the title, nothing else.
-PROMPT;
-
-        $response = $logger->http()
-            ->timeout(30)
-            ->withHeaders([
-                'Authorization' => 'Bearer '.$apiKey,
-                'Content-Type' => 'application/json',
-            ])
-            ->post('https://api.openai.com/v1/chat/completions', [
-                'model' => $model,
-                'messages' => [
-                    ['role' => 'system', 'content' => $systemPrompt],
-                    ['role' => 'user', 'content' => $userPrompt],
-                ],
-                'max_tokens' => 50,
-                'temperature' => 0.7,
-            ]);
+        $request = ChatCompletionRequest::forTitle($transcription, $model);
+        $response = $connector->send($request);
 
         if (! $response->successful()) {
             $error = $response->json('error.message') ?? $response->body();

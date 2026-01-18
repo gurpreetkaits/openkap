@@ -2,10 +2,17 @@
 
 namespace Tests\Unit;
 
+use App\Http\Integrations\Bunny\BunnyConnector;
+use App\Http\Integrations\Bunny\Requests\CreateVideoRequest;
+use App\Http\Integrations\Bunny\Requests\DeleteVideoRequest;
+use App\Http\Integrations\Bunny\Requests\GetVideoRequest;
+use App\Http\Integrations\Bunny\Requests\ListVideosRequest;
+use App\Http\Integrations\Bunny\Requests\UpdateVideoRequest;
 use App\Services\BunnyStreamService;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\Http;
 use PHPUnit\Framework\Attributes\Test;
+use Saloon\Http\Faking\MockClient;
+use Saloon\Http\Faking\MockResponse;
 use Tests\TestCase;
 
 class BunnyStreamServiceTest extends TestCase
@@ -82,57 +89,63 @@ class BunnyStreamServiceTest extends TestCase
     #[Test]
     public function create_video_makes_correct_api_call(): void
     {
-        Http::fake([
-            'video.bunnycdn.com/library/test-library-123/videos' => Http::response([
+        $mockClient = new MockClient([
+            CreateVideoRequest::class => MockResponse::make([
                 'guid' => 'new-video-guid-123',
                 'title' => 'Test Video',
             ], 200),
         ]);
 
-        $service = new BunnyStreamService;
+        $connector = new BunnyConnector;
+        $connector->withMockClient($mockClient);
+
+        $service = new BunnyStreamService($connector);
         $result = $service->createVideo('Test Video');
 
         $this->assertEquals('new-video-guid-123', $result['guid']);
 
-        Http::assertSent(function ($request) {
-            return $request->url() === 'https://video.bunnycdn.com/library/test-library-123/videos'
-                && $request->method() === 'POST'
-                && $request->header('AccessKey')[0] === 'test-api-key-456'
-                && $request['title'] === 'Test Video';
-        });
+        $mockClient->assertSent(CreateVideoRequest::class);
     }
 
     #[Test]
     public function create_video_includes_collection_id_when_provided(): void
     {
-        Http::fake([
-            'video.bunnycdn.com/library/test-library-123/videos' => Http::response([
+        $mockClient = new MockClient([
+            CreateVideoRequest::class => MockResponse::make([
                 'guid' => 'new-video-guid-123',
             ], 200),
         ]);
 
-        $service = new BunnyStreamService;
+        $connector = new BunnyConnector;
+        $connector->withMockClient($mockClient);
+
+        $service = new BunnyStreamService($connector);
         $service->createVideo('Test Video', 'collection-abc');
 
-        Http::assertSent(function ($request) {
-            return $request['title'] === 'Test Video'
-                && $request['collectionId'] === 'collection-abc';
+        $mockClient->assertSent(function (CreateVideoRequest $request) {
+            $body = $request->body()->all();
+
+            return $body['title'] === 'Test Video'
+                && $body['collectionId'] === 'collection-abc';
         });
     }
 
     #[Test]
     public function create_video_throws_exception_on_failure(): void
     {
-        Http::fake([
-            'video.bunnycdn.com/library/test-library-123/videos' => Http::response([
+        $mockClient = new MockClient([
+            CreateVideoRequest::class => MockResponse::make([
                 'error' => 'Unauthorized',
             ], 401),
         ]);
 
+        $connector = new BunnyConnector;
+        $connector->withMockClient($mockClient);
+
         $this->expectException(\Exception::class);
         $this->expectExceptionMessage('Failed to create video in Bunny Stream');
 
-        $service = new BunnyStreamService;
+        $service = new BunnyStreamService($connector);
         $service->createVideo('Test Video');
     }
 
@@ -236,8 +249,8 @@ class BunnyStreamServiceTest extends TestCase
     #[Test]
     public function get_video_status_returns_mapped_status(): void
     {
-        Http::fake([
-            'video.bunnycdn.com/library/test-library-123/videos/video-123' => Http::response([
+        $mockClient = new MockClient([
+            GetVideoRequest::class => MockResponse::make([
                 'guid' => 'video-123',
                 'status' => 4, // finished
                 'length' => 120,
@@ -250,7 +263,10 @@ class BunnyStreamServiceTest extends TestCase
             ], 200),
         ]);
 
-        $service = new BunnyStreamService;
+        $connector = new BunnyConnector;
+        $connector->withMockClient($mockClient);
+
+        $service = new BunnyStreamService($connector);
         $status = $service->getVideoStatus('video-123');
 
         $this->assertEquals('video-123', $status['videoId']);
@@ -266,14 +282,17 @@ class BunnyStreamServiceTest extends TestCase
     #[Test]
     public function get_video_status_maps_pending_status(): void
     {
-        Http::fake([
-            'video.bunnycdn.com/library/test-library-123/videos/video-123' => Http::response([
+        $mockClient = new MockClient([
+            GetVideoRequest::class => MockResponse::make([
                 'guid' => 'video-123',
                 'status' => 0,
             ], 200),
         ]);
 
-        $service = new BunnyStreamService;
+        $connector = new BunnyConnector;
+        $connector->withMockClient($mockClient);
+
+        $service = new BunnyStreamService($connector);
         $status = $service->getVideoStatus('video-123');
         $this->assertEquals('pending', $status['status']);
     }
@@ -281,14 +300,17 @@ class BunnyStreamServiceTest extends TestCase
     #[Test]
     public function get_video_status_maps_uploaded_status(): void
     {
-        Http::fake([
-            'video.bunnycdn.com/library/test-library-123/videos/video-123' => Http::response([
+        $mockClient = new MockClient([
+            GetVideoRequest::class => MockResponse::make([
                 'guid' => 'video-123',
                 'status' => 1,
             ], 200),
         ]);
 
-        $service = new BunnyStreamService;
+        $connector = new BunnyConnector;
+        $connector->withMockClient($mockClient);
+
+        $service = new BunnyStreamService($connector);
         $status = $service->getVideoStatus('video-123');
         $this->assertEquals('uploaded', $status['status']);
     }
@@ -296,14 +318,17 @@ class BunnyStreamServiceTest extends TestCase
     #[Test]
     public function get_video_status_maps_ready_status(): void
     {
-        Http::fake([
-            'video.bunnycdn.com/library/test-library-123/videos/video-123' => Http::response([
+        $mockClient = new MockClient([
+            GetVideoRequest::class => MockResponse::make([
                 'guid' => 'video-123',
                 'status' => 4,
             ], 200),
         ]);
 
-        $service = new BunnyStreamService;
+        $connector = new BunnyConnector;
+        $connector->withMockClient($mockClient);
+
+        $service = new BunnyStreamService($connector);
         $status = $service->getVideoStatus('video-123');
         $this->assertEquals('ready', $status['status']);
     }
@@ -311,14 +336,17 @@ class BunnyStreamServiceTest extends TestCase
     #[Test]
     public function get_video_status_maps_error_status(): void
     {
-        Http::fake([
-            'video.bunnycdn.com/library/test-library-123/videos/video-123' => Http::response([
+        $mockClient = new MockClient([
+            GetVideoRequest::class => MockResponse::make([
                 'guid' => 'video-123',
                 'status' => 5,
             ], 200),
         ]);
 
-        $service = new BunnyStreamService;
+        $connector = new BunnyConnector;
+        $connector->withMockClient($mockClient);
+
+        $service = new BunnyStreamService($connector);
         $status = $service->getVideoStatus('video-123');
         $this->assertEquals('error', $status['status']);
     }
@@ -326,16 +354,19 @@ class BunnyStreamServiceTest extends TestCase
     #[Test]
     public function get_video_status_throws_exception_on_failure(): void
     {
-        Http::fake([
-            'video.bunnycdn.com/library/test-library-123/videos/video-123' => Http::response([
+        $mockClient = new MockClient([
+            GetVideoRequest::class => MockResponse::make([
                 'error' => 'Not found',
             ], 404),
         ]);
 
+        $connector = new BunnyConnector;
+        $connector->withMockClient($mockClient);
+
         $this->expectException(\Exception::class);
         $this->expectExceptionMessage('Failed to get video status from Bunny Stream');
 
-        $service = new BunnyStreamService;
+        $service = new BunnyStreamService($connector);
         $service->getVideoStatus('video-123');
     }
 
@@ -346,31 +377,34 @@ class BunnyStreamServiceTest extends TestCase
     #[Test]
     public function delete_video_returns_true_on_success(): void
     {
-        Http::fake([
-            'video.bunnycdn.com/library/test-library-123/videos/video-123' => Http::response([], 200),
+        $mockClient = new MockClient([
+            DeleteVideoRequest::class => MockResponse::make([], 200),
         ]);
 
-        $service = new BunnyStreamService;
+        $connector = new BunnyConnector;
+        $connector->withMockClient($mockClient);
+
+        $service = new BunnyStreamService($connector);
         $result = $service->deleteVideo('video-123');
 
         $this->assertTrue($result);
 
-        Http::assertSent(function ($request) {
-            return $request->method() === 'DELETE'
-                && str_contains($request->url(), 'video-123');
-        });
+        $mockClient->assertSent(DeleteVideoRequest::class);
     }
 
     #[Test]
     public function delete_video_returns_false_on_failure(): void
     {
-        Http::fake([
-            'video.bunnycdn.com/library/test-library-123/videos/video-123' => Http::response([
+        $mockClient = new MockClient([
+            DeleteVideoRequest::class => MockResponse::make([
                 'error' => 'Not found',
             ], 404),
         ]);
 
-        $service = new BunnyStreamService;
+        $connector = new BunnyConnector;
+        $connector->withMockClient($mockClient);
+
+        $service = new BunnyStreamService($connector);
         $result = $service->deleteVideo('video-123');
 
         $this->assertFalse($result);
@@ -383,31 +417,38 @@ class BunnyStreamServiceTest extends TestCase
     #[Test]
     public function update_video_returns_true_on_success(): void
     {
-        Http::fake([
-            'video.bunnycdn.com/library/test-library-123/videos/video-123' => Http::response([], 200),
+        $mockClient = new MockClient([
+            UpdateVideoRequest::class => MockResponse::make([], 200),
         ]);
 
-        $service = new BunnyStreamService;
+        $connector = new BunnyConnector;
+        $connector->withMockClient($mockClient);
+
+        $service = new BunnyStreamService($connector);
         $result = $service->updateVideo('video-123', ['title' => 'New Title']);
 
         $this->assertTrue($result);
 
-        Http::assertSent(function ($request) {
-            return $request->method() === 'POST'
-                && $request['title'] === 'New Title';
+        $mockClient->assertSent(function (UpdateVideoRequest $request) {
+            $body = $request->body()->all();
+
+            return $body['title'] === 'New Title';
         });
     }
 
     #[Test]
     public function update_video_returns_false_on_failure(): void
     {
-        Http::fake([
-            'video.bunnycdn.com/library/test-library-123/videos/video-123' => Http::response([
+        $mockClient = new MockClient([
+            UpdateVideoRequest::class => MockResponse::make([
                 'error' => 'Invalid data',
             ], 400),
         ]);
 
-        $service = new BunnyStreamService;
+        $connector = new BunnyConnector;
+        $connector->withMockClient($mockClient);
+
+        $service = new BunnyStreamService($connector);
         $result = $service->updateVideo('video-123', ['title' => '']);
 
         $this->assertFalse($result);
@@ -420,8 +461,8 @@ class BunnyStreamServiceTest extends TestCase
     #[Test]
     public function list_videos_returns_paginated_results(): void
     {
-        Http::fake([
-            'video.bunnycdn.com/library/test-library-123/videos*' => Http::response([
+        $mockClient = new MockClient([
+            ListVideosRequest::class => MockResponse::make([
                 'items' => [
                     ['guid' => 'video-1', 'title' => 'Video 1'],
                     ['guid' => 'video-2', 'title' => 'Video 2'],
@@ -430,7 +471,10 @@ class BunnyStreamServiceTest extends TestCase
             ], 200),
         ]);
 
-        $service = new BunnyStreamService;
+        $connector = new BunnyConnector;
+        $connector->withMockClient($mockClient);
+
+        $service = new BunnyStreamService($connector);
         $result = $service->listVideos(1, 10);
 
         $this->assertCount(2, $result['items']);
@@ -440,68 +484,85 @@ class BunnyStreamServiceTest extends TestCase
     #[Test]
     public function list_videos_includes_search_parameter(): void
     {
-        Http::fake([
-            'video.bunnycdn.com/library/test-library-123/videos*' => Http::response([
+        $mockClient = new MockClient([
+            ListVideosRequest::class => MockResponse::make([
                 'items' => [],
                 'totalItems' => 0,
             ], 200),
         ]);
 
-        $service = new BunnyStreamService;
+        $connector = new BunnyConnector;
+        $connector->withMockClient($mockClient);
+
+        $service = new BunnyStreamService($connector);
         $service->listVideos(1, 10, 'test search');
 
-        Http::assertSent(function ($request) {
-            return str_contains($request->url(), 'search=test+search')
-                || str_contains($request->url(), 'search=test%20search');
+        $mockClient->assertSent(function (ListVideosRequest $request) {
+            $query = $request->query()->all();
+
+            return isset($query['search']) && $query['search'] === 'test search';
         });
     }
 
     #[Test]
     public function list_videos_includes_collection_filter(): void
     {
-        Http::fake([
-            'video.bunnycdn.com/library/test-library-123/videos*' => Http::response([
+        $mockClient = new MockClient([
+            ListVideosRequest::class => MockResponse::make([
                 'items' => [],
                 'totalItems' => 0,
             ], 200),
         ]);
 
-        $service = new BunnyStreamService;
+        $connector = new BunnyConnector;
+        $connector->withMockClient($mockClient);
+
+        $service = new BunnyStreamService($connector);
         $service->listVideos(1, 10, null, 'collection-abc');
 
-        Http::assertSent(function ($request) {
-            return str_contains($request->url(), 'collection=collection-abc');
+        $mockClient->assertSent(function (ListVideosRequest $request) {
+            $query = $request->query()->all();
+
+            return isset($query['collection']) && $query['collection'] === 'collection-abc';
         });
     }
 
     #[Test]
     public function list_videos_caps_per_page_at_100(): void
     {
-        Http::fake([
-            'video.bunnycdn.com/library/test-library-123/videos*' => Http::response([
+        $mockClient = new MockClient([
+            ListVideosRequest::class => MockResponse::make([
                 'items' => [],
                 'totalItems' => 0,
             ], 200),
         ]);
 
-        $service = new BunnyStreamService;
+        $connector = new BunnyConnector;
+        $connector->withMockClient($mockClient);
+
+        $service = new BunnyStreamService($connector);
         $service->listVideos(1, 500); // Request 500
 
-        Http::assertSent(function ($request) {
-            return str_contains($request->url(), 'itemsPerPage=100'); // Should be capped at 100
+        $mockClient->assertSent(function (ListVideosRequest $request) {
+            $query = $request->query()->all();
+
+            return $query['itemsPerPage'] === 100; // Should be capped at 100
         });
     }
 
     #[Test]
     public function list_videos_returns_empty_on_failure(): void
     {
-        Http::fake([
-            'video.bunnycdn.com/library/test-library-123/videos*' => Http::response([
+        $mockClient = new MockClient([
+            ListVideosRequest::class => MockResponse::make([
                 'error' => 'Unauthorized',
             ], 401),
         ]);
 
-        $service = new BunnyStreamService;
+        $connector = new BunnyConnector;
+        $connector->withMockClient($mockClient);
+
+        $service = new BunnyStreamService($connector);
         $result = $service->listVideos();
 
         $this->assertEquals(['items' => [], 'totalItems' => 0], $result);
