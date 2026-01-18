@@ -108,6 +108,16 @@ class Video extends Model implements HasMedia
     }
 
     /**
+     * Get all playlists that contain this video.
+     */
+    public function playlists()
+    {
+        return $this->belongsToMany(Playlist::class)
+            ->withPivot('position')
+            ->withTimestamps();
+    }
+
+    /**
      * Get unique view count (distinct users/IPs).
      */
     public function getViewCountAttribute(): int

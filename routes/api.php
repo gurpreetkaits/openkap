@@ -6,6 +6,7 @@ use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\HlsController;
 use App\Http\Controllers\MarkdownBlogController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\PlaylistController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReactionController;
 use App\Http\Controllers\SettingController;
@@ -79,6 +80,9 @@ Route::post('/share/video/{token}/reactions', [ReactionController::class, 'store
 
 // App settings - public (subscription prices, limits, etc.)
 Route::get('/settings', [SettingController::class, 'publicSettings']);
+
+// Public playlist sharing - anyone can view
+Route::get('/share/playlist/{token}', [PlaylistController::class, 'showShared']);
 
 // ============================================
 // PROTECTED ROUTES (Authentication required)
@@ -162,6 +166,20 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/{id}/transcription/status', [VideoController::class, 'transcriptionStatus']);
         Route::post('/{id}/summary', [VideoController::class, 'requestSummary']);
         Route::get('/{id}/summary', [VideoController::class, 'getSummary']);
+    });
+
+    // Playlist routes
+    Route::prefix('playlists')->group(function () {
+        Route::get('/', [PlaylistController::class, 'index']);
+        Route::post('/', [PlaylistController::class, 'store']);
+        Route::get('/{id}', [PlaylistController::class, 'show']);
+        Route::put('/{id}', [PlaylistController::class, 'update']);
+        Route::delete('/{id}', [PlaylistController::class, 'destroy']);
+        Route::post('/{id}/toggle-sharing', [PlaylistController::class, 'toggleSharing']);
+        Route::put('/{id}/sort-by', [PlaylistController::class, 'updateSortBy']);
+        Route::post('/{id}/videos', [PlaylistController::class, 'addVideo']);
+        Route::delete('/{id}/videos/{videoId}', [PlaylistController::class, 'removeVideo']);
+        Route::put('/{id}/reorder', [PlaylistController::class, 'reorder']);
     });
 });
 

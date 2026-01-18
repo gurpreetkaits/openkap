@@ -208,6 +208,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Relationship: User has many playlists
+     */
+    public function playlists()
+    {
+        return $this->hasMany(\App\Models\Playlist::class);
+    }
+
+    /**
      * Get unread notifications count
      */
     public function getUnreadNotificationsCount(): int
