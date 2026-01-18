@@ -131,6 +131,31 @@ trait LogsApiRequests
     }
 
     /**
+     * Log exception for failed connection attempts by finding the most recent log entry
+     * This is used when exceptions occur before the response middleware can run
+     */
+    protected function logExceptionByCorrelationId(\Throwable $e): void
+    {
+        if (! $this->loggingEnabled || ! $this->correlationId) {
+            return;
+        }
+
+        // Find the most recent pending log entry for this correlation ID
+        $log = ApiLog::where('correlation_id', $this->correlationId)
+            ->where('service', $this->getServiceName())
+            ->whereNull('response_status')
+            ->orderByDesc('id')
+            ->first();
+
+        if ($log) {
+            $log->update([
+                'is_successful' => false,
+                'error_message' => get_class($e).': '.$e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
      * Sanitize request body for logging (hide sensitive data, handle files)
      */
     protected function sanitizeRequestBody($body): array|string

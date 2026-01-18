@@ -5,6 +5,7 @@ namespace App\Http\Integrations;
 use App\Http\Integrations\Concerns\LogsApiRequests;
 use Saloon\Http\Connector;
 use Saloon\Http\PendingRequest;
+use Saloon\Http\Request;
 use Saloon\Http\Response;
 
 abstract class BaseConnector extends Connector
@@ -34,6 +35,35 @@ abstract class BaseConnector extends Connector
 
             return $response;
         });
+    }
+
+    /**
+     * Send a request and handle exceptions for logging
+     *
+     * This overrides the parent send method to ensure connection exceptions
+     * (timeouts, network errors, etc.) are still logged to api_logs
+     */
+    public function send(Request $request, ...$args): Response
+    {
+        try {
+            return parent::send($request, ...$args);
+        } catch (\Throwable $e) {
+            // Log the exception if we have a log ID stored
+            // The logId is set during boot() before the request is sent
+            $this->logConnectionException($e);
+
+            throw $e;
+        }
+    }
+
+    /**
+     * Log connection exceptions that occur before getting a response
+     */
+    protected function logConnectionException(\Throwable $e): void
+    {
+        // We need to find the most recent log entry for this connector
+        // since the exception happens after boot() but before response middleware
+        $this->logExceptionByCorrelationId($e);
     }
 
     /**
