@@ -122,7 +122,7 @@ class UploadToBunnyJobTest extends TestCase
             'bunny_video_id' => null,
         ]);
 
-        // Create a mock media file
+        // Create a mock media and attach to video using partial mock
         $this->createMockMediaForVideo($video);
 
         $bunnyService = Mockery::mock(BunnyStreamService::class);
@@ -279,22 +279,52 @@ class UploadToBunnyJobTest extends TestCase
     // ==========================================
 
     /**
-     * Create a mock media file for the video
+     * Create a mock media file for the video.
+     * Creates an actual file with proper video-like content and
+     * directly attaches it via the media table.
      */
     protected function createMockMediaForVideo(Video $video): void
     {
         // Create a temp directory and file
-        $tempDir = storage_path('app/temp/test-media');
+        $tempDir = storage_path('app/public/temp-test-media');
         if (! file_exists($tempDir)) {
             mkdir($tempDir, 0755, true);
         }
 
-        $tempFile = "{$tempDir}/test_video_{$video->id}.webm";
-        file_put_contents($tempFile, str_repeat('x', 1000));
+        $fileName = "video_{$video->id}.webm";
+        $tempFile = "{$tempDir}/{$fileName}";
 
-        // Attach to video using Spatie Media Library
-        $video->addMedia($tempFile)
-            ->usingFileName("video_{$video->id}.webm")
-            ->toMediaCollection('videos');
+        // Create a minimal fake video file - just needs to exist for path check
+        file_put_contents($tempFile, str_repeat("\x00", 1000));
+
+        // Create media record directly in database (bypass collection validation)
+        Media::create([
+            'model_type' => Video::class,
+            'model_id' => $video->id,
+            'uuid' => (string) \Illuminate\Support\Str::uuid(),
+            'collection_name' => 'videos',
+            'name' => "video_{$video->id}",
+            'file_name' => $fileName,
+            'mime_type' => 'video/webm',
+            'disk' => 'public',
+            'conversions_disk' => 'public',
+            'size' => 1000,
+            'manipulations' => [],
+            'custom_properties' => [],
+            'generated_conversions' => [],
+            'responsive_images' => [],
+        ]);
+
+        // Update the media record to point to the actual file path
+        $media = $video->getFirstMedia('videos');
+        if ($media) {
+            // Create directory structure that Spatie expects
+            $mediaDir = storage_path("app/public/{$media->id}");
+            if (! file_exists($mediaDir)) {
+                mkdir($mediaDir, 0755, true);
+            }
+            // Move/copy the file to where Spatie expects it
+            copy($tempFile, "{$mediaDir}/{$fileName}");
+        }
     }
 }

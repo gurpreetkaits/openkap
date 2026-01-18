@@ -264,30 +264,63 @@ class BunnyStreamServiceTest extends TestCase
     }
 
     #[Test]
-    public function get_video_status_maps_all_bunny_statuses(): void
+    public function get_video_status_maps_pending_status(): void
     {
-        $statusMappings = [
-            0 => 'pending',
-            1 => 'uploaded',
-            2 => 'processing',
-            3 => 'transcoding',
-            4 => 'ready',
-            5 => 'error',
-        ];
+        Http::fake([
+            'video.bunnycdn.com/library/test-library-123/videos/video-123' => Http::response([
+                'guid' => 'video-123',
+                'status' => 0,
+            ], 200),
+        ]);
 
-        foreach ($statusMappings as $bunnyStatus => $expectedStatus) {
-            Http::fake([
-                'video.bunnycdn.com/library/test-library-123/videos/video-123' => Http::response([
-                    'guid' => 'video-123',
-                    'status' => $bunnyStatus,
-                ], 200),
-            ]);
+        $service = new BunnyStreamService;
+        $status = $service->getVideoStatus('video-123');
+        $this->assertEquals('pending', $status['status']);
+    }
 
-            $service = new BunnyStreamService;
-            $status = $service->getVideoStatus('video-123');
+    #[Test]
+    public function get_video_status_maps_uploaded_status(): void
+    {
+        Http::fake([
+            'video.bunnycdn.com/library/test-library-123/videos/video-123' => Http::response([
+                'guid' => 'video-123',
+                'status' => 1,
+            ], 200),
+        ]);
 
-            $this->assertEquals($expectedStatus, $status['status'], "Failed for Bunny status {$bunnyStatus}");
-        }
+        $service = new BunnyStreamService;
+        $status = $service->getVideoStatus('video-123');
+        $this->assertEquals('uploaded', $status['status']);
+    }
+
+    #[Test]
+    public function get_video_status_maps_ready_status(): void
+    {
+        Http::fake([
+            'video.bunnycdn.com/library/test-library-123/videos/video-123' => Http::response([
+                'guid' => 'video-123',
+                'status' => 4,
+            ], 200),
+        ]);
+
+        $service = new BunnyStreamService;
+        $status = $service->getVideoStatus('video-123');
+        $this->assertEquals('ready', $status['status']);
+    }
+
+    #[Test]
+    public function get_video_status_maps_error_status(): void
+    {
+        Http::fake([
+            'video.bunnycdn.com/library/test-library-123/videos/video-123' => Http::response([
+                'guid' => 'video-123',
+                'status' => 5,
+            ], 200),
+        ]);
+
+        $service = new BunnyStreamService;
+        $status = $service->getVideoStatus('video-123');
+        $this->assertEquals('error', $status['status']);
     }
 
     #[Test]

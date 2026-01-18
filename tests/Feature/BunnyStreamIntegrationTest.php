@@ -91,11 +91,11 @@ class BunnyStreamIntegrationTest extends TestCase
     #[Test]
     public function user_cannot_start_session_when_video_limit_reached(): void
     {
-        // Set user to have reached their limit
-        $this->user->update(['videos_count' => 100]);
-
-        // Mock canRecordVideo to return false
-        $this->user->forceFill(['subscription_status' => null])->save();
+        // Create videos to exceed the free limit (default is 1)
+        // User must not have an active subscription
+        Video::factory()->count(5)->create([
+            'user_id' => $this->user->id,
+        ]);
 
         $response = $this->actingAs($this->user)
             ->postJson('/api/stream/start', [
@@ -224,12 +224,13 @@ class BunnyStreamIntegrationTest extends TestCase
             mkdir($sessionDir, 0755, true);
         }
 
-        // Create a minimal video file
-        file_put_contents("{$sessionDir}/video.webm", str_repeat('x', 1000));
+        // Create a minimal WebM file with proper EBML/Matroska header
+        $webmContent = $this->createWebmFileContent();
+        file_put_contents("{$sessionDir}/video.webm", $webmContent);
 
         // Update metadata
         $metadata = json_decode(file_get_contents("{$sessionDir}/metadata.json"), true);
-        $metadata['total_size'] = 1000;
+        $metadata['total_size'] = strlen($webmContent);
         $metadata['chunks_received'] = 1;
         file_put_contents("{$sessionDir}/metadata.json", json_encode($metadata));
 
@@ -292,11 +293,11 @@ class BunnyStreamIntegrationTest extends TestCase
 
         $sessionId = $startResponse->json('session_id');
 
-        // Create minimal video file
+        // Create minimal video file with proper WebM header
         $sessionDir = storage_path("app/temp/stream-uploads/{$sessionId}");
-        file_put_contents("{$sessionDir}/video.webm", str_repeat('x', 1000));
+        file_put_contents("{$sessionDir}/video.webm", $this->createWebmFileContent());
         $metadata = json_decode(file_get_contents("{$sessionDir}/metadata.json"), true);
-        $metadata['total_size'] = 1000;
+        $metadata['total_size'] = strlen($this->createWebmFileContent());
         $metadata['chunks_received'] = 1;
         file_put_contents("{$sessionDir}/metadata.json", json_encode($metadata));
 
@@ -639,25 +640,29 @@ class BunnyStreamIntegrationTest extends TestCase
         $sessionId = $startResponse->json('session_id');
         $this->assertTrue($startResponse->json('will_use_bunny'));
 
-        // Step 2: Upload chunks using actual file content
+        // Step 2: Upload chunks using proper WebM content
         $sessionDir = storage_path("app/temp/stream-uploads/{$sessionId}");
 
-        // Create chunks with actual content
-        for ($i = 0; $i < 3; $i++) {
-            // Create a temp file with actual content
-            $tempFile = tempnam(sys_get_temp_dir(), 'chunk');
-            file_put_contents($tempFile, str_repeat("video-chunk-{$i}-data", 1000));
+        // Create a single chunk with proper WebM header
+        $webmContent = $this->createWebmFileContent();
+        $tempFile = tempnam(sys_get_temp_dir(), 'chunk');
+        file_put_contents($tempFile, $webmContent);
 
-            $chunk = new UploadedFile($tempFile, "chunk_{$i}.webm", 'video/webm', null, true);
+        $chunk = new UploadedFile($tempFile, 'chunk_0.webm', 'video/webm', null, true);
 
-            $chunkResponse = $this->actingAs($this->user)
-                ->postJson("/api/stream/{$sessionId}/chunk", [
-                    'chunk' => $chunk,
-                    'chunk_index' => $i,
-                ]);
+        $chunkResponse = $this->actingAs($this->user)
+            ->postJson("/api/stream/{$sessionId}/chunk", [
+                'chunk' => $chunk,
+                'chunk_index' => 0,
+            ]);
 
-            $chunkResponse->assertStatus(200);
-        }
+        $chunkResponse->assertStatus(200);
+
+        // Replace the video.webm with proper WebM content before completing
+        file_put_contents("{$sessionDir}/video.webm", $webmContent);
+        $metadata = json_decode(file_get_contents("{$sessionDir}/metadata.json"), true);
+        $metadata['total_size'] = strlen($webmContent);
+        file_put_contents("{$sessionDir}/metadata.json", json_encode($metadata));
 
         // Step 3: Complete upload
         $completeResponse = $this->actingAs($this->user)
@@ -702,5 +707,46 @@ class BunnyStreamIntegrationTest extends TestCase
             ->assertJsonStructure([
                 'playback' => ['hlsUrl'],
             ]);
+    }
+
+    // ==========================================
+    // HELPER METHODS
+    // ==========================================
+
+    /**
+     * Create minimal WebM file content with proper EBML/Matroska header.
+     * This content will be detected as video/webm by PHP's finfo.
+     */
+    protected function createWebmFileContent(): string
+    {
+        // Minimal valid WebM file header (EBML document with DocType "webm")
+        // This is a properly structured EBML header that finfo will recognize
+        $header = pack('C*',
+            // EBML Element ID
+            0x1A, 0x45, 0xDF, 0xA3,
+            // EBML Size (variable length encoded: 31 bytes)
+            0xA3,
+            // EBMLVersion: 1
+            0x42, 0x86, 0x81, 0x01,
+            // EBMLReadVersion: 1
+            0x42, 0xF7, 0x81, 0x01,
+            // EBMLMaxIDLength: 4
+            0x42, 0xF2, 0x81, 0x04,
+            // EBMLMaxSizeLength: 8
+            0x42, 0xF3, 0x81, 0x08,
+            // DocType: "webm"
+            0x42, 0x82, 0x84, 0x77, 0x65, 0x62, 0x6D,
+            // DocTypeVersion: 2
+            0x42, 0x87, 0x81, 0x02,
+            // DocTypeReadVersion: 2
+            0x42, 0x85, 0x81, 0x02,
+            // Segment Element ID
+            0x18, 0x53, 0x80, 0x67,
+            // Unknown segment size (all 1s means unknown length)
+            0x01, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF
+        );
+
+        // Pad to reasonable size
+        return $header.str_repeat("\x00", 1000);
     }
 }
