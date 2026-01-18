@@ -516,6 +516,81 @@ class VideoService {
       throw error
     }
   }
+
+  /**
+   * Get Bunny playback data for a video (authenticated)
+   * Returns HLS URL, thumbnail, and available resolutions
+   */
+  async getBunnyPlayback(id) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/bunny/videos/${id}/playback`, {
+        method: 'GET',
+        headers: getAuthHeaders()
+      })
+
+      if (handleUnauthorized(response)) return null
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}))
+        throw new Error(data.message || `Failed to fetch Bunny playback: ${response.statusText}`)
+      }
+
+      return await response.json()
+    } catch (error) {
+      console.error('Error fetching Bunny playback:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Get Bunny playback data for a shared video (public)
+   * Returns HLS URL, thumbnail, and available resolutions
+   */
+  async getBunnySharedPlayback(shareToken) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/bunny/share/${shareToken}/playback`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
+      })
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}))
+        throw new Error(data.message || `Failed to fetch Bunny playback: ${response.statusText}`)
+      }
+
+      return await response.json()
+    } catch (error) {
+      console.error('Error fetching Bunny shared playback:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Get Bunny video status
+   * Returns encoding status, progress, and available resolutions
+   */
+  async getBunnyStatus(id) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/bunny/videos/${id}/status`, {
+        method: 'GET',
+        headers: getAuthHeaders()
+      })
+
+      if (handleUnauthorized(response)) return null
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch Bunny status: ${response.statusText}`)
+      }
+
+      return await response.json()
+    } catch (error) {
+      console.error('Error fetching Bunny status:', error)
+      throw error
+    }
+  }
 }
 
 export default new VideoService()

@@ -45,7 +45,7 @@ class VideoManager
                 'is_converting' => in_array($video->conversion_status, ['pending', 'processing']),
                 'hls_status' => $video->hls_status ?? 'pending',
                 'hls_progress' => $video->hls_progress ?? 0,
-                'is_hls_ready' => $video->isHlsReady(),
+                'is_hls_ready' => $video->isReadyForPlayback(),
                 'transcription_status' => $video->transcription_status ?? 'pending',
                 'transcription_progress' => $video->transcription_progress ?? 0,
                 'is_transcription_ready' => $video->isTranscriptionReady(),
@@ -53,6 +53,10 @@ class VideoManager
                 'is_summary_ready' => $video->isSummaryReady(),
                 'created_at' => $video->created_at->toISOString(),
                 'updated_at' => $video->updated_at->toISOString(),
+                // Bunny Stream fields
+                'storage_type' => $video->storage_type,
+                'bunny_status' => $video->bunny_status,
+                'bunny_video_id' => $video->bunny_video_id,
             ];
         })->toArray();
     }
@@ -129,7 +133,7 @@ class VideoManager
             'is_converting' => $video->isConverting(),
             'hls_status' => $video->hls_status ?? 'pending',
             'hls_progress' => $video->hls_progress ?? 0,
-            'is_hls_ready' => $video->isHlsReady(),
+            'is_hls_ready' => $video->isReadyForPlayback(),
             'transcription_status' => $video->transcription_status ?? 'pending',
             'transcription_progress' => $video->transcription_progress ?? 0,
             'is_transcription_ready' => $video->isTranscriptionReady(),
@@ -137,6 +141,10 @@ class VideoManager
             'is_summary_ready' => $video->isSummaryReady(),
             'created_at' => $video->created_at->toISOString(),
             'updated_at' => $video->updated_at->toISOString(),
+            // Bunny Stream fields
+            'storage_type' => $video->storage_type,
+            'bunny_status' => $video->bunny_status,
+            'bunny_video_id' => $video->bunny_video_id,
         ];
     }
 
@@ -223,10 +231,14 @@ class VideoManager
             'views_count' => $video->views_count ?? 0,
             'reactions' => $reactions,
             'comments' => $comments,
-            'is_hls_ready' => $video->isHlsReady(),
+            'is_hls_ready' => $video->isReadyForPlayback(),
             'transcription' => $video->isTranscriptionReady() ? $video->transcription : null,
             'transcription_segments' => $video->isTranscriptionReady() ? $video->transcription_segments : null,
             'summary' => $video->isSummaryReady() ? $video->summary : null,
+            // Bunny Stream fields
+            'storage_type' => $video->storage_type,
+            'bunny_status' => $video->bunny_status,
+            'bunny_video_id' => $video->bunny_video_id,
         ];
     }
 
@@ -437,7 +449,7 @@ class VideoManager
                 'is_converting' => in_array($video->conversion_status, ['pending', 'processing']),
                 'hls_status' => $video->hls_status ?? 'pending',
                 'hls_progress' => $video->hls_progress ?? 0,
-                'is_hls_ready' => $video->isHlsReady(),
+                'is_hls_ready' => $video->isReadyForPlayback(),
                 'transcription_status' => $video->transcription_status ?? 'pending',
                 'transcription_progress' => $video->transcription_progress ?? 0,
                 'is_transcription_ready' => $video->isTranscriptionReady(),
@@ -445,6 +457,10 @@ class VideoManager
                 'is_summary_ready' => $video->isSummaryReady(),
                 'created_at' => $video->created_at->toISOString(),
                 'updated_at' => $video->updated_at->toISOString(),
+                // Bunny Stream fields
+                'storage_type' => $video->storage_type,
+                'bunny_status' => $video->bunny_status,
+                'bunny_video_id' => $video->bunny_video_id,
             ];
         })->toArray();
     }

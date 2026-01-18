@@ -159,6 +159,20 @@
                 <p class="text-white/70 text-sm font-medium">Loading video...</p>
               </div>
 
+              <!-- Bunny Encoding Progress (shown when transcoding) -->
+              <div
+                v-if="isBunnyVideo && bunnyStatus === 'transcoding' && !isPlaying"
+                class="absolute top-4 left-4 z-20 bg-black/70 backdrop-blur-sm rounded-lg px-3 py-2 flex items-center gap-2"
+              >
+                <div class="w-4 h-4 border-2 border-orange-500/30 border-t-orange-500 rounded-full animate-spin"></div>
+                <div class="text-white text-xs">
+                  <span class="font-medium">Encoding: {{ bunnyEncodeProgress }}%</span>
+                  <span v-if="bunnyAvailableResolutions.length > 0" class="text-white/60 ml-2">
+                    ({{ bunnyAvailableResolutions.join(', ') }} ready)
+                  </span>
+                </div>
+              </div>
+
               <video
                 ref="videoRef"
                 :key="video.id"
@@ -911,6 +925,13 @@ export default {
     const showQualityMenu = ref(false)
     const qualityMenuRef = ref(null)
 
+    // Bunny-specific state
+    const isBunnyVideo = ref(false)
+    const bunnyStatus = ref(null)
+    const bunnyEncodeProgress = ref(0)
+    const bunnyAvailableResolutions = ref([])
+    const bunnyPlaybackData = ref(null)
+
     let controlsTimeout = null
     let toastTimeout = null
 
@@ -1053,6 +1074,46 @@ export default {
           views_count: fetchedVideo.views_count,
           createdAt: new Date(fetchedVideo.created_at),
           conversion_status: fetchedVideo.conversion_status,
+          storage_type: fetchedVideo.storage_type,
+          bunny_status: fetchedVideo.bunny_status,
+        }
+
+        // Check if this is a Bunny video
+        if (fetchedVideo.storage_type === 'bunny') {
+          isBunnyVideo.value = true
+          bunnyStatus.value = fetchedVideo.bunny_status
+
+          // Fetch Bunny playback data if video is ready or transcoding
+          if (['ready', 'transcoding'].includes(fetchedVideo.bunny_status)) {
+            try {
+              const bunnyData = await videoService.getBunnyPlayback(fetchedVideo.id)
+              bunnyPlaybackData.value = bunnyData
+
+              // Update video with Bunny playback URLs
+              if (bunnyData.playback) {
+                video.value.hls_url = bunnyData.playback.hlsUrl
+                video.value.is_hls_ready = true
+                if (bunnyData.playback.thumbnailUrl) {
+                  video.value.thumbnail = bunnyData.playback.thumbnailUrl
+                }
+              }
+
+              // Store Bunny-specific data
+              if (bunnyData.video) {
+                bunnyStatus.value = bunnyData.video.status
+                bunnyEncodeProgress.value = bunnyData.video.encode_progress || 0
+                bunnyAvailableResolutions.value = bunnyData.video.available_resolutions || []
+
+                // Update duration if available
+                if (bunnyData.video.duration && bunnyData.video.duration > 0) {
+                  video.value.duration = bunnyData.video.duration
+                  duration.value = bunnyData.video.duration
+                }
+              }
+            } catch (bunnyErr) {
+              console.warn('Failed to fetch Bunny playback, using fallback:', bunnyErr)
+            }
+          }
         }
 
         setTimeout(() => initHls(), 100)
@@ -1802,6 +1863,8 @@ export default {
       summary, summaryStatus, summaryError, formattedSummary,
       // Copy
       copiedTranscript, copiedSummary, copyTranscript, copySummary,
+      // Bunny
+      isBunnyVideo, bunnyStatus, bunnyEncodeProgress, bunnyAvailableResolutions,
     }
   }
 }
