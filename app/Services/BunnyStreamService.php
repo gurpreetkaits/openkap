@@ -76,6 +76,11 @@ class BunnyStreamService
      */
     public function createVideo(string $title, ?string $collectionId = null): array
     {
+        if (! $this->isConfigured()) {
+            Log::error('Bunny Stream: Not configured - missing BUNNY_LIBRARY_ID or BUNNY_API_KEY');
+            throw new \Exception('Bunny Stream is not configured. Check BUNNY_LIBRARY_ID and BUNNY_API_KEY environment variables.');
+        }
+
         $connector = $this->getConnector()
             ->withLogContext([
                 'operation' => 'create_video',
@@ -94,8 +99,9 @@ class BunnyStreamService
             Log::error('Bunny Stream: Failed to create video', [
                 'status' => $response->status(),
                 'body' => $response->body(),
+                'library_id' => $this->connector->getLibraryId(),
             ]);
-            throw new \Exception('Failed to create video in Bunny Stream: '.$response->body());
+            throw new \Exception('Failed to create video in Bunny Stream (HTTP '.$response->status().'): '.$response->body());
         }
 
         return $response->json();
