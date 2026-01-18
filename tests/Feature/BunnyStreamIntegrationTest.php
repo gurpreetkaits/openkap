@@ -389,7 +389,45 @@ class BunnyStreamIntegrationTest extends TestCase
                     'title',
                     'duration',
                     'resolution',
+                    'status',
                 ],
+                'playback' => [
+                    'hlsUrl',
+                    'embedUrl',
+                    'thumbnailUrl',
+                    'expiresAt',
+                ],
+            ])
+            ->assertJsonPath('video.status', 'ready');
+    }
+
+    #[Test]
+    public function user_can_get_playback_urls_for_transcoding_bunny_video(): void
+    {
+        $video = Video::factory()->create([
+            'user_id' => $this->user->id,
+            'storage_type' => 'bunny',
+            'bunny_video_id' => 'transcoding-video-123',
+            'bunny_status' => 'transcoding',
+        ]);
+
+        $this->mock(BunnyStreamService::class, function ($mock) {
+            $mock->shouldReceive('generateSignedPlaybackUrl')
+                ->once()
+                ->andReturn([
+                    'hlsUrl' => 'https://cdn.bunny.net/video123/playlist.m3u8?token=abc&expires=123',
+                    'embedUrl' => 'https://iframe.mediadelivery.net/embed/lib123/video123',
+                    'thumbnailUrl' => 'https://cdn.bunny.net/video123/thumbnail.jpg',
+                    'expiresAt' => now()->addHour()->toISOString(),
+                ]);
+        });
+
+        $response = $this->actingAs($this->user)
+            ->getJson("/api/bunny/videos/{$video->id}/playback");
+
+        $response->assertStatus(200)
+            ->assertJsonPath('video.status', 'transcoding')
+            ->assertJsonStructure([
                 'playback' => [
                     'hlsUrl',
                     'embedUrl',

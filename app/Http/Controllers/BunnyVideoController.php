@@ -269,8 +269,8 @@ class BunnyVideoController extends Controller
             ], 400);
         }
 
-        // Check if video is ready
-        if ($video->bunny_status !== 'ready') {
+        // Check if video is ready or transcoding (both can be played)
+        if (! in_array($video->bunny_status, ['ready', 'transcoding'])) {
             return response()->json([
                 'error' => 'processing',
                 'message' => 'Video is still being processed',
@@ -289,6 +289,7 @@ class BunnyVideoController extends Controller
                     'duration' => $video->duration,
                     'resolution' => $video->bunny_resolution,
                     'created_at' => $video->created_at->toISOString(),
+                    'status' => $video->bunny_status,
                 ],
                 'playback' => $playbackUrls,
             ]);
@@ -340,8 +341,8 @@ class BunnyVideoController extends Controller
             ], 400);
         }
 
-        // Check if video is ready
-        if ($video->bunny_status !== 'ready') {
+        // Check if video is ready or transcoding (both can be played)
+        if (! in_array($video->bunny_status, ['ready', 'transcoding'])) {
             return response()->json([
                 'error' => 'processing',
                 'message' => 'Video is still being processed',
@@ -360,6 +361,7 @@ class BunnyVideoController extends Controller
                     'duration' => $video->duration,
                     'resolution' => $video->bunny_resolution,
                     'created_at' => $video->created_at->toISOString(),
+                    'status' => $video->bunny_status,
                     'owner' => [
                         'name' => $video->user->name,
                         'avatar' => $video->user->avatar_url,
