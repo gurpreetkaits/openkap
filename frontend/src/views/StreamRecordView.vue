@@ -304,6 +304,7 @@ export default {
 
     // Upload a chunk
     const uploadChunk = async (chunk, index) => {
+      console.log('up ch')
       if (!sessionId.value) return
 
       isUploading.value = true
@@ -421,6 +422,7 @@ export default {
 
     const startRecording = async () => {
       try {
+        console.log('yo')
         // Check subscription status first
         let subscription = null
         try {

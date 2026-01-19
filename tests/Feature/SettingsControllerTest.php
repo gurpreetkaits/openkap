@@ -39,7 +39,7 @@ class SettingsControllerTest extends TestCase
             ])
             ->assertJson([
                 'settings' => [
-                    'auto_zoom_enabled' => true,
+                    'auto_zoom_enabled' => false,
                     'default_zoom_level' => 2.0,
                     'default_zoom_duration_ms' => 500,
                 ],
@@ -409,7 +409,7 @@ class SettingsControllerTest extends TestCase
             ->assertJson([
                 'message' => 'Settings reset to defaults',
                 'settings' => [
-                    'auto_zoom_enabled' => true,
+                    'auto_zoom_enabled' => false,
                     'default_zoom_level' => 2.0,
                     'default_zoom_duration_ms' => 500,
                 ],
@@ -419,7 +419,7 @@ class SettingsControllerTest extends TestCase
         $this->assertDatabaseHas('user_settings', [
             'user_id' => $this->user->id,
             'key' => 'auto_zoom_enabled',
-            'value' => 'true',
+            'value' => 'false',
         ]);
     }
 
@@ -438,11 +438,11 @@ class SettingsControllerTest extends TestCase
     {
         $otherUser = User::factory()->create();
 
-        // Create settings for other user
+        // Create settings for other user (true, different from default false)
         UserSetting::create([
             'user_id' => $otherUser->id,
             'key' => 'auto_zoom_enabled',
-            'value' => 'false',
+            'value' => 'true',
             'type' => 'boolean',
         ]);
 
@@ -453,7 +453,7 @@ class SettingsControllerTest extends TestCase
         $response->assertOk()
             ->assertJson([
                 'settings' => [
-                    'auto_zoom_enabled' => true, // Default, not other user's false
+                    'auto_zoom_enabled' => false, // Default, not other user's true
                 ],
             ]);
     }
