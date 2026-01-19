@@ -77,8 +77,8 @@ class ConvertVideoToMp4Job implements ShouldQueue
                 'converted_at' => now(),
             ]);
 
-            // Still dispatch HLS conversion
-            ProcessHlsConversionJob::dispatch($video)->delay(now()->addSeconds(5));
+            // Dispatch next job in pipeline (zoom if enabled, otherwise HLS)
+            $this->dispatchNextJob($video);
 
             return;
         }
@@ -195,13 +195,8 @@ class ConvertVideoToMp4Job implements ShouldQueue
                 'duration' => $duration,
             ]);
 
-            // Dispatch HLS conversion job
-            Log::info('Dispatching ProcessHlsConversionJob', [
-                'video_id' => $video->id,
-                'title' => $video->title,
-                'delay' => '5 seconds',
-            ]);
-            ProcessHlsConversionJob::dispatch($video)->delay(now()->addSeconds(5));
+            // Dispatch next job in pipeline (zoom if enabled, otherwise HLS)
+            $this->dispatchNextJob($video);
 
             // Clean up temp file if it still exists
             if (file_exists($outputPath)) {
@@ -223,6 +218,51 @@ class ConvertVideoToMp4Job implements ShouldQueue
 
             // Re-throw to trigger retry
             throw $e;
+        }
+    }
+
+    /**
+     * Dispatch the next job in the processing pipeline.
+     * If zoom is enabled, dispatch ApplyZoomEffectsJob first.
+     * Otherwise, go directly to HLS conversion.
+     */
+    private function dispatchNextJob(Video $video): void
+    {
+        // Load zoom settings and user settings relationships
+        $video->load(['zoomSettings', 'user']);
+
+        $isZoomEnabled = $video->isZoomEnabled();
+        $hasZoomEvents = $video->hasZoomEventsToProcess();
+        $userAutoZoomEnabled = $video->user?->isAutoZoomEnabled() ?? false;
+
+        Log::info('Checking zoom settings for next job', [
+            'video_id' => $video->id,
+            'has_zoom_settings' => $video->zoomSettings !== null,
+            'is_zoom_enabled' => $isZoomEnabled,
+            'has_zoom_events' => $hasZoomEvents,
+            'zoom_event_count' => $video->getZoomEventCount(),
+            'user_auto_zoom_enabled' => $userAutoZoomEnabled,
+        ]);
+
+        if ($isZoomEnabled && $hasZoomEvents) {
+            Log::info('Dispatching ApplyZoomEffectsJob', [
+                'video_id' => $video->id,
+                'title' => $video->title,
+                'zoom_event_count' => $video->getZoomEventCount(),
+            ]);
+            ApplyZoomEffectsJob::dispatch($video)->delay(now()->addSeconds(5));
+        } else {
+            $reason = ! $isZoomEnabled ? 'zoom_disabled_for_video' : 'no_zoom_events';
+            if (! $userAutoZoomEnabled && ! $video->zoomSettings) {
+                $reason = 'user_auto_zoom_disabled';
+            }
+
+            Log::info('Dispatching ProcessHlsConversionJob (skipping zoom)', [
+                'video_id' => $video->id,
+                'title' => $video->title,
+                'reason' => $reason,
+            ]);
+            ProcessHlsConversionJob::dispatch($video)->delay(now()->addSeconds(5));
         }
     }
 

@@ -11,6 +11,7 @@ use App\Http\Controllers\PlaylistController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReactionController;
 use App\Http\Controllers\SettingController;
+use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\VideoController;
 use App\Http\Controllers\VideoViewController;
@@ -120,6 +121,13 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/{id}', [NotificationController::class, 'destroy']);
     });
 
+    // User settings routes (using /user/settings to avoid conflict with public /settings)
+    Route::prefix('user/settings')->group(function () {
+        Route::get('/', [SettingsController::class, 'index']);
+        Route::put('/', [SettingsController::class, 'update']);
+        Route::post('/reset', [SettingsController::class, 'reset']);
+    });
+
     // Feedback routes (rate limited: 3 per hour)
     Route::prefix('feedback')->group(function () {
         Route::get('/', [FeedbackController::class, 'index']);
@@ -167,6 +175,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/{id}/transcription/status', [VideoController::class, 'transcriptionStatus']);
         Route::post('/{id}/summary', [VideoController::class, 'requestSummary']);
         Route::get('/{id}/summary', [VideoController::class, 'getSummary']);
+
+        // Zoom effects
+        Route::put('/{id}/zoom-settings', [VideoController::class, 'updateZoomSettings']);
+        Route::get('/{id}/zoom-events', [VideoController::class, 'getZoomEvents']);
+        Route::put('/{id}/zoom-events', [VideoController::class, 'updateZoomEvents']);
+        Route::get('/{id}/zoom-status', [VideoController::class, 'getZoomStatus']);
     });
 
     // Playlist routes

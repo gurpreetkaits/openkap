@@ -192,6 +192,56 @@ class User extends Authenticatable
     }
 
     /**
+     * Relationship: User has many settings (key-value pairs)
+     */
+    public function settings()
+    {
+        return $this->hasMany(UserSetting::class);
+    }
+
+    /**
+     * Get a specific setting value for this user.
+     */
+    public function getSetting(string $key): mixed
+    {
+        $setting = $this->settings()->where('key', $key)->first();
+
+        if ($setting) {
+            return $setting->typed_value;
+        }
+
+        return UserSetting::getDefault($key);
+    }
+
+    /**
+     * Get user settings or defaults if not set.
+     */
+    public function getSettingsOrDefaults(): array
+    {
+        $settings = $this->settings()->pluck('value', 'key')->toArray();
+        $defaults = UserSetting::getDefaults();
+        $result = [];
+
+        foreach ($defaults as $key => $default) {
+            if (isset($settings[$key])) {
+                $result[$key] = UserSetting::castValue($settings[$key], $default['type']);
+            } else {
+                $result[$key] = $default['value'];
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * Check if auto zoom is enabled for this user.
+     */
+    public function isAutoZoomEnabled(): bool
+    {
+        return (bool) $this->getSetting('auto_zoom_enabled');
+    }
+
+    /**
      * Relationship: User has many subscription history records
      */
     public function subscriptionHistory()

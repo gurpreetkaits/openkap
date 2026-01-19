@@ -54,6 +54,46 @@
             />
             <span class="text-[10px] text-gray-500 font-medium mt-0.5">{{ formatTimeAgo(video.createdAt) }}</span>
           </div>
+          <!-- Zoom Status Badge -->
+          <div v-if="video.zoom_enabled" class="ml-2">
+            <span
+              v-if="video.zoom_status === 'processing'"
+              class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-700"
+            >
+              <svg class="w-3 h-3 mr-1 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+              </svg>
+              Zoom {{ video.zoom_progress || 0 }}%
+            </span>
+            <span
+              v-else-if="video.is_zoom_ready"
+              class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700"
+            >
+              <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/>
+              </svg>
+              Zoom ({{ video.zoom_event_count }} events)
+            </span>
+            <span
+              v-else-if="video.zoom_status === 'failed'"
+              class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700"
+            >
+              <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              Zoom Failed
+            </span>
+            <span
+              v-else-if="video.zoom_status === 'pending' && video.zoom_event_count > 0"
+              class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600"
+            >
+              <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              Zoom Pending
+            </span>
+          </div>
         </div>
 
         <div class="flex items-center gap-2">
@@ -1076,6 +1116,12 @@ export default {
           conversion_status: fetchedVideo.conversion_status,
           storage_type: fetchedVideo.storage_type,
           bunny_status: fetchedVideo.bunny_status,
+          // Zoom fields
+          zoom_enabled: fetchedVideo.zoom_enabled,
+          zoom_status: fetchedVideo.zoom_status,
+          zoom_progress: fetchedVideo.zoom_progress,
+          is_zoom_ready: fetchedVideo.is_zoom_ready,
+          zoom_event_count: fetchedVideo.zoom_event_count,
         }
 
         // Check if this is a Bunny video

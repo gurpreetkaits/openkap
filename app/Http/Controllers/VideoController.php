@@ -413,4 +413,88 @@ class VideoController extends Controller
 
         return response()->json($summary);
     }
+
+    // ============================================
+    // ZOOM EFFECT ENDPOINTS
+    // ============================================
+
+    public function updateZoomSettings(Request $request, $id)
+    {
+        $request->validate([
+            'zoom_enabled' => 'sometimes|boolean',
+            'zoom_level' => 'sometimes|numeric|min:1.2|max:4',
+            'zoom_duration_ms' => 'sometimes|integer|min:100|max:2000',
+        ]);
+
+        $video = $this->videoManager->findVideoOrFail($id);
+
+        if ($video->user_id !== Auth::id()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $video = $this->videoManager->updateZoomSettings($video, $request->only([
+            'zoom_enabled',
+            'zoom_level',
+            'zoom_duration_ms',
+        ]));
+
+        return response()->json([
+            'message' => 'Zoom settings updated',
+            'zoom' => $this->videoManager->getZoomStatus($video),
+        ]);
+    }
+
+    public function getZoomEvents($id)
+    {
+        $video = $this->videoManager->findVideoOrFail($id);
+
+        if ($video->user_id !== Auth::id()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $events = $this->videoManager->getZoomEvents($video);
+
+        return response()->json([
+            'zoom_events' => $events,
+            'zoom_enabled' => $video->isZoomEnabled(),
+            'zoom_level' => $video->getZoomLevel(),
+            'zoom_duration_ms' => $video->getZoomDurationMs(),
+        ]);
+    }
+
+    public function updateZoomEvents(Request $request, $id)
+    {
+        $request->validate([
+            'zoom_events' => 'required|array',
+            'zoom_events.recording_resolution' => 'required|array',
+            'zoom_events.recording_resolution.width' => 'required|integer',
+            'zoom_events.recording_resolution.height' => 'required|integer',
+            'zoom_events.events' => 'required|array',
+        ]);
+
+        $video = $this->videoManager->findVideoOrFail($id);
+
+        if ($video->user_id !== Auth::id()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $video = $this->videoManager->updateZoomEvents($video, $request->input('zoom_events'));
+
+        return response()->json([
+            'message' => 'Zoom events updated',
+            'zoom_event_count' => $video->getZoomEventCount(),
+            'zoom_status' => $video->getZoomStatus(),
+        ]);
+    }
+
+    public function getZoomStatus($id)
+    {
+        $video = $this->videoManager->findVideoOrFail($id);
+
+        if ($video->user_id !== Auth::id()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        return response()->json($this->videoManager->getZoomStatus($video));
+    }
 }

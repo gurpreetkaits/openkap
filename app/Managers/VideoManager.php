@@ -9,13 +9,15 @@ use App\Models\Reaction;
 use App\Models\User;
 use App\Models\Video;
 use App\Repositories\VideoRepository;
+use App\Repositories\VideoZoomSettingRepository;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Log;
 
 class VideoManager
 {
     public function __construct(
-        protected VideoRepository $videos
+        protected VideoRepository $videos,
+        protected VideoZoomSettingRepository $zoomSettings
     ) {}
 
     public function getUserVideos(int $userId): array
@@ -607,6 +609,103 @@ class VideoManager
             'transcription' => $this->getTranscription($video),
             'summary' => $this->getSummary($video),
             'status' => $this->getTranscriptionStatus($video),
+        ];
+    }
+
+    // ============================================
+    // ZOOM EFFECT METHODS
+    // ============================================
+
+    public function createZoomSettings(Video $video, array $data): Video
+    {
+        $this->zoomSettings->createForVideo($video, [
+            'enabled' => $data['zoom_enabled'] ?? true,
+            'zoom_level' => max(1.2, min(4.0, (float) ($data['zoom_level'] ?? 2.0))),
+            'duration_ms' => max(100, min(2000, (int) ($data['zoom_duration_ms'] ?? 500))),
+            'events' => $data['zoom_events']['events'] ?? null,
+            'recording_resolution' => $data['zoom_events']['recording_resolution'] ?? null,
+            'status' => 'pending',
+        ]);
+
+        return $video->fresh('zoomSettings');
+    }
+
+    public function updateZoomSettings(Video $video, array $data): Video
+    {
+        $settings = $video->zoomSettings;
+
+        if (! $settings) {
+            return $this->createZoomSettings($video, $data);
+        }
+
+        $updateData = [];
+
+        if (isset($data['zoom_enabled'])) {
+            $updateData['enabled'] = (bool) $data['zoom_enabled'];
+        }
+
+        if (isset($data['zoom_level'])) {
+            $updateData['zoom_level'] = max(1.2, min(4.0, (float) $data['zoom_level']));
+        }
+
+        if (isset($data['zoom_duration_ms'])) {
+            $updateData['duration_ms'] = max(100, min(2000, (int) $data['zoom_duration_ms']));
+        }
+
+        $this->zoomSettings->updateSettings($settings, $updateData);
+
+        return $video->fresh('zoomSettings');
+    }
+
+    public function updateZoomEvents(Video $video, array $zoomEvents): Video
+    {
+        $settings = $video->zoomSettings;
+
+        if (! $settings) {
+            return $this->createZoomSettings($video, [
+                'zoom_events' => $zoomEvents,
+            ]);
+        }
+
+        $this->zoomSettings->updateEvents(
+            $settings,
+            $zoomEvents['events'] ?? [],
+            $zoomEvents['recording_resolution'] ?? null
+        );
+
+        return $video->fresh('zoomSettings');
+    }
+
+    public function getZoomStatus(Video $video): array
+    {
+        $video->load('zoomSettings');
+
+        return [
+            'zoom_enabled' => $video->isZoomEnabled(),
+            'zoom_level' => $video->getZoomLevel(),
+            'zoom_duration_ms' => $video->getZoomDurationMs(),
+            'zoom_status' => $video->getZoomStatus(),
+            'zoom_progress' => $video->getZoomProgress(),
+            'zoom_error' => $video->zoomSettings?->error,
+            'zoom_event_count' => $video->getZoomEventCount(),
+            'is_zoom_processing' => $video->isZoomProcessing(),
+            'is_zoom_ready' => $video->isZoomReady(),
+            'is_zoom_failed' => $video->isZoomFailed(),
+            'zoom_message' => $video->getZoomStatusMessage(),
+        ];
+    }
+
+    public function getZoomEvents(Video $video): ?array
+    {
+        $settings = $video->zoomSettings;
+
+        if (! $settings || ! $settings->events) {
+            return null;
+        }
+
+        return [
+            'recording_resolution' => $settings->recording_resolution,
+            'events' => $settings->events,
         ];
     }
 }

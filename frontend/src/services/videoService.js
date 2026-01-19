@@ -591,6 +591,104 @@ class VideoService {
       throw error
     }
   }
+
+  // ============================================
+  // ZOOM EFFECT METHODS
+  // ============================================
+
+  /**
+   * Update zoom settings for a video
+   */
+  async updateZoomSettings(id, settings) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/videos/${id}/zoom-settings`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(settings)
+      })
+
+      if (handleUnauthorized(response)) return null
+
+      if (!response.ok) {
+        throw new Error(`Failed to update zoom settings: ${response.statusText}`)
+      }
+
+      return await response.json()
+    } catch (error) {
+      console.error('Error updating zoom settings:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Get zoom events for a video
+   */
+  async getZoomEvents(id) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/videos/${id}/zoom-events`, {
+        method: 'GET',
+        headers: getAuthHeaders()
+      })
+
+      if (handleUnauthorized(response)) return null
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch zoom events: ${response.statusText}`)
+      }
+
+      return await response.json()
+    } catch (error) {
+      console.error('Error fetching zoom events:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Update zoom events for a video
+   */
+  async updateZoomEvents(id, zoomEvents) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/videos/${id}/zoom-events`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ zoom_events: zoomEvents })
+      })
+
+      if (handleUnauthorized(response)) return null
+
+      if (!response.ok) {
+        throw new Error(`Failed to update zoom events: ${response.statusText}`)
+      }
+
+      return await response.json()
+    } catch (error) {
+      console.error('Error updating zoom events:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Get zoom status for a video
+   */
+  async getZoomStatus(id) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/videos/${id}/zoom-status`, {
+        method: 'GET',
+        headers: getAuthHeaders()
+      })
+
+      if (handleUnauthorized(response)) return null
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch zoom status: ${response.statusText}`)
+      }
+
+      return await response.json()
+    } catch (error) {
+      console.error('Error fetching zoom status:', error)
+      throw error
+    }
+  }
 }
 
 export default new VideoService()

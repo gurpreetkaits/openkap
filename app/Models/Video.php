@@ -94,6 +94,14 @@ class Video extends Model implements HasMedia
     }
 
     /**
+     * Get the zoom settings for this video.
+     */
+    public function zoomSettings()
+    {
+        return $this->hasOne(VideoZoomSetting::class);
+    }
+
+    /**
      * Get all comments for the video.
      */
     public function comments()
@@ -591,5 +599,109 @@ class Video extends Model implements HasMedia
         }
 
         return 'pending';
+    }
+
+    // ============================================
+    // ZOOM EFFECT METHODS
+    // ============================================
+
+    /**
+     * Check if zoom effects are enabled for this video.
+     */
+    public function isZoomEnabled(): bool
+    {
+        return $this->zoomSettings?->enabled ?? false;
+    }
+
+    /**
+     * Check if zoom effects are processing.
+     */
+    public function isZoomProcessing(): bool
+    {
+        return $this->zoomSettings?->isProcessing() ?? false;
+    }
+
+    /**
+     * Check if zoom effects have been applied.
+     */
+    public function isZoomReady(): bool
+    {
+        return $this->zoomSettings?->isCompleted() ?? false;
+    }
+
+    /**
+     * Check if zoom processing failed.
+     */
+    public function isZoomFailed(): bool
+    {
+        return $this->zoomSettings?->isFailed() ?? false;
+    }
+
+    /**
+     * Check if zoom effects are pending.
+     */
+    public function isZoomPending(): bool
+    {
+        return $this->zoomSettings?->isPending() ?? false;
+    }
+
+    /**
+     * Get zoom status message.
+     */
+    public function getZoomStatusMessage(): string
+    {
+        if (! $this->zoomSettings) {
+            return 'Zoom effects disabled';
+        }
+
+        return $this->zoomSettings->getStatusMessage();
+    }
+
+    /**
+     * Get the number of zoom events.
+     */
+    public function getZoomEventCount(): int
+    {
+        return $this->zoomSettings?->getEventCount() ?? 0;
+    }
+
+    /**
+     * Check if video has zoom events that need processing.
+     */
+    public function hasZoomEventsToProcess(): bool
+    {
+        return $this->zoomSettings?->hasEventsToProcess() ?? false;
+    }
+
+    /**
+     * Get zoom status string.
+     */
+    public function getZoomStatus(): ?string
+    {
+        return $this->zoomSettings?->status;
+    }
+
+    /**
+     * Get zoom progress.
+     */
+    public function getZoomProgress(): int
+    {
+        return $this->zoomSettings?->progress ?? 0;
+    }
+
+    /**
+     * Get zoom level.
+     */
+    public function getZoomLevel(): float
+    {
+        return $this->zoomSettings?->zoom_level ?? 2.0;
+    }
+
+    /**
+     * Get zoom duration in ms.
+     */
+    public function getZoomDurationMs(): int
+    {
+        return $this->zoomSettings?->duration_ms ?? 500;
     }
 }

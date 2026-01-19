@@ -7,6 +7,8 @@ use App\Jobs\GenerateThumbnailJob;
 use App\Jobs\UploadToBunnyJob;
 use App\Models\User;
 use App\Models\Video;
+use App\Models\VideoZoomSetting;
+use App\Repositories\UserSettingRepository;
 use App\Services\BunnyStreamService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -16,7 +18,8 @@ use Illuminate\Support\Str;
 class StreamVideoController extends Controller
 {
     public function __construct(
-        protected BunnyStreamService $bunnyService
+        protected BunnyStreamService $bunnyService,
+        protected UserSettingRepository $userSettings
     ) {}
 
     /**
@@ -175,6 +178,14 @@ class StreamVideoController extends Controller
         $request->validate([
             'duration' => 'nullable|integer',
             'title' => 'nullable|string|max:255',
+            'zoom_enabled' => 'nullable|boolean',
+            'zoom_level' => 'nullable|numeric|min:1.2|max:4',
+            'zoom_duration_ms' => 'nullable|integer|min:100|max:2000',
+            'zoom_events' => 'nullable|array',
+            'zoom_events.recording_resolution' => 'nullable|array',
+            'zoom_events.recording_resolution.width' => 'nullable|integer',
+            'zoom_events.recording_resolution.height' => 'nullable|integer',
+            'zoom_events.events' => 'nullable|array',
         ]);
 
         $sessionDir = storage_path("app/temp/stream-uploads/{$sessionId}");
@@ -217,14 +228,49 @@ class StreamVideoController extends Controller
 
         // Create Video record
         $title = $request->title ?? $metadata['title'];
-        $video = Video::create([
+        $videoData = [
             'user_id' => $userId,
             'title' => $title,
             'description' => null,
             'duration' => $request->duration ?? 0,
             'is_public' => true,
             'storage_type' => $useBunny ? 'bunny' : 'local',
-            'bunny_status' => $useBunny ? 'pending' : null,
+        ];
+
+        if ($useBunny) {
+            $videoData['bunny_status'] = 'pending';
+        }
+
+        $video = Video::create($videoData);
+
+        // Get user for settings check
+        $user = User::find($userId);
+
+        // Check user's auto_zoom_enabled setting
+        $userAutoZoomEnabled = $user ? $this->userSettings->isAutoZoomEnabled($user) : false;
+        $userZoomLevel = $user ? $this->userSettings->get($user, 'default_zoom_level') : 2.0;
+        $userZoomDuration = $user ? $this->userSettings->get($user, 'default_zoom_duration_ms') : 500;
+
+        // Determine if zoom should be enabled for this video
+        // Priority: request value > user setting
+        $zoomEnabled = $request->has('zoom_enabled')
+            ? $request->boolean('zoom_enabled')
+            : $userAutoZoomEnabled;
+
+        // Always create zoom settings to store events for every video
+        // Events are tracked regardless of zoom enabled status
+        // Zoom processing only happens if enabled is true
+        $zoomEvents = $request->input('zoom_events');
+
+        $zoomSettings = VideoZoomSetting::create([
+            'video_id' => $video->id,
+            'enabled' => $zoomEnabled,  // Only process zoom if enabled
+            'zoom_level' => $request->input('zoom_level', $userZoomLevel),
+            'duration_ms' => $request->input('zoom_duration_ms', $userZoomDuration),
+            'events' => is_array($zoomEvents) ? ($zoomEvents['events'] ?? null) : null,
+            'recording_resolution' => is_array($zoomEvents) ? ($zoomEvents['recording_resolution'] ?? null) : null,
+            'status' => $zoomEnabled ? 'pending' : 'disabled',
+            'progress' => 0,
         ]);
 
         // Add video to media library

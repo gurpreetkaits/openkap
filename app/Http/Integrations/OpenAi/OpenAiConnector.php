@@ -3,7 +3,7 @@
 namespace App\Http\Integrations\OpenAi;
 
 use App\Http\Integrations\BaseConnector;
-use Saloon\Http\Auth\TokenAuthentication;
+use Saloon\Http\Auth\TokenAuthenticator;
 
 class OpenAiConnector extends BaseConnector
 {
@@ -35,9 +35,9 @@ class OpenAiConnector extends BaseConnector
     /**
      * Default authentication using Bearer token
      */
-    protected function defaultAuth(): TokenAuthentication
+    protected function defaultAuth(): TokenAuthenticator
     {
-        return new TokenAuthentication($this->apiKey);
+        return new TokenAuthenticator($this->apiKey);
     }
 
     /**

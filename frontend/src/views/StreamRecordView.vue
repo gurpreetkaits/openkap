@@ -74,6 +74,18 @@
           </label>
         </div>
 
+        <!-- Zoom Settings -->
+        <div class="max-w-md mx-auto mb-8">
+          <ZoomSettingsPanel
+            v-model:zoomEnabled="zoomTracking.zoomEnabled.value"
+            v-model:zoomLevel="zoomTracking.zoomLevel.value"
+            v-model:zoomDurationMs="zoomTracking.zoomDurationMs.value"
+            :eventCount="zoomTracking.eventCount.value"
+            :clickEventCount="zoomTracking.clickEventCount.value"
+            :keyboardEventCount="zoomTracking.keyboardEventCount.value"
+          />
+        </div>
+
         <!-- Start Recording Button -->
         <button
           @click="startRecording"
@@ -92,7 +104,8 @@
 
         <!-- Help Text -->
         <p class="mt-6 text-sm text-gray-500">
-          Click to select what to share and start recording
+          <span v-if="!settingsLoaded">Loading settings...</span>
+          <span v-else>Click to select what to share and start recording</span>
         </p>
       </div>
 
@@ -181,11 +194,23 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useAuth } from '@/stores/auth'
 import { buildApiUrl } from '@/config/api'
 import toast from '@/services/toastService'
+import settingsService from '@/services/settingsService'
+import { useZoomTracking } from '@/composables/useZoomTracking'
+import ZoomSettingsPanel from '@/components/Zoom/ZoomSettingsPanel.vue'
 
 export default {
   name: 'RecordView',
+  components: {
+    ZoomSettingsPanel
+  },
   setup() {
     const auth = useAuth()
+
+    // Zoom tracking
+    const zoomTracking = useZoomTracking()
+
+    // Settings loading state
+    const settingsLoaded = ref(false)
 
     // Recording state
     const isStartingRecording = ref(false)
@@ -219,7 +244,7 @@ export default {
     let chunkIndex = 0
 
     const canRecord = computed(() => {
-      return recordingOptions.value.screen
+      return recordingOptions.value.screen && settingsLoaded.value
     })
 
     const formatTime = (seconds) => {
@@ -328,6 +353,22 @@ export default {
       // Wait for any pending uploads
       await processUploadQueue()
 
+      // Build request body with zoom settings and events
+      const zoomSettings = zoomTracking.getZoomSettings()
+      const requestBody = {
+        duration: recordingTime.value,
+        zoom_enabled: zoomSettings.zoom_enabled,
+        zoom_level: zoomSettings.zoom_level,
+        zoom_duration_ms: zoomSettings.zoom_duration_ms,
+        zoom_events: zoomSettings.zoom_events
+      }
+
+      // Debug logging - check if events are being sent
+      console.log('=== Complete Upload Debug ===')
+      console.log('Zoom settings:', zoomSettings)
+      console.log('Events count:', zoomSettings.zoom_events?.events?.length ?? 0)
+      console.log('Request body:', JSON.stringify(requestBody, null, 2))
+
       const response = await fetch(buildApiUrl(`/api/stream/${sessionId.value}/complete`), {
         method: 'POST',
         headers: {
@@ -335,9 +376,7 @@ export default {
           'Accept': 'application/json',
           'Authorization': `Bearer ${auth.token.value}`
         },
-        body: JSON.stringify({
-          duration: recordingTime.value
-        })
+        body: JSON.stringify(requestBody)
       })
 
       if (!response.ok) {
@@ -381,6 +420,8 @@ export default {
     }
 
     const startRecording = async () => {
+      console.log('!!! START RECORDING CALLED !!!')
+      alert('Start recording clicked - if you see this, code is updated!')
       try {
         // Check subscription status first
         let subscription = null
@@ -494,7 +535,9 @@ export default {
           videoBitsPerSecond = 8000000 // 8 Mbps for 720p and below
         }
 
-        console.log(`Video resolution: ${width}x${height}, using bitrate: ${videoBitsPerSecond / 1000000} Mbps`)
+        // Always start event tracking for every video (regardless of zoom enabled)
+        // Events are stored for all videos, zoom processing only happens if enabled
+        zoomTracking.startTracking({ width, height })
 
         // Try VP9 for better compression at high resolutions
         let options = {
@@ -532,6 +575,9 @@ export default {
           isRecording.value = false
           hasRecorded.value = true
           isFinishing.value = true
+
+          // Stop event tracking (always running during recording)
+          zoomTracking.stopTracking()
 
           // Clean up streams
           if (stream) {
@@ -626,8 +672,24 @@ export default {
       isPaused.value = false
     }
 
-    onMounted(() => {
-      // Component mounted
+    onMounted(async () => {
+      console.log('!!! STREAM RECORD VIEW MOUNTED - CODE IS UPDATED !!!')
+      // Load user settings and apply defaults for zoom
+      try {
+        const userSettings = await settingsService.getUserSettings()
+        if (userSettings) {
+          // Apply user's default zoom settings
+          zoomTracking.zoomEnabled.value = userSettings.auto_zoom_enabled ?? true
+          zoomTracking.zoomLevel.value = userSettings.default_zoom_level ?? 2.0
+          zoomTracking.zoomDurationMs.value = userSettings.default_zoom_duration_ms ?? 500
+        }
+      } catch (error) {
+        console.error('Failed to load user settings:', error)
+        // Use defaults if settings can't be loaded
+        zoomTracking.zoomEnabled.value = true
+      } finally {
+        settingsLoaded.value = true
+      }
     })
 
     onUnmounted(() => {
@@ -667,11 +729,14 @@ export default {
       recordingOptions,
       previewVideo,
       canRecord,
+      settingsLoaded,
       // Upload state
       uploadedBytes,
       chunksUploaded,
       isUploading,
       uploadProgress,
+      // Zoom tracking
+      zoomTracking,
       // Methods
       formatTime,
       formatBytes,
