@@ -420,8 +420,6 @@ export default {
     }
 
     const startRecording = async () => {
-      console.log('!!! START RECORDING CALLED !!!')
-      alert('Start recording clicked - if you see this, code is updated!')
       try {
         // Check subscription status first
         let subscription = null
@@ -673,20 +671,19 @@ export default {
     }
 
     onMounted(async () => {
-      console.log('!!! STREAM RECORD VIEW MOUNTED - CODE IS UPDATED !!!')
       // Load user settings and apply defaults for zoom
       try {
         const userSettings = await settingsService.getUserSettings()
         if (userSettings) {
           // Apply user's default zoom settings
-          zoomTracking.zoomEnabled.value = userSettings.auto_zoom_enabled ?? true
+          zoomTracking.zoomEnabled.value = userSettings.auto_zoom_enabled ?? false
           zoomTracking.zoomLevel.value = userSettings.default_zoom_level ?? 2.0
           zoomTracking.zoomDurationMs.value = userSettings.default_zoom_duration_ms ?? 500
         }
       } catch (error) {
         console.error('Failed to load user settings:', error)
         // Use defaults if settings can't be loaded
-        zoomTracking.zoomEnabled.value = true
+        zoomTracking.zoomEnabled.value = false
       } finally {
         settingsLoaded.value = true
       }

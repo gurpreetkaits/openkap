@@ -91,7 +91,7 @@ class UserSetting extends Model
     public static function getDefaults(): array
     {
         return [
-            'auto_zoom_enabled' => ['value' => true, 'type' => 'boolean'],
+            'auto_zoom_enabled' => ['value' => false, 'type' => 'boolean'],
             'default_zoom_level' => ['value' => 2.0, 'type' => 'float'],
             'default_zoom_duration_ms' => ['value' => 500, 'type' => 'integer'],
         ];
