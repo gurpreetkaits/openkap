@@ -246,16 +246,10 @@ class StreamVideoController extends Controller
         // Get user for settings check
         $user = User::find($userId);
 
-        // Check user's auto_zoom_enabled setting
-        $userAutoZoomEnabled = $user ? $this->userSettings->isAutoZoomEnabled($user) : false;
+        // Always check zoom settings from user_settings only
+        $zoomEnabled = $user ? $this->userSettings->isAutoZoomEnabled($user) : false;
         $userZoomLevel = $user ? $this->userSettings->get($user, 'default_zoom_level') : 2.0;
         $userZoomDuration = $user ? $this->userSettings->get($user, 'default_zoom_duration_ms') : 500;
-
-        // Determine if zoom should be enabled for this video
-        // Priority: request value > user setting
-        $zoomEnabled = $request->has('zoom_enabled')
-            ? $request->boolean('zoom_enabled')
-            : $userAutoZoomEnabled;
 
         // Always create zoom settings to store events for every video
         // Events are tracked regardless of zoom enabled status

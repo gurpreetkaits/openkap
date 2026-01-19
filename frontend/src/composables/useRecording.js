@@ -1,7 +1,11 @@
 import { ref, computed, watch } from 'vue';
 import { useAuth } from '@/stores/auth';
+import { useZoomTracking } from './useZoomTracking';
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8888';
+
+// Global zoom tracking instance
+const zoomTracking = useZoomTracking();
 
 // Global recording state
 const showSetupPanel = ref(false);
@@ -218,6 +222,22 @@ export function useRecording() {
         // Process any remaining chunks in queue
         await processUploadQueue();
 
+        // Get zoom settings and events
+        const zoomSettings = zoomTracking.getZoomSettings();
+
+        const requestBody = {
+            duration: recordingDuration.value,
+            zoom_enabled: zoomSettings.zoom_enabled,
+            zoom_level: zoomSettings.zoom_level,
+            zoom_duration_ms: zoomSettings.zoom_duration_ms,
+            zoom_events: zoomSettings.zoom_events
+        };
+
+        console.log('Completing upload with zoom events:', {
+            eventsCount: zoomSettings.zoom_events?.events?.length || 0,
+            zoomEnabled: zoomSettings.zoom_enabled
+        });
+
         const response = await fetch(`${API_BASE_URL}/api/stream/${sessionId.value}/complete`, {
             method: 'POST',
             headers: {
@@ -225,9 +245,7 @@ export function useRecording() {
                 'Accept': 'application/json',
                 'Authorization': `Bearer ${getAuthToken()}`
             },
-            body: JSON.stringify({
-                duration: recordingDuration.value
-            })
+            body: JSON.stringify(requestBody)
         });
 
         if (!response.ok) {
@@ -398,7 +416,11 @@ export function useRecording() {
             // Determine codec and bitrate
             const videoTrack = stream.value.getVideoTracks()[0];
             const settings = videoTrack.getSettings();
-            const height = settings.height;
+            const width = settings.width || 1920;
+            const height = settings.height || 1080;
+
+            // Start zoom event tracking
+            zoomTracking.startTracking({ width, height });
 
             let videoBitsPerSecond;
             if (height >= 2160) videoBitsPerSecond = 40000000; // 4K: 40 Mbps
@@ -488,6 +510,9 @@ export function useRecording() {
                     stopTimer();
                     stopAudioAnalysis();
 
+                    // Stop zoom event tracking
+                    zoomTracking.stopTracking();
+
                     // Stop all tracks
                     if (stream.value) {
                         stream.value.getTracks().forEach(track => track.stop());
@@ -544,6 +569,9 @@ export function useRecording() {
         if (stream.value) {
             stream.value.getTracks().forEach(track => track.stop());
         }
+
+        // Stop zoom event tracking
+        zoomTracking.stopTracking();
 
         // Cancel the upload session
         if (sessionId.value) {

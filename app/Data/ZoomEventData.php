@@ -14,6 +14,7 @@ class ZoomEventData extends Data
         public ?string $keys = null,
         public ?int $duration_ms = null,
         public bool $zoom_enabled = true,
+        public ?string $button = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -26,12 +27,18 @@ class ZoomEventData extends Data
             keys: $data['keys'] ?? null,
             duration_ms: $data['duration_ms'] ?? null,
             zoom_enabled: $data['zoom_enabled'] ?? true,
+            button: $data['button'] ?? null,
         );
     }
 
     public function isClickEvent(): bool
     {
         return $this->type === 'click';
+    }
+
+    public function isMoveEvent(): bool
+    {
+        return $this->type === 'move';
     }
 
     public function isKeyboardEvent(): bool

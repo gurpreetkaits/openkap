@@ -1,8 +1,9 @@
 import { ref, computed } from 'vue'
 
 /**
- * Composable for tracking mouse clicks and keyboard events during screen recording.
+ * Composable for tracking mouse movements, clicks, and keyboard events during screen recording.
  * Events are captured with timestamps relative to recording start time.
+ * Mouse moves are tracked for smooth pan effects (throttled to ~30fps).
  */
 export function useZoomTracking() {
   const events = ref([])
@@ -15,10 +16,47 @@ export function useZoomTracking() {
   const zoomLevel = ref(2.0)
   const zoomDurationMs = ref(500)
 
+  // Mouse move tracking (throttled)
+  const MOVE_THROTTLE_MS = 33 // ~30fps for smooth tracking
+  let lastMoveTime = 0
+  let lastX = 0
+  let lastY = 0
+
   // Keyboard event buffer for grouping rapid keypresses
   let keyboardBuffer = ''
   let keyboardBufferTimeout = null
   let keyboardStartTime = 0
+
+  /**
+   * Handle mouse move events (throttled for performance)
+   * Captures position data for smooth pan effects
+   */
+  const handleMouseMove = (e) => {
+    if (!isTracking.value) return
+
+    const now = Date.now()
+
+    // Throttle move events to ~30fps
+    if (now - lastMoveTime < MOVE_THROTTLE_MS) return
+
+    // Skip if position hasn't changed significantly (dead zone of 5px)
+    const dx = Math.abs(e.clientX - lastX)
+    const dy = Math.abs(e.clientY - lastY)
+    if (dx < 5 && dy < 5) return
+
+    lastMoveTime = now
+    lastX = e.clientX
+    lastY = e.clientY
+
+    const event = {
+      type: 'move',
+      timestamp_ms: now - recordingStartTime.value,
+      x: e.clientX,
+      y: e.clientY
+    }
+
+    events.value.push(event)
+  }
 
   /**
    * Handle click events
@@ -28,17 +66,16 @@ export function useZoomTracking() {
   const handleClick = (e) => {
     if (!isTracking.value) return
 
-    // Get the click coordinates relative to the viewport
     const event = {
       type: 'click',
       timestamp_ms: Date.now() - recordingStartTime.value,
       x: e.clientX,
       y: e.clientY,
-      zoom_enabled: zoomEnabled.value  // Track current zoom preference
+      button: e.button === 0 ? 'left' : e.button === 2 ? 'right' : 'middle'
     }
 
     events.value.push(event)
-    console.log('[ZoomTracking] Click event captured:', event, 'Total events:', events.value.length)
+    console.log('[ZoomTracking] Click event captured:', event)
   }
 
   /**
@@ -90,8 +127,7 @@ export function useZoomTracking() {
         type: 'keyboard',
         timestamp_ms: keyboardStartTime,
         keys: keyboardBuffer,
-        duration_ms: endTime - keyboardStartTime,
-        zoom_enabled: zoomEnabled.value  // Track current zoom preference
+        duration_ms: endTime - keyboardStartTime
       }
 
       events.value.push(event)
@@ -113,8 +149,12 @@ export function useZoomTracking() {
     isTracking.value = true
     keyboardBuffer = ''
     keyboardStartTime = 0
+    lastMoveTime = 0
+    lastX = 0
+    lastY = 0
 
     // Use capture phase to ensure we catch events before any handlers stop propagation
+    document.addEventListener('mousemove', handleMouseMove, true)
     document.addEventListener('click', handleClick, true)
     document.addEventListener('keydown', handleKeydown, true)
     console.log('[ZoomTracking] Started tracking events, resolution:', resolution)
@@ -129,9 +169,14 @@ export function useZoomTracking() {
     // Flush any remaining keyboard buffer
     flushKeyboardBuffer()
 
+    document.removeEventListener('mousemove', handleMouseMove, true)
     document.removeEventListener('click', handleClick, true)
     document.removeEventListener('keydown', handleKeydown, true)
-    console.log('[ZoomTracking] Stopped tracking. Total events captured:', events.value.length)
+
+    const clickCount = events.value.filter(e => e.type === 'click').length
+    const moveCount = events.value.filter(e => e.type === 'move').length
+    const keyboardCount = events.value.filter(e => e.type === 'keyboard').length
+    console.log(`[ZoomTracking] Stopped tracking. Events: ${clickCount} clicks, ${moveCount} moves, ${keyboardCount} keyboard`)
   }
 
   /**
@@ -204,8 +249,8 @@ export function useZoomTracking() {
 
   // Computed properties
   const eventCount = computed(() => events.value.length)
-  const enabledEventCount = computed(() => events.value.filter(e => e.zoom_enabled).length)
   const clickEventCount = computed(() => events.value.filter(e => e.type === 'click').length)
+  const moveEventCount = computed(() => events.value.filter(e => e.type === 'move').length)
   const keyboardEventCount = computed(() => events.value.filter(e => e.type === 'keyboard').length)
 
   return {
@@ -219,8 +264,8 @@ export function useZoomTracking() {
 
     // Computed
     eventCount,
-    enabledEventCount,
     clickEventCount,
+    moveEventCount,
     keyboardEventCount,
 
     // Methods
