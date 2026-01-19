@@ -118,6 +118,7 @@
             Feedback
           </router-link>
 
+          <!-- Settings hidden for now
           <router-link
             to="/settings"
             class="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all group"
@@ -129,6 +130,7 @@
             </svg>
             Settings
           </router-link>
+          -->
         </nav>
       </div>
 
@@ -419,6 +421,7 @@
               Feedback
             </router-link>
 
+            <!-- Settings hidden for now
             <router-link
               to="/settings"
               @click="sidebarOpen = false"
@@ -431,6 +434,7 @@
               </svg>
               Settings
             </router-link>
+            -->
           </nav>
         </div>
 
