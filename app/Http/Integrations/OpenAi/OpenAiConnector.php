@@ -23,12 +23,16 @@ class OpenAiConnector extends BaseConnector
 
     /**
      * Default headers
+     *
+     * Note: Content-Type is intentionally not set here.
+     * Saloon automatically sets the correct Content-Type based on the request body type:
+     * - HasJsonBody -> application/json
+     * - HasMultipartBody -> multipart/form-data (for file uploads like transcription)
      */
     protected function defaultHeaders(): array
     {
         return [
             'Accept' => 'application/json',
-            'Content-Type' => 'application/json',
         ];
     }
 
