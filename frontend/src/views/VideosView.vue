@@ -268,7 +268,7 @@
           class="relative aspect-video bg-gray-900 rounded-xl overflow-hidden mb-3 border border-gray-200/50 shadow-sm group-hover:shadow-md transition-all cursor-pointer"
           :class="{ 'ring-2 ring-orange-500 ring-offset-2': selectedVideos.includes(video.id) }"
           style="aspect-ratio: 16 / 9;"
-          @click="openVideo(video.id)"
+          @click="handleVideoClick(video.id)"
         >
           <img
             v-if="video.thumbnail"
@@ -288,10 +288,10 @@
             {{ formatDuration(video.duration) }}
           </div>
 
-          <!-- Select Checkbox (always visible when selected, shows on hover otherwise) -->
+          <!-- Select Checkbox (always visible when in selection mode or selected, shows on hover otherwise) -->
           <div
             class="absolute top-2 left-2 z-20 transition-opacity"
-            :class="selectedVideos.includes(video.id) ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'"
+            :class="selectedVideos.includes(video.id) || isSelectionMode ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'"
             @click.stop
           >
             <input
@@ -388,7 +388,7 @@
           <div class="flex justify-between items-start gap-2 mb-1">
             <h3
               class="font-medium text-gray-900 text-[14px] leading-snug truncate group-hover:text-orange-600 transition-colors cursor-pointer"
-              @click="openVideo(video.id)"
+              @click="handleVideoClick(video.id)"
             >
               {{ video.title }}
             </h3>
@@ -417,10 +417,10 @@
         :class="selectedVideos.includes(video.id)
           ? 'border-orange-300 bg-orange-50'
           : 'border-gray-200 hover:border-orange-200'"
-        @click="openVideo(video.id)"
+        @click="handleVideoClick(video.id)"
       >
-        <!-- Selection Checkbox (shown on hover or when selected) -->
-        <div class="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" :class="{ 'opacity-100': selectedVideos.includes(video.id) }">
+        <!-- Selection Checkbox (shown on hover, when selected, or when in selection mode) -->
+        <div class="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" :class="{ 'opacity-100': selectedVideos.includes(video.id) || isSelectionMode }">
           <input
             type="checkbox"
             :checked="selectedVideos.includes(video.id)"
@@ -915,6 +915,9 @@ export default {
       return selectedVideos.value.length > 0 && !isAllSelected.value
     })
 
+    // Selection mode - when at least one video is selected
+    const isSelectionMode = computed(() => selectedVideos.value.length > 0)
+
     // Delete message computed properties
     const deleteVideoMessage = computed(() => {
       return `Are you sure you want to delete '${videoToDelete.value?.title}'? This action is PERMANENT. The video will be removed from our storage and cannot be recovered.`
@@ -1063,6 +1066,15 @@ export default {
 
     const openVideo = (id) => {
       window.location.href = `/video/${id}`
+    }
+
+    // Handle video click - select if in selection mode, otherwise open video
+    const handleVideoClick = (id) => {
+      if (isSelectionMode.value) {
+        toggleVideoSelection(id)
+      } else {
+        openVideo(id)
+      }
     }
 
     const shareVideo = async (video) => {
@@ -1369,6 +1381,7 @@ export default {
       fetchVideos,
       goToRecord,
       openVideo,
+      handleVideoClick,
       shareVideo,
       embedVideo,
       downloadVideo,
@@ -1387,6 +1400,7 @@ export default {
       isBulkDeleting,
       isAllSelected,
       isPartiallySelected,
+      isSelectionMode,
       deleteVideoMessage,
       bulkDeleteMessage,
       clearSelection,
