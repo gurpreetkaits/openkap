@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\BulkDeleteVideosRequest;
 use App\Managers\VideoManager;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -161,6 +162,32 @@ class VideoController extends Controller
 
         return response()->json([
             'message' => 'Video deleted successfully',
+        ]);
+    }
+
+    public function bulkDestroy(BulkDeleteVideosRequest $request)
+    {
+        $result = $this->videoManager->bulkDeleteVideos(
+            $request->validated('video_ids'),
+            Auth::user()
+        );
+
+        if ($result['deleted'] === 0 && $result['failed'] > 0) {
+            return response()->json([
+                'message' => 'Failed to delete videos',
+                'deleted' => 0,
+                'failed' => $result['failed'],
+                'errors' => $result['errors'],
+            ], 500);
+        }
+
+        return response()->json([
+            'message' => $result['deleted'] === 1
+                ? '1 video deleted permanently'
+                : "{$result['deleted']} videos deleted permanently",
+            'deleted' => $result['deleted'],
+            'failed' => $result['failed'],
+            'errors' => $result['errors'],
         ]);
     }
 

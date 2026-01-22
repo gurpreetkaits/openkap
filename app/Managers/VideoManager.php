@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Models\Video;
 use App\Repositories\VideoRepository;
 use App\Repositories\VideoZoomSettingRepository;
+use App\Services\BunnyStreamService;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Log;
 
@@ -17,7 +18,8 @@ class VideoManager
 {
     public function __construct(
         protected VideoRepository $videos,
-        protected VideoZoomSettingRepository $zoomSettings
+        protected VideoZoomSettingRepository $zoomSettings,
+        protected BunnyStreamService $bunnyService
     ) {}
 
     public function getUserVideos(int $userId): array
@@ -180,6 +182,61 @@ class VideoManager
     {
         $this->videos->deleteVideo($video);
         $user->decrement('videos_count');
+    }
+
+    /**
+     * Bulk delete videos for a user
+     *
+     * @param  array<int>  $videoIds
+     * @return array{deleted: int, failed: int, errors: array}
+     */
+    public function bulkDeleteVideos(array $videoIds, User $user): array
+    {
+        $videos = $this->videos->findByIdsForUser($videoIds, $user->id);
+
+        $deleted = 0;
+        $failed = 0;
+        $errors = [];
+
+        foreach ($videos as $video) {
+            try {
+                // Delete from Bunny CDN if it's a Bunny video
+                if ($video->storage_type === 'bunny' && $video->bunny_video_id) {
+                    try {
+                        $this->bunnyService->deleteVideo($video->bunny_video_id);
+                    } catch (\Exception $e) {
+                        Log::warning('Failed to delete video from Bunny CDN', [
+                            'video_id' => $video->id,
+                            'bunny_video_id' => $video->bunny_video_id,
+                            'error' => $e->getMessage(),
+                        ]);
+                        // Continue with local deletion even if Bunny deletion fails
+                    }
+                }
+
+                // Delete from database (Spatie Media Library handles local file cleanup)
+                $this->videos->deleteVideo($video);
+                $user->decrement('videos_count');
+                $deleted++;
+            } catch (\Exception $e) {
+                Log::error('Failed to delete video', [
+                    'video_id' => $video->id,
+                    'error' => $e->getMessage(),
+                ]);
+                $failed++;
+                $errors[] = [
+                    'video_id' => $video->id,
+                    'title' => $video->title,
+                    'error' => $e->getMessage(),
+                ];
+            }
+        }
+
+        return [
+            'deleted' => $deleted,
+            'failed' => $failed,
+            'errors' => $errors,
+        ];
     }
 
     public function toggleSharing(Video $video): Video

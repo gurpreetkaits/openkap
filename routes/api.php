@@ -143,6 +143,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/', [VideoController::class, 'store'])
             ->middleware(CheckSubscriptionLimit::class);
 
+        // Bulk delete videos
+        Route::post('/bulk-delete', [VideoController::class, 'bulkDestroy']);
+
         Route::get('/{id}', [VideoController::class, 'show']);
         Route::get('/{id}/stream', [VideoController::class, 'stream']);
         Route::put('/{id}', [VideoController::class, 'update']);

@@ -169,6 +169,34 @@ class VideoService {
   }
 
   /**
+   * Bulk delete multiple videos
+   * @param {number[]} videoIds - Array of video IDs to delete
+   * @returns {Promise<{message: string, deleted: number, failed: number, errors: array}>}
+   */
+  async bulkDeleteVideos(videoIds) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/videos/bulk-delete`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ video_ids: videoIds })
+      })
+
+      if (handleUnauthorized(response)) return null
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}))
+        throw new Error(data.message || `Failed to delete videos: ${response.statusText}`)
+      }
+
+      const data = await response.json()
+      return data
+    } catch (error) {
+      console.error('Error bulk deleting videos:', error)
+      throw error
+    }
+  }
+
+  /**
    * Toggle video sharing status
    */
   async toggleSharing(id) {

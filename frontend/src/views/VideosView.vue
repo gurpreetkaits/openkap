@@ -31,6 +31,49 @@
       </div>
 
       <div class="flex items-center gap-3">
+        <!-- Select Mode Toggle -->
+        <button
+          @click="toggleSelectMode"
+          class="flex items-center gap-2 text-[13px] font-medium px-3 py-1.5 rounded-lg transition-all shadow-sm"
+          :class="selectMode
+            ? 'bg-orange-100 text-orange-700 border border-orange-300'
+            : 'text-gray-600 bg-white border border-gray-200 hover:bg-gray-50'"
+        >
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+          </svg>
+          {{ selectMode ? 'Cancel' : 'Select' }}
+        </button>
+
+        <!-- Bulk Actions (shown when items are selected) -->
+        <div v-if="selectMode && selectedVideos.length > 0" class="flex items-center gap-2">
+          <span class="text-[13px] font-medium text-gray-600">
+            {{ selectedVideos.length }} selected
+          </span>
+          <button
+            @click="showBulkDeleteModal = true"
+            class="flex items-center gap-2 text-[13px] font-medium text-white bg-red-600 hover:bg-red-700 px-3 py-1.5 rounded-lg transition-all shadow-sm"
+          >
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+            </svg>
+            Delete
+          </button>
+        </div>
+
+        <!-- Select All (shown in select mode) -->
+        <div v-if="selectMode" class="flex items-center gap-2 border-l border-gray-200 pl-3">
+          <input
+            type="checkbox"
+            id="select-all"
+            :checked="isAllSelected"
+            :indeterminate="isPartiallySelected"
+            @change="toggleSelectAll"
+            class="w-4 h-4 text-orange-600 bg-gray-100 border-gray-300 rounded focus:ring-orange-500 focus:ring-2"
+          />
+          <label for="select-all" class="text-[13px] text-gray-600 cursor-pointer">All</label>
+        </div>
+
         <!-- Sort Dropdown -->
         <div class="relative" ref="sortDropdownRef">
           <button
@@ -185,11 +228,23 @@
         :key="video.id"
         class="group relative"
       >
+        <!-- Selection Checkbox (shown in select mode) -->
+        <div v-if="selectMode" class="absolute top-2 left-2 z-20">
+          <input
+            type="checkbox"
+            :checked="selectedVideos.includes(video.id)"
+            @change="toggleVideoSelection(video.id)"
+            @click.stop
+            class="w-5 h-5 text-orange-600 bg-white/90 border-2 border-gray-300 rounded focus:ring-orange-500 focus:ring-2 cursor-pointer shadow-sm"
+          />
+        </div>
+
         <!-- Thumbnail -->
         <div
           class="relative aspect-video bg-gray-900 rounded-xl overflow-hidden mb-3 border border-gray-200/50 shadow-sm group-hover:shadow-md transition-all cursor-pointer"
+          :class="{ 'ring-2 ring-orange-500 ring-offset-2': selectMode && selectedVideos.includes(video.id) }"
           style="aspect-ratio: 16 / 9;"
-          @click="openVideo(video.id)"
+          @click="selectMode ? toggleVideoSelection(video.id) : openVideo(video.id)"
         >
           <img
             v-if="video.thumbnail"
@@ -286,9 +341,23 @@
       <div
         v-for="video in paginatedVideos"
         :key="video.id"
-        class="group cursor-pointer flex items-center gap-4 p-3 bg-white border border-gray-200 rounded-xl hover:border-orange-200 hover:shadow-md transition-all duration-200"
-        @click="openVideo(video.id)"
+        class="group cursor-pointer flex items-center gap-4 p-3 bg-white border rounded-xl hover:shadow-md transition-all duration-200"
+        :class="selectMode && selectedVideos.includes(video.id)
+          ? 'border-orange-300 bg-orange-50'
+          : 'border-gray-200 hover:border-orange-200'"
+        @click="selectMode ? toggleVideoSelection(video.id) : openVideo(video.id)"
       >
+        <!-- Selection Checkbox (shown in select mode) -->
+        <div v-if="selectMode" class="flex-shrink-0">
+          <input
+            type="checkbox"
+            :checked="selectedVideos.includes(video.id)"
+            @change="toggleVideoSelection(video.id)"
+            @click.stop
+            class="w-5 h-5 text-orange-600 bg-white border-2 border-gray-300 rounded focus:ring-orange-500 focus:ring-2 cursor-pointer"
+          />
+        </div>
+
         <!-- Thumbnail -->
         <div class="relative w-40 flex-shrink-0 aspect-video rounded-lg overflow-hidden bg-gray-900" style="aspect-ratio: 16 / 9;">
           <img
@@ -465,11 +534,21 @@
     <!-- Delete Video Modal -->
     <SBDeleteModal
       v-model="showDeleteModal"
-      title="Delete Video"
-      :message="`Are you sure you want to delete '${videoToDelete?.title}'? This cannot be undone.`"
+      title="Delete Video Permanently"
+      :message="deleteVideoMessage"
       :loading="isDeleting"
       @confirm="confirmDeleteVideo"
       @cancel="showDeleteModal = false"
+    />
+
+    <!-- Bulk Delete Modal -->
+    <SBDeleteModal
+      v-model="showBulkDeleteModal"
+      title="Delete Videos Permanently"
+      :message="bulkDeleteMessage"
+      :loading="isBulkDeleting"
+      @confirm="confirmBulkDelete"
+      @cancel="showBulkDeleteModal = false"
     />
 
     <!-- Upgrade Modal -->
@@ -519,6 +598,12 @@ export default {
     const showDeleteModal = ref(false)
     const videoToDelete = ref(null)
     const isDeleting = ref(false)
+
+    // Bulk delete state
+    const selectMode = ref(false)
+    const selectedVideos = ref([])
+    const showBulkDeleteModal = ref(false)
+    const isBulkDeleting = ref(false)
 
     // Upgrade modal state
     const showUpgradeModal = ref(false)
@@ -641,6 +726,26 @@ export default {
     })
 
     const showPagination = computed(() => filteredVideos.value.length > itemsPerPage)
+
+    // Selection computed properties
+    const isAllSelected = computed(() => {
+      return filteredVideos.value.length > 0 &&
+        filteredVideos.value.every(v => selectedVideos.value.includes(v.id))
+    })
+
+    const isPartiallySelected = computed(() => {
+      return selectedVideos.value.length > 0 && !isAllSelected.value
+    })
+
+    // Delete message computed properties
+    const deleteVideoMessage = computed(() => {
+      return `Are you sure you want to delete '${videoToDelete.value?.title}'? This action is PERMANENT. The video will be removed from our storage and cannot be recovered.`
+    })
+
+    const bulkDeleteMessage = computed(() => {
+      const count = selectedVideos.value.length
+      return `Are you sure you want to delete ${count} video${count > 1 ? 's' : ''}? This action is PERMANENT. These videos will be removed from our storage and Bunny CDN. They cannot be recovered.`
+    })
 
     const goToPage = (page) => {
       if (page >= 1 && page <= totalPages.value) {
@@ -835,7 +940,7 @@ export default {
       try {
         await videoService.deleteVideo(videoToDelete.value.id)
         videos.value = videos.value.filter(v => v.id !== videoToDelete.value.id)
-        toast.success('Video deleted successfully!')
+        toast.success('Video deleted permanently!')
         showDeleteModal.value = false
         videoToDelete.value = null
       } catch (err) {
@@ -843,6 +948,60 @@ export default {
         toast.error('Failed to delete video. Please try again.')
       } finally {
         isDeleting.value = false
+      }
+    }
+
+    // Selection methods
+    const toggleSelectMode = () => {
+      selectMode.value = !selectMode.value
+      if (!selectMode.value) {
+        selectedVideos.value = []
+      }
+    }
+
+    const toggleVideoSelection = (videoId) => {
+      const index = selectedVideos.value.indexOf(videoId)
+      if (index === -1) {
+        selectedVideos.value.push(videoId)
+      } else {
+        selectedVideos.value.splice(index, 1)
+      }
+    }
+
+    const toggleSelectAll = () => {
+      if (isAllSelected.value) {
+        selectedVideos.value = []
+      } else {
+        selectedVideos.value = filteredVideos.value.map(v => v.id)
+      }
+    }
+
+    const confirmBulkDelete = async () => {
+      if (selectedVideos.value.length === 0) return
+
+      isBulkDeleting.value = true
+      try {
+        const result = await videoService.bulkDeleteVideos(selectedVideos.value)
+
+        // Remove deleted videos from local state
+        videos.value = videos.value.filter(v => !selectedVideos.value.includes(v.id))
+
+        // Show appropriate message
+        if (result.failed > 0) {
+          toast.warning(`${result.deleted} video(s) deleted. ${result.failed} failed.`)
+        } else {
+          toast.success(result.message)
+        }
+
+        // Reset selection
+        showBulkDeleteModal.value = false
+        selectedVideos.value = []
+        selectMode.value = false
+      } catch (err) {
+        console.error('Failed to bulk delete videos:', err)
+        toast.error('Failed to delete videos. Please try again.')
+      } finally {
+        isBulkDeleting.value = false
       }
     }
 
@@ -944,6 +1103,19 @@ export default {
       showDeleteModal,
       videoToDelete,
       isDeleting,
+      // Bulk delete
+      selectMode,
+      selectedVideos,
+      showBulkDeleteModal,
+      isBulkDeleting,
+      isAllSelected,
+      isPartiallySelected,
+      deleteVideoMessage,
+      bulkDeleteMessage,
+      toggleSelectMode,
+      toggleVideoSelection,
+      toggleSelectAll,
+      confirmBulkDelete,
       // Upgrade modal
       showUpgradeModal,
       handleUpgradeSuccess,

@@ -53,6 +53,33 @@ class VideoRepository extends BaseRepository
         return $video->delete();
     }
 
+    /**
+     * Find multiple videos by IDs that belong to a specific user
+     *
+     * @param  array<int>  $ids
+     */
+    public function findByIdsForUser(array $ids, int $userId): Collection
+    {
+        return Video::whereIn('id', $ids)
+            ->where('user_id', $userId)
+            ->get();
+    }
+
+    /**
+     * Delete multiple videos
+     */
+    public function deleteVideos(Collection $videos): int
+    {
+        $count = 0;
+        foreach ($videos as $video) {
+            if ($video->delete()) {
+                $count++;
+            }
+        }
+
+        return $count;
+    }
+
     public function togglePublicStatus(Video $video): Video
     {
         $video->is_public = ! $video->is_public;

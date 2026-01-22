@@ -30,15 +30,11 @@ class CommentController extends Controller
             'parent_id' => 'nullable|integer|exists:comments,id',
         ]);
 
-        // For direct video ID access, user must own the video
-        // (shared video comments go through storeByToken which validates the share link)
+        // Allow any authenticated user to comment on any video
+        // (authorization is only for viewing access, not commenting)
         $video = \App\Models\Video::find($videoId);
         if (! $video) {
             return response()->json(['message' => 'Video not found'], 404);
-        }
-
-        if ($video->user_id !== Auth::id()) {
-            return response()->json(['message' => 'Unauthorized'], 403);
         }
 
         $comment = $this->commentManager->createComment(
