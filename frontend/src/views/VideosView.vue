@@ -277,9 +277,9 @@
         <!-- Thumbnail -->
         <div
           class="relative aspect-video bg-gray-900 rounded-xl overflow-hidden mb-3 border border-gray-200/50 shadow-sm group-hover:shadow-md transition-all cursor-pointer"
-          :class="{ 'ring-2 ring-orange-500 ring-offset-2': selectMode && selectedVideos.includes(video.id) }"
+          :class="{ 'ring-2 ring-orange-500 ring-offset-2': selectedVideos.includes(video.id) }"
           style="aspect-ratio: 16 / 9;"
-          @click="selectMode ? toggleVideoSelection(video.id) : openVideo(video.id)"
+          @click="openVideo(video.id)"
         >
           <img
             v-if="video.thumbnail"
