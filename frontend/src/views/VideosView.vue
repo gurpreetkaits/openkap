@@ -31,22 +31,8 @@
       </div>
 
       <div class="flex items-center gap-3">
-        <!-- Select Mode Toggle -->
-        <button
-          @click="toggleSelectMode"
-          class="flex items-center gap-2 text-[13px] font-medium px-3 py-1.5 rounded-lg transition-all shadow-sm"
-          :class="selectMode
-            ? 'bg-orange-100 text-orange-700 border border-orange-300'
-            : 'text-gray-600 bg-white border border-gray-200 hover:bg-gray-50'"
-        >
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
-          </svg>
-          {{ selectMode ? 'Cancel' : 'Select' }}
-        </button>
-
         <!-- Bulk Actions Dropdown (shown when items are selected) -->
-        <div v-if="selectMode && selectedVideos.length > 0" class="flex items-center gap-2">
+        <div v-if="selectedVideos.length > 0" class="flex items-center gap-2">
           <span class="text-[13px] font-medium text-gray-600">
             {{ selectedVideos.length }} selected
           </span>
@@ -101,8 +87,8 @@
           </div>
         </div>
 
-        <!-- Select All (shown in select mode) -->
-        <div v-if="selectMode" class="flex items-center gap-2 border-l border-gray-200 pl-3">
+        <!-- Select All (shown when videos are selected) -->
+        <div v-if="selectedVideos.length > 0" class="flex items-center gap-2 border-l border-gray-200 pl-3">
           <input
             type="checkbox"
             id="select-all"
@@ -113,6 +99,15 @@
           />
           <label for="select-all" class="text-[13px] text-gray-600 cursor-pointer">All</label>
         </div>
+
+        <!-- Cancel Selection (shown when videos are selected) -->
+        <button
+          v-if="selectedVideos.length > 0"
+          @click="clearSelection"
+          class="text-[13px] font-medium text-gray-500 hover:text-gray-700 px-2 py-1"
+        >
+          Cancel
+        </button>
 
         <!-- Sort Dropdown -->
         <div class="relative" ref="sortDropdownRef">
@@ -268,11 +263,11 @@
         :key="video.id"
         class="group relative"
       >
-        <!-- Selection Checkbox (shown in select mode) -->
-        <div v-if="selectMode" class="absolute top-2 left-2 z-20">
+        <!-- Selection Checkbox (shown when selected) -->
+        <div v-if="selectedVideos.includes(video.id)" class="absolute top-2 left-2 z-20">
           <input
             type="checkbox"
-            :checked="selectedVideos.includes(video.id)"
+            :checked="true"
             @change="toggleVideoSelection(video.id)"
             @click.stop
             class="w-5 h-5 text-orange-600 bg-white/90 border-2 border-gray-300 rounded focus:ring-orange-500 focus:ring-2 cursor-pointer shadow-sm"
@@ -308,16 +303,15 @@
           <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all duration-200 flex flex-col justify-between p-3">
             <!-- Top Actions -->
             <div class="flex justify-between items-start">
-              <button
-                @click.stop="toggleFavorite(video)"
-                class="p-1.5 rounded-lg backdrop-blur-md transition-colors"
-                :class="video.is_favourite ? 'bg-orange-500 text-white' : 'bg-black/50 hover:bg-orange-500/90 text-white'"
-                :title="video.is_favourite ? 'Remove from favourites' : 'Add to favourites'"
-              >
-                <svg class="w-3.5 h-3.5" :fill="video.is_favourite ? 'currentColor' : 'none'" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
-                </svg>
-              </button>
+              <!-- Select Checkbox -->
+              <div @click.stop>
+                <input
+                  type="checkbox"
+                  :checked="selectedVideos.includes(video.id)"
+                  @change="toggleVideoSelection(video.id)"
+                  class="w-5 h-5 text-orange-600 bg-white/90 border-2 border-white/50 rounded focus:ring-orange-500 focus:ring-2 cursor-pointer shadow-sm"
+                />
+              </div>
               <div class="flex gap-2">
                 <button @click.stop="shareVideo(video)" class="p-1.5 bg-white text-gray-700 hover:text-blue-600 rounded-lg shadow-sm transition-colors" title="Copy Link">
                   <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -345,6 +339,15 @@
                     class="absolute right-0 mt-1 w-44 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50"
                   >
                     <button
+                      @click="toggleFavorite(video); activeVideoMenu = null"
+                      class="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                    >
+                      <svg class="w-4 h-4 text-orange-500" :fill="video.is_favourite ? 'currentColor' : 'none'" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
+                      </svg>
+                      {{ video.is_favourite ? 'Remove from Favourites' : 'Add to Favourites' }}
+                    </button>
+                    <button
                       @click="openSinglePlaylistModal(video)"
                       class="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
                     >
@@ -352,15 +355,6 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
                       </svg>
                       Add to Playlist
-                    </button>
-                    <button
-                      @click="enterSelectModeWithVideo(video.id)"
-                      class="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
-                    >
-                      <svg class="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
-                      </svg>
-                      Select
                     </button>
                     <div class="border-t border-gray-100 my-1"></div>
                     <button
@@ -422,13 +416,13 @@
         v-for="video in paginatedVideos"
         :key="video.id"
         class="group cursor-pointer flex items-center gap-4 p-3 bg-white border rounded-xl hover:shadow-md transition-all duration-200"
-        :class="selectMode && selectedVideos.includes(video.id)
+        :class="selectedVideos.includes(video.id)
           ? 'border-orange-300 bg-orange-50'
           : 'border-gray-200 hover:border-orange-200'"
-        @click="selectMode ? toggleVideoSelection(video.id) : openVideo(video.id)"
+        @click="openVideo(video.id)"
       >
-        <!-- Selection Checkbox (shown in select mode) -->
-        <div v-if="selectMode" class="flex-shrink-0">
+        <!-- Selection Checkbox (shown on hover or when selected) -->
+        <div class="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" :class="{ 'opacity-100': selectedVideos.includes(video.id) }">
           <input
             type="checkbox"
             :checked="selectedVideos.includes(video.id)"
@@ -519,6 +513,15 @@
               class="absolute right-0 mt-1 w-44 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50"
             >
               <button
+                @click="toggleFavorite(video); activeVideoMenu = null"
+                class="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+              >
+                <svg class="w-4 h-4 text-orange-500" :fill="video.is_favourite ? 'currentColor' : 'none'" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
+                </svg>
+                {{ video.is_favourite ? 'Remove from Favourites' : 'Add to Favourites' }}
+              </button>
+              <button
                 @click="openSinglePlaylistModal(video)"
                 class="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
               >
@@ -526,15 +529,6 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
                 </svg>
                 Add to Playlist
-              </button>
-              <button
-                @click="enterSelectModeWithVideo(video.id)"
-                class="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
-              >
-                <svg class="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
-                </svg>
-                Select
               </button>
               <div class="border-t border-gray-100 my-1"></div>
               <button
@@ -771,8 +765,7 @@ export default {
     const videoToDelete = ref(null)
     const isDeleting = ref(false)
 
-    // Bulk delete state
-    const selectMode = ref(false)
+    // Selection state
     const selectedVideos = ref([])
     const showBulkDeleteModal = ref(false)
     const isBulkDeleting = ref(false)
@@ -1154,11 +1147,8 @@ export default {
     }
 
     // Selection methods
-    const toggleSelectMode = () => {
-      selectMode.value = !selectMode.value
-      if (!selectMode.value) {
-        selectedVideos.value = []
-      }
+    const clearSelection = () => {
+      selectedVideos.value = []
     }
 
     const toggleVideoSelection = (videoId) => {
@@ -1198,7 +1188,6 @@ export default {
         // Reset selection
         showBulkDeleteModal.value = false
         selectedVideos.value = []
-        selectMode.value = false
       } catch (err) {
         console.error('Failed to bulk delete videos:', err)
         toast.error('Failed to delete videos. Please try again.')
@@ -1210,12 +1199,6 @@ export default {
     // Video menu methods
     const toggleVideoMenu = (videoId) => {
       activeVideoMenu.value = activeVideoMenu.value === videoId ? null : videoId
-    }
-
-    const enterSelectModeWithVideo = (videoId) => {
-      activeVideoMenu.value = null
-      selectMode.value = true
-      selectedVideos.value = [videoId]
     }
 
     // Bulk add to favourites
@@ -1238,7 +1221,6 @@ export default {
 
         // Reset selection
         selectedVideos.value = []
-        selectMode.value = false
       } catch (err) {
         console.error('Failed to add to favourites:', err)
         toast.error('Failed to add videos to favourites. Please try again.')
@@ -1291,10 +1273,9 @@ export default {
         toast.success(result.message)
         closePlaylistModal()
 
-        // Reset selection if in select mode
-        if (selectMode.value) {
+        // Reset selection if adding from bulk selection
+        if (videosToAddToPlaylist.value.length > 1 || !singleVideoForPlaylist.value) {
           selectedVideos.value = []
-          selectMode.value = false
         }
       } catch (err) {
         console.error('Failed to add to playlist:', err)
@@ -1402,8 +1383,7 @@ export default {
       showDeleteModal,
       videoToDelete,
       isDeleting,
-      // Bulk delete
-      selectMode,
+      // Selection and bulk actions
       selectedVideos,
       showBulkDeleteModal,
       isBulkDeleting,
@@ -1411,18 +1391,16 @@ export default {
       isPartiallySelected,
       deleteVideoMessage,
       bulkDeleteMessage,
-      toggleSelectMode,
+      clearSelection,
       toggleVideoSelection,
       toggleSelectAll,
       confirmBulkDelete,
-      // Bulk actions
       showBulkActionsDropdown,
       bulkActionsDropdownRef,
       bulkAddToFavourites,
       // Video menu
       activeVideoMenu,
       toggleVideoMenu,
-      enterSelectModeWithVideo,
       // Playlist modal
       showPlaylistModal,
       playlists,
