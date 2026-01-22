@@ -48,31 +48,32 @@
     <div class="max-w-5xl mx-auto px-6 flex flex-col items-center text-center relative z-10 py-20 pt-8 overflow-hidden">
 
         <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-brand-500/20 bg-brand-500/5 text-brand-400 text-xs font-medium mb-8">
-            <span class="relative flex h-2 w-2">
-                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-400 opacity-75"></span>
-                <span class="relative inline-flex rounded-full h-2 w-2 bg-brand-500"></span>
-            </span>
-            Free to Start
+            <i data-lucide="video" class="size-3.5"></i>
+            10 Free Recordings — No Credit Card
         </div>
 
-        <h1 class="text-4xl md:text-6xl lg:text-7xl font-medium tracking-tight text-white mb-8 leading-[1.1]">
-            Record & share async videos<br>
-            <span class="text-transparent bg-clip-text bg-gradient-to-b from-neutral-100 to-neutral-500">in seconds — no meetings, no wait.</span>
+        <h1 class="text-4xl md:text-6xl lg:text-7xl font-medium tracking-tight text-white mb-6 leading-[1.1]">
+            Stop scheduling meetings<br>
+            <span class="text-transparent bg-clip-text bg-gradient-to-b from-neutral-100 to-neutral-500">just to explain something.</span>
         </h1>
 
-        <p class="text-xl text-neutral-300 max-w-xl mx-auto mb-4 leading-relaxed font-medium">
-            Unlimited recordings. Fair pricing. No lock-in.
+        <p class="text-xl text-neutral-300 max-w-2xl mx-auto mb-3 leading-relaxed">
+            Record your screen, share a link, done. Your teammates watch when they have time.
         </p>
-        <p class="text-base text-neutral-500 max-w-xl mx-auto mb-10 leading-relaxed font-light">
-            Built for developers, founders, and small teams.
+        <p class="text-base text-neutral-400 max-w-xl mx-auto mb-8 leading-relaxed">
+            No account needed to view. No watermarks. No surprise paywalls.
         </p>
 
-        <div class="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
-            <a href="{{ config('app.frontend_url', config('app.url')) }}/login" class="w-full sm:w-auto group relative inline-flex h-12 items-center justify-center overflow-hidden rounded-full bg-brand-600 px-8 font-medium text-white transition-all duration-300 hover:bg-brand-500 hover:shadow-[0_0_20px_-5px_rgba(234,88,12,0.4)] active:scale-95">
-                <span class="mr-2">Get Started Free</span>
-                <i data-lucide="arrow-right" class="size-4 transition-transform group-hover:translate-x-1"></i>
+        <div class="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto mb-4">
+            <a href="{{ config('app.frontend_url', config('app.url')) }}/login" class="w-full sm:w-auto group relative inline-flex h-14 items-center justify-center overflow-hidden rounded-full bg-brand-600 px-10 font-medium text-white transition-all duration-300 hover:bg-brand-500 hover:shadow-[0_0_20px_-5px_rgba(234,88,12,0.4)] active:scale-95">
+                <span class="mr-2 text-lg">Start Recording — It's Free</span>
+                <i data-lucide="arrow-right" class="size-5 transition-transform group-hover:translate-x-1"></i>
             </a>
         </div>
+        <p class="text-sm text-neutral-500 flex items-center gap-2">
+            <i data-lucide="credit-card" class="size-4"></i>
+            No credit card required
+        </p>
 
         <!-- UI Visualization / Screenshots -->
         <div class="relative w-full max-w-6xl mx-auto h-[350px] sm:h-[450px] md:h-[550px] lg:h-[650px] mt-16 overflow-hidden" style="perspective: 2000px;">
@@ -127,86 +128,90 @@
             <div class="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-brand-950 to-transparent z-20"></div>
         </div>
 
-        <!-- Launch Badges -->
-        <div class="flex flex-wrap justify-center items-center gap-4 mt-8">
-            <a href="https://peerlist.io/gurpreet/project/screensense--open-source-screen-recording" target="_blank" rel="noreferrer">
-                <img
-                    src="https://peerlist.io/api/v1/projects/embed/PRJH9OBGM78Q7867EC6ADDNQGK799G?showUpvote=false&theme=light"
-                    alt="ScreenSense - Open Source Screen Recording"
-                    style="width: auto; height: 72px;"
-                />
-            </a>
-            <a href="https://www.producthunt.com/products/screensense-2?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-screensense-2" target="_blank" rel="noopener noreferrer">
-                <img
-                    src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1058090&theme=light&t=1767617780370"
-                    alt="ScreenSense - Open Source Loom Alternative | Product Hunt"
-                    width="250"
-                    height="54"
-                />
-            </a>
-        </div>
     </div>
 
     <!-- Social Proof Section -->
     <section class="max-w-5xl mx-auto px-6 py-16">
-        <!-- Users Stat -->
-        <div class="text-center mb-12">
-            <div class="inline-flex items-center gap-3 px-5 py-2.5 rounded-full border border-white/10 bg-white/5">
-                <div class="flex -space-x-2">
-                    <div class="size-8 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 border-2 border-neutral-900 flex items-center justify-center text-[10px] font-medium text-white">JD</div>
-                    <div class="size-8 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 border-2 border-neutral-900 flex items-center justify-center text-[10px] font-medium text-white">AK</div>
-                    <div class="size-8 rounded-full bg-gradient-to-br from-green-400 to-green-600 border-2 border-neutral-900 flex items-center justify-center text-[10px] font-medium text-white">MR</div>
-                    <div class="size-8 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 border-2 border-neutral-900 flex items-center justify-center text-[10px] font-medium text-white">+</div>
-                </div>
-                <span class="text-sm text-neutral-300"><span class="text-white font-medium">30+</span> active users loved by teams globally</span>
+        <!-- Trust Indicators -->
+        <div class="flex flex-wrap justify-center items-center gap-6 md:gap-12 mb-12 text-neutral-400">
+            <div class="flex items-center gap-2">
+                <i data-lucide="video" class="size-5"></i>
+                <span class="text-sm">10 Free Videos</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <i data-lucide="lock" class="size-5"></i>
+                <span class="text-sm">Secure Sharing</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <i data-lucide="zap" class="size-5"></i>
+                <span class="text-sm">Instant Links</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <i data-lucide="ban" class="size-5"></i>
+                <span class="text-sm">No Watermarks</span>
             </div>
         </div>
 
         <!-- Testimonials -->
         <div class="text-center mb-8">
-            <h3 class="text-xl font-medium text-white mb-2">What early users are saying</h3>
-            <p class="text-sm text-neutral-500">Real feedback from real teams</p>
+            <h3 class="text-xl font-medium text-white mb-2">People who switched from Loom</h3>
+            <p class="text-sm text-neutral-500">Honest feedback from developers and founders</p>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <!-- Testimonial 1 -->
             <div class="p-6 rounded-xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.04] transition-colors">
-                <div class="mb-4">
-                    <i data-lucide="quote" class="size-5 text-brand-500/50"></i>
+                <div class="flex items-center gap-1 mb-4">
+                    <i data-lucide="star" class="size-4 text-yellow-500 fill-yellow-500"></i>
+                    <i data-lucide="star" class="size-4 text-yellow-500 fill-yellow-500"></i>
+                    <i data-lucide="star" class="size-4 text-yellow-500 fill-yellow-500"></i>
+                    <i data-lucide="star" class="size-4 text-yellow-500 fill-yellow-500"></i>
+                    <i data-lucide="star" class="size-4 text-yellow-500 fill-yellow-500"></i>
                 </div>
-                <p class="text-neutral-300 text-sm leading-relaxed mb-4">"Way easier than explaining things over Slack."</p>
+                <p class="text-neutral-300 text-sm leading-relaxed mb-4">"Finally, a screen recorder that doesn't nag me to upgrade every 5 seconds. It just works."</p>
                 <div class="flex items-center gap-3">
-                    <div class="size-8 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-[10px] font-medium text-white">FD</div>
+                    <div class="size-8 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-[10px] font-medium text-white">SK</div>
                     <div>
-                        <p class="text-xs text-neutral-400">Frontend Developer</p>
+                        <p class="text-sm text-white font-medium">Sanjay K.</p>
+                        <p class="text-xs text-neutral-500">Full-stack Developer</p>
                     </div>
                 </div>
             </div>
 
             <!-- Testimonial 2 -->
             <div class="p-6 rounded-xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.04] transition-colors">
-                <div class="mb-4">
-                    <i data-lucide="quote" class="size-5 text-brand-500/50"></i>
+                <div class="flex items-center gap-1 mb-4">
+                    <i data-lucide="star" class="size-4 text-yellow-500 fill-yellow-500"></i>
+                    <i data-lucide="star" class="size-4 text-yellow-500 fill-yellow-500"></i>
+                    <i data-lucide="star" class="size-4 text-yellow-500 fill-yellow-500"></i>
+                    <i data-lucide="star" class="size-4 text-yellow-500 fill-yellow-500"></i>
+                    <i data-lucide="star" class="size-4 text-yellow-500 fill-yellow-500"></i>
                 </div>
-                <p class="text-neutral-300 text-sm leading-relaxed mb-4">"Perfect for quick walkthroughs without jumping on calls."</p>
+                <p class="text-neutral-300 text-sm leading-relaxed mb-4">"I send 3-4 quick videos to clients daily. Saves me hours of back-and-forth emails."</p>
                 <div class="flex items-center gap-3">
-                    <div class="size-8 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center text-[10px] font-medium text-white">IF</div>
+                    <div class="size-8 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center text-[10px] font-medium text-white">MR</div>
                     <div>
-                        <p class="text-xs text-neutral-400">Indie Founder</p>
+                        <p class="text-sm text-white font-medium">Maria R.</p>
+                        <p class="text-xs text-neutral-500">Freelance Designer</p>
                     </div>
                 </div>
             </div>
 
             <!-- Testimonial 3 -->
             <div class="p-6 rounded-xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.04] transition-colors">
-                <div class="mb-4">
-                    <i data-lucide="quote" class="size-5 text-brand-500/50"></i>
+                <div class="flex items-center gap-1 mb-4">
+                    <i data-lucide="star" class="size-4 text-yellow-500 fill-yellow-500"></i>
+                    <i data-lucide="star" class="size-4 text-yellow-500 fill-yellow-500"></i>
+                    <i data-lucide="star" class="size-4 text-yellow-500 fill-yellow-500"></i>
+                    <i data-lucide="star" class="size-4 text-yellow-500 fill-yellow-500"></i>
+                    <i data-lucide="star" class="size-4 text-yellow-500 fill-yellow-500"></i>
                 </div>
-                <p class="text-neutral-300 text-sm leading-relaxed mb-4">"Simple, fast, and doesn't feel bloated like other tools."</p>
+                <p class="text-neutral-300 text-sm leading-relaxed mb-4">"Simple pricing, no bloat. My whole team switched over in a day. Way better than paying Loom's enterprise tax."</p>
                 <div class="flex items-center gap-3">
-                    <div class="size-8 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center text-[10px] font-medium text-white">RT</div>
+                    <div class="size-8 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center text-[10px] font-medium text-white">AT</div>
                     <div>
-                        <p class="text-xs text-neutral-400">Small Remote Team</p>
+                        <p class="text-sm text-white font-medium">Alex T.</p>
+                        <p class="text-xs text-neutral-500">Startup CTO</p>
                     </div>
                 </div>
             </div>
