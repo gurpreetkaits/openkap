@@ -16,14 +16,6 @@
         </div>
 
         <div class="flex items-center gap-3">
-            <!-- GitHub Button -->
-            <a href="https://github.com/gurpreetkaits/screensense" target="_blank" rel="noopener noreferrer" class="hidden sm:flex items-center gap-2 text-xs font-medium bg-white/5 border border-white/10 px-3 py-1.5 rounded-full hover:bg-white/10 transition-colors group">
-                <i data-lucide="github" class="size-4 text-neutral-400 group-hover:text-white transition-colors"></i>
-                <span class="text-neutral-300 group-hover:text-white">Star</span>
-                <div class="w-px h-3 bg-white/10 mx-1"></div>
-                <span id="github-stars-nav" class="text-neutral-500 group-hover:text-brand-400 transition-colors">--</span>
-            </a>
-
             <!-- Sign In Button -->
             <a href="{{ config('app.frontend_url', config('app.url')) }}/login" class="hidden sm:block text-sm font-medium bg-white text-black px-4 py-2 rounded-full hover:bg-neutral-200 transition-colors shadow-[0_0_15px_-3px_rgba(255,255,255,0.3)]">
                 Sign In
@@ -57,12 +49,6 @@
             </a>
 
             <div class="pt-4 mt-4 border-t border-white/5 space-y-3">
-                <!-- GitHub Link Mobile -->
-                <a href="https://github.com/gurpreetkaits/screensense" target="_blank" rel="noopener noreferrer" class="flex items-center justify-center gap-2 w-full px-4 py-3 rounded-lg text-sm font-medium bg-white/5 border border-white/10 text-neutral-300 hover:bg-white/10 transition-colors">
-                    <i data-lucide="github" class="size-4"></i>
-                    <span>Star on GitHub</span>
-                </a>
-
                 <!-- Sign In Mobile -->
                 <a href="{{ config('app.frontend_url', config('app.url')) }}/login" class="flex items-center justify-center w-full px-4 py-3 rounded-lg text-sm font-medium bg-white text-black hover:bg-neutral-200 transition-colors">
                     Sign In

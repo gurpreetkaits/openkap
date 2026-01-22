@@ -55,9 +55,9 @@
             Open Source
         </div>
 
-        <h1 class="text-5xl md:text-7xl lg:text-8xl font-medium tracking-tight text-white mb-8 leading-[1]">
-            Open-source<br>
-            <span class="text-transparent bg-clip-text bg-gradient-to-b from-neutral-100 to-neutral-500">Loom Alternative</span>
+        <h1 class="text-4xl md:text-6xl lg:text-7xl font-medium tracking-tight text-white mb-8 leading-[1.1]">
+            Record & share async videos<br>
+            <span class="text-transparent bg-clip-text bg-gradient-to-b from-neutral-100 to-neutral-500">in seconds — no meetings, no wait.</span>
         </h1>
 
         <p class="text-xl text-neutral-300 max-w-xl mx-auto mb-4 leading-relaxed font-medium">
@@ -71,13 +71,6 @@
             <a href="{{ config('app.frontend_url', config('app.url')) }}/login" class="w-full sm:w-auto group relative inline-flex h-12 items-center justify-center overflow-hidden rounded-full bg-brand-600 px-8 font-medium text-white transition-all duration-300 hover:bg-brand-500 hover:shadow-[0_0_20px_-5px_rgba(234,88,12,0.4)] active:scale-95">
                 <span class="mr-2">Get Started Free</span>
                 <i data-lucide="arrow-right" class="size-4 transition-transform group-hover:translate-x-1"></i>
-            </a>
-            <a href="https://github.com/gurpreetkaits/screensense" target="_blank" rel="noopener noreferrer" class="w-full sm:w-auto inline-flex h-12 items-center justify-center gap-2 rounded-full border border-white/10 bg-white/5 px-6 font-medium text-white transition-colors hover:bg-white/10 group">
-                <i data-lucide="github" class="size-5"></i>
-                <span>View on GitHub</span>
-                <div class="w-px h-5 bg-white/10 mx-1"></div>
-                <i data-lucide="star" class="size-4 text-yellow-400 fill-yellow-400"></i>
-                <span id="github-stars" class="text-sm text-white group-hover:text-brand-400 transition-colors">--</span>
             </a>
         </div>
 
@@ -214,6 +207,14 @@
 
             </div>
         </div>
+
+        <!-- CTA after Workflow -->
+        <div class="mt-16 text-center">
+            <a href="{{ config('app.frontend_url', config('app.url')) }}/login" class="group relative inline-flex h-12 items-center justify-center overflow-hidden rounded-full bg-brand-600 px-8 font-medium text-white transition-all duration-300 hover:bg-brand-500 hover:shadow-[0_0_20px_-5px_rgba(234,88,12,0.4)] active:scale-95">
+                <span class="mr-2">Get Started Free</span>
+                <i data-lucide="arrow-right" class="size-4 transition-transform group-hover:translate-x-1"></i>
+            </a>
+        </div>
     </section>
 
     <!-- Features Bento Grid -->
@@ -275,22 +276,22 @@
                 <!-- Feature 3: Browser Extension -->
                 <div class="group relative overflow-hidden rounded-2xl border border-white/10 bg-neutral-900/50 hover:bg-neutral-900/80 transition-all duration-500">
                     <div class="p-8 md:p-10 h-full relative z-10">
-                        <div class="absolute top-8 right-8 px-2 py-0.5 rounded-full bg-brand-500/10 border border-brand-500/20 text-[10px] font-medium text-brand-400 uppercase tracking-wider">Coming Soon</div>
+                        <div class="absolute top-8 right-8 px-2 py-0.5 rounded-full bg-green-500/10 border border-green-500/20 text-[10px] font-medium text-green-400 uppercase tracking-wider">Available Now</div>
                         <div class="inline-flex items-center justify-center size-12 rounded-lg bg-neutral-800 border border-white/10 mb-6 text-brand-500">
                             <i data-lucide="puzzle" class="size-6"></i>
                         </div>
-                        <h3 class="text-xl font-medium text-white mb-2">Browser Extension On The Way</h3>
+                        <h3 class="text-xl font-medium text-white mb-2">Browser Extension</h3>
                         <p class="text-neutral-400 mb-8 text-lg">Record directly from Chrome with one click. No app needed.</p>
 
                         <!-- Extension Preview -->
                         <div class="space-y-3">
-                            <div class="flex items-center justify-between p-3 rounded bg-black/40 border border-white/5">
+                            <a href="https://chromewebstore.google.com/detail/nnchnlkilgfemhpcohmgdpcmkjedjkfm" target="_blank" rel="noopener noreferrer" class="flex items-center justify-between p-3 rounded bg-black/40 border border-white/5 hover:bg-black/60 transition-colors">
                                 <div class="flex items-center gap-2">
                                     <i data-lucide="chrome" class="size-4 text-neutral-400"></i>
                                     <span class="text-sm text-neutral-300">Chrome Extension</span>
                                 </div>
-                                <span class="text-xs text-neutral-500">Soon</span>
-                            </div>
+                                <span class="text-xs text-brand-400 font-medium">Install</span>
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -319,6 +320,14 @@
                     </div>
                 </div>
 
+            </div>
+
+            <!-- CTA after Features -->
+            <div class="mt-16 text-center">
+                <a href="{{ config('app.frontend_url', config('app.url')) }}/login" class="group relative inline-flex h-12 items-center justify-center overflow-hidden rounded-full bg-brand-600 px-8 font-medium text-white transition-all duration-300 hover:bg-brand-500 hover:shadow-[0_0_20px_-5px_rgba(234,88,12,0.4)] active:scale-95">
+                    <span class="mr-2">Get Started Free</span>
+                    <i data-lucide="arrow-right" class="size-4 transition-transform group-hover:translate-x-1"></i>
+                </a>
             </div>
         </div>
     </section>
@@ -434,6 +443,15 @@
                     </a>
                 </div>
             </div>
+
+            <!-- CTA after Pricing -->
+            <div class="mt-16 text-center">
+                <p class="text-neutral-400 mb-4">Ready to get started?</p>
+                <a href="{{ config('app.frontend_url', config('app.url')) }}/login" class="group relative inline-flex h-12 items-center justify-center overflow-hidden rounded-full bg-brand-600 px-8 font-medium text-white transition-all duration-300 hover:bg-brand-500 hover:shadow-[0_0_20px_-5px_rgba(234,88,12,0.4)] active:scale-95">
+                    <span class="mr-2">Get Started Free</span>
+                    <i data-lucide="arrow-right" class="size-4 transition-transform group-hover:translate-x-1"></i>
+                </a>
+            </div>
         </div>
     </section>
 
@@ -490,7 +508,7 @@
                     </button>
                     <div class="faq-content">
                         <div class="px-6 pb-4 text-sm text-neutral-400">
-                            ScreenSense works on all modern browsers including Chrome, Firefox, Safari, and Edge. Our browser extension (coming soon) will be available for Chrome first.
+                            ScreenSense works on all modern browsers including Chrome, Firefox, Safari, and Edge. Our Chrome extension is now available on the <a href="https://chromewebstore.google.com/detail/nnchnlkilgfemhpcohmgdpcmkjedjkfm" target="_blank" rel="noopener noreferrer" class="text-brand-400 hover:text-brand-300 underline">Chrome Web Store</a>.
                         </div>
                     </div>
                 </div>
