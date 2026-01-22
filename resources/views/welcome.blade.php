@@ -147,6 +147,72 @@
         </div>
     </div>
 
+    <!-- Social Proof Section -->
+    <section class="max-w-5xl mx-auto px-6 py-16">
+        <!-- Users Stat -->
+        <div class="text-center mb-12">
+            <div class="inline-flex items-center gap-3 px-5 py-2.5 rounded-full border border-white/10 bg-white/5">
+                <div class="flex -space-x-2">
+                    <div class="size-8 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 border-2 border-neutral-900 flex items-center justify-center text-[10px] font-medium text-white">JD</div>
+                    <div class="size-8 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 border-2 border-neutral-900 flex items-center justify-center text-[10px] font-medium text-white">AK</div>
+                    <div class="size-8 rounded-full bg-gradient-to-br from-green-400 to-green-600 border-2 border-neutral-900 flex items-center justify-center text-[10px] font-medium text-white">MR</div>
+                    <div class="size-8 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 border-2 border-neutral-900 flex items-center justify-center text-[10px] font-medium text-white">+</div>
+                </div>
+                <span class="text-sm text-neutral-300"><span class="text-white font-medium">30+</span> active users loved by teams globally</span>
+            </div>
+        </div>
+
+        <!-- Testimonials -->
+        <div class="text-center mb-8">
+            <h3 class="text-xl font-medium text-white mb-2">What early users are saying</h3>
+            <p class="text-sm text-neutral-500">Real feedback from real teams</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <!-- Testimonial 1 -->
+            <div class="p-6 rounded-xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.04] transition-colors">
+                <div class="mb-4">
+                    <i data-lucide="quote" class="size-5 text-brand-500/50"></i>
+                </div>
+                <p class="text-neutral-300 text-sm leading-relaxed mb-4">"Way easier than explaining things over Slack."</p>
+                <div class="flex items-center gap-3">
+                    <div class="size-8 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-[10px] font-medium text-white">FD</div>
+                    <div>
+                        <p class="text-xs text-neutral-400">Frontend Developer</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Testimonial 2 -->
+            <div class="p-6 rounded-xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.04] transition-colors">
+                <div class="mb-4">
+                    <i data-lucide="quote" class="size-5 text-brand-500/50"></i>
+                </div>
+                <p class="text-neutral-300 text-sm leading-relaxed mb-4">"Perfect for quick walkthroughs without jumping on calls."</p>
+                <div class="flex items-center gap-3">
+                    <div class="size-8 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center text-[10px] font-medium text-white">IF</div>
+                    <div>
+                        <p class="text-xs text-neutral-400">Indie Founder</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Testimonial 3 -->
+            <div class="p-6 rounded-xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.04] transition-colors">
+                <div class="mb-4">
+                    <i data-lucide="quote" class="size-5 text-brand-500/50"></i>
+                </div>
+                <p class="text-neutral-300 text-sm leading-relaxed mb-4">"Simple, fast, and doesn't feel bloated like other tools."</p>
+                <div class="flex items-center gap-3">
+                    <div class="size-8 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center text-[10px] font-medium text-white">RT</div>
+                    <div>
+                        <p class="text-xs text-neutral-400">Small Remote Team</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- Workflow Simplified Section -->
     <section id="how-it-works" class="max-w-6xl mx-auto px-6 py-24 border-t border-white/5">
         <div class="mb-16 text-center">
