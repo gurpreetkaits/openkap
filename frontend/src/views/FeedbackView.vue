@@ -3,12 +3,12 @@
     <!-- Header -->
     <div class="flex items-center justify-between mb-4">
       <div>
-        <h1 class="text-lg font-semibold text-gray-900">Feedback</h1>
-        <p class="text-xs text-gray-500">Help us improve ScreenSense</p>
+        <h1 class="text-lg font-semibold text-base-content">Feedback</h1>
+        <p class="text-xs text-base-content/60">Help us improve ScreenSense</p>
       </div>
       <button
         @click="showModal = true"
-        class="px-3 py-1.5 bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-1.5"
+        class="btn btn-primary btn-sm gap-1.5"
       >
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
@@ -18,72 +18,74 @@
     </div>
 
     <!-- Loading -->
-    <div v-if="loading" class="bg-white rounded-lg border border-gray-200 p-8 text-center">
-      <div class="inline-block animate-spin rounded-full h-6 w-6 border-2 border-orange-500 border-t-transparent"></div>
+    <div v-if="loading" class="card bg-base-100 border border-base-300 p-8 text-center">
+      <span class="loading loading-spinner loading-md text-primary mx-auto"></span>
     </div>
 
     <!-- Empty -->
-    <div v-else-if="feedbackList.length === 0" class="bg-white rounded-lg border border-gray-200 p-8 text-center">
-      <svg class="w-10 h-10 mx-auto text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div v-else-if="feedbackList.length === 0" class="card bg-base-100 border border-base-300 p-8 text-center">
+      <svg class="w-10 h-10 mx-auto text-base-content/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
       </svg>
-      <p class="mt-2 text-sm text-gray-500">No feedback yet</p>
-      <button @click="showModal = true" class="mt-3 px-3 py-1.5 bg-orange-500 hover:bg-orange-600 text-white text-xs font-medium rounded-lg">
+      <p class="mt-2 text-sm text-base-content/60">No feedback yet</p>
+      <button @click="showModal = true" class="btn btn-primary btn-sm mt-3">
         Send Feedback
       </button>
     </div>
 
     <!-- Table -->
-    <div v-else class="bg-white rounded-lg border border-gray-200 overflow-hidden">
-      <table class="w-full">
-        <thead class="bg-gray-50 border-b border-gray-200">
-          <tr>
-            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Title</th>
-            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase hidden sm:table-cell w-24">Date</th>
-            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase w-20">Status</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-gray-100">
-          <tr
-            v-for="item in feedbackList"
-            :key="item.id"
-            @click="viewFeedback(item)"
-            class="hover:bg-gray-50 cursor-pointer"
-          >
-            <td class="px-3 py-2">
-              <div class="flex items-center gap-1.5">
-                <span class="text-sm text-gray-900 truncate">{{ item.title }}</span>
-                <svg v-if="hasImages(item.description)" class="w-3.5 h-3.5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                </svg>
-                <span v-if="item.reply" class="w-1.5 h-1.5 bg-green-500 rounded-full flex-shrink-0"></span>
-              </div>
-            </td>
-            <td class="px-3 py-2 text-xs text-gray-500 hidden sm:table-cell">{{ formatDate(item.created_at) }}</td>
-            <td class="px-3 py-2">
-              <span :class="statusClass(item.status)" class="px-1.5 py-0.5 text-xs font-medium rounded capitalize">
-                {{ item.status }}
-              </span>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+    <div v-else class="card bg-base-100 border border-base-300 overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="table table-sm">
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th class="hidden sm:table-cell w-24">Date</th>
+              <th class="w-20">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="item in feedbackList"
+              :key="item.id"
+              @click="viewFeedback(item)"
+              class="hover cursor-pointer"
+            >
+              <td>
+                <div class="flex items-center gap-1.5">
+                  <span class="text-sm text-base-content truncate">{{ item.title }}</span>
+                  <svg v-if="hasImages(item.description)" class="w-3.5 h-3.5 text-base-content/40 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                  </svg>
+                  <span v-if="item.reply" class="badge badge-xs badge-success"></span>
+                </div>
+              </td>
+              <td class="text-xs text-base-content/60 hidden sm:table-cell">{{ formatDate(item.created_at) }}</td>
+              <td>
+                <span :class="statusBadgeClass(item.status)" class="badge badge-sm capitalize">
+                  {{ item.status }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
       <!-- Pagination -->
-      <div v-if="pagination.lastPage > 1" class="px-3 py-2 border-t border-gray-100 flex items-center justify-between text-xs">
-        <span class="text-gray-500">{{ pagination.from }}-{{ pagination.to }} of {{ pagination.total }}</span>
-        <div class="flex gap-1">
+      <div v-if="pagination.lastPage > 1" class="px-3 py-2 border-t border-base-200 flex items-center justify-between text-xs">
+        <span class="text-base-content/60">{{ pagination.from }}-{{ pagination.to }} of {{ pagination.total }}</span>
+        <div class="join">
           <button
             @click="goToPage(pagination.currentPage - 1)"
             :disabled="pagination.currentPage === 1"
-            class="px-2 py-1 rounded border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            class="join-item btn btn-xs"
           >
             Prev
           </button>
           <button
             @click="goToPage(pagination.currentPage + 1)"
             :disabled="pagination.currentPage === pagination.lastPage"
-            class="px-2 py-1 rounded border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            class="join-item btn btn-xs"
           >
             Next
           </button>
@@ -92,61 +94,60 @@
     </div>
 
     <!-- Rate limit note -->
-    <p class="text-xs text-gray-400 mt-3 text-center">Limited to 3 submissions per hour</p>
+    <p class="text-xs text-base-content/40 mt-3 text-center">Limited to 3 submissions per hour</p>
 
     <!-- New Modal -->
-    <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div class="fixed inset-0 bg-black/50" @click="closeModal"></div>
-      <div class="relative bg-white rounded-xl shadow-xl w-full max-w-xl p-5 z-10">
+    <div v-if="showModal" class="modal modal-open">
+      <div class="modal-backdrop bg-black/50" @click="closeModal"></div>
+      <div class="modal-box w-full max-w-xl">
         <div class="flex items-center justify-between mb-4">
-          <h2 class="text-base font-semibold text-gray-900">New Feedback</h2>
-          <button @click="closeModal" class="p-1.5 hover:bg-gray-100 rounded-lg">
-            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <h2 class="text-base font-semibold text-base-content">New Feedback</h2>
+          <button @click="closeModal" class="btn btn-ghost btn-sm btn-circle">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
             </svg>
           </button>
         </div>
         <form @submit.prevent="submitFeedback" class="space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Title</label>
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">Title</span>
+            </label>
             <input
               v-model="form.title"
               type="text"
               placeholder="Brief summary of your feedback"
               maxlength="255"
               required
-              class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
+              class="input input-bordered w-full"
               :disabled="submitting"
             />
           </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">
-              Description
-              <span class="text-xs text-gray-400 font-normal ml-1">You can paste images</span>
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">Description</span>
+              <span class="label-text-alt text-base-content/60">You can paste images</span>
             </label>
             <div
               ref="descriptionEditor"
               contenteditable="true"
               @input="onDescriptionInput"
               @paste="onPaste"
-              class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none min-h-[200px] max-h-[400px] overflow-y-auto prose prose-sm"
+              class="textarea textarea-bordered min-h-[200px] max-h-[400px] overflow-y-auto prose prose-sm w-full"
               :class="{ 'opacity-50 pointer-events-none': submitting }"
               data-placeholder="Describe your feedback, bug report, or feature request. You can paste screenshots directly..."
             ></div>
           </div>
-          <div class="flex justify-end gap-2 pt-2">
-            <button type="button" @click="closeModal" class="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg" :disabled="submitting">
+          <div class="modal-action">
+            <button type="button" @click="closeModal" class="btn btn-ghost" :disabled="submitting">
               Cancel
             </button>
             <button
               type="submit"
               :disabled="submitting || !isFormValid"
-              class="px-4 py-2 bg-orange-500 hover:bg-orange-600 disabled:bg-gray-300 text-white text-sm font-medium rounded-lg flex items-center gap-1.5"
+              class="btn btn-primary gap-1.5"
             >
-              <svg v-if="submitting" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
+              <span v-if="submitting" class="loading loading-spinner loading-sm"></span>
               {{ submitting ? 'Sending...' : 'Send Feedback' }}
             </button>
           </div>
@@ -155,45 +156,47 @@
     </div>
 
     <!-- View Modal -->
-    <div v-if="selectedFeedback" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div class="fixed inset-0 bg-black/50" @click="selectedFeedback = null"></div>
-      <div class="relative bg-white rounded-xl shadow-xl w-full max-w-xl max-h-[90vh] flex flex-col z-10">
-        <div class="flex items-start justify-between p-4 border-b border-gray-100">
+    <div v-if="selectedFeedback" class="modal modal-open">
+      <div class="modal-backdrop bg-black/50" @click="selectedFeedback = null"></div>
+      <div class="modal-box w-full max-w-xl max-h-[90vh] flex flex-col">
+        <div class="flex items-start justify-between pb-4 border-b border-base-200">
           <div class="flex-1 min-w-0 pr-2">
-            <h2 class="text-base font-semibold text-gray-900">{{ selectedFeedback.title }}</h2>
-            <p class="text-xs text-gray-500 mt-0.5">{{ formatDate(selectedFeedback.created_at) }}</p>
+            <h2 class="text-base font-semibold text-base-content">{{ selectedFeedback.title }}</h2>
+            <p class="text-xs text-base-content/60 mt-0.5">{{ formatDate(selectedFeedback.created_at) }}</p>
           </div>
           <div class="flex items-center gap-2">
-            <span :class="statusClass(selectedFeedback.status)" class="px-2 py-0.5 text-xs font-medium rounded-full capitalize">
+            <span :class="statusBadgeClass(selectedFeedback.status)" class="badge capitalize">
               {{ selectedFeedback.status }}
             </span>
-            <button @click="selectedFeedback = null" class="p-1.5 hover:bg-gray-100 rounded-lg">
-              <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <button @click="selectedFeedback = null" class="btn btn-ghost btn-sm btn-circle">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
               </svg>
             </button>
           </div>
         </div>
 
-        <div class="flex-1 overflow-y-auto p-4 space-y-3">
+        <div class="flex-1 overflow-y-auto py-4 space-y-3">
           <!-- User's feedback -->
-          <div class="bg-gray-50 rounded-lg p-3">
-            <p class="text-xs font-medium text-gray-500 mb-2">Your feedback</p>
-            <div class="text-sm text-gray-700 prose prose-sm max-w-none" v-html="selectedFeedback.description"></div>
+          <div class="bg-base-200 rounded-lg p-3">
+            <p class="text-xs font-medium text-base-content/60 mb-2">Your feedback</p>
+            <div class="text-sm text-base-content prose prose-sm max-w-none" v-html="selectedFeedback.description"></div>
           </div>
 
           <!-- Admin Reply -->
-          <div v-if="selectedFeedback.reply" class="bg-green-50 border border-green-100 rounded-lg p-3">
-            <div class="flex items-center gap-1.5 mb-2">
-              <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/>
-              </svg>
-              <span class="text-xs font-medium text-green-700">Reply from ScreenSense</span>
-              <span v-if="selectedFeedback.replied_at" class="text-xs text-green-600">{{ formatDate(selectedFeedback.replied_at) }}</span>
+          <div v-if="selectedFeedback.reply" class="alert alert-success">
+            <div class="flex flex-col items-start gap-2 w-full">
+              <div class="flex items-center gap-1.5">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/>
+                </svg>
+                <span class="text-xs font-medium">Reply from ScreenSense</span>
+                <span v-if="selectedFeedback.replied_at" class="text-xs opacity-70">{{ formatDate(selectedFeedback.replied_at) }}</span>
+              </div>
+              <p class="text-sm whitespace-pre-wrap">{{ selectedFeedback.reply }}</p>
             </div>
-            <p class="text-sm text-green-800 whitespace-pre-wrap">{{ selectedFeedback.reply }}</p>
           </div>
-          <div v-else class="text-center py-3 text-xs text-gray-400">
+          <div v-else class="text-center py-3 text-xs text-base-content/40">
             <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
             </svg>
@@ -201,8 +204,8 @@
           </div>
         </div>
 
-        <div class="p-4 border-t border-gray-100">
-          <button @click="selectedFeedback = null" class="w-full px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg">
+        <div class="modal-action pt-4 border-t border-base-200">
+          <button @click="selectedFeedback = null" class="btn btn-ghost w-full">
             Close
           </button>
         </div>
@@ -388,11 +391,11 @@ const closeModal = () => {
 
 const viewFeedback = (item) => selectedFeedback.value = item
 
-const statusClass = (status) => ({
-  'pending': 'bg-yellow-100 text-yellow-700',
-  'reviewed': 'bg-blue-100 text-blue-700',
-  'resolved': 'bg-green-100 text-green-700'
-}[status] || 'bg-gray-100 text-gray-700')
+const statusBadgeClass = (status) => ({
+  'pending': 'badge-warning',
+  'reviewed': 'badge-info',
+  'resolved': 'badge-success'
+}[status] || 'badge-ghost')
 
 const formatDate = (str) => new Date(str).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 
@@ -410,7 +413,7 @@ onMounted(() => fetchFeedback())
 
 [contenteditable]:empty:before {
   content: attr(data-placeholder);
-  color: #9ca3af;
+  color: oklch(var(--bc) / 0.4);
   pointer-events: none;
 }
 
@@ -424,5 +427,10 @@ onMounted(() => fetchFeedback())
   max-width: 100%;
   border-radius: 4px;
   margin: 8px 0;
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
 }
 </style>

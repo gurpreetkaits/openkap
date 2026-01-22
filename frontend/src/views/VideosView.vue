@@ -3,18 +3,18 @@
     <!-- Library Toolbar -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
       <!-- Tabs -->
-      <div class="flex items-center p-1 bg-gray-100 rounded-lg self-start border border-gray-200/50">
+      <div class="tabs tabs-boxed bg-base-200 self-start">
         <button
           @click="activeTab = 'videos'"
-          class="px-3.5 py-1 text-[13px] font-medium rounded-[6px] transition-all"
-          :class="activeTab === 'videos' ? 'text-gray-900 bg-white shadow-sm' : 'text-gray-500 hover:text-gray-900 hover:bg-white/50'"
+          class="tab tab-sm"
+          :class="activeTab === 'videos' ? 'tab-active' : ''"
         >
           Videos
         </button>
         <button
           @click="activeTab = 'favourites'"
-          class="px-3.5 py-1 text-[13px] font-medium rounded-[6px] transition-all"
-          :class="activeTab === 'favourites' ? 'text-gray-900 bg-white shadow-sm' : 'text-gray-500 hover:text-gray-900 hover:bg-white/50'"
+          class="tab tab-sm"
+          :class="activeTab === 'favourites' ? 'tab-active' : ''"
         >
           <span class="flex items-center gap-1.5">
             <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
@@ -24,7 +24,7 @@
           </span>
         </button>
         <button
-          class="px-3.5 py-1 text-[13px] font-medium text-gray-500 hover:text-gray-900 hover:bg-white/50 rounded-[6px] transition-all"
+          class="tab tab-sm"
         >
           Archived
         </button>
@@ -32,97 +32,105 @@
 
       <div class="flex items-center gap-3">
         <!-- Sort Dropdown -->
-        <div class="relative" ref="sortDropdownRef">
-          <button
+        <div class="dropdown dropdown-end" ref="sortDropdownRef">
+          <label
+            tabindex="0"
             @click="showSortDropdown = !showSortDropdown"
-            class="flex items-center gap-2 text-[13px] font-medium text-gray-600 bg-white border border-gray-200 px-3 py-1.5 rounded-lg hover:bg-gray-50 transition-all shadow-sm"
+            class="btn btn-sm btn-ghost gap-2"
           >
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/>
             </svg>
             {{ currentSortLabel }}
-          </button>
+          </label>
 
           <!-- Sort Dropdown Menu -->
-          <div
+          <ul
             v-show="showSortDropdown"
-            class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50"
+            tabindex="0"
+            class="dropdown-content menu menu-sm bg-base-100 rounded-box z-50 w-48 p-2 shadow-lg border border-base-300"
           >
-            <button
-              v-for="option in sortOptions"
-              :key="option.id"
-              @click="setSortOption(option.id)"
-              class="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center justify-between"
-              :class="sortBy === option.id ? 'text-orange-600 bg-orange-50' : 'text-gray-700'"
-            >
-              {{ option.label }}
-              <svg v-if="sortBy === option.id" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-              </svg>
-            </button>
-          </div>
+            <li v-for="option in sortOptions" :key="option.id">
+              <a
+                @click="setSortOption(option.id)"
+                :class="sortBy === option.id ? 'active' : ''"
+              >
+                {{ option.label }}
+                <svg v-if="sortBy === option.id" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                </svg>
+              </a>
+            </li>
+          </ul>
         </div>
 
         <!-- Filter Dropdown -->
-        <div class="relative" ref="filterDropdownRef">
-          <button
+        <div class="dropdown dropdown-end" ref="filterDropdownRef">
+          <label
+            tabindex="0"
             @click="showFilterDropdown = !showFilterDropdown"
-            class="flex items-center gap-2 text-[13px] font-medium text-gray-600 bg-white border border-gray-200 px-3 py-1.5 rounded-lg hover:bg-gray-50 transition-all shadow-sm"
-            :class="activeDateFilter !== 'all' ? 'border-orange-300 bg-orange-50 text-orange-700' : ''"
+            class="btn btn-sm gap-2"
+            :class="activeDateFilter !== 'all' ? 'btn-primary' : 'btn-ghost'"
           >
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
             </svg>
             Filter
-            <span v-if="activeDateFilter !== 'all'" class="w-1.5 h-1.5 bg-orange-500 rounded-full"></span>
-          </button>
+            <span v-if="activeDateFilter !== 'all'" class="badge badge-xs badge-secondary"></span>
+          </label>
 
           <!-- Filter Dropdown Menu -->
           <div
             v-show="showFilterDropdown"
-            class="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50"
+            tabindex="0"
+            class="dropdown-content bg-base-100 rounded-box z-50 w-56 p-2 shadow-lg border border-base-300"
           >
-            <div class="px-3 pb-2 mb-2 border-b border-gray-100">
-              <span class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Date Range</span>
+            <div class="px-3 pb-2 mb-2 border-b border-base-200">
+              <span class="text-xs font-semibold text-base-content/60 uppercase tracking-wide">Date Range</span>
             </div>
-            <button
-              v-for="filter in dateFilters"
-              :key="filter.id"
-              @click="setDateFilter(filter.id); showFilterDropdown = false"
-              class="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center justify-between"
-              :class="activeDateFilter === filter.id ? 'text-orange-600 bg-orange-50' : 'text-gray-700'"
-            >
-              {{ filter.label }}
-              <svg v-if="activeDateFilter === filter.id" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-              </svg>
-            </button>
+            <ul class="menu menu-sm p-0">
+              <li v-for="filter in dateFilters" :key="filter.id">
+                <a
+                  @click="setDateFilter(filter.id); showFilterDropdown = false"
+                  :class="activeDateFilter === filter.id ? 'active' : ''"
+                >
+                  {{ filter.label }}
+                  <svg v-if="activeDateFilter === filter.id" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                  </svg>
+                </a>
+              </li>
+            </ul>
 
             <!-- Custom Date Picker -->
-            <div v-if="activeDateFilter === 'custom'" class="px-3 pt-2 mt-2 border-t border-gray-100 space-y-2">
-              <div>
-                <label class="text-xs text-gray-500 mb-1 block">From</label>
+            <div v-if="activeDateFilter === 'custom'" class="px-3 pt-2 mt-2 border-t border-base-200 space-y-2">
+              <div class="form-control">
+                <label class="label py-1">
+                  <span class="label-text text-xs">From</span>
+                </label>
                 <input
                   type="date"
                   v-model="customDateFrom"
-                  class="w-full px-2 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                  class="input input-bordered input-sm w-full"
                 />
               </div>
-              <div>
-                <label class="text-xs text-gray-500 mb-1 block">To</label>
+              <div class="form-control">
+                <label class="label py-1">
+                  <span class="label-text text-xs">To</span>
+                </label>
                 <input
                   type="date"
                   v-model="customDateTo"
-                  class="w-full px-2 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                  class="input input-bordered input-sm w-full"
                 />
               </div>
             </div>
 
             <!-- Clear Filters -->
-            <div v-if="activeDateFilter !== 'all'" class="px-3 pt-2 mt-2 border-t border-gray-100">
+            <div v-if="activeDateFilter !== 'all'" class="px-3 pt-2 mt-2 border-t border-base-200">
               <button
                 @click="clearFilters(); showFilterDropdown = false"
-                class="w-full text-center text-sm text-orange-600 hover:text-orange-700 font-medium py-1"
+                class="btn btn-ghost btn-sm w-full text-primary"
               >
                 Clear Filters
               </button>
@@ -131,11 +139,11 @@
         </div>
 
         <!-- View Toggle -->
-        <div class="flex items-center gap-1 border border-gray-200 rounded-lg p-0.5 bg-white shadow-sm">
+        <div class="join border border-base-300 bg-base-100 shadow-sm">
           <button
             @click="viewMode = 'grid'"
-            class="p-1.5 rounded transition-colors"
-            :class="viewMode === 'grid' ? 'bg-gray-100 text-gray-900' : 'text-gray-400 hover:text-gray-600'"
+            class="join-item btn btn-sm btn-ghost"
+            :class="viewMode === 'grid' ? 'btn-active' : ''"
             title="Grid view"
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -144,8 +152,8 @@
           </button>
           <button
             @click="viewMode = 'list'"
-            class="p-1.5 rounded transition-colors"
-            :class="viewMode === 'list' ? 'bg-gray-100 text-gray-900' : 'text-gray-400 hover:text-gray-600'"
+            class="join-item btn btn-sm btn-ghost"
+            :class="viewMode === 'list' ? 'btn-active' : ''"
             title="List view"
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -158,21 +166,21 @@
 
     <!-- Loading State -->
     <div v-if="loading" class="text-center py-24">
-      <div class="inline-block animate-spin rounded-full h-10 w-10 border-4 border-orange-600 border-t-transparent"></div>
-      <p class="mt-4 text-sm text-gray-500">Loading videos...</p>
+      <span class="loading loading-spinner loading-lg text-primary"></span>
+      <p class="mt-4 text-sm text-base-content/60">Loading videos...</p>
     </div>
 
     <!-- Error State -->
     <div v-else-if="error" class="text-center py-24">
-      <div class="w-16 h-16 mx-auto mb-6 bg-red-100 rounded-full flex items-center justify-center">
-        <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div class="w-16 h-16 mx-auto mb-6 bg-error/10 rounded-full flex items-center justify-center">
+        <svg class="w-8 h-8 text-error" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
         </svg>
       </div>
-      <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ error }}</h3>
+      <h3 class="text-lg font-semibold text-base-content mb-2">{{ error }}</h3>
       <button
         @click="fetchVideos"
-        class="inline-flex items-center px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-lg font-medium text-sm shadow-sm transition-colors"
+        class="btn btn-neutral"
       >
         Try Again
       </button>
@@ -187,7 +195,7 @@
       >
         <!-- Thumbnail -->
         <div
-          class="relative aspect-video bg-gray-900 rounded-xl overflow-hidden mb-3 border border-gray-200/50 shadow-sm group-hover:shadow-md transition-all cursor-pointer"
+          class="relative aspect-video bg-neutral rounded-xl overflow-hidden mb-3 border border-base-300 shadow-sm group-hover:shadow-md transition-all cursor-pointer"
           style="aspect-ratio: 16 / 9;"
           @click="openVideo(video.id)"
         >
@@ -198,14 +206,14 @@
             class="absolute inset-0 w-full h-full object-cover opacity-90 group-hover:scale-105 group-hover:opacity-100 transition-all duration-500"
             loading="lazy"
           />
-          <div v-else class="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900">
-            <svg class="w-10 h-10 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div v-else class="w-full h-full flex items-center justify-center bg-gradient-to-br from-neutral to-neutral-focus">
+            <svg class="w-10 h-10 text-base-content/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
             </svg>
           </div>
 
           <!-- Duration Badge -->
-          <div class="absolute bottom-2 right-2 bg-black/60 backdrop-blur-md text-white text-[10px] font-medium px-1.5 py-0.5 rounded-md border border-white/10 z-10">
+          <div class="badge badge-neutral badge-sm absolute bottom-2 right-2 z-10">
             {{ formatDuration(video.duration) }}
           </div>
 
@@ -215,8 +223,8 @@
             <div class="flex justify-between items-start">
               <button
                 @click.stop="toggleFavorite(video)"
-                class="p-1.5 rounded-lg backdrop-blur-md transition-colors"
-                :class="video.is_favourite ? 'bg-orange-500 text-white' : 'bg-black/50 hover:bg-orange-500/90 text-white'"
+                class="btn btn-circle btn-sm"
+                :class="video.is_favourite ? 'btn-primary' : 'btn-ghost bg-black/50 hover:bg-primary'"
                 :title="video.is_favourite ? 'Remove from favourites' : 'Add to favourites'"
               >
                 <svg class="w-3.5 h-3.5" :fill="video.is_favourite ? 'currentColor' : 'none'" stroke="currentColor" viewBox="0 0 24 24">
@@ -224,17 +232,17 @@
                 </svg>
               </button>
               <div class="flex gap-2">
-                <button @click.stop="shareVideo(video)" class="p-1.5 bg-white text-gray-700 hover:text-blue-600 rounded-lg shadow-sm transition-colors" title="Copy Link">
+                <button @click.stop="shareVideo(video)" class="btn btn-circle btn-sm bg-base-100 hover:text-info" title="Copy Link">
                   <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
                   </svg>
                 </button>
-                <button @click.stop="downloadVideo(video)" class="p-1.5 bg-white text-gray-700 hover:text-green-600 rounded-lg shadow-sm transition-colors" title="Download">
+                <button @click.stop="downloadVideo(video)" class="btn btn-circle btn-sm bg-base-100 hover:text-success" title="Download">
                   <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
                   </svg>
                 </button>
-                <button @click.stop="deleteVideo(video)" class="p-1.5 bg-white text-gray-700 hover:text-red-600 rounded-lg shadow-sm transition-colors" title="Delete">
+                <button @click.stop="deleteVideo(video)" class="btn btn-circle btn-sm bg-base-100 hover:text-error" title="Delete">
                   <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                   </svg>
@@ -244,7 +252,7 @@
 
             <!-- Center Play Button -->
             <div class="flex justify-center">
-              <div class="w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg text-orange-600 scale-90 hover:scale-110 transition-transform">
+              <div class="w-10 h-10 bg-base-100/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg text-primary scale-90 hover:scale-110 transition-transform">
                 <svg class="w-4 h-4 ml-0.5 fill-current" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.841z"/>
                 </svg>
@@ -260,15 +268,15 @@
         <div class="px-1">
           <div class="flex justify-between items-start gap-2 mb-1">
             <h3
-              class="font-medium text-gray-900 text-[14px] leading-snug truncate group-hover:text-orange-600 transition-colors cursor-pointer"
+              class="font-medium text-base-content text-[14px] leading-snug truncate group-hover:text-primary transition-colors cursor-pointer"
               @click="openVideo(video.id)"
             >
               {{ video.title }}
             </h3>
           </div>
-          <div class="flex items-center gap-2 text-[12px] text-gray-500">
+          <div class="flex items-center gap-2 text-[12px] text-base-content/60">
             <span>{{ formatDate(video.createdAt) }}</span>
-            <span class="w-0.5 h-0.5 bg-gray-300 rounded-full"></span>
+            <span class="w-0.5 h-0.5 bg-base-content/30 rounded-full"></span>
             <span class="flex items-center gap-1">
               <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
@@ -286,11 +294,11 @@
       <div
         v-for="video in paginatedVideos"
         :key="video.id"
-        class="group cursor-pointer flex items-center gap-4 p-3 bg-white border border-gray-200 rounded-xl hover:border-orange-200 hover:shadow-md transition-all duration-200"
+        class="group cursor-pointer flex items-center gap-4 p-3 card bg-base-100 border border-base-300 hover:border-primary/30 hover:shadow-md transition-all duration-200"
         @click="openVideo(video.id)"
       >
         <!-- Thumbnail -->
-        <div class="relative w-40 flex-shrink-0 aspect-video rounded-lg overflow-hidden bg-gray-900" style="aspect-ratio: 16 / 9;">
+        <div class="relative w-40 flex-shrink-0 aspect-video rounded-lg overflow-hidden bg-neutral" style="aspect-ratio: 16 / 9;">
           <img
             v-if="video.thumbnail"
             :src="video.thumbnail"
@@ -298,22 +306,22 @@
             class="absolute inset-0 w-full h-full object-cover"
             loading="lazy"
           />
-          <div v-else class="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900">
-            <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div v-else class="w-full h-full flex items-center justify-center bg-gradient-to-br from-neutral to-neutral-focus">
+            <svg class="w-6 h-6 text-base-content/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
             </svg>
           </div>
-          <div class="absolute bottom-1.5 right-1.5 bg-black/70 text-white text-[10px] px-1.5 py-0.5 rounded font-medium">
+          <div class="badge badge-neutral badge-xs absolute bottom-1.5 right-1.5">
             {{ formatDuration(video.duration) }}
           </div>
         </div>
 
         <!-- Video Info -->
         <div class="flex-1 min-w-0">
-          <h3 class="font-medium text-gray-900 group-hover:text-orange-600 transition-colors truncate text-[15px] mb-1">
+          <h3 class="font-medium text-base-content group-hover:text-primary transition-colors truncate text-[15px] mb-1">
             {{ video.title }}
           </h3>
-          <div class="flex items-center gap-3 text-[12px] text-gray-500">
+          <div class="flex items-center gap-3 text-[12px] text-base-content/60">
             <span>{{ formatDate(video.createdAt) }}</span>
             <div class="flex items-center gap-1">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -339,22 +347,22 @@
 
         <!-- Actions -->
         <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          <button @click.stop="shareVideo(video)" class="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Copy Link">
+          <button @click.stop="shareVideo(video)" class="btn btn-ghost btn-sm btn-circle hover:text-info" title="Copy Link">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
             </svg>
           </button>
-          <button @click.stop="embedVideo(video)" class="p-2 text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors" title="Embed">
+          <button @click.stop="embedVideo(video)" class="btn btn-ghost btn-sm btn-circle hover:text-secondary" title="Embed">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
             </svg>
           </button>
-          <button @click.stop="downloadVideo(video)" class="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors" title="Download">
+          <button @click.stop="downloadVideo(video)" class="btn btn-ghost btn-sm btn-circle hover:text-success" title="Download">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
             </svg>
           </button>
-          <button @click.stop="deleteVideo(video)" class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Delete">
+          <button @click.stop="deleteVideo(video)" class="btn btn-ghost btn-sm btn-circle hover:text-error" title="Delete">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
             </svg>
@@ -364,21 +372,18 @@
     </div>
 
     <!-- Pagination -->
-    <div v-if="showPagination && filteredVideos.length > 0" class="mt-10 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-gray-200 pt-6">
-      <div class="text-xs text-gray-500">
-        Showing <span class="font-medium text-gray-900">{{ (currentPage - 1) * itemsPerPage + 1 }}</span> to
-        <span class="font-medium text-gray-900">{{ Math.min(currentPage * itemsPerPage, filteredVideos.length) }}</span> of
-        <span class="font-medium text-gray-900">{{ filteredVideos.length }}</span> videos
+    <div v-if="showPagination && filteredVideos.length > 0" class="mt-10 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-base-300 pt-6">
+      <div class="text-xs text-base-content/60">
+        Showing <span class="font-medium text-base-content">{{ (currentPage - 1) * itemsPerPage + 1 }}</span> to
+        <span class="font-medium text-base-content">{{ Math.min(currentPage * itemsPerPage, filteredVideos.length) }}</span> of
+        <span class="font-medium text-base-content">{{ filteredVideos.length }}</span> videos
       </div>
 
-      <div class="flex items-center gap-2">
+      <div class="join">
         <button
           @click="prevPage"
           :disabled="currentPage === 1"
-          class="inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-lg border transition-colors"
-          :class="currentPage === 1
-            ? 'border-gray-200 text-gray-300 cursor-not-allowed bg-gray-50'
-            : 'border-gray-200 text-gray-700 hover:bg-gray-50 bg-white'"
+          class="join-item btn btn-sm"
         >
           <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
@@ -386,29 +391,22 @@
           Previous
         </button>
 
-        <div class="flex items-center gap-1">
-          <template v-for="page in pageNumbers" :key="page">
-            <span v-if="page === '...'" class="px-2 py-1 text-gray-400">...</span>
-            <button
-              v-else
-              @click="goToPage(page)"
-              class="w-8 h-8 text-sm font-medium rounded-lg transition-colors"
-              :class="page === currentPage
-                ? 'bg-gray-900 text-white'
-                : 'text-gray-700 hover:bg-gray-100'"
-            >
-              {{ page }}
-            </button>
-          </template>
-        </div>
+        <template v-for="page in pageNumbers" :key="page">
+          <span v-if="page === '...'" class="join-item btn btn-sm btn-disabled">...</span>
+          <button
+            v-else
+            @click="goToPage(page)"
+            class="join-item btn btn-sm"
+            :class="page === currentPage ? 'btn-active' : ''"
+          >
+            {{ page }}
+          </button>
+        </template>
 
         <button
           @click="nextPage"
           :disabled="currentPage === totalPages"
-          class="inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-lg border transition-colors"
-          :class="currentPage === totalPages
-            ? 'border-gray-200 text-gray-300 cursor-not-allowed bg-gray-50'
-            : 'border-gray-200 text-gray-700 hover:bg-gray-50 bg-white'"
+          class="join-item btn btn-sm"
         >
           Next
           <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -420,33 +418,33 @@
 
     <!-- Empty State -->
     <div v-else-if="!loading && filteredVideos.length === 0" class="text-center py-20">
-      <div class="w-16 h-16 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center">
-        <svg v-if="activeTab === 'favourites'" class="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div class="w-16 h-16 mx-auto mb-6 bg-base-200 rounded-full flex items-center justify-center">
+        <svg v-if="activeTab === 'favourites'" class="w-8 h-8 text-base-content/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
         </svg>
-        <svg v-else class="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg v-else class="w-8 h-8 text-base-content/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
         </svg>
       </div>
-      <h3 class="text-gray-900 font-medium mb-1">
+      <h3 class="text-base-content font-medium mb-1">
         {{ activeTab === 'favourites' ? 'No favourites yet' : (videos.length === 0 ? 'No recordings yet' : 'No videos match your filter') }}
       </h3>
-      <p class="text-sm text-gray-500 max-w-md mx-auto mb-6">
+      <p class="text-sm text-base-content/60 max-w-md mx-auto mb-6">
         {{ activeTab === 'favourites' ? 'Mark videos as favourites to see them here.' : (videos.length === 0 ? 'Start by recording your first screen capture. It only takes a few seconds.' : 'Try adjusting your date filter to see more videos.') }}
       </p>
       <button
         v-if="activeTab === 'favourites'"
         @click="activeTab = 'videos'"
-        class="inline-flex items-center px-4 py-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 rounded-lg font-medium text-sm shadow-sm transition-colors"
+        class="btn btn-outline"
       >
         Browse Videos
       </button>
       <button
         v-else-if="videos.length === 0"
         @click="goToRecord"
-        class="inline-flex items-center px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-lg font-medium text-sm shadow-sm transition-colors"
+        class="btn btn-neutral"
         :disabled="!canRecord"
-        :class="{ 'opacity-50 cursor-not-allowed': !canRecord }"
+        :class="{ 'btn-disabled': !canRecord }"
       >
         <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
           <circle cx="10" cy="10" r="6"/>
@@ -456,7 +454,7 @@
       <button
         v-else
         @click="clearFilters"
-        class="inline-flex items-center px-4 py-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 rounded-lg font-medium text-sm shadow-sm transition-colors"
+        class="btn btn-outline"
       >
         Clear Filters
       </button>

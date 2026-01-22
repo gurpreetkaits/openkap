@@ -1,49 +1,42 @@
 <template>
   <div class="animate-fade-in max-w-2xl mx-auto py-6 px-4">
     <!-- Loading State -->
-    <div v-if="loading" class="bg-white rounded-xl border border-gray-200 shadow-sm p-8 text-center">
-      <div class="animate-spin w-6 h-6 border-2 border-orange-500 border-t-transparent rounded-full mx-auto"></div>
-      <p class="text-sm text-gray-500 mt-2">Loading settings...</p>
+    <div v-if="loading" class="card bg-base-100 border border-base-300 shadow-sm">
+      <div class="card-body items-center text-center">
+        <span class="loading loading-spinner loading-md text-primary"></span>
+        <p class="text-sm text-base-content/60 mt-2">Loading settings...</p>
+      </div>
     </div>
 
     <div v-else class="space-y-6">
       <!-- Page Header -->
       <div>
-        <h1 class="text-2xl font-bold text-gray-900">Settings</h1>
-        <p class="text-sm text-gray-500 mt-1">Manage your recording and playback preferences</p>
+        <h1 class="text-2xl font-bold text-base-content">Settings</h1>
+        <p class="text-sm text-base-content/60 mt-1">Manage your recording and playback preferences</p>
       </div>
 
       <!-- Auto-Zoom Settings Card -->
-      <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+      <div class="card bg-base-100 border border-base-300 shadow-sm overflow-hidden">
         <!-- Card Header with Toggle -->
-        <div class="p-4 border-b border-gray-100 flex items-center justify-between">
+        <div class="p-4 border-b border-base-200 flex items-center justify-between">
           <div class="flex items-center gap-3">
-            <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
-              <svg class="w-5 h-5 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div class="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+              <svg class="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
               </svg>
             </div>
             <div>
-              <h3 class="text-sm font-semibold text-gray-900">Auto-Zoom Effects</h3>
-              <p class="text-xs text-gray-500">Automatically zoom to clicks during recording</p>
+              <h3 class="text-sm font-semibold text-base-content">Auto-Zoom Effects</h3>
+              <p class="text-xs text-base-content/60">Automatically zoom to clicks during recording</p>
             </div>
           </div>
 
           <!-- Toggle Switch -->
-          <button
-            @click="settings.auto_zoom_enabled = !settings.auto_zoom_enabled"
-            :class="[
-              'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2',
-              settings.auto_zoom_enabled ? 'bg-orange-500' : 'bg-gray-200'
-            ]"
-          >
-            <span
-              :class="[
-                'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out',
-                settings.auto_zoom_enabled ? 'translate-x-5' : 'translate-x-0'
-              ]"
-            />
-          </button>
+          <input
+            type="checkbox"
+            class="toggle toggle-primary"
+            v-model="settings.auto_zoom_enabled"
+          />
         </div>
 
         <!-- Expandable Settings (shown when enabled) -->
@@ -61,10 +54,10 @@
               <div class="pt-4">
                 <div class="flex items-center justify-between mb-3">
                   <div>
-                    <p class="text-sm font-medium text-gray-900">Zoom Level</p>
-                    <p class="text-xs text-gray-500">How much to zoom in on click events</p>
+                    <p class="text-sm font-medium text-base-content">Zoom Level</p>
+                    <p class="text-xs text-base-content/60">How much to zoom in on click events</p>
                   </div>
-                  <span class="text-sm font-semibold text-orange-600 bg-orange-50 px-2 py-1 rounded-md">
+                  <span class="badge badge-primary">
                     {{ settings.default_zoom_level.toFixed(1) }}x
                   </span>
                 </div>
@@ -74,9 +67,9 @@
                   min="1.2"
                   max="4"
                   step="0.1"
-                  class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-orange-500"
+                  class="range range-primary range-sm"
                 />
-                <div class="flex justify-between text-xs text-gray-400 mt-1">
+                <div class="flex justify-between text-xs text-base-content/40 mt-1">
                   <span>Subtle (1.2x)</span>
                   <span>Extreme (4x)</span>
                 </div>
@@ -86,10 +79,10 @@
               <div>
                 <div class="flex items-center justify-between mb-3">
                   <div>
-                    <p class="text-sm font-medium text-gray-900">Animation Speed</p>
-                    <p class="text-xs text-gray-500">Duration of zoom in/out transitions</p>
+                    <p class="text-sm font-medium text-base-content">Animation Speed</p>
+                    <p class="text-xs text-base-content/60">Duration of zoom in/out transitions</p>
                   </div>
-                  <span class="text-sm font-semibold text-orange-600 bg-orange-50 px-2 py-1 rounded-md">
+                  <span class="badge badge-primary">
                     {{ animationSpeedLabel }}
                   </span>
                 </div>
@@ -99,9 +92,9 @@
                   min="100"
                   max="2000"
                   step="100"
-                  class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-orange-500"
+                  class="range range-primary range-sm"
                 />
-                <div class="flex justify-between text-xs text-gray-400 mt-1">
+                <div class="flex justify-between text-xs text-base-content/40 mt-1">
                   <span>Fast (100ms)</span>
                   <span>Slow (2000ms)</span>
                 </div>
@@ -112,8 +105,8 @@
 
         <!-- Disabled State Message -->
         <div v-if="!settings.auto_zoom_enabled" class="px-4 pb-4">
-          <div class="bg-gray-50 rounded-lg p-3 text-center">
-            <p class="text-xs text-gray-500">Enable auto-zoom to configure zoom settings</p>
+          <div class="bg-base-200 rounded-lg p-3 text-center">
+            <p class="text-xs text-base-content/60">Enable auto-zoom to configure zoom settings</p>
           </div>
         </div>
       </div>
@@ -123,7 +116,7 @@
         <button
           @click="resetSettings"
           :disabled="saving"
-          class="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
+          class="btn btn-ghost"
         >
           Reset to Defaults
         </button>
@@ -131,12 +124,9 @@
         <button
           @click="saveSettings"
           :disabled="saving"
-          class="px-6 py-2 text-sm font-medium text-white bg-orange-500 hover:bg-orange-600 rounded-lg shadow-sm transition-colors disabled:opacity-50 flex items-center gap-2"
+          class="btn btn-primary"
         >
-          <svg v-if="saving" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-          </svg>
+          <span v-if="saving" class="loading loading-spinner loading-sm"></span>
           {{ saving ? 'Saving...' : 'Save Changes' }}
         </button>
       </div>

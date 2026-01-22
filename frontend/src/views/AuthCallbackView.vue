@@ -1,24 +1,24 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-gray-50">
+  <div class="min-h-screen flex items-center justify-center bg-base-200">
     <div class="text-center">
       <!-- Loading State -->
       <div v-if="!error" class="space-y-4">
-        <div class="w-12 h-12 mx-auto border-4 border-orange-600 border-t-transparent rounded-full animate-spin"></div>
-        <p class="text-gray-600 text-lg">Completing sign in...</p>
+        <span class="loading loading-spinner loading-lg text-primary"></span>
+        <p class="text-base-content/60 text-lg">Completing sign in...</p>
       </div>
 
       <!-- Error State -->
       <div v-else class="space-y-4">
-        <div class="w-12 h-12 mx-auto bg-red-100 rounded-full flex items-center justify-center">
-          <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="w-12 h-12 mx-auto bg-error/10 rounded-full flex items-center justify-center">
+          <svg class="w-6 h-6 text-error" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
           </svg>
         </div>
-        <p class="text-gray-900 text-lg font-medium">Authentication Failed</p>
-        <p class="text-gray-500">{{ errorMessage }}</p>
+        <p class="text-base-content text-lg font-medium">Authentication Failed</p>
+        <p class="text-base-content/60">{{ errorMessage }}</p>
         <button
           @click="goToHome"
-          class="mt-4 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
+          class="btn btn-primary mt-4"
         >
           Go to Home
         </button>

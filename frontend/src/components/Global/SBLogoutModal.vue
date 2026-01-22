@@ -5,46 +5,46 @@
     size="md"
     @close="handleClose"
   >
-    <div class="sm:flex sm:items-start">
+    <div class="flex flex-col sm:flex-row gap-4">
       <!-- Logout Icon -->
-      <div class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-orange-100 sm:mx-0 sm:h-10 sm:w-10">
-        <svg class="h-6 w-6 text-orange-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
-        </svg>
+      <div class="flex-shrink-0 mx-auto sm:mx-0">
+        <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+          <svg class="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
+          </svg>
+        </div>
       </div>
-      
+
       <!-- Content -->
-      <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
-        <h3 class="text-base font-semibold leading-6 text-gray-900">
+      <div class="text-center sm:text-left">
+        <h3 class="text-base font-semibold">
           Logout
         </h3>
-        <div class="mt-2">
-          <p class="text-sm text-gray-500">
-            <slot>
-              {{ message || 'Are you sure you want to logout? Any unsaved work will be lost.' }}
-            </slot>
-          </p>
-        </div>
+        <p class="mt-2 text-sm text-base-content/70">
+          <slot>
+            {{ message || 'Are you sure you want to logout? Any unsaved work will be lost.' }}
+          </slot>
+        </p>
       </div>
     </div>
 
     <template #footer>
-      <div class="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-3 space-y-3 space-y-reverse sm:space-y-0">
-        <SBPrimaryButton
-          variant="secondary"
+      <div class="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3">
+        <button
+          class="btn btn-ghost"
           @click="handleCancel"
           :disabled="loading"
         >
           {{ cancelText || 'Cancel' }}
-        </SBPrimaryButton>
-        
-        <SBPrimaryButton
-          variant="primary"
+        </button>
+
+        <button
+          class="btn btn-primary"
           @click="handleConfirm"
-          :loading="loading"
         >
+          <span v-if="loading" class="loading loading-spinner loading-sm"></span>
           {{ confirmText || 'Logout' }}
-        </SBPrimaryButton>
+        </button>
       </div>
     </template>
   </SBModal>
@@ -53,13 +53,11 @@
 <script>
 import { computed } from 'vue'
 import SBModal from './SBModal.vue'
-import SBPrimaryButton from './SBPrimaryButton.vue'
 
 export default {
   name: 'SBLogoutModal',
   components: {
-    SBModal,
-    SBPrimaryButton
+    SBModal
   },
   emits: ['update:modelValue', 'confirm', 'cancel', 'close'],
   props: {

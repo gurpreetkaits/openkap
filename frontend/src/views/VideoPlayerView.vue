@@ -1,24 +1,24 @@
 <template>
-  <div class="bg-[#FAFAFA] text-slate-900 h-screen flex flex-col overflow-hidden selection:bg-orange-100 selection:text-orange-700">
+  <div class="bg-base-200 text-base-content h-screen flex flex-col overflow-hidden selection:bg-primary/20 selection:text-primary">
 
     <!-- Subtle Background Grid -->
     <div class="fixed inset-0 z-0 pointer-events-none" style="background-image: radial-gradient(#e5e7eb 1px, transparent 1px); background-size: 32px 32px; opacity: 0.4;"></div>
 
     <!-- Loading State -->
     <div v-if="loading" class="flex items-center justify-center min-h-screen">
-      <div class="animate-spin rounded-full h-12 w-12 border-4 border-orange-500 border-t-transparent"></div>
+      <span class="loading loading-spinner loading-lg text-primary"></span>
     </div>
 
     <!-- Error State -->
     <div v-else-if="error" class="flex items-center justify-center min-h-screen">
       <div class="text-center">
-        <div class="w-20 h-20 mx-auto mb-6 bg-red-100 rounded-full flex items-center justify-center">
-          <svg class="w-10 h-10 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="w-20 h-20 mx-auto mb-6 bg-error/10 rounded-full flex items-center justify-center">
+          <svg class="w-10 h-10 text-error" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
           </svg>
         </div>
-        <h3 class="text-lg font-semibold text-gray-900 mb-3">{{ error }}</h3>
-        <button @click="goBack" class="px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-medium transition-colors">
+        <h3 class="text-lg font-semibold text-base-content mb-3">{{ error }}</h3>
+        <button @click="goBack" class="btn btn-primary">
           Go Back
         </button>
       </div>
@@ -27,17 +27,17 @@
     <!-- Main Content -->
     <template v-else>
       <!-- Navigation -->
-      <nav class="h-14 border-b border-gray-200/60 bg-white/80 backdrop-blur-md flex items-center justify-between px-4 lg:px-6 z-50 fixed top-0 w-full">
-        <div class="flex items-center gap-3">
+      <nav class="navbar h-14 border-b border-base-300/60 bg-base-100/80 backdrop-blur-md px-4 lg:px-6 z-50 fixed top-0 w-full min-h-0">
+        <div class="flex items-center gap-3 flex-1">
           <a href="/videos" class="flex items-center gap-2 hover:opacity-80 transition-opacity">
             <img src="/logo.png" alt="ScreenSense" class="w-8 h-8 rounded-lg shadow-sm" />
           </a>
-          <div class="h-4 w-px bg-gray-200"></div>
+          <div class="divider divider-horizontal mx-0 w-px h-4"></div>
           <div class="flex flex-col justify-center">
             <h1
               v-if="!isEditingTitle"
               @click="startEditingTitle"
-              class="text-sm font-semibold text-gray-900 tracking-tight leading-none cursor-pointer hover:text-orange-600 transition-colors"
+              class="text-sm font-semibold text-base-content tracking-tight leading-none cursor-pointer hover:text-primary transition-colors"
               title="Click to edit title"
             >
               {{ video.title }}
@@ -49,46 +49,43 @@
               @keydown.enter="saveTitle"
               @keydown.escape="cancelEditingTitle"
               @blur="saveTitle"
-              class="text-sm font-semibold text-gray-900 bg-white border border-orange-500 rounded px-2 py-0.5 focus:outline-none focus:ring-2 focus:ring-orange-500"
+              class="input input-bordered input-sm text-sm font-semibold text-base-content px-2 py-0.5 focus:input-primary"
               placeholder="Enter video title..."
             />
-            <span class="text-[10px] text-gray-500 font-medium mt-0.5">{{ formatTimeAgo(video.createdAt) }}</span>
+            <span class="text-[10px] text-base-content/50 font-medium mt-0.5">{{ formatTimeAgo(video.createdAt) }}</span>
           </div>
           <!-- Zoom Status Badge -->
           <div v-if="video.zoom_enabled" class="ml-2">
             <span
               v-if="video.zoom_status === 'processing'"
-              class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-700"
+              class="badge badge-warning gap-1"
             >
-              <svg class="w-3 h-3 mr-1 animate-spin" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-              </svg>
+              <span class="loading loading-spinner loading-xs"></span>
               Zoom {{ video.zoom_progress || 0 }}%
             </span>
             <span
               v-else-if="video.is_zoom_ready"
-              class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700"
+              class="badge badge-success gap-1"
             >
-              <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/>
               </svg>
               Zoom ({{ video.zoom_event_count }} events)
             </span>
             <span
               v-else-if="video.zoom_status === 'failed'"
-              class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700"
+              class="badge badge-error gap-1"
             >
-              <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
               </svg>
               Zoom Failed
             </span>
             <span
               v-else-if="video.zoom_status === 'pending' && video.zoom_event_count > 0"
-              class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600"
+              class="badge badge-ghost gap-1"
             >
-              <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
               </svg>
               Zoom Pending
@@ -96,89 +93,93 @@
           </div>
         </div>
 
-        <div class="flex items-center gap-2">
-          <button @click="showShareModal = true" class="bg-orange-600 hover:bg-orange-700 text-white px-3 py-1.5 rounded-lg text-xs font-medium shadow-md shadow-orange-200 transition-all flex items-center gap-2 group">
+        <div class="flex items-center gap-2 flex-none">
+          <button @click="showShareModal = true" class="btn btn-primary btn-sm gap-2 group">
             Share Video
-            <div class="w-px h-3 bg-white/20"></div>
-            <svg class="w-3 h-3 text-white/70 group-hover:translate-y-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="w-px h-3 bg-primary-content/20"></div>
+            <svg class="w-3 h-3 text-primary-content/70 group-hover:translate-y-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
             </svg>
           </button>
-          <div class="w-8 h-8 rounded-full bg-gray-100 border border-gray-200 ml-2 overflow-hidden">
-            <img v-if="currentUser?.avatar" :src="currentUser.avatar" alt="Profile" class="w-full h-full object-cover opacity-90 hover:opacity-100 transition-opacity">
-            <div v-else class="w-full h-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white text-xs font-semibold">
-              {{ userInitial }}
+          <div class="avatar placeholder ml-2">
+            <div v-if="currentUser?.avatar" class="w-8 h-8 rounded-full ring-1 ring-base-300 overflow-hidden">
+              <img :src="currentUser.avatar" alt="Profile" class="w-full h-full object-cover opacity-90 hover:opacity-100 transition-opacity">
+            </div>
+            <div v-else class="bg-primary text-primary-content w-8 h-8 rounded-full">
+              <span class="text-xs font-semibold">{{ userInitial }}</span>
             </div>
           </div>
         </div>
       </nav>
 
       <!-- Share Modal -->
-      <div v-if="showShareModal" class="fixed inset-0 z-[60] flex items-center justify-center">
-        <div class="absolute inset-0 bg-gray-900/20 backdrop-blur-sm transition-opacity" @click="showShareModal = false"></div>
-        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md relative z-10 border border-gray-100 overflow-hidden transform transition-all duration-200">
-          <div class="p-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
-            <h3 class="text-sm font-semibold text-gray-900">Share Recording</h3>
-            <button @click="showShareModal = false" class="text-gray-400 hover:text-gray-600">
+      <div v-if="showShareModal" class="modal modal-open">
+        <div class="modal-box max-w-md">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="font-semibold text-base-content">Share Recording</h3>
+            <button @click="showShareModal = false" class="btn btn-ghost btn-sm btn-circle">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
               </svg>
             </button>
           </div>
-          <div class="p-5">
-            <div class="flex gap-4 mb-6">
-              <button class="flex-1 flex flex-col items-center gap-2 p-3 rounded-lg border border-gray-200 hover:border-orange-500 hover:bg-orange-50/50 transition-all group">
-                <div class="w-8 h-8 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-                  </svg>
-                </div>
-                <span class="text-xs font-medium text-gray-600 group-hover:text-orange-700">Email</span>
-              </button>
-              <button @click="copyEmbedCode" class="flex-1 flex flex-col items-center gap-2 p-3 rounded-lg border border-gray-200 hover:border-orange-500 hover:bg-orange-50/50 transition-all group">
-                <div class="w-8 h-8 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
-                  </svg>
-                </div>
-                <span class="text-xs font-medium text-gray-600 group-hover:text-pink-700">{{ copiedEmbed ? 'Copied!' : 'Embed' }}</span>
-              </button>
-              <button class="flex-1 flex flex-col items-center gap-2 p-3 rounded-lg border border-gray-200 hover:border-orange-500 hover:bg-orange-50/50 transition-all group">
-                <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-                  </svg>
-                </div>
-                <span class="text-xs font-medium text-gray-600 group-hover:text-blue-700">Twitter</span>
-              </button>
-            </div>
+          <div class="flex gap-4 mb-6">
+            <button class="flex-1 flex flex-col items-center gap-2 p-3 rounded-lg border border-base-300 hover:border-primary hover:bg-primary/5 transition-all group">
+              <div class="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center group-hover:scale-110 transition-transform">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                </svg>
+              </div>
+              <span class="text-xs font-medium text-base-content/60 group-hover:text-primary">Email</span>
+            </button>
+            <button @click="copyEmbedCode" class="flex-1 flex flex-col items-center gap-2 p-3 rounded-lg border border-base-300 hover:border-secondary hover:bg-secondary/5 transition-all group">
+              <div class="w-8 h-8 rounded-full bg-secondary/10 text-secondary flex items-center justify-center group-hover:scale-110 transition-transform">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
+                </svg>
+              </div>
+              <span class="text-xs font-medium text-base-content/60 group-hover:text-secondary">{{ copiedEmbed ? 'Copied!' : 'Embed' }}</span>
+            </button>
+            <button class="flex-1 flex flex-col items-center gap-2 p-3 rounded-lg border border-base-300 hover:border-info hover:bg-info/5 transition-all group">
+              <div class="w-8 h-8 rounded-full bg-info/10 text-info flex items-center justify-center group-hover:scale-110 transition-transform">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                </svg>
+              </div>
+              <span class="text-xs font-medium text-base-content/60 group-hover:text-info">Twitter</span>
+            </button>
+          </div>
 
-            <label class="text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-2 block">Public Link</label>
-            <div class="flex gap-2">
-              <div class="flex-1 relative">
-                <input type="text" :value="video.shareUrl" class="w-full pl-9 pr-3 py-2 text-xs bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500 text-gray-600" readonly>
-                <svg class="w-3.5 h-3.5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text text-xs font-semibold uppercase tracking-wider">Public Link</span>
+            </label>
+            <div class="join w-full">
+              <div class="join-item flex-1 relative">
+                <input type="text" :value="video.shareUrl" class="input input-bordered w-full pl-9 pr-3 text-xs join-item" readonly>
+                <svg class="w-3.5 h-3.5 text-base-content/40 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
                 </svg>
               </div>
-              <button @click="copyShareLink" class="bg-orange-600 hover:bg-orange-700 text-white px-3 py-2 rounded-lg text-xs font-medium transition-colors">
+              <button @click="copyShareLink" class="btn btn-primary join-item">
                 {{ copied ? 'Copied!' : 'Copy' }}
               </button>
             </div>
           </div>
         </div>
+        <div class="modal-backdrop" @click="showShareModal = false"></div>
       </div>
 
       <!-- Main Layout -->
       <main class="flex-1 flex flex-col lg:flex-row h-full pt-14 z-10 relative">
 
         <!-- Center Stage: Video Player -->
-        <div class="flex-1 flex flex-col items-center justify-center p-2 lg:p-6 overflow-y-auto relative bg-[#FAFAFA]/50">
+        <div class="flex-1 flex flex-col items-center justify-center p-2 lg:p-6 overflow-y-auto relative bg-base-200/50">
 
           <div class="w-full max-w-7xl relative group perspective-1000">
 
             <!-- Ambient Glow Behind Video -->
-            <div class="absolute -inset-0.5 bg-gradient-to-r from-orange-500 via-amber-500 to-orange-500 rounded-2xl blur-2xl opacity-[0.05] ambient-glow transition-opacity duration-1000 group-hover:opacity-20 z-0"></div>
+            <div class="absolute -inset-0.5 bg-gradient-to-r from-primary via-warning to-primary rounded-2xl blur-2xl opacity-[0.05] ambient-glow transition-opacity duration-1000 group-hover:opacity-20 z-0"></div>
 
             <!-- Video Container - Fixed 16:9 aspect ratio regardless of video content -->
             <div
@@ -204,7 +205,7 @@
                 v-if="isBunnyVideo && bunnyStatus === 'transcoding' && !isPlaying"
                 class="absolute top-4 left-4 z-20 bg-black/70 backdrop-blur-sm rounded-lg px-3 py-2 flex items-center gap-2"
               >
-                <div class="w-4 h-4 border-2 border-orange-500/30 border-t-orange-500 rounded-full animate-spin"></div>
+                <span class="loading loading-spinner loading-sm text-primary"></span>
                 <div class="text-white text-xs">
                   <span class="font-medium">Encoding: {{ bunnyEncodeProgress }}%</span>
                   <span v-if="bunnyAvailableResolutions.length > 0" class="text-white/60 ml-2">
@@ -239,7 +240,7 @@
 
               <!-- Buffering -->
               <div v-if="isBuffering" class="absolute inset-0 flex items-center justify-center bg-black/40 pointer-events-none">
-                <div class="w-14 h-14 border-4 border-white/20 border-t-orange-500 rounded-full animate-spin"></div>
+                <span class="loading loading-spinner loading-lg text-primary"></span>
               </div>
 
               <!-- Big Play Button -->
@@ -249,7 +250,7 @@
                   class="absolute inset-0 bg-black/40 flex items-center justify-center cursor-pointer"
                   @click="togglePlay"
                 >
-                  <button class="group/btn relative flex items-center justify-center w-24 h-24 bg-white/5 backdrop-blur-sm rounded-full border border-white/10 hover:scale-105 hover:bg-orange-600 hover:border-orange-500 transition-all duration-300 shadow-2xl">
+                  <button class="group/btn relative flex items-center justify-center w-24 h-24 bg-white/5 backdrop-blur-sm rounded-full border border-white/10 hover:scale-105 hover:bg-primary hover:border-primary transition-all duration-300 shadow-2xl">
                     <svg class="w-10 h-10 text-white fill-white ml-1" viewBox="0 0 24 24">
                       <path d="M8 5v14l11-7z"/>
                     </svg>
@@ -276,17 +277,17 @@
                     >
                       <div class="absolute inset-0 bg-white/10 rounded-full"></div>
                       <div class="absolute left-0 h-full bg-white/30 rounded-full" :style="{ width: bufferedPercent + '%' }"></div>
-                      <div class="absolute left-0 h-full bg-orange-500 rounded-full shadow-[0_0_10px_rgba(249,115,22,0.5)]" :style="{ width: progressPercent + '%' }"></div>
+                      <div class="absolute left-0 h-full bg-primary rounded-full shadow-[0_0_10px_rgba(249,115,22,0.5)]" :style="{ width: progressPercent + '%' }"></div>
                       <div
                         class="absolute w-4 h-4 bg-white rounded-full shadow-lg scale-0 group-hover/seek:scale-100 transition-transform flex items-center justify-center"
                         :style="{ left: `calc(${progressPercent}% - 8px)` }"
                       >
-                        <div class="w-1.5 h-1.5 bg-orange-600 rounded-full"></div>
+                        <div class="w-1.5 h-1.5 bg-primary rounded-full"></div>
                       </div>
                       <!-- Hover time tooltip -->
                       <div
                         v-if="hoverTime !== null"
-                        class="absolute -top-10 px-2 py-1 bg-black text-white text-xs rounded transform -translate-x-1/2 pointer-events-none"
+                        class="absolute -top-10 px-2 py-1 bg-neutral text-neutral-content text-xs rounded transform -translate-x-1/2 pointer-events-none"
                         :style="{ left: hoverPercent + '%' }"
                       >
                         {{ formatTime(hoverTime) }}
@@ -296,7 +297,7 @@
                     <!-- Control Buttons -->
                     <div class="flex items-center justify-between text-white/90 pt-1 bg-black/40 backdrop-blur-sm rounded-lg px-3 py-2">
                       <div class="flex items-center gap-5">
-                        <button @click.stop="togglePlay" class="hover:text-orange-400 hover:scale-110 transition-all">
+                        <button @click.stop="togglePlay" class="hover:text-primary hover:scale-110 transition-all">
                           <svg v-if="isPlaying" class="w-6 h-6 fill-current" viewBox="0 0 24 24">
                             <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
                           </svg>
@@ -334,54 +335,56 @@
                           </button>
                           <input
                             type="range" min="0" max="1" step="0.05" v-model="volume" @input="updateVolume"
-                            class="w-0 group-hover/vol:w-20 opacity-0 group-hover/vol:opacity-100 transition-all"
+                            class="range range-primary range-xs w-0 group-hover/vol:w-20 opacity-0 group-hover/vol:opacity-100 transition-all"
                           />
                         </div>
                         <!-- Quality Selector -->
-                        <div v-if="availableQualities.length > 0" class="relative" ref="qualityMenuRef">
+                        <div v-if="availableQualities.length > 0" class="dropdown dropdown-top dropdown-end" ref="qualityMenuRef">
                           <button
                             @click.stop.prevent="toggleQualityMenu"
-                            class="text-[11px] font-bold bg-white/10 px-2 py-1 rounded hover:bg-orange-600 transition-colors"
+                            tabindex="0"
+                            class="text-[11px] font-bold bg-white/10 px-2 py-1 rounded hover:bg-primary transition-colors"
                           >
                             {{ getCurrentQualityLabel() }}
                           </button>
-                          <div
+                          <ul
                             v-show="showQualityMenu"
-                            class="absolute bottom-full right-0 mb-2 py-2 bg-gray-900 rounded-xl shadow-2xl border border-white/20 min-w-[100px] z-50"
+                            tabindex="0"
+                            class="dropdown-content menu bg-neutral rounded-box z-50 min-w-[100px] p-2 shadow-2xl"
                           >
-                            <button
-                              v-for="quality in availableQualities"
-                              :key="quality.index"
-                              @click.stop.prevent="setQuality(quality.index)"
-                              class="w-full px-3 py-2 text-left text-xs hover:bg-white/10 transition-colors"
-                              :class="currentQuality === quality.index ? 'text-orange-400' : 'text-white'"
-                            >
-                              {{ quality.label }}
-                            </button>
-                          </div>
+                            <li v-for="quality in availableQualities" :key="quality.index">
+                              <a
+                                @click.stop.prevent="setQuality(quality.index)"
+                                :class="currentQuality === quality.index ? 'text-primary' : 'text-neutral-content'"
+                              >
+                                {{ quality.label }}
+                              </a>
+                            </li>
+                          </ul>
                         </div>
                         <!-- Speed -->
-                        <div class="relative" ref="speedMenuRef">
+                        <div class="dropdown dropdown-top dropdown-end" ref="speedMenuRef">
                           <button
                             @click.stop.prevent="toggleSpeedMenu"
-                            class="text-[11px] font-bold bg-white/10 px-2 py-1 rounded hover:bg-orange-600 transition-colors"
+                            tabindex="0"
+                            class="text-[11px] font-bold bg-white/10 px-2 py-1 rounded hover:bg-primary transition-colors"
                           >
                             {{ playbackSpeed }}x
                           </button>
-                          <div
+                          <ul
                             v-show="showSpeedMenu"
-                            class="absolute bottom-full right-0 mb-2 py-2 bg-gray-900 rounded-xl shadow-2xl border border-white/20 min-w-[80px] z-50"
+                            tabindex="0"
+                            class="dropdown-content menu bg-neutral rounded-box z-50 min-w-[80px] p-2 shadow-2xl"
                           >
-                            <button
-                              v-for="speed in speedOptions"
-                              :key="speed"
-                              @click.stop.prevent="setPlaybackSpeed(speed)"
-                              class="w-full px-3 py-2 text-left text-xs hover:bg-white/10 transition-colors"
-                              :class="playbackSpeed === speed ? 'text-orange-400' : 'text-white'"
-                            >
-                              {{ speed }}x
-                            </button>
-                          </div>
+                            <li v-for="speed in speedOptions" :key="speed">
+                              <a
+                                @click.stop.prevent="setPlaybackSpeed(speed)"
+                                :class="playbackSpeed === speed ? 'text-primary' : 'text-neutral-content'"
+                              >
+                                {{ speed }}x
+                              </a>
+                            </li>
+                          </ul>
                         </div>
                         <!-- Fullscreen -->
                         <button @click.stop="toggleFullscreen" class="hover:text-white hover:scale-110 transition-transform">
@@ -403,13 +406,13 @@
             <div class="mt-6 flex flex-col sm:flex-row sm:items-center justify-between px-1 gap-4 z-30 relative">
 
               <!-- Left: Reactions Card -->
-              <div class="bg-white border border-gray-200/60 rounded-full p-1 shadow-sm flex items-center gap-0.5">
+              <div class="card card-compact bg-base-100 border border-base-300/60 rounded-full p-1 shadow-sm flex-row items-center gap-0.5">
                 <button
                   v-for="emoji in reactions"
                   :key="emoji.icon"
                   @click="addReaction(emoji.icon)"
-                  class="w-9 h-9 rounded-full hover:bg-gray-100 flex items-center justify-center text-lg transition-transform hover:-translate-y-0.5 active:scale-95"
-                  :class="emoji.selected ? 'bg-orange-100' : ''"
+                  class="btn btn-ghost btn-circle btn-sm text-lg transition-transform hover:-translate-y-0.5 active:scale-95"
+                  :class="emoji.selected ? 'bg-primary/10' : ''"
                   :title="emoji.icon"
                 >
                   {{ emoji.icon }}
@@ -417,9 +420,9 @@
               </div>
 
               <!-- Right: Tools Card -->
-              <div class="bg-white border border-gray-200/60 rounded-full p-1 shadow-sm flex items-center gap-1">
+              <div class="card card-compact bg-base-100 border border-base-300/60 rounded-full p-1 shadow-sm flex-row items-center gap-1">
                 <!-- Views -->
-                <div class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-500 rounded-full">
+                <div class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-base-content/50 rounded-full">
                   <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
@@ -427,62 +430,65 @@
                   <span>{{ video.views_count || 0 }}</span>
                 </div>
 
-                <div class="w-px h-4 bg-gray-200 mx-1"></div>
+                <div class="divider divider-horizontal mx-1 w-px h-4"></div>
 
                 <!-- Copy Link -->
-                <button @click="copyShareLink" class="w-9 h-9 rounded-full hover:bg-gray-50 hover:text-orange-600 flex items-center justify-center text-gray-500 transition-colors group/copy relative">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
-                  </svg>
-                  <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 text-[11px] font-medium text-white bg-gray-900 rounded opacity-0 group-hover/copy:opacity-100 transition-all pointer-events-none whitespace-nowrap z-50 shadow-md">Copy Link</span>
-                </button>
+                <div class="tooltip" data-tip="Copy Link">
+                  <button @click="copyShareLink" class="btn btn-ghost btn-circle btn-sm text-base-content/50 hover:text-primary">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+                    </svg>
+                  </button>
+                </div>
 
                 <!-- Download -->
-                <button @click="downloadVideo" class="w-9 h-9 rounded-full hover:bg-gray-50 hover:text-orange-600 flex items-center justify-center text-gray-500 transition-colors group/download relative">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-                  </svg>
-                  <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 text-[11px] font-medium text-white bg-gray-900 rounded opacity-0 group-hover/download:opacity-100 transition-all pointer-events-none whitespace-nowrap z-50 shadow-md">Download</span>
-                </button>
+                <div class="tooltip" data-tip="Download">
+                  <button @click="downloadVideo" class="btn btn-ghost btn-circle btn-sm text-base-content/50 hover:text-primary">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                    </svg>
+                  </button>
+                </div>
 
                 <!-- Delete -->
-                <button @click="deleteVideo" class="w-9 h-9 rounded-full hover:bg-red-50 hover:text-red-600 flex items-center justify-center text-gray-500 transition-colors group/delete relative">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                  </svg>
-                  <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 text-[11px] font-medium text-white bg-gray-900 rounded opacity-0 group-hover/delete:opacity-100 transition-all pointer-events-none whitespace-nowrap z-50 shadow-md">Delete</span>
-                </button>
+                <div class="tooltip" data-tip="Delete">
+                  <button @click="deleteVideo" class="btn btn-ghost btn-circle btn-sm text-base-content/50 hover:text-error">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                    </svg>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
         <!-- Sidebar -->
-        <aside class="w-full lg:w-[400px] bg-white border-l border-gray-200 flex flex-col z-40 shadow-[-4px_0_24px_rgba(0,0,0,0.02)]">
+        <aside class="w-full lg:w-[400px] bg-base-100 border-l border-base-300 flex flex-col z-40 shadow-[-4px_0_24px_rgba(0,0,0,0.02)]">
 
           <!-- Functional Tabs -->
-          <div class="flex items-center gap-1 px-4 py-3 border-b border-gray-100 sticky top-0 bg-white z-10">
+          <div class="tabs tabs-boxed gap-1 px-4 py-3 border-b border-base-200 sticky top-0 bg-base-100 z-10">
             <button
               @click="activeTab = 'comments'"
-              class="px-4 py-2 text-[13px] rounded-lg transition-all flex items-center gap-2"
-              :class="activeTab === 'comments' ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'"
+              class="tab tab-sm gap-2"
+              :class="activeTab === 'comments' ? 'tab-active' : ''"
             >
               Comments
-              <span v-if="comments.length" class="text-[11px] text-gray-400 font-normal">{{ comments.length }}</span>
+              <span v-if="comments.length" class="badge badge-ghost badge-sm">{{ comments.length }}</span>
             </button>
             <button
               @click="activeTab = 'transcript'"
-              class="px-4 py-2 text-[13px] rounded-lg transition-all"
-              :class="activeTab === 'transcript' ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'"
+              class="tab tab-sm"
+              :class="activeTab === 'transcript' ? 'tab-active' : ''"
             >
               Transcript
             </button>
             <button
               @click="activeTab = 'summary'"
-              class="px-4 py-2 text-[13px] rounded-lg transition-all flex items-center gap-1.5"
-              :class="activeTab === 'summary' ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'"
+              class="tab tab-sm gap-1.5"
+              :class="activeTab === 'summary' ? 'tab-active' : ''"
             >
-              <svg class="w-3.5 h-3.5 text-amber-500" fill="currentColor" viewBox="0 0 24 24">
+              <svg class="w-3.5 h-3.5 text-warning" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/>
               </svg>
               Summary
@@ -495,32 +501,34 @@
             <!-- TAB: COMMENTS -->
             <div v-show="activeTab === 'comments'" class="flex flex-col min-h-full">
               <div v-if="comments.length === 0" class="flex flex-col items-center justify-center h-64 text-center px-5">
-                <svg class="w-16 h-16 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-16 h-16 text-base-content/20 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
                 </svg>
-                <p class="text-base font-semibold text-gray-900">No comments yet</p>
-                <p class="text-sm text-gray-500 mt-1">Be the first to share your thoughts!</p>
+                <p class="text-base font-semibold text-base-content">No comments yet</p>
+                <p class="text-sm text-base-content/50 mt-1">Be the first to share your thoughts!</p>
               </div>
 
               <div v-else>
                 <div
                   v-for="comment in comments"
                   :key="comment.id"
-                  class="group p-5 hover:bg-gray-50/80 transition-colors border-b border-gray-50 flex gap-3 items-start relative"
+                  class="group p-5 hover:bg-base-200/50 transition-colors border-b border-base-200/50 flex gap-3 items-start relative"
                 >
-                  <div class="absolute left-0 top-0 bottom-0 w-0.5 bg-orange-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                  <div class="relative">
-                    <img v-if="comment.avatar" :src="comment.avatar" class="w-8 h-8 rounded-full object-cover border border-gray-100 shadow-sm">
-                    <div v-else class="w-8 h-8 rounded-full bg-gradient-to-br from-orange-100 to-amber-100 flex items-center justify-center border border-orange-200/50 text-orange-600 text-xs font-bold shadow-sm">
-                      {{ comment.author.charAt(0) }}
+                  <div class="absolute left-0 top-0 bottom-0 w-0.5 bg-primary opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                  <div class="avatar placeholder">
+                    <div v-if="comment.avatar" class="w-8 h-8 rounded-full ring-1 ring-base-200">
+                      <img :src="comment.avatar" class="object-cover">
+                    </div>
+                    <div v-else class="bg-primary/10 text-primary w-8 h-8 rounded-full ring-1 ring-primary/20">
+                      <span class="text-xs font-bold">{{ comment.author.charAt(0) }}</span>
                     </div>
                   </div>
                   <div class="flex-1 min-w-0">
                     <div class="flex items-center justify-between mb-1">
-                      <span class="text-xs font-semibold text-gray-900">{{ comment.author }}</span>
-                      <span class="text-[10px] text-gray-400">{{ comment.time }}</span>
+                      <span class="text-xs font-semibold text-base-content">{{ comment.author }}</span>
+                      <span class="text-[10px] text-base-content/40">{{ comment.time }}</span>
                     </div>
-                    <p class="text-[13px] text-gray-600 leading-relaxed">{{ comment.text }}</p>
+                    <p class="text-[13px] text-base-content/60 leading-relaxed">{{ comment.text }}</p>
                   </div>
                 </div>
               </div>
@@ -530,32 +538,27 @@
             <div v-show="activeTab === 'transcript'" class="flex flex-col min-h-full">
               <!-- Loading state -->
               <div v-if="transcriptionStatus === 'processing'" class="flex flex-col items-center justify-center h-64 text-center px-5">
-                <div class="w-16 h-16 rounded-full bg-orange-100 flex items-center justify-center mb-4 animate-pulse">
-                  <svg class="w-8 h-8 text-orange-500 animate-spin" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
+                <div class="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4 animate-pulse">
+                  <span class="loading loading-spinner loading-lg text-primary"></span>
                 </div>
-                <p class="text-base font-semibold text-gray-900">Generating Transcript...</p>
-                <p class="text-sm text-gray-500 mt-1">{{ transcriptionProgress }}% complete</p>
-                <div class="w-48 h-1.5 bg-gray-200 rounded-full mt-3 overflow-hidden">
-                  <div class="h-full bg-orange-500 rounded-full transition-all duration-300" :style="{ width: transcriptionProgress + '%' }"></div>
-                </div>
+                <p class="text-base font-semibold text-base-content">Generating Transcript...</p>
+                <p class="text-sm text-base-content/50 mt-1">{{ transcriptionProgress }}% complete</p>
+                <progress class="progress progress-primary w-48 mt-3" :value="transcriptionProgress" max="100"></progress>
               </div>
 
               <!-- Empty state - not started -->
               <div v-else-if="transcriptionStatus === 'pending'" class="flex flex-col items-center justify-center h-64 text-center px-5">
-                <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
-                  <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="w-16 h-16 rounded-full bg-base-200 flex items-center justify-center mb-4">
+                  <svg class="w-8 h-8 text-base-content/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                   </svg>
                 </div>
-                <p class="text-base font-semibold text-gray-900">No Transcript Yet</p>
-                <p class="text-sm text-gray-500 mt-1 mb-4">Generate an AI transcript of your video</p>
+                <p class="text-base font-semibold text-base-content">No Transcript Yet</p>
+                <p class="text-sm text-base-content/50 mt-1 mb-4">Generate an AI transcript of your video</p>
                 <button
                   @click="requestTranscription"
                   :disabled="isRequestingTranscription || !video.conversion_status || video.conversion_status !== 'completed'"
-                  class="px-4 py-2 bg-orange-600 text-white text-sm font-medium rounded-lg hover:bg-orange-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center gap-2"
+                  class="btn btn-primary gap-2"
                 >
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/>
@@ -566,17 +569,17 @@
 
               <!-- Error state -->
               <div v-else-if="transcriptionStatus === 'failed'" class="flex flex-col items-center justify-center h-64 text-center px-5">
-                <div class="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mb-4">
-                  <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="w-16 h-16 rounded-full bg-error/10 flex items-center justify-center mb-4">
+                  <svg class="w-8 h-8 text-error" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
                   </svg>
                 </div>
-                <p class="text-base font-semibold text-gray-900">Transcription Failed</p>
-                <p class="text-sm text-gray-500 mt-1 mb-4">{{ transcriptionError || 'Something went wrong' }}</p>
+                <p class="text-base font-semibold text-base-content">Transcription Failed</p>
+                <p class="text-sm text-base-content/50 mt-1 mb-4">{{ transcriptionError || 'Something went wrong' }}</p>
                 <button
                   @click="requestTranscription"
                   :disabled="isRequestingTranscription"
-                  class="px-4 py-2 bg-orange-600 text-white text-sm font-medium rounded-lg hover:bg-orange-700 transition-colors disabled:bg-gray-300"
+                  class="btn btn-primary"
                 >
                   Try Again
                 </button>
@@ -585,71 +588,74 @@
               <!-- Transcript content with timestamps -->
               <div v-else-if="transcriptionSegments && transcriptionSegments.length > 0" class="flex flex-col h-full">
                 <!-- Enhanced header with search & actions -->
-                <div class="sticky top-0 bg-white/95 backdrop-blur-sm z-10 border-b border-gray-100">
+                <div class="sticky top-0 bg-base-100/95 backdrop-blur-sm z-10 border-b border-base-200">
                   <!-- Search bar -->
                   <div class="px-4 pt-3 pb-2">
-                    <div class="relative">
-                      <svg class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                      </svg>
-                      <input
-                        v-model="transcriptSearch"
-                        type="text"
-                        placeholder="Search transcript..."
-                        class="w-full pl-10 pr-8 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400 transition-colors"
-                      />
-                      <button
-                        v-if="transcriptSearch"
-                        @click="transcriptSearch = ''"
-                        class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                      >
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    <div class="form-control">
+                      <div class="relative">
+                        <svg class="w-4 h-4 text-base-content/40 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                         </svg>
-                      </button>
+                        <input
+                          v-model="transcriptSearch"
+                          type="text"
+                          placeholder="Search transcript..."
+                          class="input input-bordered input-sm w-full pl-10 pr-8"
+                        />
+                        <button
+                          v-if="transcriptSearch"
+                          @click="transcriptSearch = ''"
+                          class="btn btn-ghost btn-xs btn-circle absolute right-2 top-1/2 -translate-y-1/2"
+                        >
+                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                          </svg>
+                        </button>
+                      </div>
                     </div>
                   </div>
                   <!-- Stats & Actions row -->
                   <div class="flex items-center justify-between px-4 py-2">
-                    <div class="flex items-center gap-3 text-[11px] text-gray-400">
+                    <div class="flex items-center gap-3 text-[11px] text-base-content/40">
                       <span>{{ transcriptWordCount }} words</span>
-                      <span class="w-1 h-1 rounded-full bg-gray-300"></span>
+                      <span class="w-1 h-1 rounded-full bg-base-content/20"></span>
                       <span>{{ transcriptReadTime }} min read</span>
-                      <span v-if="transcriptSearch && filteredSegments.length !== transcriptionSegments.length" class="text-orange-500 font-medium">
+                      <span v-if="transcriptSearch && filteredSegments.length !== transcriptionSegments.length" class="text-primary font-medium">
                         {{ filteredSegments.length }} matches
                       </span>
                     </div>
                     <div class="flex items-center gap-1">
                       <!-- Export dropdown -->
-                      <div class="relative export-menu-container">
+                      <div class="dropdown dropdown-end export-menu-container">
                         <button
                           @click="showExportMenu = !showExportMenu"
-                          class="flex items-center gap-1 px-2 py-1.5 text-xs font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+                          tabindex="0"
+                          class="btn btn-ghost btn-xs gap-1"
                         >
                           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
                           </svg>
                           Export
                         </button>
-                        <div v-if="showExportMenu" class="absolute right-0 mt-1 w-36 bg-white rounded-lg shadow-lg border border-gray-100 py-1 z-20">
-                          <button @click="exportTranscript('txt')" class="w-full px-3 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2">
-                            <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <ul v-if="showExportMenu" tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-20 w-36 p-2 shadow-lg border border-base-200">
+                          <li><a @click="exportTranscript('txt')" class="gap-2">
+                            <svg class="w-3.5 h-3.5 text-base-content/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                             </svg>
                             Plain Text (.txt)
-                          </button>
-                          <button @click="exportTranscript('srt')" class="w-full px-3 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2">
-                            <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          </a></li>
+                          <li><a @click="exportTranscript('srt')" class="gap-2">
+                            <svg class="w-3.5 h-3.5 text-base-content/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z"/>
                             </svg>
                             Subtitles (.srt)
-                          </button>
-                        </div>
+                          </a></li>
+                        </ul>
                       </div>
                       <!-- Copy all -->
                       <button
                         @click="copyTranscript"
-                        class="flex items-center gap-1 px-2 py-1.5 text-xs font-medium text-gray-500 hover:text-orange-600 hover:bg-orange-50 rounded-md transition-colors"
+                        class="btn btn-ghost btn-xs gap-1 hover:text-primary"
                       >
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
@@ -668,19 +674,19 @@
                     @click="seekToTime(segment.start)"
                     class="group relative px-4 py-3 cursor-pointer transition-all duration-200 border-l-2"
                     :class="activeSegmentIndex === segment.originalIndex
-                      ? 'bg-orange-50 border-l-orange-500'
-                      : 'hover:bg-gray-50 border-l-transparent'"
+                      ? 'bg-primary/5 border-l-primary'
+                      : 'hover:bg-base-200/50 border-l-transparent'"
                   >
                     <div class="flex gap-3">
                       <span
                         class="text-[11px] font-medium tabular-nums tracking-wide flex-shrink-0 transition-colors min-w-[36px] pt-0.5"
-                        :class="activeSegmentIndex === segment.originalIndex ? 'text-orange-500' : 'text-gray-400'"
+                        :class="activeSegmentIndex === segment.originalIndex ? 'text-primary' : 'text-base-content/40'"
                       >
                         {{ formatTime(segment.start) }}
                       </span>
                       <p
                         class="text-[13px] leading-relaxed transition-colors flex-1"
-                        :class="activeSegmentIndex === segment.originalIndex ? 'text-gray-900' : 'text-gray-600'"
+                        :class="activeSegmentIndex === segment.originalIndex ? 'text-base-content' : 'text-base-content/60'"
                         v-html="highlightSearch(segment.text)"
                       ></p>
                     </div>
@@ -688,7 +694,7 @@
                     <div class="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
                       <button
                         @click.stop="copySegment(segment)"
-                        class="p-1.5 rounded-md bg-white shadow-sm border border-gray-200 text-gray-400 hover:text-orange-500 hover:border-orange-200 transition-colors"
+                        class="btn btn-ghost btn-xs btn-circle hover:text-primary"
                         title="Copy this segment"
                       >
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -699,10 +705,10 @@
                   </div>
                   <!-- No results -->
                   <div v-if="transcriptSearch && filteredSegments.length === 0" class="flex flex-col items-center justify-center py-12 text-center">
-                    <svg class="w-12 h-12 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-12 h-12 text-base-content/20 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                     </svg>
-                    <p class="text-sm text-gray-500">No matches found for "{{ transcriptSearch }}"</p>
+                    <p class="text-sm text-base-content/50">No matches found for "{{ transcriptSearch }}"</p>
                   </div>
                 </div>
               </div>
@@ -710,10 +716,10 @@
               <!-- Fallback: show full transcript if no segments -->
               <div v-else-if="transcription" class="p-5">
                 <div class="flex items-center justify-between mb-3">
-                  <span class="text-xs font-medium text-gray-500">Full transcript</span>
+                  <span class="text-xs font-medium text-base-content/50">Full transcript</span>
                   <button
                     @click="copyTranscript"
-                    class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
+                    class="btn btn-ghost btn-xs gap-1.5 hover:text-primary"
                   >
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
@@ -721,7 +727,7 @@
                     {{ copiedTranscript ? 'Copied!' : 'Copy' }}
                   </button>
                 </div>
-                <p class="text-[13px] text-gray-700 leading-relaxed whitespace-pre-wrap">{{ transcription }}</p>
+                <p class="text-[13px] text-base-content/70 leading-relaxed whitespace-pre-wrap">{{ transcription }}</p>
               </div>
             </div>
 
@@ -729,52 +735,49 @@
             <div v-show="activeTab === 'summary'" class="flex flex-col min-h-full">
               <!-- Loading state -->
               <div v-if="summaryStatus === 'processing'" class="flex flex-col items-center justify-center h-64 text-center px-5">
-                <div class="w-16 h-16 rounded-full bg-gradient-to-br from-orange-100 to-amber-100 flex items-center justify-center mb-4 animate-pulse">
-                  <svg class="w-8 h-8 text-orange-500 animate-spin" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
+                <div class="w-16 h-16 rounded-full bg-gradient-to-br from-primary/10 to-warning/10 flex items-center justify-center mb-4 animate-pulse">
+                  <span class="loading loading-spinner loading-lg text-primary"></span>
                 </div>
-                <p class="text-base font-semibold text-gray-900">Generating Summary...</p>
-                <p class="text-sm text-gray-500 mt-1">AI is analyzing your video</p>
+                <p class="text-base font-semibold text-base-content">Generating Summary...</p>
+                <p class="text-sm text-base-content/50 mt-1">AI is analyzing your video</p>
               </div>
 
               <!-- Empty state - waiting for transcript -->
               <div v-else-if="summaryStatus === 'pending' && transcriptionStatus !== 'completed'" class="flex flex-col items-center justify-center h-64 text-center px-5">
-                <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
-                  <svg class="w-8 h-8 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                <div class="w-16 h-16 rounded-full bg-base-200 flex items-center justify-center mb-4">
+                  <svg class="w-8 h-8 text-base-content/40" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/>
                   </svg>
                 </div>
-                <p class="text-base font-semibold text-gray-900">Summary Requires Transcript</p>
-                <p class="text-sm text-gray-500 mt-1">Generate a transcript first to get an AI summary</p>
+                <p class="text-base font-semibold text-base-content">Summary Requires Transcript</p>
+                <p class="text-sm text-base-content/50 mt-1">Generate a transcript first to get an AI summary</p>
               </div>
 
               <!-- Error state -->
               <div v-else-if="summaryStatus === 'failed'" class="flex flex-col items-center justify-center h-64 text-center px-5">
-                <div class="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mb-4">
-                  <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="w-16 h-16 rounded-full bg-error/10 flex items-center justify-center mb-4">
+                  <svg class="w-8 h-8 text-error" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
                   </svg>
                 </div>
-                <p class="text-base font-semibold text-gray-900">Summary Failed</p>
-                <p class="text-sm text-gray-500 mt-1">{{ summaryError || 'Something went wrong' }}</p>
+                <p class="text-base font-semibold text-base-content">Summary Failed</p>
+                <p class="text-sm text-base-content/50 mt-1">{{ summaryError || 'Something went wrong' }}</p>
               </div>
 
               <!-- Summary content -->
               <div v-else-if="summary" class="p-5">
                 <div class="flex items-center justify-between mb-4">
                   <div class="flex items-center gap-2">
-                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-orange-100 to-amber-100 flex items-center justify-center">
-                      <svg class="w-4 h-4 text-orange-500" fill="currentColor" viewBox="0 0 24 24">
+                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-primary/10 to-warning/10 flex items-center justify-center">
+                      <svg class="w-4 h-4 text-primary" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/>
                       </svg>
                     </div>
-                    <span class="text-sm font-semibold text-gray-900">AI Summary</span>
+                    <span class="text-sm font-semibold text-base-content">AI Summary</span>
                   </div>
                   <button
                     @click="copySummary"
-                    class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
+                    class="btn btn-ghost btn-xs gap-1.5 hover:text-primary"
                   >
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
@@ -782,39 +785,39 @@
                     {{ copiedSummary ? 'Copied!' : 'Copy' }}
                   </button>
                 </div>
-                <div class="prose prose-sm max-w-none text-gray-700 leading-relaxed" v-html="formattedSummary"></div>
+                <div class="prose prose-sm max-w-none text-base-content/70 leading-relaxed" v-html="formattedSummary"></div>
               </div>
 
               <!-- Pending state - transcript complete but no summary yet -->
               <div v-else-if="summaryStatus === 'pending' && transcriptionStatus === 'completed'" class="flex flex-col items-center justify-center h-64 text-center px-5">
-                <div class="w-16 h-16 rounded-full bg-orange-100 flex items-center justify-center mb-4">
-                  <svg class="w-8 h-8 text-orange-500" fill="currentColor" viewBox="0 0 24 24">
+                <div class="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                  <svg class="w-8 h-8 text-primary" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/>
                   </svg>
                 </div>
-                <p class="text-base font-semibold text-gray-900">Summary Available Soon</p>
-                <p class="text-sm text-gray-500 mt-1">AI summary is being generated...</p>
+                <p class="text-base font-semibold text-base-content">Summary Available Soon</p>
+                <p class="text-sm text-base-content/50 mt-1">AI summary is being generated...</p>
               </div>
             </div>
 
           </div>
 
           <!-- Comment Input -->
-          <div v-show="activeTab === 'comments'" class="p-4 bg-white border-t border-gray-100 z-20">
-            <div class="relative shadow-sm ring-1 ring-gray-200 rounded-xl bg-white focus-within:ring-2 focus-within:ring-orange-500/20 focus-within:border-orange-500 transition-all">
+          <div v-show="activeTab === 'comments'" class="p-4 bg-base-100 border-t border-base-200 z-20">
+            <div class="form-control">
               <textarea
                 v-model="newComment"
                 rows="1"
                 placeholder="Add a comment..."
                 @keydown.enter.exact.prevent="addComment"
-                class="w-full bg-transparent border-none text-[13px] text-gray-900 placeholder:text-gray-400 focus:ring-0 p-3 resize-none min-h-[44px]"
+                class="textarea textarea-bordered text-[13px] min-h-[44px] resize-none focus:textarea-primary"
               ></textarea>
 
-              <div class="flex items-center justify-end px-2 pb-2">
+              <div class="flex items-center justify-end mt-2">
                 <button
                   @click="addComment"
                   :disabled="!newComment.trim() || isSavingComment"
-                  class="bg-orange-600 text-white p-1.5 rounded-lg hover:bg-orange-700 transition-colors shadow-sm shadow-orange-200 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                  class="btn btn-primary btn-sm btn-circle"
                 >
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
@@ -839,17 +842,19 @@
     />
 
     <!-- Toast -->
-    <transition name="toast">
-      <div
-        v-if="toast"
-        class="fixed bottom-8 left-1/2 -translate-x-1/2 px-5 py-3 bg-white text-gray-900 rounded-xl text-sm font-medium shadow-2xl border border-gray-200 flex items-center gap-2 z-[100]"
-      >
-        <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-        </svg>
-        {{ toast }}
-      </div>
-    </transition>
+    <div class="toast toast-center toast-bottom z-[100]">
+      <transition name="toast">
+        <div
+          v-if="toast"
+          class="alert alert-success shadow-lg"
+        >
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+          </svg>
+          <span>{{ toast }}</span>
+        </div>
+      </transition>
+    </div>
 
   </div>
 </template>
@@ -1035,7 +1040,7 @@ export default {
       if (!transcriptSearch.value.trim()) return text
       const search = transcriptSearch.value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
       const regex = new RegExp(`(${search})`, 'gi')
-      return text.replace(regex, '<mark class="bg-yellow-200 text-yellow-900 rounded px-0.5">$1</mark>')
+      return text.replace(regex, '<mark class="bg-warning/30 text-warning-content rounded px-0.5">$1</mark>')
     }
 
     // Copy individual segment
@@ -1922,7 +1927,7 @@ export default {
 
 .toast-enter-active { transition: all 0.3s ease; }
 .toast-leave-active { transition: all 0.2s ease; }
-.toast-enter-from, .toast-leave-to { opacity: 0; transform: translate(-50%, 20px); }
+.toast-enter-from, .toast-leave-to { opacity: 0; transform: translateY(20px); }
 
 @keyframes pulse-glow {
   0%, 100% { transform: scale(1); }

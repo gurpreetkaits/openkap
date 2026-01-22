@@ -1,0 +1,27 @@
+Statement,Total,2025-12-01T00:00:00.000000Z,2026-01-01T00:00:00.000000Z
+--- SALES ---,0,0,0
+(4000) Sales,19.61,7.64,11.97
+Total Sales,19.61,7.64,11.97
+--- REVENUE ---,0,0,0
+(410) Shopify Sales,988.9599,268.03,720.9299
+(450) Faire Sales,220,220,0
+(400) Amazon Sales,8894.53,0,8894.53
+(400.1) Amazon Refunds,682.96,0,682.96
+(400.3) Amazon Shipping Credits,96.99,0,96.99
+(400.4) Amazon Promo Rebates,549.59,0,549.59
+(400.5) Amazon Giftwrap Credits,24.68,0,24.68
+Total Revenue,11477.3199,495.66999999999996,10981.6499
+--- DIRECT COSTS ---,0,0,0
+(1) Unassigned COGS,28689.969999999998,27408.85,1281.12
+(500.0.1) COGS Amazon,247117.16,247117.16,0
+(500.0.2) COGS Shopify,808.14,808.14,0
+Total Gross Income,-265137.9501,-274838.48000000004,9700.529900000001
+Gross Margin,-2310.10%,-55447.87%,88.33%
+--- EXPENSE ---,0,0,0
+(605.4) Amazon - Other Sales/Refund Fees,85.41,0,85.41
+(605.5) Amazon - PickPack Fee,1261.14,0,1261.14
+(605.6) Amazon - Referral Fee,1631.46,0,1631.46
+(605.7) Amazon - Storage Fees,2.71,0,2.71
+(605.9) Amazon - Shipping Chargeback,10.12,0,10.12
+Net Income,-268128.79010000004,-274838.48000000004,6709.689900000001
+Net Margin,-2336.16%,-55447.87%,61.10%

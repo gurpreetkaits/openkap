@@ -1,7 +1,7 @@
 <template>
-  <div class="loading-container">
-    <div class="spinner"></div>
-    <p>Activating your subscription...</p>
+  <div class="min-h-screen bg-base-200 flex flex-col items-center justify-center gap-6">
+    <span class="loading loading-spinner loading-lg text-primary"></span>
+    <p class="text-lg text-base-content/60">Activating your subscription...</p>
   </div>
 </template>
 
@@ -62,36 +62,3 @@ onMounted(() => {
   handleCheckoutSuccess()
 })
 </script>
-
-<style scoped>
-.loading-container {
-  min-height: 100vh;
-  background: #f9fafb;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 1.5rem;
-}
-
-.spinner {
-  width: 48px;
-  height: 48px;
-  border: 4px solid #e5e7eb;
-  border-top-color: #3b82f6;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.loading-container p {
-  font-size: 1.125rem;
-  color: #6b7280;
-  margin: 0;
-}
-</style>

@@ -1,44 +1,45 @@
 <template>
   <div class="animate-fade-in max-w-2xl mx-auto py-6 px-4">
     <!-- Loading State -->
-    <div v-if="loading" class="bg-white rounded-xl border border-gray-200 shadow-sm p-8 text-center">
-      <div class="animate-spin w-6 h-6 border-2 border-orange-500 border-t-transparent rounded-full mx-auto"></div>
-      <p class="text-sm text-gray-500 mt-2">Loading profile...</p>
+    <div v-if="loading" class="card bg-base-100 border border-base-300 shadow-sm p-8 text-center">
+      <span class="loading loading-spinner loading-md text-primary mx-auto"></span>
+      <p class="text-sm text-base-content/60 mt-2">Loading profile...</p>
     </div>
 
     <div v-else class="space-y-6">
       <!-- Profile Card -->
-      <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+      <div class="card bg-base-100 border border-base-300 shadow-sm overflow-hidden">
         <!-- Header with gradient background -->
-        <div class="bg-gradient-to-r from-orange-500 to-orange-600 h-24 relative">
+        <div class="bg-gradient-to-r from-primary to-primary-focus h-24 relative">
           <!-- Avatar positioned at bottom of header -->
           <div class="absolute -bottom-12 left-6">
-            <img
-              v-if="user?.avatar"
-              :src="user.avatar"
-              :alt="user.name"
-              class="w-24 h-24 rounded-xl object-cover ring-4 ring-white shadow-lg"
-            />
-            <div v-else class="w-24 h-24 bg-gradient-to-br from-gray-700 to-gray-900 rounded-xl flex items-center justify-center ring-4 ring-white shadow-lg">
-              <span class="text-3xl font-bold text-white">{{ userInitial }}</span>
+            <div v-if="user?.avatar" class="avatar">
+              <div class="w-24 rounded-xl ring ring-base-100 ring-offset-base-100 ring-offset-2 shadow-lg">
+                <img :src="user.avatar" :alt="user.name" />
+              </div>
+            </div>
+            <div v-else class="avatar placeholder">
+              <div class="w-24 rounded-xl bg-neutral text-neutral-content ring ring-base-100 ring-offset-base-100 ring-offset-2 shadow-lg">
+                <span class="text-3xl font-bold">{{ userInitial }}</span>
+              </div>
             </div>
           </div>
         </div>
 
         <!-- Profile Info -->
-        <div class="pt-16 pb-6 px-6">
+        <div class="card-body pt-16">
           <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
             <div>
-              <h2 class="text-xl font-bold text-gray-900">{{ user?.name || 'User' }}</h2>
-              <p class="text-sm text-gray-500 mt-0.5">{{ user?.email }}</p>
+              <h2 class="card-title text-xl">{{ user?.name || 'User' }}</h2>
+              <p class="text-sm text-base-content/60 mt-0.5">{{ user?.email }}</p>
               <div class="flex items-center gap-2 mt-3">
-                <span class="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-green-50 text-green-700 border border-green-100">
+                <span class="badge badge-success badge-outline gap-1">
                   <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
                   </svg>
                   Verified
                 </span>
-                <span class="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-gray-50 text-gray-700 border border-gray-100">
+                <span class="badge badge-ghost gap-1">
                   <svg class="w-3 h-3" viewBox="0 0 24 24">
                     <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                     <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -54,59 +55,59 @@
       </div>
 
       <!-- Account Details -->
-      <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-        <div class="p-4 border-b border-gray-100">
-          <h3 class="text-sm font-semibold text-gray-900">Account Details</h3>
+      <div class="card bg-base-100 border border-base-300 shadow-sm overflow-hidden">
+        <div class="p-4 border-b border-base-200">
+          <h3 class="text-sm font-semibold text-base-content">Account Details</h3>
         </div>
-        <div class="divide-y divide-gray-100">
+        <div class="divide-y divide-base-200">
           <div class="px-4 py-3 flex items-center justify-between">
-            <span class="text-sm text-gray-500">Full name</span>
-            <span class="text-sm font-medium text-gray-900">{{ user?.name || '-' }}</span>
+            <span class="text-sm text-base-content/60">Full name</span>
+            <span class="text-sm font-medium text-base-content">{{ user?.name || '-' }}</span>
           </div>
           <div class="px-4 py-3 flex items-center justify-between">
-            <span class="text-sm text-gray-500">Email address</span>
-            <span class="text-sm font-medium text-gray-900">{{ user?.email || '-' }}</span>
+            <span class="text-sm text-base-content/60">Email address</span>
+            <span class="text-sm font-medium text-base-content">{{ user?.email || '-' }}</span>
           </div>
           <div class="px-4 py-3 flex items-center justify-between">
-            <span class="text-sm text-gray-500">Member since</span>
-            <span class="text-sm font-medium text-gray-900">{{ memberSince }}</span>
+            <span class="text-sm text-base-content/60">Member since</span>
+            <span class="text-sm font-medium text-base-content">{{ memberSince }}</span>
           </div>
           <div class="px-4 py-3 flex items-center justify-between">
-            <span class="text-sm text-gray-500">Videos created</span>
-            <span class="text-sm font-medium text-gray-900">{{ subscription?.videos_count || 0 }}</span>
+            <span class="text-sm text-base-content/60">Videos created</span>
+            <span class="text-sm font-medium text-base-content">{{ subscription?.videos_count || 0 }}</span>
           </div>
         </div>
       </div>
 
       <!-- Account Actions -->
-      <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-        <div class="p-4 border-b border-gray-100">
-          <h3 class="text-sm font-semibold text-gray-900">Account Actions</h3>
+      <div class="card bg-base-100 border border-base-300 shadow-sm overflow-hidden">
+        <div class="p-4 border-b border-base-200">
+          <h3 class="text-sm font-semibold text-base-content">Account Actions</h3>
         </div>
-        <div class="divide-y divide-gray-100">
+        <div class="divide-y divide-base-200">
           <!-- Export Data -->
           <div class="p-4 flex items-center justify-between">
             <div>
-              <p class="text-sm font-medium text-gray-900">Export Data</p>
-              <p class="text-xs text-gray-500 mt-0.5">Download all your recordings and data</p>
+              <p class="text-sm font-medium text-base-content">Export Data</p>
+              <p class="text-xs text-base-content/60 mt-0.5">Download all your recordings and data</p>
             </div>
             <button
               @click="exportData"
-              class="px-3 py-1.5 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+              class="btn btn-sm btn-ghost"
             >
               Export
             </button>
           </div>
 
           <!-- Delete Account -->
-          <div class="p-4 flex items-center justify-between bg-red-50/50">
+          <div class="p-4 flex items-center justify-between bg-error/5">
             <div>
-              <p class="text-sm font-medium text-red-900">Delete Account</p>
-              <p class="text-xs text-red-600 mt-0.5">Permanently delete your account and all data</p>
+              <p class="text-sm font-medium text-error">Delete Account</p>
+              <p class="text-xs text-error/70 mt-0.5">Permanently delete your account and all data</p>
             </div>
             <button
               @click="deleteAccount"
-              class="px-3 py-1.5 text-xs font-medium text-red-700 bg-red-100 hover:bg-red-200 rounded-lg transition-colors"
+              class="btn btn-sm btn-error btn-outline"
             >
               Delete
             </button>

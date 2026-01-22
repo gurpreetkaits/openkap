@@ -5,44 +5,44 @@
     size="md"
     @close="handleClose"
   >
-    <div class="sm:flex sm:items-start">
+    <div class="flex flex-col sm:flex-row gap-4">
       <!-- Dynamic Icon -->
-      <div :class="iconContainerClasses">
-        <component :is="iconComponent" :class="iconClasses" />
+      <div class="flex-shrink-0 mx-auto sm:mx-0">
+        <div :class="iconContainerClasses">
+          <component :is="iconComponent" :class="iconClasses" />
+        </div>
       </div>
-      
+
       <!-- Content -->
-      <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
-        <h3 class="text-base font-semibold leading-6 text-gray-900">
+      <div class="text-center sm:text-left">
+        <h3 class="text-base font-semibold">
           {{ title || 'Confirm Action' }}
         </h3>
-        <div class="mt-2">
-          <p class="text-sm text-gray-500">
-            <slot>
-              {{ message || 'Are you sure you want to proceed with this action?' }}
-            </slot>
-          </p>
-        </div>
+        <p class="mt-2 text-sm text-base-content/70">
+          <slot>
+            {{ message || 'Are you sure you want to proceed with this action?' }}
+          </slot>
+        </p>
       </div>
     </div>
 
     <template #footer>
-      <div class="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-3 space-y-3 space-y-reverse sm:space-y-0">
-        <SBPrimaryButton
-          variant="secondary"
+      <div class="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3">
+        <button
+          class="btn btn-ghost"
           @click="handleCancel"
           :disabled="loading"
         >
           {{ cancelText || 'Cancel' }}
-        </SBPrimaryButton>
-        
-        <SBPrimaryButton
-          :variant="confirmVariant"
+        </button>
+
+        <button
+          :class="['btn', confirmButtonClass]"
           @click="handleConfirm"
-          :loading="loading"
         >
+          <span v-if="loading" class="loading loading-spinner loading-sm"></span>
           {{ confirmText || 'Confirm' }}
-        </SBPrimaryButton>
+        </button>
       </div>
     </template>
   </SBModal>
@@ -51,13 +51,11 @@
 <script>
 import { computed, h } from 'vue'
 import SBModal from './SBModal.vue'
-import SBPrimaryButton from './SBPrimaryButton.vue'
 
 export default {
   name: 'SBConfirmModal',
   components: {
-    SBModal,
-    SBPrimaryButton
+    SBModal
   },
   emits: ['update:modelValue', 'confirm', 'cancel', 'close'],
   props: {
@@ -100,39 +98,39 @@ export default {
     const typeConfig = computed(() => {
       const configs = {
         info: {
-          containerClass: 'bg-blue-100',
-          iconClass: 'text-blue-600',
-          variant: 'primary'
+          containerClass: 'bg-info/10',
+          iconClass: 'text-info',
+          buttonClass: 'btn-primary'
         },
         warning: {
-          containerClass: 'bg-yellow-100',
-          iconClass: 'text-yellow-600',
-          variant: 'primary'
+          containerClass: 'bg-warning/10',
+          iconClass: 'text-warning',
+          buttonClass: 'btn-warning'
         },
         danger: {
-          containerClass: 'bg-red-100',
-          iconClass: 'text-red-600',
-          variant: 'danger'
+          containerClass: 'bg-error/10',
+          iconClass: 'text-error',
+          buttonClass: 'btn-error'
         },
         success: {
-          containerClass: 'bg-green-100',
-          iconClass: 'text-green-600',
-          variant: 'success'
+          containerClass: 'bg-success/10',
+          iconClass: 'text-success',
+          buttonClass: 'btn-success'
         }
       }
       return configs[props.type] || configs.info
     })
 
     const iconContainerClasses = computed(() => {
-      return `mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full sm:mx-0 sm:h-10 sm:w-10 ${typeConfig.value.containerClass}`
+      return `w-12 h-12 rounded-full flex items-center justify-center ${typeConfig.value.containerClass}`
     })
 
     const iconClasses = computed(() => {
       return `h-6 w-6 ${typeConfig.value.iconClass}`
     })
 
-    const confirmVariant = computed(() => {
-      return typeConfig.value.variant
+    const confirmButtonClass = computed(() => {
+      return typeConfig.value.buttonClass
     })
 
     const iconComponent = computed(() => {
@@ -208,7 +206,7 @@ export default {
       iconContainerClasses,
       iconClasses,
       iconComponent,
-      confirmVariant,
+      confirmButtonClass,
       handleConfirm,
       handleCancel,
       handleClose

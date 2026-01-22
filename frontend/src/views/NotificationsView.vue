@@ -3,44 +3,48 @@
     <!-- Header -->
     <div class="flex items-center justify-between mb-4">
       <div>
-        <h1 class="text-lg font-semibold text-gray-900">Notifications</h1>
-        <p class="text-xs text-gray-500">Stay updated on your videos and activity</p>
+        <h1 class="text-lg font-semibold text-base-content">Notifications</h1>
+        <p class="text-xs text-base-content/60">Stay updated on your videos and activity</p>
       </div>
       <button
         v-if="hasUnread"
         @click="markAllRead"
-        class="px-3 py-1.5 text-xs font-medium text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
+        class="btn btn-ghost btn-sm text-primary"
       >
         Mark all read
       </button>
     </div>
 
     <!-- Loading -->
-    <div v-if="loading && notifications.length === 0" class="bg-white rounded-lg border border-gray-200 p-8 text-center">
-      <div class="inline-block animate-spin rounded-full h-6 w-6 border-2 border-orange-500 border-t-transparent"></div>
+    <div v-if="loading && notifications.length === 0" class="card bg-base-100 border border-base-300 p-8 text-center">
+      <span class="loading loading-spinner loading-md text-primary mx-auto"></span>
     </div>
 
     <!-- Empty -->
-    <div v-else-if="notifications.length === 0" class="bg-white rounded-lg border border-gray-200 p-8 text-center">
-      <svg class="w-10 h-10 mx-auto text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div v-else-if="notifications.length === 0" class="card bg-base-100 border border-base-300 p-8 text-center">
+      <svg class="w-10 h-10 mx-auto text-base-content/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
       </svg>
-      <p class="mt-2 text-sm text-gray-500">No notifications yet</p>
-      <p class="text-xs text-gray-400 mt-1">We'll notify you when something happens</p>
+      <p class="mt-2 text-sm text-base-content/60">No notifications yet</p>
+      <p class="text-xs text-base-content/40 mt-1">We'll notify you when something happens</p>
     </div>
 
     <!-- Notifications List -->
-    <div v-else class="bg-white rounded-lg border border-gray-200 overflow-hidden">
-      <div class="divide-y divide-gray-100">
+    <div v-else class="card bg-base-100 border border-base-300 overflow-hidden">
+      <div class="divide-y divide-base-200">
         <div
           v-for="notification in notifications"
           :key="notification.id"
-          class="flex items-start gap-3 p-3 hover:bg-gray-50 transition-colors group"
-          :class="{ 'bg-orange-50/40': !notification.read }"
+          class="flex items-start gap-3 p-3 hover:bg-base-200/50 transition-colors group"
+          :class="{ 'bg-primary/5': !notification.read }"
         >
           <!-- Actor Avatar or Type Icon -->
           <div v-if="notification.actor?.avatar_url" class="flex-shrink-0">
-            <img :src="notification.actor.avatar_url" :alt="notification.actor.name" class="w-8 h-8 rounded-full">
+            <div class="avatar">
+              <div class="w-8 rounded-full">
+                <img :src="notification.actor.avatar_url" :alt="notification.actor.name">
+              </div>
+            </div>
           </div>
           <div
             v-else
@@ -58,9 +62,9 @@
           </div>
 
           <!-- Content -->
-          <div class="flex-1 min-w-0" @click="handleClick(notification)">
-            <p class="text-sm text-gray-700 leading-snug" v-html="notification.message"></p>
-            <p class="text-xs text-gray-400 mt-0.5">{{ formatTime(notification.created_at) }}</p>
+          <div class="flex-1 min-w-0 cursor-pointer" @click="handleClick(notification)">
+            <p class="text-sm text-base-content leading-snug" v-html="notification.message"></p>
+            <p class="text-xs text-base-content/40 mt-0.5">{{ formatTime(notification.created_at) }}</p>
           </div>
 
           <!-- Actions -->
@@ -68,7 +72,7 @@
             <button
               v-if="!notification.read"
               @click.stop="markAsRead(notification)"
-              class="p-1.5 text-gray-400 hover:text-orange-600 hover:bg-orange-50 rounded transition-colors"
+              class="btn btn-ghost btn-xs btn-circle hover:text-primary"
               title="Mark as read"
             >
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -77,7 +81,7 @@
             </button>
             <button
               @click.stop="deleteNotification(notification)"
-              class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+              class="btn btn-ghost btn-xs btn-circle hover:text-error"
               title="Delete"
             >
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -86,25 +90,26 @@
             </button>
           </div>
 
-          <!-- Unread dot -->
-          <div v-if="!notification.read" class="w-2 h-2 bg-orange-500 rounded-full flex-shrink-0 mt-1.5"></div>
+          <!-- Unread indicator -->
+          <div v-if="!notification.read" class="badge badge-primary badge-xs flex-shrink-0 mt-1.5"></div>
         </div>
       </div>
 
       <!-- Load More -->
-      <div v-if="hasMore" class="p-3 border-t border-gray-100 text-center">
+      <div v-if="hasMore" class="p-3 border-t border-base-200 text-center">
         <button
           @click="loadMore"
           :disabled="loadingMore"
-          class="text-xs font-medium text-orange-600 hover:text-orange-700 disabled:opacity-50"
+          class="btn btn-ghost btn-sm text-primary"
         >
+          <span v-if="loadingMore" class="loading loading-spinner loading-xs mr-1"></span>
           {{ loadingMore ? 'Loading...' : 'Load more' }}
         </button>
       </div>
     </div>
 
     <!-- Pagination info -->
-    <p v-if="pagination.total > 0" class="text-xs text-gray-400 mt-3 text-center">
+    <p v-if="pagination.total > 0" class="text-xs text-base-content/40 mt-3 text-center">
       Showing {{ notifications.length }} of {{ pagination.total }} notifications
     </p>
   </div>
@@ -128,13 +133,13 @@ const pagination = ref({ total: 0 })
 const hasUnread = computed(() => notifications.value.some(n => !n.read))
 
 const getIconClass = (type) => ({
-  'viewer': 'bg-blue-100 text-blue-600',
-  'comment': 'bg-purple-100 text-purple-600',
-  'warning': 'bg-amber-100 text-amber-600',
-  'success': 'bg-green-100 text-green-600',
-  'feedback': 'bg-green-100 text-green-600',
-  'info': 'bg-gray-100 text-gray-600'
-}[type] || 'bg-gray-100 text-gray-600')
+  'viewer': 'bg-info/20 text-info',
+  'comment': 'bg-secondary/20 text-secondary',
+  'warning': 'bg-warning/20 text-warning',
+  'success': 'bg-success/20 text-success',
+  'feedback': 'bg-success/20 text-success',
+  'info': 'bg-base-200 text-base-content/60'
+}[type] || 'bg-base-200 text-base-content/60')
 
 const formatTime = (date) => {
   try {

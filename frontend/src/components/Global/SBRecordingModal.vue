@@ -1,219 +1,204 @@
 <template>
   <Teleport to="body">
-    <div v-if="show" class="fixed inset-0 z-50 overflow-y-auto">
-      <!-- Backdrop with blur -->
-      <div class="fixed inset-0 bg-black/60 backdrop-blur-md transition-opacity" @click="handleBackdropClick"></div>
+    <dialog
+      class="modal"
+      :class="{ 'modal-open': show }"
+    >
+      <!-- Modal Backdrop -->
+      <div class="modal-backdrop bg-black/60 backdrop-blur-md" @click="handleBackdropClick"></div>
 
-      <!-- Modal -->
-      <div class="flex min-h-full items-center justify-center p-4">
-        <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-4xl transform transition-all">
-          <!-- Close Button (only when not recording or finishing) -->
-          <button
-            v-if="!isRecording && !isFinishing && !isSaving"
-            @click="closeModal"
-            class="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors z-10"
-          >
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-            </svg>
-          </button>
+      <!-- Modal Content -->
+      <div class="modal-box max-w-4xl relative">
+        <!-- Close Button -->
+        <button
+          v-if="!isRecording && !isFinishing && !isSaving"
+          @click="closeModal"
+          class="btn btn-sm btn-circle btn-ghost absolute right-4 top-4 z-10"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
 
-          <!-- Loading State - Checking Subscription -->
-          <div v-if="isCheckingSubscription" class="p-8 text-center">
-            <div class="inline-flex items-center justify-center w-14 h-14 bg-gray-100 rounded-full mb-4">
-              <svg class="w-7 h-7 text-gray-400 animate-spin" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        <!-- Loading State - Checking Subscription -->
+        <div v-if="isCheckingSubscription" class="p-8 text-center">
+          <div class="flex justify-center mb-4">
+            <span class="loading loading-spinner loading-lg text-primary"></span>
+          </div>
+          <p class="text-base-content/70">Checking your account...</p>
+        </div>
+
+        <!-- Recording Setup -->
+        <div v-else-if="!isRecording && !hasRecorded" class="p-8 text-center">
+          <!-- Header -->
+          <div class="mb-8">
+            <div class="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg class="w-7 h-7 text-primary" fill="currentColor" viewBox="0 0 20 20">
+                <circle cx="10" cy="10" r="6"/>
               </svg>
             </div>
-            <p class="text-gray-600">Checking your account...</p>
+            <h2 class="text-2xl font-bold mb-2">Start Recording</h2>
+            <p class="text-base-content/70">Select your recording options below</p>
           </div>
 
-          <!-- Recording Setup -->
-          <div v-else-if="!isRecording && !hasRecorded" class="p-8 text-center">
-            <!-- Header -->
-            <div class="mb-8">
-              <div class="inline-flex items-center justify-center w-14 h-14 bg-orange-100 rounded-full mb-4">
-                <svg class="w-7 h-7 text-orange-600" fill="currentColor" viewBox="0 0 20 20">
-                  <circle cx="10" cy="10" r="6"/>
-                </svg>
+          <!-- Recording Options Cards -->
+          <div class="grid grid-cols-2 gap-4 mb-8 max-w-md mx-auto">
+            <!-- Screen Option -->
+            <div class="card bg-primary/10 border-2 border-primary">
+              <div class="card-body items-center p-6">
+                <div class="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center mb-3">
+                  <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                  </svg>
+                </div>
+                <h3 class="font-semibold text-sm">Screen</h3>
+                <p class="text-xs text-base-content/50">Always included</p>
               </div>
-              <h2 class="text-2xl font-bold text-gray-900 mb-2">Start Recording</h2>
-              <p class="text-gray-600">Select your recording options below</p>
             </div>
 
-            <!-- Recording Options Cards -->
-            <div class="grid grid-cols-2 gap-4 mb-8 max-w-md mx-auto">
-              <!-- Screen Option (always enabled) -->
-              <div class="bg-orange-50 border-2 border-orange-500 rounded-xl p-6">
-                <div class="flex flex-col items-center">
-                  <div class="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mb-3">
-                    <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+            <!-- Microphone Option -->
+            <label class="cursor-pointer">
+              <input v-model="recordingOptions.microphone" type="checkbox" class="peer sr-only">
+              <div class="card bg-base-100 border-2 border-base-300 transition-all peer-checked:border-primary peer-checked:bg-primary/10 hover:shadow-md">
+                <div class="card-body items-center p-6">
+                  <div class="w-12 h-12 bg-base-200 peer-checked:bg-primary/20 rounded-full flex items-center justify-center mb-3 transition-colors">
+                    <svg class="w-6 h-6 text-base-content/60 peer-checked:text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/>
                     </svg>
                   </div>
-                  <h3 class="font-semibold text-gray-900 text-sm">Screen</h3>
-                  <p class="text-xs text-gray-500 mt-1">Always included</p>
+                  <h3 class="font-semibold text-sm">Microphone</h3>
+                  <p class="text-xs text-base-content/50">{{ recordingOptions.microphone ? 'Enabled' : 'Disabled' }}</p>
                 </div>
               </div>
+            </label>
+          </div>
 
-              <!-- Microphone Option -->
-              <label class="relative cursor-pointer group">
-                <input
-                  v-model="recordingOptions.microphone"
-                  type="checkbox"
-                  class="peer sr-only"
-                >
-                <div class="bg-white border-2 border-gray-200 rounded-xl p-6 transition-all peer-checked:border-orange-500 peer-checked:bg-orange-50 hover:shadow-md">
-                  <div class="flex flex-col items-center">
-                    <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-3 peer-checked:bg-orange-100 transition-colors">
-                      <svg class="w-6 h-6 text-gray-600 peer-checked:text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/>
-                      </svg>
-                    </div>
-                    <h3 class="font-semibold text-gray-900 text-sm">Microphone</h3>
-                    <p class="text-xs text-gray-500 mt-1">{{ recordingOptions.microphone ? 'Enabled' : 'Disabled' }}</p>
-                  </div>
-                </div>
-              </label>
+          <!-- Start Recording Button -->
+          <button
+            @click="startRecording"
+            :disabled="isStartingRecording"
+            class="btn btn-primary btn-lg gap-2"
+          >
+            <span v-if="isStartingRecording" class="loading loading-spinner"></span>
+            <svg v-else class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+              <circle cx="10" cy="10" r="7"/>
+            </svg>
+            {{ isStartingRecording ? 'Starting...' : 'Start Recording' }}
+          </button>
+
+          <p class="mt-4 text-sm text-base-content/50">
+            Click to select what to share and start recording
+          </p>
+        </div>
+
+        <!-- Recording in Progress -->
+        <div v-if="isRecording" class="p-6">
+          <!-- Recording Header -->
+          <div class="flex items-center justify-between mb-4">
+            <div class="badge badge-error gap-2 p-3">
+              <div class="w-2.5 h-2.5 bg-error rounded-full animate-pulse"></div>
+              <span class="font-semibold">REC {{ formatTime(recordingTime) }}</span>
             </div>
+            <span class="text-sm text-base-content/50">{{ formatBytes(uploadedBytes) }} uploaded</span>
+          </div>
 
-            <!-- Start Recording Button -->
+          <!-- Recording Preview -->
+          <div class="bg-base-300 rounded-lg aspect-video mb-6 relative overflow-hidden">
+            <video
+              ref="previewVideo"
+              autoplay
+              muted
+              class="w-full h-full object-contain"
+            ></video>
+          </div>
+
+          <!-- Recording Controls -->
+          <div class="flex items-center justify-center gap-4">
             <button
-              @click="startRecording"
-              :disabled="isStartingRecording"
-              class="inline-flex items-center px-8 py-4 border border-transparent text-lg font-semibold rounded-full text-white bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 focus:outline-none focus:ring-4 focus:ring-orange-300 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
+              @click="pauseRecording"
+              v-if="!isPaused"
+              class="btn btn-ghost gap-2"
             >
-              <svg v-if="!isStartingRecording" class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                <circle cx="10" cy="10" r="7"/>
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M5 4h3v12H5V4zm7 0h3v12h-3V4z"/>
               </svg>
-              <svg v-else class="w-6 h-6 mr-2 animate-spin" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              {{ isStartingRecording ? 'Starting...' : 'Start Recording' }}
+              Pause
             </button>
 
-            <p class="mt-4 text-sm text-gray-500">
-              Click to select what to share and start recording
-            </p>
-          </div>
-
-          <!-- Recording in Progress -->
-          <div v-if="isRecording" class="p-6">
-            <!-- Recording Header -->
-            <div class="flex items-center justify-between mb-4">
-              <div class="flex items-center space-x-2 bg-red-50 text-red-700 px-4 py-2 rounded-full">
-                <div class="w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse"></div>
-                <span class="text-sm font-semibold">REC {{ formatTime(recordingTime) }}</span>
-              </div>
-              <span class="text-sm text-gray-500">{{ formatBytes(uploadedBytes) }} uploaded</span>
-            </div>
-
-            <!-- Recording Preview -->
-            <div class="bg-gray-900 rounded-lg aspect-video mb-6 relative overflow-hidden">
-              <video
-                ref="previewVideo"
-                autoplay
-                muted
-                class="w-full h-full object-contain"
-              ></video>
-            </div>
-
-            <!-- Recording Controls -->
-            <div class="flex items-center justify-center space-x-4">
-              <button
-                @click="pauseRecording"
-                v-if="!isPaused"
-                class="inline-flex items-center px-5 py-2.5 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors"
-              >
-                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M5 4h3v12H5V4zm7 0h3v12h-3V4z"/>
-                </svg>
-                Pause
-              </button>
-
-              <button
-                @click="resumeRecording"
-                v-if="isPaused"
-                class="inline-flex items-center px-5 py-2.5 border border-transparent text-sm font-medium rounded-lg text-white bg-orange-600 hover:bg-orange-700 transition-colors"
-              >
-                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.841z"/>
-                </svg>
-                Resume
-              </button>
-
-              <button
-                @click="stopRecording"
-                class="inline-flex items-center px-5 py-2.5 border border-transparent text-sm font-medium rounded-lg text-white bg-red-600 hover:bg-red-700 transition-colors"
-              >
-                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                  <rect x="4" y="4" width="12" height="12" rx="2"/>
-                </svg>
-                Stop Recording
-              </button>
-            </div>
-          </div>
-
-          <!-- Review Recording (after stop, before save) -->
-          <div v-if="hasRecorded && !isFinishing && !isSaving" class="p-8 text-center">
-            <div class="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
-              <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            <button
+              @click="resumeRecording"
+              v-if="isPaused"
+              class="btn btn-primary gap-2"
+            >
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.841z"/>
               </svg>
-            </div>
-            <h2 class="text-2xl font-bold text-gray-900 mb-2">Recording Complete!</h2>
-            <p class="text-gray-600 mb-2">
-              Duration: {{ formatTime(recordingTime) }} &bull; Size: {{ formatBytes(uploadedBytes) }}
-            </p>
-            <p class="text-gray-500 text-sm mb-6">
-              Would you like to save this recording or discard it?
-            </p>
+              Resume
+            </button>
 
-            <div class="flex items-center justify-center gap-4">
-              <button
-                @click="discardRecording"
-                :disabled="isDiscarding"
-                class="inline-flex items-center px-6 py-3 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors disabled:opacity-50"
-              >
-                <svg v-if="!isDiscarding" class="w-5 h-5 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                </svg>
-                <svg v-else class="w-5 h-5 mr-2 animate-spin" fill="none" viewBox="0 0 24 24">
-                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-                </svg>
-                {{ isDiscarding ? 'Discarding...' : 'Discard' }}
-              </button>
-
-              <button
-                @click="saveRecording"
-                :disabled="isDiscarding"
-                class="inline-flex items-center px-6 py-3 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 transition-colors disabled:opacity-50"
-              >
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                </svg>
-                Save Recording
-              </button>
-            </div>
-          </div>
-
-          <!-- Saving State -->
-          <div v-if="isSaving" class="p-8 text-center">
-            <div class="inline-flex items-center justify-center w-16 h-16 bg-orange-100 rounded-full mb-4">
-              <svg class="w-8 h-8 text-orange-600 animate-spin" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            <button
+              @click="stopRecording"
+              class="btn btn-error gap-2"
+            >
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <rect x="4" y="4" width="12" height="12" rx="2"/>
               </svg>
-            </div>
-            <h2 class="text-2xl font-bold text-gray-900 mb-2">Saving Your Video</h2>
-            <p class="text-gray-600">Finalizing and preparing your recording...</p>
+              Stop Recording
+            </button>
           </div>
         </div>
+
+        <!-- Review Recording -->
+        <div v-if="hasRecorded && !isFinishing && !isSaving" class="p-8 text-center">
+          <div class="w-16 h-16 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg class="w-8 h-8 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+          </div>
+          <h2 class="text-2xl font-bold mb-2">Recording Complete!</h2>
+          <p class="text-base-content/70 mb-2">
+            Duration: {{ formatTime(recordingTime) }} &bull; Size: {{ formatBytes(uploadedBytes) }}
+          </p>
+          <p class="text-base-content/50 text-sm mb-6">
+            Would you like to save this recording or discard it?
+          </p>
+
+          <div class="flex items-center justify-center gap-4">
+            <button
+              @click="discardRecording"
+              :disabled="isDiscarding"
+              class="btn btn-ghost gap-2"
+            >
+              <span v-if="isDiscarding" class="loading loading-spinner loading-sm"></span>
+              <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+              </svg>
+              {{ isDiscarding ? 'Discarding...' : 'Discard' }}
+            </button>
+
+            <button
+              @click="saveRecording"
+              :disabled="isDiscarding"
+              class="btn btn-primary gap-2"
+            >
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+              </svg>
+              Save Recording
+            </button>
+          </div>
+        </div>
+
+        <!-- Saving State -->
+        <div v-if="isSaving" class="p-8 text-center">
+          <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+            <span class="loading loading-spinner loading-lg text-primary"></span>
+          </div>
+          <h2 class="text-2xl font-bold mb-2">Saving Your Video</h2>
+          <p class="text-base-content/70">Finalizing and preparing your recording...</p>
+        </div>
       </div>
-    </div>
+    </dialog>
   </Teleport>
 </template>
 
@@ -285,20 +270,12 @@ export default {
     }
 
     const checkSubscription = async () => {
-      console.log('[RecordingModal] Checking subscription limit from backend...')
       isCheckingSubscription.value = true
       try {
         const subscription = await auth.fetchSubscription()
         canRecordVideo.value = subscription ? subscription.can_record : true
-        console.log('[RecordingModal] Backend response:', {
-          can_record: canRecordVideo.value,
-          videos_count: subscription?.videos_count,
-          remaining_quota: subscription?.remaining_quota,
-          is_active: subscription?.is_active
-        })
       } catch (err) {
         console.error('Error checking subscription:', err)
-        // Allow recording if check fails (will be checked again on server)
         canRecordVideo.value = true
       } finally {
         isCheckingSubscription.value = false
@@ -318,11 +295,6 @@ export default {
       }
     }
 
-    const handleUpgrade = () => {
-      emit('upgrade')
-      closeModal()
-    }
-
     const resetState = () => {
       isStartingRecording.value = false
       isRecording.value = false
@@ -340,7 +312,6 @@ export default {
       canRecordVideo.value = true
     }
 
-    // Start upload session
     const startUploadSession = async () => {
       const timestamp = new Date().toLocaleString()
       const title = `Screen Recording ${timestamp}`
@@ -381,7 +352,6 @@ export default {
       return data.session_id
     }
 
-    // Upload a chunk
     const uploadChunk = async (chunk, index) => {
       if (!sessionId.value) return
 
@@ -410,7 +380,6 @@ export default {
       }
     }
 
-    // Process upload queue
     const processUploadQueue = async () => {
       while (uploadQueue.value.length > 0) {
         const { chunk, index } = uploadQueue.value.shift()
@@ -418,7 +387,6 @@ export default {
       }
     }
 
-    // Complete upload
     const completeUpload = async () => {
       if (!sessionId.value) return
 
@@ -444,39 +412,28 @@ export default {
       return data.video
     }
 
-    // Complete upload with retry logic (3 attempts)
     const completeUploadWithRetry = async (maxRetries = 3) => {
       let lastError = null
 
       for (let attempt = 1; attempt <= maxRetries; attempt++) {
         try {
-          console.log(`Attempting to complete upload (attempt ${attempt}/${maxRetries})...`)
           const video = await completeUpload()
-          console.log('Upload completed successfully')
           return video
         } catch (error) {
-          console.error(`Upload completion attempt ${attempt} failed:`, error)
           lastError = error
-
-          // Don't retry on 401 (auth error)
           if (error.message?.includes('401')) {
             throw error
           }
-
-          // Wait before retrying (exponential backoff: 1s, 2s, 4s)
           if (attempt < maxRetries) {
             const delay = Math.pow(2, attempt - 1) * 1000
-            console.log(`Retrying in ${delay}ms...`)
             await new Promise(resolve => setTimeout(resolve, delay))
           }
         }
       }
 
-      // All retries failed - but recording is safe on server (will be auto-recovered)
       throw lastError
     }
 
-    // Cancel upload session (discard)
     const cancelUpload = async () => {
       if (!sessionId.value) return
 
@@ -496,18 +453,15 @@ export default {
       try {
         isStartingRecording.value = true
 
-        // Start upload session first
         sessionId.value = await startUploadSession()
         if (!sessionId.value) {
           isStartingRecording.value = false
-          // Check if it was due to video limit
           if (!canRecordVideo.value) {
             toast.error('You\'ve reached your video limit. Please upgrade your plan to record more videos.')
           }
           return
         }
 
-        // Get screen capture
         const displayMediaOptions = {
           video: {
             width: { ideal: 3840, max: 3840 },
@@ -520,7 +474,6 @@ export default {
 
         const displayStream = await navigator.mediaDevices.getDisplayMedia(displayMediaOptions)
 
-        // Get microphone audio if enabled
         let audioStream = null
         if (recordingOptions.value.microphone) {
           try {
@@ -537,7 +490,6 @@ export default {
           }
         }
 
-        // Mix audio tracks
         const audioContext = new AudioContext()
         const audioDestination = audioContext.createMediaStreamDestination()
 
@@ -552,7 +504,6 @@ export default {
           micSource.connect(audioDestination)
         }
 
-        // Combine video and mixed audio
         const videoTracks = displayStream.getVideoTracks()
         const mixedAudioTracks = audioDestination.stream.getAudioTracks()
 
@@ -565,12 +516,10 @@ export default {
         stream._audioStream = audioStream
         stream._audioContext = audioContext
 
-        // Set up preview
         if (previewVideo.value) {
           previewVideo.value.srcObject = displayStream
         }
 
-        // Set up MediaRecorder
         chunkIndex = 0
         const videoTrackSettings = videoTracks[0]?.getSettings() || {}
         const width = videoTrackSettings.width || 1920
@@ -616,7 +565,6 @@ export default {
           isRecording.value = false
           hasRecorded.value = true
 
-          // Clean up streams
           if (stream) {
             stream.getTracks().forEach(track => track.stop())
             if (stream._displayStream) {
@@ -629,11 +577,8 @@ export default {
               stream._audioContext.close()
             }
           }
-
-          // Don't auto-save - wait for user to click Save or Discard
         }
 
-        // Handle when user stops sharing via browser UI
         displayStream.getVideoTracks()[0].onended = () => {
           if (isRecording.value) {
             stopRecording()
@@ -706,11 +651,7 @@ export default {
       } catch (err) {
         console.error('Failed to save recording after retries:', err)
         isSaving.value = false
-
-        // Show user-friendly message - recording is safe!
         toast.warning('Your recording is being processed and will appear in your library within 5 minutes.', 8000)
-
-        // Redirect to videos page after 3 seconds
         setTimeout(() => {
           emit('close')
           window.location.href = '/videos'
@@ -732,10 +673,8 @@ export default {
       }
     }
 
-    // Watch for modal open to check subscription
     watch(() => props.show, (newVal) => {
       if (newVal) {
-        console.log('[RecordingModal] Modal opened, fetching fresh subscription status from backend...')
         checkSubscription()
       } else if (!isRecording.value && !isFinishing.value && !isSaving.value) {
         resetState()
@@ -763,10 +702,8 @@ export default {
     })
 
     return {
-      // Subscription state
       isCheckingSubscription,
       canRecordVideo,
-      // Recording state
       isStartingRecording,
       isRecording,
       isPaused,
@@ -778,12 +715,10 @@ export default {
       recordingOptions,
       previewVideo,
       uploadedBytes,
-      // Methods
       formatTime,
       formatBytes,
       closeModal,
       handleBackdropClick,
-      handleUpgrade,
       startRecording,
       pauseRecording,
       resumeRecording,

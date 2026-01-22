@@ -1,16 +1,16 @@
 <template>
-  <div class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+  <div class="card bg-base-100 shadow-lg border border-base-200">
     <!-- Header -->
-    <div class="bg-gradient-to-r from-orange-500 to-red-500 px-6 py-4">
-      <h3 class="text-lg font-semibold text-white">Zoom Events Editor</h3>
-      <p class="text-sm text-orange-100 mt-1">Review and edit zoom points for your video</p>
+    <div class="bg-gradient-to-r from-primary to-secondary px-6 py-4">
+      <h3 class="text-lg font-semibold text-primary-content">Zoom Events Editor</h3>
+      <p class="text-sm text-primary-content/80 mt-1">Review and edit zoom points for your video</p>
     </div>
 
     <!-- Timeline visualization -->
-    <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
-      <div class="relative h-12 bg-gray-200 rounded-lg overflow-hidden">
+    <div class="px-6 py-4 bg-base-200">
+      <div class="relative h-12 bg-base-300 rounded-lg overflow-hidden">
         <!-- Video duration bar -->
-        <div class="absolute inset-0 bg-gradient-to-r from-orange-200 to-orange-300"></div>
+        <div class="absolute inset-0 bg-gradient-to-r from-primary/30 to-primary/50"></div>
 
         <!-- Event markers -->
         <div
@@ -19,7 +19,7 @@
           class="absolute top-0 bottom-0 w-1 cursor-pointer transition-all hover:w-2"
           :style="{ left: getEventPosition(event) + '%' }"
           :class="[
-            event.zoom_enabled ? 'bg-orange-600' : 'bg-gray-400',
+            event.zoom_enabled ? 'bg-primary' : 'bg-base-content/30',
             event.type === 'click' ? 'rounded-full h-8 top-2' : 'h-full'
           ]"
           :title="getEventTooltip(event)"
@@ -28,7 +28,7 @@
           <!-- Event icon -->
           <div
             class="absolute -top-1 left-1/2 -translate-x-1/2 w-4 h-4 rounded-full flex items-center justify-center text-white text-xs"
-            :class="event.zoom_enabled ? 'bg-orange-600' : 'bg-gray-400'"
+            :class="event.zoom_enabled ? 'bg-primary' : 'bg-base-content/30'"
           >
             <span v-if="event.type === 'click'">C</span>
             <span v-else>K</span>
@@ -37,25 +37,25 @@
       </div>
 
       <!-- Time labels -->
-      <div class="flex justify-between text-xs text-gray-500 mt-1">
+      <div class="flex justify-between text-xs text-base-content/60 mt-1">
         <span>0:00</span>
         <span>{{ formatDuration(videoDuration) }}</span>
       </div>
     </div>
 
     <!-- Event List -->
-    <div class="divide-y divide-gray-200 max-h-96 overflow-y-auto">
+    <div class="divide-y divide-base-200 max-h-96 overflow-y-auto">
       <div
         v-for="(event, index) in events"
         :key="index"
         :ref="el => eventRefs[index] = el"
-        class="px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
+        class="px-6 py-4 flex items-center justify-between hover:bg-base-200 transition-colors"
       >
         <div class="flex items-center space-x-4">
           <!-- Event Icon -->
           <div
             class="w-10 h-10 rounded-full flex items-center justify-center"
-            :class="event.zoom_enabled ? 'bg-orange-100 text-orange-600' : 'bg-gray-100 text-gray-400'"
+            :class="event.zoom_enabled ? 'bg-primary/10 text-primary' : 'bg-base-200 text-base-content/40'"
           >
             <svg v-if="event.type === 'click'" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
@@ -67,11 +67,11 @@
 
           <!-- Event Details -->
           <div>
-            <div class="font-medium text-gray-900">
+            <div class="font-medium">
               {{ event.type === 'click' ? 'Click Event' : 'Keyboard Event' }}
-              <span class="text-gray-500 font-normal ml-2">at {{ formatTime(event.timestamp_ms) }}</span>
+              <span class="text-base-content/60 font-normal ml-2">at {{ formatTime(event.timestamp_ms) }}</span>
             </div>
-            <div class="text-sm text-gray-500">
+            <div class="text-sm text-base-content/60">
               <span v-if="event.type === 'click'">
                 Position: ({{ event.x }}, {{ event.y }})
               </span>
@@ -89,10 +89,10 @@
           <button
             @click="toggleEvent(index)"
             :class="[
-              'px-3 py-1 rounded-full text-sm font-medium transition-colors',
+              'badge badge-lg cursor-pointer transition-colors',
               event.zoom_enabled
-                ? 'bg-orange-100 text-orange-700 hover:bg-orange-200'
-                : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                ? 'badge-primary'
+                : 'badge-ghost'
             ]"
           >
             {{ event.zoom_enabled ? 'Enabled' : 'Disabled' }}
@@ -101,7 +101,7 @@
           <!-- Delete Button -->
           <button
             @click="removeEvent(index)"
-            class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors"
+            class="btn btn-ghost btn-sm btn-circle text-base-content/40 hover:text-error"
             title="Remove event"
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -113,32 +113,32 @@
 
       <!-- Empty State -->
       <div v-if="events.length === 0" class="px-6 py-12 text-center">
-        <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="w-16 h-16 bg-base-200 rounded-full flex items-center justify-center mx-auto mb-4">
+          <svg class="w-8 h-8 text-base-content/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
         </div>
-        <p class="text-gray-500">No zoom events recorded</p>
-        <p class="text-sm text-gray-400 mt-1">Click and keyboard events during recording will appear here</p>
+        <p class="text-base-content/60">No zoom events recorded</p>
+        <p class="text-sm text-base-content/40 mt-1">Click and keyboard events during recording will appear here</p>
       </div>
     </div>
 
     <!-- Footer -->
-    <div v-if="events.length > 0" class="px-6 py-4 bg-gray-50 border-t border-gray-200">
+    <div v-if="events.length > 0" class="px-6 py-4 bg-base-200 border-t border-base-300">
       <div class="flex items-center justify-between">
-        <div class="text-sm text-gray-600">
+        <div class="text-sm text-base-content/70">
           <span class="font-medium">{{ enabledCount }}</span> of <span class="font-medium">{{ events.length }}</span> events enabled
         </div>
         <div class="flex space-x-2">
           <button
             @click="enableAll"
-            class="px-3 py-1 text-sm font-medium text-orange-600 hover:bg-orange-50 rounded transition-colors"
+            class="btn btn-ghost btn-sm text-primary"
           >
             Enable All
           </button>
           <button
             @click="disableAll"
-            class="px-3 py-1 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded transition-colors"
+            class="btn btn-ghost btn-sm"
           >
             Disable All
           </button>
