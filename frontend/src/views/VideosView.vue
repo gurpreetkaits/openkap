@@ -263,17 +263,6 @@
         :key="video.id"
         class="group relative"
       >
-        <!-- Selection Checkbox (shown when selected) -->
-        <div v-if="selectedVideos.includes(video.id)" class="absolute top-2 left-2 z-20">
-          <input
-            type="checkbox"
-            :checked="true"
-            @change="toggleVideoSelection(video.id)"
-            @click.stop
-            class="w-5 h-5 text-orange-600 bg-white/90 border-2 border-gray-300 rounded focus:ring-orange-500 focus:ring-2 cursor-pointer shadow-sm"
-          />
-        </div>
-
         <!-- Thumbnail -->
         <div
           class="relative aspect-video bg-gray-900 rounded-xl overflow-hidden mb-3 border border-gray-200/50 shadow-sm group-hover:shadow-md transition-all cursor-pointer"
@@ -299,19 +288,26 @@
             {{ formatDuration(video.duration) }}
           </div>
 
+          <!-- Select Checkbox (always visible when selected, shows on hover otherwise) -->
+          <div
+            class="absolute top-2 left-2 z-20 transition-opacity"
+            :class="selectedVideos.includes(video.id) ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'"
+            @click.stop
+          >
+            <input
+              type="checkbox"
+              :checked="selectedVideos.includes(video.id)"
+              @change="toggleVideoSelection(video.id)"
+              class="w-5 h-5 text-orange-600 bg-white/90 border-2 border-gray-300 rounded focus:ring-orange-500 focus:ring-2 cursor-pointer shadow-sm"
+            />
+          </div>
+
           <!-- Hover Overlay -->
           <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all duration-200 flex flex-col justify-between p-3">
             <!-- Top Actions -->
             <div class="flex justify-between items-start">
-              <!-- Select Checkbox -->
-              <div @click.stop>
-                <input
-                  type="checkbox"
-                  :checked="selectedVideos.includes(video.id)"
-                  @change="toggleVideoSelection(video.id)"
-                  class="w-5 h-5 text-orange-600 bg-white/90 border-2 border-white/50 rounded focus:ring-orange-500 focus:ring-2 cursor-pointer shadow-sm"
-                />
-              </div>
+              <!-- Spacer for checkbox position -->
+              <div class="w-5 h-5"></div>
               <div class="flex gap-2">
                 <button @click.stop="shareVideo(video)" class="p-1.5 bg-white text-gray-700 hover:text-blue-600 rounded-lg shadow-sm transition-colors" title="Copy Link">
                   <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -371,14 +367,16 @@
               </div>
             </div>
 
-            <!-- Center Play Button -->
-            <div class="flex justify-center">
+            <!-- Center Play Button (hidden when video is selected) -->
+            <div v-if="!selectedVideos.includes(video.id)" class="flex justify-center">
               <div class="w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg text-orange-600 scale-90 hover:scale-110 transition-transform">
                 <svg class="w-4 h-4 ml-0.5 fill-current" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.841z"/>
                 </svg>
               </div>
             </div>
+            <!-- Empty spacer when video is selected -->
+            <div v-else class="flex-1"></div>
 
             <!-- Spacer for bottom -->
             <div class="h-8"></div>
