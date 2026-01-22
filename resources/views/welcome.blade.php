@@ -66,7 +66,7 @@
 
         <div class="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto mb-4">
             <a href="{{ config('app.frontend_url', config('app.url')) }}/login" class="w-full sm:w-auto group relative inline-flex h-14 items-center justify-center overflow-hidden rounded-full bg-brand-600 px-10 font-medium text-white transition-all duration-300 hover:bg-brand-500 hover:shadow-[0_0_20px_-5px_rgba(234,88,12,0.4)] active:scale-95">
-                <span class="mr-2 text-lg">Start Recording — It's Free</span>
+                <span class="mr-2 text-lg">Start Recording</span>
                 <i data-lucide="arrow-right" class="size-5 transition-transform group-hover:translate-x-1"></i>
             </a>
         </div>
