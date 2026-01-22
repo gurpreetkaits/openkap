@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\BulkDeleteVideosRequest;
+use App\Http\Requests\BulkFavouriteVideosRequest;
 use App\Managers\VideoManager;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -188,6 +189,38 @@ class VideoController extends Controller
             'deleted' => $result['deleted'],
             'failed' => $result['failed'],
             'errors' => $result['errors'],
+        ]);
+    }
+
+    public function bulkAddToFavourites(BulkFavouriteVideosRequest $request)
+    {
+        $result = $this->videoManager->bulkAddToFavourites(
+            $request->validated('video_ids'),
+            Auth::user()
+        );
+
+        return response()->json([
+            'message' => $result['added'] === 1
+                ? '1 video added to favourites'
+                : "{$result['added']} videos added to favourites",
+            'added' => $result['added'],
+            'failed' => $result['failed'],
+        ]);
+    }
+
+    public function bulkRemoveFromFavourites(BulkFavouriteVideosRequest $request)
+    {
+        $result = $this->videoManager->bulkRemoveFromFavourites(
+            $request->validated('video_ids'),
+            Auth::user()
+        );
+
+        return response()->json([
+            'message' => $result['removed'] === 1
+                ? '1 video removed from favourites'
+                : "{$result['removed']} videos removed from favourites",
+            'removed' => $result['removed'],
+            'failed' => $result['failed'],
         ]);
     }
 

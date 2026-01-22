@@ -143,8 +143,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/', [VideoController::class, 'store'])
             ->middleware(CheckSubscriptionLimit::class);
 
-        // Bulk delete videos
+        // Bulk operations
         Route::post('/bulk-delete', [VideoController::class, 'bulkDestroy']);
+        Route::post('/bulk-favourite', [VideoController::class, 'bulkAddToFavourites']);
+        Route::delete('/bulk-favourite', [VideoController::class, 'bulkRemoveFromFavourites']);
 
         Route::get('/{id}', [VideoController::class, 'show']);
         Route::get('/{id}/stream', [VideoController::class, 'stream']);
@@ -196,6 +198,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/{id}/toggle-sharing', [PlaylistController::class, 'toggleSharing']);
         Route::put('/{id}/sort-by', [PlaylistController::class, 'updateSortBy']);
         Route::post('/{id}/videos', [PlaylistController::class, 'addVideo']);
+        Route::post('/{id}/bulk-add-videos', [PlaylistController::class, 'bulkAddVideos']);
         Route::delete('/{id}/videos/{videoId}', [PlaylistController::class, 'removeVideo']);
         Route::put('/{id}/reorder', [PlaylistController::class, 'reorder']);
     });

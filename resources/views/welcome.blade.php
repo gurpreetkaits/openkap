@@ -1,11 +1,11 @@
 @extends('layouts.app')
 
-@section('title', 'ScreenSense - Open Source Screen Recording | Loom Alternative')
-@section('meta_description', 'ScreenSense , open source screen recording tool and the best Loom alternative. Record your screen with audio and share instantly. No account required.')
-@section('meta_keywords', 'screen recording, loom alternative, open source screen recording, open source loom alternative, screen recorder, screen capture tool, video recording software, share screen recordings, loom free alternative')
+@section('title', 'ScreenSense - Screen Recording | Loom Alternative')
+@section('meta_description', 'ScreenSense, the best Loom alternative. Record your screen with audio and share instantly. No account required.')
+@section('meta_keywords', 'screen recording, loom alternative, screen recorder, screen capture tool, video recording software, share screen recordings, loom free alternative, async video')
 
-@section('og_title', 'ScreenSense - Open Source Loom Alternative')
-@section('og_description', 'The best open source screen recording tool. Record your screen, capture audio, and share instantly.')
+@section('og_title', 'ScreenSense - Loom Alternative')
+@section('og_description', 'The best screen recording tool. Record your screen, capture audio, and share instantly.')
 
 @push('styles')
 <style>
@@ -52,7 +52,7 @@
                 <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-400 opacity-75"></span>
                 <span class="relative inline-flex rounded-full h-2 w-2 bg-brand-500"></span>
             </span>
-            Open Source
+            Free to Start
         </div>
 
         <h1 class="text-4xl md:text-6xl lg:text-7xl font-medium tracking-tight text-white mb-8 leading-[1.1]">
@@ -354,7 +354,7 @@
                         <ul class="space-y-3 mb-8">
                             <li class="flex items-center gap-3 text-sm text-neutral-300">
                                 <i data-lucide="check" class="size-4 text-green-500"></i>
-                                1 video recording
+                                10 video recordings
                             </li>
                             <li class="flex items-center gap-3 text-sm text-neutral-300">
                                 <i data-lucide="check" class="size-4 text-green-500"></i>
@@ -469,25 +469,12 @@
                     </button>
                     <div class="faq-content">
                         <div class="px-6 pb-4 text-sm text-neutral-400">
-                            Yes! The free plan includes 1 video recording with full screen and audio capture. It's perfect for trying out ScreenSense before upgrading.
+                            Yes! The free plan includes 10 video recordings with full screen and audio capture. It's perfect for trying out ScreenSense before upgrading.
                         </div>
                     </div>
                 </div>
 
                 <!-- FAQ Item 2 -->
-                <div class="border border-white/5 rounded-lg bg-white/[0.02] overflow-hidden">
-                    <button onclick="toggleFaq(this)" class="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-white/[0.02] transition-colors">
-                        <span class="text-sm font-medium text-neutral-200">Is ScreenSense open source?</span>
-                        <i data-lucide="chevron-down" class="size-4 text-neutral-500 transition-transform duration-300"></i>
-                    </button>
-                    <div class="faq-content">
-                        <div class="px-6 pb-4 text-sm text-neutral-400">
-                            Yes! ScreenSense is fully open source. You can view, fork, and contribute to the code on our GitHub repository.
-                        </div>
-                    </div>
-                </div>
-
-                <!-- FAQ Item 3 -->
                 <div class="border border-white/5 rounded-lg bg-white/[0.02] overflow-hidden">
                     <button onclick="toggleFaq(this)" class="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-white/[0.02] transition-colors">
                         <span class="text-sm font-medium text-neutral-200">How do shareable links work?</span>

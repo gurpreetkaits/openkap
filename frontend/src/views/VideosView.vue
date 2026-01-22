@@ -45,20 +45,60 @@
           {{ selectMode ? 'Cancel' : 'Select' }}
         </button>
 
-        <!-- Bulk Actions (shown when items are selected) -->
+        <!-- Bulk Actions Dropdown (shown when items are selected) -->
         <div v-if="selectMode && selectedVideos.length > 0" class="flex items-center gap-2">
           <span class="text-[13px] font-medium text-gray-600">
             {{ selectedVideos.length }} selected
           </span>
-          <button
-            @click="showBulkDeleteModal = true"
-            class="flex items-center gap-2 text-[13px] font-medium text-white bg-red-600 hover:bg-red-700 px-3 py-1.5 rounded-lg transition-all shadow-sm"
-          >
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-            </svg>
-            Delete
-          </button>
+          <div class="relative" ref="bulkActionsDropdownRef">
+            <button
+              @click="showBulkActionsDropdown = !showBulkActionsDropdown"
+              class="flex items-center gap-2 text-[13px] font-medium text-white bg-orange-600 hover:bg-orange-700 px-3 py-1.5 rounded-lg transition-all shadow-sm"
+            >
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"/>
+              </svg>
+              Bulk Actions
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </button>
+
+            <!-- Bulk Actions Dropdown Menu -->
+            <div
+              v-show="showBulkActionsDropdown"
+              class="absolute right-0 mt-2 w-52 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50"
+            >
+              <button
+                @click="bulkAddToFavourites"
+                class="w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-3"
+              >
+                <svg class="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
+                </svg>
+                Add to Favourites
+              </button>
+              <button
+                @click="openPlaylistModal"
+                class="w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-3"
+              >
+                <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
+                </svg>
+                Add to Playlist
+              </button>
+              <div class="border-t border-gray-100 my-1"></div>
+              <button
+                @click="showBulkDeleteModal = true; showBulkActionsDropdown = false"
+                class="w-full px-4 py-2.5 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-3"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+                Delete Permanently
+              </button>
+            </div>
+          </div>
         </div>
 
         <!-- Select All (shown in select mode) -->
@@ -289,11 +329,51 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
                   </svg>
                 </button>
-                <button @click.stop="deleteVideo(video)" class="p-1.5 bg-white text-gray-700 hover:text-red-600 rounded-lg shadow-sm transition-colors" title="Delete">
-                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                  </svg>
-                </button>
+                <!-- More Options Dropdown -->
+                <div class="relative" @click.stop>
+                  <button
+                    @click="toggleVideoMenu(video.id)"
+                    class="p-1.5 bg-white text-gray-700 hover:text-gray-900 rounded-lg shadow-sm transition-colors"
+                    title="More options"
+                  >
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"/>
+                    </svg>
+                  </button>
+                  <div
+                    v-show="activeVideoMenu === video.id"
+                    class="absolute right-0 mt-1 w-44 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50"
+                  >
+                    <button
+                      @click="openSinglePlaylistModal(video)"
+                      class="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                    >
+                      <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
+                      </svg>
+                      Add to Playlist
+                    </button>
+                    <button
+                      @click="enterSelectModeWithVideo(video.id)"
+                      class="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                    >
+                      <svg class="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+                      </svg>
+                      Select
+                    </button>
+                    <div class="border-t border-gray-100 my-1"></div>
+                    <button
+                      @click="deleteVideo(video); activeVideoMenu = null"
+                      class="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                    >
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                      </svg>
+                      Delete
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -423,11 +503,51 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
             </svg>
           </button>
-          <button @click.stop="deleteVideo(video)" class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Delete">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-            </svg>
-          </button>
+          <!-- More Options Dropdown -->
+          <div class="relative" @click.stop>
+            <button
+              @click="toggleVideoMenu(video.id)"
+              class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
+              title="More options"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"/>
+              </svg>
+            </button>
+            <div
+              v-show="activeVideoMenu === video.id"
+              class="absolute right-0 mt-1 w-44 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50"
+            >
+              <button
+                @click="openSinglePlaylistModal(video)"
+                class="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+              >
+                <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
+                </svg>
+                Add to Playlist
+              </button>
+              <button
+                @click="enterSelectModeWithVideo(video.id)"
+                class="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+              >
+                <svg class="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+                </svg>
+                Select
+              </button>
+              <div class="border-t border-gray-100 my-1"></div>
+              <button
+                @click="deleteVideo(video); activeVideoMenu = null"
+                class="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+                Delete
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -557,6 +677,55 @@
       @close="showUpgradeModal = false"
       @success="handleUpgradeSuccess"
     />
+
+    <!-- Add to Playlist Modal -->
+    <SBModal
+      v-model="showPlaylistModal"
+      :title="playlistModalTitle"
+      size="md"
+      @close="closePlaylistModal"
+    >
+      <div v-if="loadingPlaylists" class="py-8 text-center">
+        <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-orange-600 border-t-transparent"></div>
+        <p class="mt-3 text-sm text-gray-500">Loading playlists...</p>
+      </div>
+      <div v-else-if="playlists.length === 0" class="py-8 text-center">
+        <div class="w-12 h-12 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+          <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
+          </svg>
+        </div>
+        <p class="text-gray-600 font-medium">No playlists yet</p>
+        <p class="text-sm text-gray-500 mt-1">Create a playlist first to add videos.</p>
+      </div>
+      <div v-else class="space-y-2 max-h-80 overflow-y-auto">
+        <button
+          v-for="playlist in playlists"
+          :key="playlist.id"
+          @click="addVideosToPlaylist(playlist)"
+          :disabled="addingToPlaylist"
+          class="w-full p-3 text-left rounded-lg border border-gray-200 hover:border-orange-300 hover:bg-orange-50 transition-colors flex items-center justify-between group"
+        >
+          <div>
+            <p class="font-medium text-gray-900 group-hover:text-orange-600">{{ playlist.title }}</p>
+            <p class="text-sm text-gray-500">{{ playlist.videos_count }} video{{ playlist.videos_count !== 1 ? 's' : '' }}</p>
+          </div>
+          <svg class="w-5 h-5 text-gray-400 group-hover:text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+          </svg>
+        </button>
+      </div>
+      <template #footer>
+        <div class="flex justify-end">
+          <button
+            @click="closePlaylistModal"
+            class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+          >
+            Cancel
+          </button>
+        </div>
+      </template>
+    </SBModal>
   </div>
 </template>
 
@@ -565,15 +734,18 @@ import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useAuth } from '@/stores/auth'
 import { useRecording } from '@/composables/useRecording'
 import videoService from '@/services/videoService'
+import playlistService from '@/services/playlistService'
 import toast from '@/services/toastService'
 import SBDeleteModal from '@/components/Global/SBDeleteModal.vue'
 import SBUpgradeModal from '@/components/Global/SBUpgradeModal.vue'
+import SBModal from '@/components/Global/SBModal.vue'
 
 export default {
   name: 'VideosView',
   components: {
     SBDeleteModal,
-    SBUpgradeModal
+    SBUpgradeModal,
+    SBModal
   },
   setup() {
     const auth = useAuth()
@@ -604,6 +776,21 @@ export default {
     const selectedVideos = ref([])
     const showBulkDeleteModal = ref(false)
     const isBulkDeleting = ref(false)
+
+    // Bulk actions dropdown
+    const showBulkActionsDropdown = ref(false)
+    const bulkActionsDropdownRef = ref(null)
+
+    // Video menu state (for individual video more options)
+    const activeVideoMenu = ref(null)
+
+    // Playlist modal state
+    const showPlaylistModal = ref(false)
+    const playlists = ref([])
+    const loadingPlaylists = ref(false)
+    const addingToPlaylist = ref(false)
+    const videosToAddToPlaylist = ref([])
+    const singleVideoForPlaylist = ref(null)
 
     // Upgrade modal state
     const showUpgradeModal = ref(false)
@@ -747,6 +934,14 @@ export default {
       return `Are you sure you want to delete ${count} video${count > 1 ? 's' : ''}? This action is PERMANENT. These videos will be removed from our storage and Bunny CDN. They cannot be recovered.`
     })
 
+    const playlistModalTitle = computed(() => {
+      if (singleVideoForPlaylist.value) {
+        return 'Add to Playlist'
+      }
+      const count = videosToAddToPlaylist.value.length
+      return `Add ${count} Video${count > 1 ? 's' : ''} to Playlist`
+    })
+
     const goToPage = (page) => {
       if (page >= 1 && page <= totalPages.value) {
         currentPage.value = page
@@ -815,6 +1010,13 @@ export default {
       }
       if (filterDropdownRef.value && !filterDropdownRef.value.contains(event.target)) {
         showFilterDropdown.value = false
+      }
+      if (bulkActionsDropdownRef.value && !bulkActionsDropdownRef.value.contains(event.target)) {
+        showBulkActionsDropdown.value = false
+      }
+      // Close video menu if click is outside
+      if (activeVideoMenu.value !== null) {
+        activeVideoMenu.value = null
       }
     }
 
@@ -1005,6 +1207,103 @@ export default {
       }
     }
 
+    // Video menu methods
+    const toggleVideoMenu = (videoId) => {
+      activeVideoMenu.value = activeVideoMenu.value === videoId ? null : videoId
+    }
+
+    const enterSelectModeWithVideo = (videoId) => {
+      activeVideoMenu.value = null
+      selectMode.value = true
+      selectedVideos.value = [videoId]
+    }
+
+    // Bulk add to favourites
+    const bulkAddToFavourites = async () => {
+      if (selectedVideos.value.length === 0) return
+
+      showBulkActionsDropdown.value = false
+
+      try {
+        const result = await videoService.bulkAddToFavourites(selectedVideos.value)
+
+        // Update local state
+        videos.value.forEach(video => {
+          if (selectedVideos.value.includes(video.id)) {
+            video.is_favourite = true
+          }
+        })
+
+        toast.success(result.message)
+
+        // Reset selection
+        selectedVideos.value = []
+        selectMode.value = false
+      } catch (err) {
+        console.error('Failed to add to favourites:', err)
+        toast.error('Failed to add videos to favourites. Please try again.')
+      }
+    }
+
+    // Playlist methods
+    const fetchPlaylists = async () => {
+      loadingPlaylists.value = true
+      try {
+        playlists.value = await playlistService.getPlaylists()
+      } catch (err) {
+        console.error('Failed to fetch playlists:', err)
+        toast.error('Failed to load playlists.')
+        playlists.value = []
+      } finally {
+        loadingPlaylists.value = false
+      }
+    }
+
+    const openPlaylistModal = () => {
+      showBulkActionsDropdown.value = false
+      videosToAddToPlaylist.value = [...selectedVideos.value]
+      singleVideoForPlaylist.value = null
+      showPlaylistModal.value = true
+      fetchPlaylists()
+    }
+
+    const openSinglePlaylistModal = (video) => {
+      activeVideoMenu.value = null
+      singleVideoForPlaylist.value = video
+      videosToAddToPlaylist.value = [video.id]
+      showPlaylistModal.value = true
+      fetchPlaylists()
+    }
+
+    const closePlaylistModal = () => {
+      showPlaylistModal.value = false
+      videosToAddToPlaylist.value = []
+      singleVideoForPlaylist.value = null
+    }
+
+    const addVideosToPlaylist = async (playlist) => {
+      if (videosToAddToPlaylist.value.length === 0) return
+
+      addingToPlaylist.value = true
+      try {
+        const result = await playlistService.bulkAddVideos(playlist.id, videosToAddToPlaylist.value)
+
+        toast.success(result.message)
+        closePlaylistModal()
+
+        // Reset selection if in select mode
+        if (selectMode.value) {
+          selectedVideos.value = []
+          selectMode.value = false
+        }
+      } catch (err) {
+        console.error('Failed to add to playlist:', err)
+        toast.error(err.message || 'Failed to add videos to playlist.')
+      } finally {
+        addingToPlaylist.value = false
+      }
+    }
+
     const handleUpgradeSuccess = () => {
       showUpgradeModal.value = false
       auth.fetchSubscription() // Refresh subscription status
@@ -1116,6 +1415,24 @@ export default {
       toggleVideoSelection,
       toggleSelectAll,
       confirmBulkDelete,
+      // Bulk actions
+      showBulkActionsDropdown,
+      bulkActionsDropdownRef,
+      bulkAddToFavourites,
+      // Video menu
+      activeVideoMenu,
+      toggleVideoMenu,
+      enterSelectModeWithVideo,
+      // Playlist modal
+      showPlaylistModal,
+      playlists,
+      loadingPlaylists,
+      addingToPlaylist,
+      playlistModalTitle,
+      openPlaylistModal,
+      openSinglePlaylistModal,
+      closePlaylistModal,
+      addVideosToPlaylist,
       // Upgrade modal
       showUpgradeModal,
       handleUpgradeSuccess,

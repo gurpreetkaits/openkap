@@ -529,6 +529,40 @@ class VideoManager
         return $this->videos->toggleFavourite($video);
     }
 
+    /**
+     * Bulk add videos to favourites
+     *
+     * @param  array<int>  $videoIds
+     * @return array{added: int, failed: int}
+     */
+    public function bulkAddToFavourites(array $videoIds, User $user): array
+    {
+        $videos = $this->videos->findByIdsForUser($videoIds, $user->id);
+        $added = $this->videos->setFavouriteForMany($videos, true);
+
+        return [
+            'added' => $added,
+            'failed' => count($videoIds) - $added,
+        ];
+    }
+
+    /**
+     * Bulk remove videos from favourites
+     *
+     * @param  array<int>  $videoIds
+     * @return array{removed: int, failed: int}
+     */
+    public function bulkRemoveFromFavourites(array $videoIds, User $user): array
+    {
+        $videos = $this->videos->findByIdsForUser($videoIds, $user->id);
+        $removed = $this->videos->setFavouriteForMany($videos, false);
+
+        return [
+            'removed' => $removed,
+            'failed' => count($videoIds) - $removed,
+        ];
+    }
+
     public function requestTranscription(Video $video, bool $generateSummary = true, bool $generateTitle = true): array
     {
         // Check if video conversion is complete

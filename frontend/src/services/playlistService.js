@@ -230,6 +230,34 @@ class PlaylistService {
   }
 
   /**
+   * Bulk add videos to a playlist
+   * @param {number} playlistId - The playlist ID
+   * @param {number[]} videoIds - Array of video IDs to add
+   * @returns {Promise<{message: string, added: number, skipped: number, errors: array, playlist: object}>}
+   */
+  async bulkAddVideos(playlistId, videoIds) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/playlists/${playlistId}/bulk-add-videos`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ video_ids: videoIds })
+      })
+
+      if (handleUnauthorized(response)) return null
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.message || `Failed to add videos: ${response.statusText}`)
+      }
+
+      return await response.json()
+    } catch (error) {
+      console.error('Error bulk adding videos:', error)
+      throw error
+    }
+  }
+
+  /**
    * Remove a video from a playlist
    */
   async removeVideo(playlistId, videoId) {

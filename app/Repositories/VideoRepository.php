@@ -130,6 +130,22 @@ class VideoRepository extends BaseRepository
         return $video;
     }
 
+    /**
+     * Set favourite status for multiple videos
+     */
+    public function setFavouriteForMany(Collection $videos, bool $isFavourite): int
+    {
+        $count = 0;
+        foreach ($videos as $video) {
+            $video->is_favourite = $isFavourite;
+            if ($video->save()) {
+                $count++;
+            }
+        }
+
+        return $count;
+    }
+
     public function updateTranscriptionStatus(Video $video, string $status, ?int $progress = null, ?string $error = null): bool
     {
         $data = ['transcription_status' => $status];

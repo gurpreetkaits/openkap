@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\BulkAddPlaylistVideosRequest;
 use App\Http\Requests\StorePlaylistRequest;
 use App\Managers\PlaylistManager;
 use Illuminate\Http\Request;
@@ -198,6 +199,44 @@ class PlaylistController extends Controller
         } catch (\RuntimeException $e) {
             return response()->json(['message' => $e->getMessage()], 400);
         }
+    }
+
+    /**
+     * Add multiple videos to a playlist.
+     */
+    public function bulkAddVideos(BulkAddPlaylistVideosRequest $request, $id)
+    {
+        $playlist = $this->playlistManager->findPlaylist($id);
+
+        if (! $playlist) {
+            return response()->json(['message' => 'Playlist not found'], 404);
+        }
+
+        if ($playlist->user_id !== Auth::id()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $result = $this->playlistManager->addMultipleVideosToPlaylist(
+            $playlist,
+            $request->validated('video_ids'),
+            Auth::user()
+        );
+
+        $message = $result['added'] === 1
+            ? '1 video added to playlist'
+            : "{$result['added']} videos added to playlist";
+
+        if ($result['skipped'] > 0) {
+            $message .= " ({$result['skipped']} already in playlist)";
+        }
+
+        return response()->json([
+            'message' => $message,
+            'added' => $result['added'],
+            'skipped' => $result['skipped'],
+            'errors' => $result['errors'],
+            'playlist' => $this->playlistManager->getPlaylistDetails($playlist->fresh()),
+        ]);
     }
 
     /**

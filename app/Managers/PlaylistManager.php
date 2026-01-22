@@ -114,6 +114,58 @@ class PlaylistManager
     }
 
     /**
+     * Add multiple videos to a playlist.
+     *
+     * @param  array<int>  $videoIds
+     * @return array{added: int, skipped: int, errors: array}
+     */
+    public function addMultipleVideosToPlaylist(Playlist $playlist, array $videoIds, User $user): array
+    {
+        $added = 0;
+        $skipped = 0;
+        $errors = [];
+
+        foreach ($videoIds as $videoId) {
+            try {
+                // Verify the video exists and belongs to the user
+                $video = $this->videos->findWithMediaAndCounts($videoId);
+
+                if (! $video) {
+                    $errors[] = ['video_id' => $videoId, 'error' => 'Video not found'];
+
+                    continue;
+                }
+
+                if ($video->user_id !== $user->id) {
+                    $errors[] = ['video_id' => $videoId, 'error' => 'Unauthorized'];
+
+                    continue;
+                }
+
+                // Check if video is already in playlist
+                if ($this->playlists->hasVideo($playlist, $videoId)) {
+                    $skipped++;
+
+                    continue;
+                }
+
+                // Add video at the end
+                $position = $this->playlists->getNextPosition($playlist);
+                $this->playlists->addVideo($playlist, $videoId, $position);
+                $added++;
+            } catch (\Exception $e) {
+                $errors[] = ['video_id' => $videoId, 'error' => $e->getMessage()];
+            }
+        }
+
+        return [
+            'added' => $added,
+            'skipped' => $skipped,
+            'errors' => $errors,
+        ];
+    }
+
+    /**
      * Remove a video from a playlist.
      */
     public function removeVideoFromPlaylist(Playlist $playlist, int $videoId): Playlist

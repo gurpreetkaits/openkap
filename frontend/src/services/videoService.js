@@ -474,6 +474,60 @@ class VideoService {
   }
 
   /**
+   * Bulk add videos to favourites
+   * @param {number[]} videoIds - Array of video IDs
+   * @returns {Promise<{message: string, added: number, failed: number}>}
+   */
+  async bulkAddToFavourites(videoIds) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/videos/bulk-favourite`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ video_ids: videoIds })
+      })
+
+      if (handleUnauthorized(response)) return null
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}))
+        throw new Error(data.message || `Failed to add to favourites: ${response.statusText}`)
+      }
+
+      return await response.json()
+    } catch (error) {
+      console.error('Error bulk adding to favourites:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Bulk remove videos from favourites
+   * @param {number[]} videoIds - Array of video IDs
+   * @returns {Promise<{message: string, removed: number, failed: number}>}
+   */
+  async bulkRemoveFromFavourites(videoIds) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/videos/bulk-favourite`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ video_ids: videoIds })
+      })
+
+      if (handleUnauthorized(response)) return null
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}))
+        throw new Error(data.message || `Failed to remove from favourites: ${response.statusText}`)
+      }
+
+      return await response.json()
+    } catch (error) {
+      console.error('Error bulk removing from favourites:', error)
+      throw error
+    }
+  }
+
+  /**
    * Request transcription for a video
    */
   async requestTranscription(id, generateSummary = true, generateTitle = true) {
