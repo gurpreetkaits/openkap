@@ -98,7 +98,7 @@ class SettingsService {
       subscription: {
         free_video_limit: 1,
         free_recording_duration_limit: 300,
-        monthly_price: 7,
+        monthly_price: 8,
         yearly_price: 80,
         yearly_monthly_price: 6.67,
         yearly_savings_percent: 5,

@@ -41,4 +41,41 @@ class UserFactory extends Factory
             'email_verified_at' => null,
         ]);
     }
+
+    /**
+     * User with active Pro subscription
+     */
+    public function withProSubscription(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'subscription_status' => 'active',
+            'subscription_started_at' => now()->subMonth(),
+            'subscription_expires_at' => now()->addMonth(),
+        ]);
+    }
+
+    /**
+     * User with canceled subscription (grace period)
+     */
+    public function withCanceledSubscription(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'subscription_status' => 'canceled',
+            'subscription_started_at' => now()->subMonths(2),
+            'subscription_expires_at' => now()->addDays(15),
+            'subscription_canceled_at' => now()->subDays(15),
+        ]);
+    }
+
+    /**
+     * Free user (default, but explicit)
+     */
+    public function free(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'subscription_status' => 'free',
+            'subscription_started_at' => null,
+            'subscription_expires_at' => null,
+        ]);
+    }
 }

@@ -29,7 +29,7 @@ class SubscriptionController extends Controller
     public function createCheckout(Request $request): JsonResponse
     {
         $request->validate([
-            'plan' => 'sometimes|in:monthly,yearly',
+            'plan' => 'sometimes|in:monthly,yearly,teams_monthly',
         ]);
 
         try {

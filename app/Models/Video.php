@@ -17,6 +17,9 @@ class Video extends Model implements HasMedia
         'description',
         'duration',
         'user_id',
+        'folder_id',
+        'workspace_id',
+        'file_size_bytes',
         'is_public',
         'is_favourite',
         'share_expires_at',
@@ -53,6 +56,7 @@ class Video extends Model implements HasMedia
 
     protected $casts = [
         'duration' => 'integer',
+        'file_size_bytes' => 'integer',
         'is_public' => 'boolean',
         'is_favourite' => 'boolean',
         'share_expires_at' => 'datetime',
@@ -91,6 +95,102 @@ class Video extends Model implements HasMedia
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Get the folder this video belongs to (if any).
+     */
+    public function folder()
+    {
+        return $this->belongsTo(Folder::class);
+    }
+
+    /**
+     * Get the workspace this video belongs to (if any).
+     */
+    public function workspace()
+    {
+        return $this->belongsTo(Workspace::class);
+    }
+
+    /**
+     * Check if this video belongs to a workspace.
+     */
+    public function isWorkspaceVideo(): bool
+    {
+        return $this->workspace_id !== null;
+    }
+
+    /**
+     * Check if user can access this video.
+     * User can access if:
+     * - They own the video (personal)
+     * - They are a member of the workspace the video belongs to
+     * - The video is public
+     */
+    public function canBeAccessedBy(User $user): bool
+    {
+        // Owner can always access
+        if ($this->user_id === $user->id) {
+            return true;
+        }
+
+        // If workspace video, check membership
+        if ($this->isWorkspaceVideo()) {
+            return $this->workspace->hasMember($user);
+        }
+
+        // Public videos can be accessed by anyone
+        return $this->is_public;
+    }
+
+    /**
+     * Check if user can edit this video.
+     * User can edit if:
+     * - They own the video
+     * - They are admin/owner of the workspace
+     */
+    public function canBeEditedBy(User $user): bool
+    {
+        // Owner can always edit
+        if ($this->user_id === $user->id) {
+            return true;
+        }
+
+        // Workspace admins can edit any video in the workspace
+        if ($this->isWorkspaceVideo()) {
+            return $this->workspace->isAdmin($user);
+        }
+
+        return false;
+    }
+
+    /**
+     * Check if user can delete this video.
+     */
+    public function canBeDeletedBy(User $user): bool
+    {
+        return $this->canBeEditedBy($user);
+    }
+
+    /**
+     * Get file size in human readable format.
+     */
+    public function getFileSizeFormatted(): string
+    {
+        $bytes = $this->file_size_bytes ?? 0;
+
+        if ($bytes >= 1073741824) {
+            return number_format($bytes / 1073741824, 2).' GB';
+        }
+        if ($bytes >= 1048576) {
+            return number_format($bytes / 1048576, 2).' MB';
+        }
+        if ($bytes >= 1024) {
+            return number_format($bytes / 1024, 2).' KB';
+        }
+
+        return $bytes.' bytes';
     }
 
     /**

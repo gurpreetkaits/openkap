@@ -62,6 +62,10 @@ class StreamVideoController extends Controller
         touch("{$sessionDir}/video.webm");
 
         // Store session metadata
+        // Only use Bunny if configured AND user has active subscription
+        // Free users get local storage only (no encoding cost)
+        $shouldUseBunny = $this->bunnyService->isConfigured() && $user->shouldEncodeVideos();
+
         $metadata = [
             'user_id' => Auth::id(),
             'title' => $request->title,
@@ -71,7 +75,7 @@ class StreamVideoController extends Controller
             'next_expected_chunk' => 0,
             'total_size' => 0,
             'pending_chunks' => [],
-            'use_bunny' => $this->bunnyService->isConfigured(), // Flag for Bunny upload
+            'use_bunny' => $shouldUseBunny, // Only use Bunny for paid users
         ];
 
         file_put_contents("{$sessionDir}/metadata.json", json_encode($metadata));
@@ -79,7 +83,8 @@ class StreamVideoController extends Controller
         return response()->json([
             'session_id' => $sessionId,
             'storage_type' => 'local', // Always local during recording
-            'will_use_bunny' => $this->bunnyService->isConfigured(),
+            'will_use_bunny' => $shouldUseBunny,
+            'is_free_account' => ! $user->hasActiveSubscription(),
             'message' => 'Upload session started',
         ]);
     }
@@ -223,8 +228,12 @@ class StreamVideoController extends Controller
             }
         }
 
-        // Determine storage type based on Bunny availability
-        $useBunny = $metadata['use_bunny'] ?? $this->bunnyService->isConfigured();
+        // Determine storage type based on Bunny availability AND user subscription
+        // Free users cannot use Bunny encoding (to save costs)
+        $user = User::find($userId);
+        $useBunny = ($metadata['use_bunny'] ?? false)
+            && $this->bunnyService->isConfigured()
+            && ($user ? $user->shouldEncodeVideos() : false);
 
         // Create Video record
         $title = $request->title ?? $metadata['title'];

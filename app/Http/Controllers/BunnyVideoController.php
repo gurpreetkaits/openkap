@@ -30,16 +30,21 @@ class BunnyVideoController extends Controller
             'description' => 'nullable|string|max:1000',
         ]);
 
-        // Check if Bunny is configured
-        if (! $this->bunnyService->isConfigured()) {
+        $user = Auth::user();
+
+        // Check if user has active subscription for Bunny encoding
+        // Free users cannot use Bunny encoding - they should use local storage
+        // This check comes FIRST so free users get a clear message before any Bunny checks
+        if (! $user->shouldEncodeVideos()) {
             return response()->json([
-                'error' => 'bunny_not_configured',
-                'message' => 'Bunny Stream is not configured. Please contact support.',
-            ], 503);
+                'error' => 'subscription_required',
+                'message' => 'Video encoding requires an active subscription. Free accounts can upload up to 10 videos without encoding.',
+                'use_local_storage' => true,
+                'upgrade_url' => config('services.frontend.url').'/subscription',
+            ], 403);
         }
 
         // Check user quota
-        $user = Auth::user();
         if (! $user->canRecordVideo()) {
             return response()->json([
                 'error' => 'video_limit_reached',
@@ -48,6 +53,14 @@ class BunnyVideoController extends Controller
                 'remaining_quota' => $user->getRemainingVideoQuota(),
                 'upgrade_url' => config('services.frontend.url').'/subscription',
             ], 403);
+        }
+
+        // Check if Bunny is configured
+        if (! $this->bunnyService->isConfigured()) {
+            return response()->json([
+                'error' => 'bunny_not_configured',
+                'message' => 'Bunny Stream is not configured. Please contact support.',
+            ], 503);
         }
 
         try {

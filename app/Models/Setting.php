@@ -126,7 +126,7 @@ class Setting extends Model
 
     public static function getMonthlyPrice(): int
     {
-        return (int) self::getValue('monthly_price', 7);
+        return (int) self::getValue('monthly_price', 8);
     }
 
     public static function getYearlyPrice(): int

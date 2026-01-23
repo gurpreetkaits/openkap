@@ -22,6 +22,7 @@ class SubscriptionManager
         return [
             'status' => $subscription ? $subscription->status->value : ($user->subscription_status ?? 'free'),
             'is_active' => $isActive,
+            'plan_type' => $user->getPlanType(), // 'free', 'pro', or 'teams'
             'can_record' => $user->canRecordVideo(),
             'videos_count' => $user->getVideosCount(),
             'max_videos' => $isActive ? null : Setting::getFreeVideoLimit(),
@@ -76,12 +77,15 @@ class SubscriptionManager
 
     /**
      * Create a checkout session using the Polar package
+     * Supports plans: 'monthly', 'yearly', 'teams_monthly'
      */
     public function createCheckout(User $user, string $plan = 'monthly'): array
     {
-        $productId = $plan === 'yearly'
-            ? config('services.polar.product_id_yearly')
-            : config('services.polar.product_id_monthly');
+        $productId = match ($plan) {
+            'yearly' => config('services.polar.product_id_yearly'),
+            'teams_monthly' => config('services.polar.product_id_teams_monthly'),
+            default => config('services.polar.product_id_monthly'), // 'monthly' or fallback
+        };
 
         if (! $productId) {
             throw new \Exception("Polar product ID not configured for {$plan} plan");

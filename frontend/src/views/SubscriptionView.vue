@@ -1,5 +1,5 @@
 <template>
-  <div class="animate-fade-in max-w-5xl mx-auto p-6 lg:p-8">
+  <div class="animate-fade-in max-w-6xl mx-auto p-6 lg:p-8">
     <!-- Success Alert -->
     <div v-if="showSuccessAlert" class="fixed top-20 left-1/2 -translate-x-1/2 z-50 animate-slide-down">
       <div class="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-4 rounded-xl shadow-lg shadow-green-500/20 flex items-center gap-3">
@@ -7,7 +7,7 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
         </svg>
         <div>
-          <h3 class="font-semibold">Welcome to ScreenSense Pro!</h3>
+          <h3 class="font-semibold">Welcome to ScreenSense {{ subscription?.plan_type === 'teams' ? 'Team' : 'Pro' }}!</h3>
           <p class="text-sm text-white/90">Your subscription is now active. Enjoy unlimited recordings!</p>
         </div>
         <button @click="showSuccessAlert = false" class="ml-4 p-1 hover:bg-white/20 rounded-lg transition-colors">
@@ -20,27 +20,20 @@
 
     <!-- Header -->
     <div class="mb-8 text-center">
-      <h2 class="text-2xl font-bold text-gray-900 tracking-tight mb-2">Upgrade your plan</h2>
-      <p class="text-gray-500 text-sm max-w-lg mx-auto">Unlock unlimited recording, higher resolution exports, and priority support.</p>
+      <h2 class="text-2xl font-bold text-gray-900 tracking-tight mb-2">Choose your plan</h2>
+      <p class="text-gray-500 text-sm max-w-lg mx-auto">Unlock unlimited recording, higher resolution exports, and team collaboration features.</p>
     </div>
 
-    <!-- Billing Cycle Toggle -->
-    <div class="flex items-center justify-center gap-4 mb-10">
-      <button
-        @click="billingCycle = 'monthly'"
-        class="px-4 py-2 text-sm font-medium rounded-lg transition-all"
-        :class="billingCycle === 'monthly' ? 'bg-gray-900 text-white' : 'text-gray-600 hover:text-gray-900'"
-      >
-        Monthly
-      </button>
-      <button
-        @click="billingCycle = 'yearly'"
-        class="px-4 py-2 text-sm font-medium rounded-lg transition-all flex items-center gap-2"
-        :class="billingCycle === 'yearly' ? 'bg-gray-900 text-white' : 'text-gray-600 hover:text-gray-900'"
-      >
-        Yearly
-        <span class="text-[10px] px-1.5 py-0.5 rounded-full bg-green-500 text-white font-bold">Save {{ settings.subscription?.yearly_savings_percent || 5 }}%</span>
-      </button>
+    <!-- Current Plan Badge -->
+    <div v-if="subscription?.plan_type && subscription.plan_type !== 'free'" class="flex justify-center mb-10">
+      <div class="inline-flex items-center gap-2 px-4 py-2 bg-green-50 border border-green-200 rounded-full">
+        <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+        </svg>
+        <span class="text-sm font-medium text-green-700">
+          Currently on {{ subscription.plan_type === 'teams' ? 'Team' : 'Pro' }} plan
+        </span>
+      </div>
     </div>
 
     <!-- Loading State -->
@@ -63,104 +56,114 @@
     </div>
 
     <!-- Pricing Cards -->
-    <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+    <div v-else class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
       <!-- Free Plan Card -->
-      <div class="bg-white rounded-2xl border border-gray-200 p-8 flex flex-col relative shadow-sm h-full">
-        <div class="mb-5">
-          <h3 class="text-lg font-semibold text-gray-900">Free Plan</h3>
+      <div class="bg-white rounded-2xl border border-gray-100 p-6 flex flex-col relative h-full">
+        <div class="mb-4">
+          <h3 class="text-lg font-semibold text-gray-900">Free</h3>
           <p class="text-sm text-gray-500 mt-1">Perfect for getting started</p>
         </div>
         <div class="mb-6">
-          <span class="text-4xl font-bold text-gray-900">$0</span>
+          <span class="text-3xl font-bold text-gray-900">$0</span>
           <span class="text-gray-500 text-sm">/month</span>
         </div>
-        <button
-          v-if="!hasActiveSubscription"
-          class="w-full py-2.5 rounded-lg border border-gray-200 text-sm font-medium text-gray-900 bg-gray-50 cursor-default mb-8"
-        >
-          Current Plan
-        </button>
-        <button
-          v-else
-          @click="cancelSubscription"
-          :disabled="canceling || subscription?.is_in_grace_period"
-          class="w-full py-2.5 rounded-lg border border-gray-200 text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors mb-8 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {{ canceling ? 'Processing...' : subscription?.is_in_grace_period ? 'Cancellation Pending' : 'Downgrade to Free' }}
-        </button>
-        <ul class="space-y-4 text-sm text-gray-600 flex-1">
-          <li class="flex items-center gap-3">
+        <ul class="space-y-3 text-sm text-gray-600 flex-1">
+          <li class="flex items-center gap-2.5">
             <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
             </svg>
-            {{ settings.free_plan?.max_videos || 1 }} video{{ (settings.free_plan?.max_videos || 1) > 1 ? 's' : '' }}
+            10 videos
+          </li>
+          <li class="flex items-center gap-2.5">
+            <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            1 GB storage
           </li>
         </ul>
 
         <!-- Usage indicator for free plan -->
-        <div v-if="!hasActiveSubscription && subscription" class="mt-6 pt-6 border-t border-gray-100">
+        <div v-if="subscription?.plan_type === 'free'" class="mt-6 pt-5 border-t border-gray-100">
           <div class="flex items-center justify-between text-xs text-gray-500 mb-2">
             <span>Videos used</span>
-            <span class="font-medium text-gray-900">{{ subscription?.videos_count || 0 }} / {{ subscription?.max_videos || settings.free_plan?.max_videos || 1 }}</span>
+            <span class="font-medium text-gray-900">{{ subscription?.videos_count || 0 }} / {{ subscription?.max_videos || settings.free_plan?.max_videos || 10 }}</span>
           </div>
           <div class="w-full bg-gray-100 h-1.5 rounded-full overflow-hidden">
             <div
               class="bg-orange-500 h-full rounded-full transition-all duration-500"
-              :style="{ width: Math.min(((subscription?.videos_count || 0) / (subscription?.max_videos || settings.free_plan?.max_videos || 1)) * 100, 100) + '%' }"
+              :style="{ width: Math.min(((subscription?.videos_count || 0) / (subscription?.max_videos || settings.free_plan?.max_videos || 10)) * 100, 100) + '%' }"
             ></div>
           </div>
+        </div>
+
+        <!-- Action Button at Bottom -->
+        <div class="mt-6 pt-4">
+          <button
+            v-if="subscription?.plan_type === 'free'"
+            class="w-full py-2.5 rounded-lg border border-gray-200 text-sm font-medium text-gray-900 bg-gray-50 cursor-default"
+          >
+            Current Plan
+          </button>
+          <button
+            v-else
+            @click="cancelSubscription"
+            :disabled="canceling || subscription?.is_in_grace_period"
+            class="w-full py-2.5 rounded-lg border border-gray-200 text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {{ canceling ? 'Processing...' : subscription?.is_in_grace_period ? 'Cancellation Pending' : 'Downgrade to Free' }}
+          </button>
         </div>
       </div>
 
       <!-- Pro Plan Card -->
-      <div class="bg-gray-900 rounded-2xl border border-gray-800 p-8 flex flex-col relative shadow-xl shadow-orange-900/10 h-full ring-1 ring-orange-500/20">
-        <!-- Badge -->
+      <div class="bg-gray-900 rounded-2xl border border-gray-800 p-6 pt-10 flex flex-col relative h-full">
+        <!-- Billing Toggle on Top Border -->
+        <div class="absolute -top-4 left-1/2 -translate-x-1/2 flex items-center gap-0.5 bg-white rounded-full p-1 shadow-sm border border-gray-100">
+          <button
+            @click="billingCycle = 'monthly'"
+            class="px-3 py-1.5 text-xs font-medium rounded-full transition-all"
+            :class="billingCycle === 'monthly' ? 'bg-gray-900 text-white' : 'text-gray-500 hover:text-gray-700'"
+          >
+            Monthly
+          </button>
+          <button
+            @click="billingCycle = 'yearly'"
+            class="px-3 py-1.5 text-xs font-medium rounded-full transition-all"
+            :class="billingCycle === 'yearly' ? 'bg-gray-900 text-white' : 'text-gray-500 hover:text-gray-700'"
+          >
+            Yearly
+          </button>
+        </div>
+
+        <!-- Popular Badge -->
         <div class="absolute top-0 right-0 -mt-3 mr-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-lg tracking-wide uppercase">
-          Recommended
+          Popular
         </div>
-        <div class="mb-5">
-          <h3 class="text-lg font-semibold text-white">Pro Plan</h3>
-          <p class="text-sm text-gray-400 mt-1">For power users and teams</p>
+
+        <div class="mb-4">
+          <h3 class="text-lg font-semibold text-white">Pro</h3>
+          <p class="text-sm text-gray-400 mt-1">For individuals & creators</p>
         </div>
+
         <div class="mb-6">
           <template v-if="billingCycle === 'monthly'">
-            <span class="text-4xl font-bold text-white">${{ settings.subscription?.monthly_price || 7 }}</span>
+            <span class="text-3xl font-bold text-white">${{ settings.subscription?.monthly_price || 8 }}</span>
             <span class="text-gray-400 text-sm">/month</span>
           </template>
           <template v-else>
-            <span class="text-4xl font-bold text-white">${{ ((settings.subscription?.yearly_price || 80) / 12).toFixed(2) }}</span>
-            <span class="text-gray-400 text-sm">/month</span>
-            <div class="text-xs text-gray-400 mt-1">Billed ${{ settings.subscription?.yearly_price || 80 }}/year</div>
+            <span class="text-3xl font-bold text-white">${{ settings.subscription?.yearly_price || 80 }}</span>
+            <span class="text-gray-400 text-sm">/year</span>
+            <div class="inline-flex items-center gap-1 mt-2 px-2 py-0.5 rounded-full bg-green-500/20 text-green-400 text-xs font-medium">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/>
+              </svg>
+              Get 2 months free
+            </div>
           </template>
         </div>
-        <button
-          v-if="hasActiveSubscription && !subscription?.is_in_grace_period"
-          class="w-full py-2.5 rounded-lg bg-green-600 text-sm font-medium text-white mb-8 flex items-center justify-center gap-2"
-        >
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-          </svg>
-          Current Plan
-        </button>
-        <button
-          v-else
-          @click="startCheckout"
-          :disabled="checkingOut"
-          class="w-full py-2.5 rounded-lg bg-orange-600 hover:bg-orange-500 text-sm font-medium text-white transition-all shadow-lg shadow-orange-900/20 mb-8 flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <template v-if="checkingOut">
-            <div class="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-            Redirecting...
-          </template>
-          <template v-else>
-            {{ subscription?.is_in_grace_period ? 'Resubscribe' : 'Upgrade to Pro' }}
-            <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
-            </svg>
-          </template>
-        </button>
-        <ul class="space-y-4 text-sm text-gray-300 flex-1">
-          <li class="flex items-center gap-3 text-white">
+
+        <ul class="space-y-3 text-sm text-gray-300 flex-1">
+          <li class="flex items-center gap-2.5 text-white">
             <div class="p-0.5 rounded-full bg-orange-500/20 text-orange-400 flex-shrink-0">
               <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
@@ -168,52 +171,199 @@
             </div>
             Unlimited videos
           </li>
-          <li class="flex items-center gap-3 text-white">
+          <li class="flex items-center gap-2.5 text-white">
             <div class="p-0.5 rounded-full bg-orange-500/20 text-orange-400 flex-shrink-0">
               <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
               </svg>
             </div>
-            Unlimited recording time
+            50 GB storage
           </li>
-          <li class="flex items-center gap-3 text-white">
+          <li class="flex items-center gap-2.5 text-white">
             <div class="p-0.5 rounded-full bg-orange-500/20 text-orange-400 flex-shrink-0">
               <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
               </svg>
             </div>
-            4K Export quality
+            Unlimited recording length
           </li>
-          <li class="flex items-center gap-3 text-white">
+          <li class="flex items-center gap-2.5 text-white">
             <div class="p-0.5 rounded-full bg-orange-500/20 text-orange-400 flex-shrink-0">
               <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
               </svg>
             </div>
-            Priority Support
+            HLS adaptive streaming
           </li>
-          <li class="flex items-center gap-3 text-white">
+          <li class="flex items-center gap-2.5 text-white">
             <div class="p-0.5 rounded-full bg-orange-500/20 text-orange-400 flex-shrink-0">
               <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
               </svg>
             </div>
-            Custom Branding
+            Priority support
           </li>
         </ul>
 
-        <!-- Active subscription info -->
-        <div v-if="hasActiveSubscription" class="mt-6 pt-6 border-t border-gray-700">
-          <div class="flex items-center justify-between text-xs mb-2">
+        <!-- Active subscription status -->
+        <div v-if="subscription?.plan_type === 'pro'" class="mt-6 pt-4 border-t border-gray-700">
+          <div class="flex items-center justify-between text-xs mb-3">
             <span class="text-gray-400">Status</span>
             <span class="font-medium" :class="subscription?.is_in_grace_period ? 'text-yellow-400' : 'text-green-400'">
               {{ subscription?.is_in_grace_period ? 'Cancels ' + formatDate(subscription.expires_at) : 'Active' }}
             </span>
           </div>
+        </div>
+
+        <!-- Action Button at Bottom -->
+        <div class="mt-auto pt-4">
           <button
+            v-if="subscription?.plan_type === 'pro' && !subscription?.is_in_grace_period"
+            class="w-full py-2.5 rounded-lg bg-green-600 text-sm font-medium text-white flex items-center justify-center gap-2"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            Current Plan
+          </button>
+          <button
+            v-else
+            @click="startCheckout('pro')"
+            :disabled="checkingOut"
+            class="w-full py-2.5 rounded-lg bg-orange-600 hover:bg-orange-500 text-sm font-medium text-white transition-all shadow-lg shadow-orange-900/20 flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <template v-if="checkingOut === 'pro'">
+              <div class="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+              Redirecting...
+            </template>
+            <template v-else>
+              {{ subscription?.plan_type === 'teams' ? 'Switch to Pro' : (subscription?.is_in_grace_period ? 'Resubscribe' : 'Upgrade to Pro') }}
+              <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+              </svg>
+            </template>
+          </button>
+          <button
+            v-if="subscription?.plan_type === 'pro'"
             @click="openBillingPortal"
             :disabled="loadingPortal"
-            class="w-full mt-3 py-2 rounded-lg bg-gray-800 hover:bg-gray-700 text-sm font-medium text-gray-300 transition-colors disabled:opacity-50"
+            class="w-full mt-2 py-2 rounded-lg bg-gray-800 hover:bg-gray-700 text-sm font-medium text-gray-300 transition-colors disabled:opacity-50"
+          >
+            {{ loadingPortal ? 'Loading...' : 'Manage Billing' }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Teams Plan Card -->
+      <div class="bg-white rounded-2xl border border-gray-100 p-6 flex flex-col relative h-full">
+        <!-- Badge -->
+        <div class="absolute top-0 right-0 -mt-3 mr-4 bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-lg tracking-wide uppercase">
+          For Teams
+        </div>
+        <div class="mb-4">
+          <h3 class="text-lg font-semibold text-gray-900">Team</h3>
+          <p class="text-sm text-gray-500 mt-1">For collaborative teams</p>
+        </div>
+        <div class="mb-6">
+          <span class="text-3xl font-bold text-gray-900">$39</span>
+          <span class="text-gray-500 text-sm">/month</span>
+          <div class="text-xs text-gray-400 mt-1">Up to 5 team members</div>
+        </div>
+
+        <ul class="space-y-3 text-sm text-gray-600 flex-1">
+          <li class="flex items-center gap-2.5">
+            <div class="p-0.5 rounded-full bg-indigo-100 text-indigo-600 flex-shrink-0">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+              </svg>
+            </div>
+            5 team members included
+          </li>
+          <li class="flex items-center gap-2.5">
+            <div class="p-0.5 rounded-full bg-indigo-100 text-indigo-600 flex-shrink-0">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+              </svg>
+            </div>
+            100 GB shared storage
+          </li>
+          <li class="flex items-center gap-2.5">
+            <div class="p-0.5 rounded-full bg-indigo-100 text-indigo-600 flex-shrink-0">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+              </svg>
+            </div>
+            Unlimited recording length
+          </li>
+          <li class="flex items-center gap-2.5">
+            <div class="p-0.5 rounded-full bg-indigo-100 text-indigo-600 flex-shrink-0">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+              </svg>
+            </div>
+            Team workspaces
+          </li>
+          <li class="flex items-center gap-2.5">
+            <div class="p-0.5 rounded-full bg-indigo-100 text-indigo-600 flex-shrink-0">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+              </svg>
+            </div>
+            Shared video library
+          </li>
+          <li class="flex items-center gap-2.5">
+            <div class="p-0.5 rounded-full bg-indigo-100 text-indigo-600 flex-shrink-0">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+              </svg>
+            </div>
+            Admin controls
+          </li>
+        </ul>
+
+        <!-- Active subscription status -->
+        <div v-if="subscription?.plan_type === 'teams'" class="mt-6 pt-4 border-t border-gray-100">
+          <div class="flex items-center justify-between text-xs mb-3">
+            <span class="text-gray-500">Status</span>
+            <span class="font-medium" :class="subscription?.is_in_grace_period ? 'text-yellow-600' : 'text-green-600'">
+              {{ subscription?.is_in_grace_period ? 'Cancels ' + formatDate(subscription.expires_at) : 'Active' }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Action Button at Bottom -->
+        <div class="mt-auto pt-4">
+          <button
+            v-if="subscription?.plan_type === 'teams' && !subscription?.is_in_grace_period"
+            class="w-full py-2.5 rounded-lg bg-green-600 text-sm font-medium text-white flex items-center justify-center gap-2"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            Current Plan
+          </button>
+          <button
+            v-else
+            @click="startCheckout('teams')"
+            :disabled="checkingOut"
+            class="w-full py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-sm font-medium text-white transition-all flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <template v-if="checkingOut === 'teams'">
+              <div class="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+              Redirecting...
+            </template>
+            <template v-else>
+              {{ subscription?.plan_type === 'pro' ? 'Switch to Team' : 'Get Team' }}
+              <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+              </svg>
+            </template>
+          </button>
+          <button
+            v-if="subscription?.plan_type === 'teams'"
+            @click="openBillingPortal"
+            :disabled="loadingPortal"
+            class="w-full mt-2 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-sm font-medium text-gray-700 transition-colors disabled:opacity-50"
           >
             {{ loadingPortal ? 'Loading...' : 'Manage Billing' }}
           </button>
@@ -222,19 +372,19 @@
     </div>
 
     <!-- Enterprise Contact -->
-    <div class="mt-12 text-center p-6 bg-gray-100 rounded-xl border border-gray-200 max-w-4xl mx-auto">
-      <h4 class="text-sm font-semibold text-gray-900 mb-1">Need a custom plan?</h4>
-      <p class="text-sm text-gray-500 mb-3">For large organizations with specific security and control needs.</p>
+    <div class="mt-12 text-center p-6 bg-gray-50 rounded-xl border border-gray-200 max-w-5xl mx-auto">
+      <h4 class="text-sm font-semibold text-gray-900 mb-1">Need a custom enterprise plan?</h4>
+      <p class="text-sm text-gray-500 mb-3">For large organizations with specific security, SSO, and compliance needs.</p>
       <button class="text-sm font-medium text-gray-900 border-b border-gray-300 hover:border-gray-900 transition-colors">
         Contact Sales
       </button>
     </div>
 
     <!-- Subscription History -->
-    <div v-if="history.length > 0" class="mt-12 max-w-4xl mx-auto">
+    <div v-if="history.length > 0" class="mt-12 max-w-5xl mx-auto">
       <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
         <div class="px-6 py-4 border-b border-gray-100">
-          <h3 class="text-sm font-semibold text-gray-900">Subscription History</h3>
+          <h3 class="text-sm font-semibold text-gray-900">Billing History</h3>
         </div>
         <div class="overflow-x-auto">
           <table class="w-full text-sm">
@@ -294,7 +444,7 @@ const subscription = ref(null)
 const history = ref([])
 const loading = ref(false)
 const error = ref(null)
-const checkingOut = ref(false)
+const checkingOut = ref(null) // 'pro' or 'teams' or null
 const canceling = ref(false)
 const loadingPortal = ref(false)
 const showSuccessAlert = ref(false)
@@ -303,13 +453,14 @@ const billingCycle = ref('monthly')
 // Settings from backend
 const settings = ref({
   subscription: {
-    monthly_price: 7,
+    monthly_price: 8,
     yearly_price: 80,
     yearly_monthly_price: 6.67,
-    yearly_savings_percent: 5,
+    yearly_savings_percent: 17,
+    teams_monthly_price: 39,
   },
   free_plan: {
-    max_videos: 1,
+    max_videos: 10,
     max_duration_minutes: 5,
   }
 })
@@ -449,10 +600,18 @@ async function openBillingPortal() {
   }
 }
 
-async function startCheckout() {
-  checkingOut.value = true
+async function startCheckout(planType) {
+  checkingOut.value = planType
 
   try {
+    // Determine the plan to send to backend
+    let plan
+    if (planType === 'teams') {
+      plan = 'teams_monthly'
+    } else {
+      plan = billingCycle.value // 'monthly' or 'yearly'
+    }
+
     const response = await fetch(`${API_BASE_URL}/api/subscription/checkout`, {
       method: 'POST',
       headers: {
@@ -460,9 +619,7 @@ async function startCheckout() {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        plan: billingCycle.value,
-      }),
+      body: JSON.stringify({ plan }),
     })
 
     if (!response.ok) {
@@ -480,7 +637,7 @@ async function startCheckout() {
   } catch (e) {
     console.error('Error starting checkout:', e)
     toast.error(e.message || 'Failed to start checkout. Please try again.')
-    checkingOut.value = false
+    checkingOut.value = null
   }
 }
 

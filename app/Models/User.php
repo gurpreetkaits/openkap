@@ -173,6 +173,46 @@ class User extends Authenticatable
     }
 
     /**
+     * Get the user's plan type based on their subscription product
+     * Returns: 'free', 'pro', or 'teams'
+     */
+    public function getPlanType(): string
+    {
+        if (! $this->hasActiveSubscription()) {
+            return 'free';
+        }
+
+        // Get product ID from the package subscription or fallback to user field
+        $subscription = $this->subscription();
+        $productId = $subscription?->product_id ?? $this->polar_product_id;
+
+        // Check if it's a teams product
+        $teamsProductId = config('services.polar.product_id_teams_monthly');
+        if ($teamsProductId && $productId === $teamsProductId) {
+            return 'teams';
+        }
+
+        // Default to pro for any other active subscription
+        return 'pro';
+    }
+
+    /**
+     * Check if user has a Teams subscription
+     */
+    public function hasTeamsSubscription(): bool
+    {
+        return $this->getPlanType() === 'teams';
+    }
+
+    /**
+     * Check if user has a Pro subscription
+     */
+    public function hasProSubscription(): bool
+    {
+        return $this->getPlanType() === 'pro';
+    }
+
+    /**
      * Recalculate and sync video count from database
      */
     public function syncVideosCount(): int
@@ -271,5 +311,110 @@ class User extends Authenticatable
     public function getUnreadNotificationsCount(): int
     {
         return $this->notifications()->where('read', false)->count();
+    }
+
+    // ==================
+    // Workspace Relationships
+    // ==================
+
+    /**
+     * Workspaces owned by this user
+     */
+    public function ownedWorkspaces()
+    {
+        return $this->hasMany(Workspace::class, 'owner_id');
+    }
+
+    /**
+     * All workspaces this user is a member of (including owned)
+     */
+    public function workspaces()
+    {
+        return $this->belongsToMany(Workspace::class, 'workspace_members')
+            ->withPivot(['role', 'joined_at', 'invited_by']);
+    }
+
+    /**
+     * Get workspaces where user is admin or owner
+     */
+    public function adminWorkspaces()
+    {
+        return $this->workspaces()
+            ->wherePivotIn('role', ['owner', 'admin']);
+    }
+
+    /**
+     * Check if user is member of a workspace
+     */
+    public function isMemberOf(Workspace $workspace): bool
+    {
+        return $this->workspaces()->where('workspaces.id', $workspace->id)->exists();
+    }
+
+    /**
+     * Check if user is owner of a workspace
+     */
+    public function isOwnerOf(Workspace $workspace): bool
+    {
+        return $workspace->owner_id === $this->id;
+    }
+
+    /**
+     * Check if user is admin of a workspace
+     */
+    public function isAdminOf(Workspace $workspace): bool
+    {
+        return $workspace->isAdmin($this);
+    }
+
+    /**
+     * Get user's role in a workspace
+     */
+    public function getRoleIn(Workspace $workspace): ?string
+    {
+        return $workspace->getUserRole($this);
+    }
+
+    /**
+     * Check if user can record in a specific context (personal or workspace)
+     */
+    public function canRecordIn(?Workspace $workspace = null): bool
+    {
+        if ($workspace) {
+            // Workspace context: check workspace subscription
+            return $workspace->canMemberRecord($this);
+        }
+
+        // Personal context: check user's own subscription
+        return $this->canRecordVideo();
+    }
+
+    /**
+     * Get max recording duration in seconds based on context
+     */
+    public function getMaxRecordingSeconds(?Workspace $workspace = null): int
+    {
+        if ($workspace && $workspace->hasActiveSubscription()) {
+            return $workspace->getMaxRecordingSeconds();
+        }
+
+        // Personal context
+        if ($this->hasActiveSubscription()) {
+            return 30 * 60; // 30 minutes for Pro
+        }
+
+        return Setting::getFreeRecordingDurationLimit(); // 5 minutes for Free
+    }
+
+    /**
+     * Check if user should get HLS encoding (paid plan only)
+     */
+    public function shouldEncodeVideos(?Workspace $workspace = null): bool
+    {
+        if ($workspace) {
+            return $workspace->hasActiveSubscription();
+        }
+
+        return $this->hasActiveSubscription();
     }
 }

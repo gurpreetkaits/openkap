@@ -1,5 +1,76 @@
 <template>
   <div class="animate-fade-in max-w-7xl mx-auto p-6 lg:p-8">
+    <!-- Action Bar -->
+    <div class="flex items-center gap-3 mb-6 pb-6 border-b border-gray-200">
+      <button
+        @click="openRecording"
+        class="inline-flex items-center gap-2 px-4 py-2 bg-orange-500 text-white text-sm font-medium rounded-lg hover:bg-orange-600 transition-colors shadow-sm"
+      >
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10" stroke-width="2"/>
+          <circle cx="12" cy="12" r="4" fill="currentColor"/>
+        </svg>
+        Record
+      </button>
+
+      <button
+        @click="showNewFolderModal = true"
+        class="inline-flex items-center gap-2 px-4 py-2 bg-white text-gray-700 text-sm font-medium rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors"
+      >
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+        </svg>
+        New Folder
+      </button>
+
+      <button
+        @click="handleUpload"
+        class="inline-flex items-center gap-2 px-4 py-2 bg-white text-gray-700 text-sm font-medium rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors"
+        :disabled="uploading"
+      >
+        <svg v-if="!uploading" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+        </svg>
+        <svg v-else class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        {{ uploading ? 'Uploading...' : 'Upload' }}
+      </button>
+
+      <!-- Hidden file input for upload -->
+      <input
+        ref="fileInput"
+        type="file"
+        accept="video/*"
+        class="hidden"
+        @change="onFileSelected"
+      />
+    </div>
+
+    <!-- Folders Section -->
+    <div v-if="folders.length > 0" class="mb-6">
+      <h3 class="text-sm font-medium text-gray-500 mb-3">Folders</h3>
+      <div class="flex flex-wrap gap-3">
+        <div
+          v-for="folder in folders"
+          :key="folder.id"
+          class="group flex items-center gap-2 px-3 py-2 bg-white border-2 rounded-lg transition-all cursor-pointer"
+          :class="dragOverFolderId === folder.id ? 'border-orange-500 bg-orange-50 shadow-md' : 'border-gray-200 hover:border-orange-300 hover:shadow-sm'"
+          @click="openFolder(folder)"
+          @dragover.prevent="handleFolderDragOver($event, folder.id)"
+          @dragleave="handleFolderDragLeave"
+          @drop.prevent="handleDropOnFolder($event, folder)"
+        >
+          <svg class="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
+          </svg>
+          <span class="text-sm font-medium text-gray-700 group-hover:text-gray-900">{{ folder.name }}</span>
+          <span class="text-xs text-gray-400">{{ folder.videos_count }}</span>
+        </div>
+      </div>
+    </div>
+
     <!-- Library Toolbar -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
       <!-- Tabs -->
@@ -51,39 +122,42 @@
             </button>
 
             <!-- Bulk Actions Dropdown Menu -->
-            <div
-              v-show="showBulkActionsDropdown"
-              class="absolute right-0 mt-2 w-52 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50"
-            >
-              <button
-                @click="bulkAddToFavourites"
-                class="w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-3"
+            <Transition name="dropdown">
+              <div
+                v-show="showBulkActionsDropdown"
+                class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 py-1.5 z-50"
               >
-                <svg class="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
-                </svg>
-                Add to Favourites
-              </button>
-              <button
-                @click="openPlaylistModal"
-                class="w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-3"
-              >
-                <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
-                </svg>
-                Add to Playlist
-              </button>
-              <div class="border-t border-gray-100 my-1"></div>
-              <button
-                @click="showBulkDeleteModal = true; showBulkActionsDropdown = false"
-                class="w-full px-4 py-2.5 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-3"
-              >
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                </svg>
-                Delete Permanently
-              </button>
-            </div>
+                <button
+                  @click="bulkAddToFavourites"
+                  class="w-full px-3 py-2 text-left text-[13px] text-gray-700 hover:bg-gray-50 flex items-center gap-2.5 transition-colors"
+                >
+                  <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
+                  </svg>
+                  Add to Favourites
+                </button>
+                <button
+                  v-if="folders.length > 0"
+                  @click="openBulkMoveToFolderModal"
+                  class="w-full px-3 py-2 text-left text-[13px] text-gray-700 hover:bg-gray-50 flex items-center gap-2.5 transition-colors"
+                >
+                  <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
+                  </svg>
+                  Move to Folder
+                </button>
+                <div class="h-px bg-gray-100 my-1"></div>
+                <button
+                  @click="showBulkDeleteModal = true; showBulkActionsDropdown = false"
+                  class="w-full px-3 py-2 text-left text-[13px] text-red-600 hover:bg-red-50 flex items-center gap-2.5 transition-colors"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                  </svg>
+                  Delete
+                </button>
+              </div>
+            </Transition>
           </div>
         </div>
 
@@ -262,6 +336,9 @@
         v-for="video in paginatedVideos"
         :key="video.id"
         class="group relative"
+        :draggable="folders.length > 0"
+        @dragstart="handleVideoDragStart($event, video)"
+        @dragend="handleVideoDragEnd"
       >
         <!-- Thumbnail -->
         <div
@@ -323,46 +400,49 @@
                 <div class="relative" @click.stop>
                   <button
                     @click="toggleVideoMenu(video.id)"
-                    class="p-1.5 bg-white text-gray-700 hover:text-gray-900 rounded-lg shadow-sm transition-colors"
+                    class="p-1.5 bg-white/90 backdrop-blur-sm text-gray-600 hover:text-gray-900 rounded-lg shadow-sm transition-colors"
                     title="More options"
                   >
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"/>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"/>
                     </svg>
                   </button>
-                  <div
-                    v-show="activeVideoMenu === video.id"
-                    class="absolute right-0 mt-1 w-44 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50"
-                  >
-                    <button
-                      @click="toggleFavorite(video); activeVideoMenu = null"
-                      class="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                  <Transition name="dropdown">
+                    <div
+                      v-show="activeVideoMenu === video.id"
+                      class="absolute right-0 mt-1 w-40 bg-white rounded-xl shadow-lg border border-gray-100 py-1.5 z-50"
                     >
-                      <svg class="w-4 h-4 text-orange-500" :fill="video.is_favourite ? 'currentColor' : 'none'" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
-                      </svg>
-                      {{ video.is_favourite ? 'Remove from Favourites' : 'Add to Favourites' }}
-                    </button>
-                    <button
-                      @click="openSinglePlaylistModal(video)"
-                      class="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
-                    >
-                      <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
-                      </svg>
-                      Add to Playlist
-                    </button>
-                    <div class="border-t border-gray-100 my-1"></div>
-                    <button
-                      @click="deleteVideo(video); activeVideoMenu = null"
-                      class="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
-                    >
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                      </svg>
-                      Delete
-                    </button>
-                  </div>
+                      <button
+                        @click="toggleFavorite(video); activeVideoMenu = null"
+                        class="w-full px-3 py-1.5 text-left text-[13px] text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition-colors"
+                      >
+                        <svg class="w-3.5 h-3.5" :class="video.is_favourite ? 'text-orange-500' : 'text-gray-400'" :fill="video.is_favourite ? 'currentColor' : 'none'" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
+                        </svg>
+                        {{ video.is_favourite ? 'Unfavourite' : 'Favourite' }}
+                      </button>
+                      <button
+                        v-if="folders.length > 0"
+                        @click="openMoveToFolderModal(video); activeVideoMenu = null"
+                        class="w-full px-3 py-1.5 text-left text-[13px] text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition-colors"
+                      >
+                        <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
+                        </svg>
+                        Move to Folder
+                      </button>
+                      <div class="h-px bg-gray-100 my-1"></div>
+                      <button
+                        @click="deleteVideo(video); activeVideoMenu = null"
+                        class="w-full px-3 py-1.5 text-left text-[13px] text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors"
+                      >
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                        </svg>
+                        Delete
+                      </button>
+                    </div>
+                  </Transition>
                 </div>
               </div>
             </div>
@@ -503,42 +583,45 @@
               title="More options"
             >
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"/>
               </svg>
             </button>
-            <div
-              v-show="activeVideoMenu === video.id"
-              class="absolute right-0 mt-1 w-44 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50"
-            >
-              <button
-                @click="toggleFavorite(video); activeVideoMenu = null"
-                class="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+            <Transition name="dropdown">
+              <div
+                v-show="activeVideoMenu === video.id"
+                class="absolute right-0 mt-1 w-40 bg-white rounded-xl shadow-lg border border-gray-100 py-1.5 z-50"
               >
-                <svg class="w-4 h-4 text-orange-500" :fill="video.is_favourite ? 'currentColor' : 'none'" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
-                </svg>
-                {{ video.is_favourite ? 'Remove from Favourites' : 'Add to Favourites' }}
-              </button>
-              <button
-                @click="openSinglePlaylistModal(video)"
-                class="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
-              >
-                <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
-                </svg>
-                Add to Playlist
-              </button>
-              <div class="border-t border-gray-100 my-1"></div>
-              <button
-                @click="deleteVideo(video); activeVideoMenu = null"
-                class="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
-              >
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                </svg>
-                Delete
-              </button>
-            </div>
+                <button
+                  @click="toggleFavorite(video); activeVideoMenu = null"
+                  class="w-full px-3 py-1.5 text-left text-[13px] text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition-colors"
+                >
+                  <svg class="w-3.5 h-3.5" :class="video.is_favourite ? 'text-orange-500' : 'text-gray-400'" :fill="video.is_favourite ? 'currentColor' : 'none'" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
+                  </svg>
+                  {{ video.is_favourite ? 'Unfavourite' : 'Favourite' }}
+                </button>
+                <button
+                  v-if="folders.length > 0"
+                  @click="openMoveToFolderModal(video); activeVideoMenu = null"
+                  class="w-full px-3 py-1.5 text-left text-[13px] text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition-colors"
+                >
+                  <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
+                  </svg>
+                  Move to Folder
+                </button>
+                <div class="h-px bg-gray-100 my-1"></div>
+                <button
+                  @click="deleteVideo(video); activeVideoMenu = null"
+                  class="w-full px-3 py-1.5 text-left text-[13px] text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors"
+                >
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                  </svg>
+                  Delete
+                </button>
+              </div>
+            </Transition>
           </div>
         </div>
       </div>
@@ -670,63 +753,115 @@
       @success="handleUpgradeSuccess"
     />
 
-    <!-- Add to Playlist Modal -->
-    <SBModal
-      v-model="showPlaylistModal"
-      :title="playlistModalTitle"
-      size="md"
-      @close="closePlaylistModal"
-    >
-      <div v-if="loadingPlaylists" class="py-8 text-center">
-        <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-orange-600 border-t-transparent"></div>
-        <p class="mt-3 text-sm text-gray-500">Loading playlists...</p>
-      </div>
-      <div v-else-if="playlists.length === 0" class="py-8 text-center">
-        <div class="w-12 h-12 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-          <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
-          </svg>
-        </div>
-        <p class="text-gray-600 font-medium">No playlists yet</p>
-        <p class="text-sm text-gray-500 mt-1">Create a playlist first to add videos.</p>
-      </div>
-      <div v-else class="space-y-2 max-h-80 overflow-y-auto">
-        <button
-          v-for="playlist in playlists"
-          :key="playlist.id"
-          @click="addVideosToPlaylist(playlist)"
-          :disabled="addingToPlaylist"
-          class="w-full p-3 text-left rounded-lg border border-gray-200 hover:border-orange-300 hover:bg-orange-50 transition-colors flex items-center justify-between group"
+    <!-- New Folder Modal -->
+    <Teleport to="body">
+      <Transition name="modal">
+        <div
+          v-if="showNewFolderModal"
+          class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50"
+          @click.self="closeNewFolderModal"
         >
-          <div>
-            <p class="font-medium text-gray-900 group-hover:text-orange-600">{{ playlist.title }}</p>
-            <p class="text-sm text-gray-500">{{ playlist.videos_count }} video{{ playlist.videos_count !== 1 ? 's' : '' }}</p>
-          </div>
-          <svg class="w-5 h-5 text-gray-400 group-hover:text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-          </svg>
-        </button>
-      </div>
-      <template #footer>
-        <div class="flex justify-end">
-          <button
-            @click="closePlaylistModal"
-            class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
-          >
-            Cancel
-          </button>
+          <Transition name="modal-content" appear>
+            <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
+              <h2 class="text-lg font-semibold text-gray-900 mb-1">Create New Folder</h2>
+              <p class="text-sm text-gray-500 mb-6">Organize your videos into folders.</p>
+
+              <div class="space-y-4">
+                <div>
+                  <label for="folder-name" class="block text-sm font-medium text-gray-700 mb-1">Folder Name</label>
+                  <input
+                    id="folder-name"
+                    v-model="newFolderName"
+                    type="text"
+                    placeholder="e.g., Marketing Videos"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all"
+                    @keyup.enter="createFolder"
+                  />
+                  <p v-if="folderError" class="mt-1 text-sm text-red-600">{{ folderError }}</p>
+                </div>
+              </div>
+
+              <div class="flex justify-end gap-3 mt-6">
+                <button
+                  @click="closeNewFolderModal"
+                  class="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  @click="createFolder"
+                  :disabled="!newFolderName.trim() || creatingFolder"
+                  class="px-4 py-2 text-sm font-medium text-white bg-orange-500 rounded-lg hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {{ creatingFolder ? 'Creating...' : 'Create Folder' }}
+                </button>
+              </div>
+            </div>
+          </Transition>
         </div>
-      </template>
-    </SBModal>
+      </Transition>
+    </Teleport>
+
+    <!-- Move to Folder Modal -->
+    <Teleport to="body">
+      <Transition name="modal">
+        <div
+          v-if="showMoveToFolderModal"
+          class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50"
+          @click.self="closeMoveToFolderModal"
+        >
+          <Transition name="modal-content" appear>
+            <div class="bg-white rounded-xl shadow-xl max-w-sm w-full p-6">
+              <h2 class="text-lg font-semibold text-gray-900 mb-1">Move to Folder</h2>
+              <p class="text-sm text-gray-500 mb-4">
+                {{ videosToMove.length > 1 ? `Select a folder for ${videosToMove.length} videos` : 'Select a folder for this video' }}
+              </p>
+
+              <div class="space-y-2 max-h-64 overflow-y-auto">
+                <button
+                  v-for="folder in folders"
+                  :key="folder.id"
+                  @click="moveToFolder(folder)"
+                  class="w-full flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:border-orange-300 hover:bg-orange-50/50 transition-all text-left"
+                  :disabled="movingToFolder"
+                >
+                  <div class="w-8 h-8 rounded-lg bg-orange-100 flex items-center justify-center flex-shrink-0">
+                    <svg class="w-4 h-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
+                    </svg>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-gray-900 truncate">{{ folder.name }}</p>
+                    <p class="text-xs text-gray-500">{{ folder.videos_count }} videos</p>
+                  </div>
+                </button>
+              </div>
+
+              <div class="flex justify-end gap-3 mt-6">
+                <button
+                  @click="closeMoveToFolderModal"
+                  class="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </Transition>
+        </div>
+      </Transition>
+    </Teleport>
+
   </div>
 </template>
 
 <script>
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import { useAuth } from '@/stores/auth'
 import { useRecording } from '@/composables/useRecording'
 import videoService from '@/services/videoService'
 import playlistService from '@/services/playlistService'
+import folderService from '@/services/folderService'
 import toast from '@/services/toastService'
 import SBDeleteModal from '@/components/Global/SBDeleteModal.vue'
 import SBUpgradeModal from '@/components/Global/SBUpgradeModal.vue'
@@ -741,6 +876,7 @@ export default {
   },
   setup() {
     const auth = useAuth()
+    const router = useRouter()
     const recording = useRecording()
     const currentUser = computed(() => auth.user.value)
     const userInitial = computed(() => (currentUser.value?.name || 'U').charAt(0).toUpperCase())
@@ -785,6 +921,24 @@ export default {
 
     // Upgrade modal state
     const showUpgradeModal = ref(false)
+
+    // Action bar state
+    const showNewFolderModal = ref(false)
+    const uploading = ref(false)
+    const fileInput = ref(null)
+
+    // Folder state
+    const folders = ref([])
+    const newFolderName = ref('')
+    const creatingFolder = ref(false)
+    const folderError = ref('')
+
+    // Move to folder state
+    const showMoveToFolderModal = ref(false)
+    const videosToMove = ref([])
+    const movingToFolder = ref(false)
+    const dragOverFolderId = ref(null)
+    const draggedVideo = ref(null)
 
     // Sort state
     const sortBy = ref('date_desc')
@@ -1014,6 +1168,175 @@ export default {
       }
     }
 
+    // Action bar methods
+    const openRecording = () => {
+      recording.openSetupPanel()
+    }
+
+    const handleUpload = () => {
+      // Check if user has active subscription for bunny upload
+      if (!subscription.value?.is_active) {
+        showUpgradeModal.value = true
+        return
+      }
+      fileInput.value?.click()
+    }
+
+    const onFileSelected = async (event) => {
+      const file = event.target.files?.[0]
+      if (!file) return
+
+      uploading.value = true
+      try {
+        // Generate title from filename (remove extension)
+        const title = file.name.replace(/\.[^/.]+$/, '') || `Upload ${new Date().toLocaleString()}`
+
+        const formData = new FormData()
+        formData.append('video', file)
+        formData.append('title', title)
+
+        const response = await fetch('/api/videos', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+          },
+          body: formData
+        })
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}))
+          throw new Error(errorData.message || 'Upload failed')
+        }
+
+        toast.success('Video uploaded successfully!')
+        // Refresh videos list
+        await fetchVideos()
+      } catch (err) {
+        console.error('Upload failed:', err)
+        toast.error(err.message || 'Failed to upload video. Please try again.')
+      } finally {
+        uploading.value = false
+        // Reset file input
+        if (fileInput.value) {
+          fileInput.value.value = ''
+        }
+      }
+    }
+
+    // Folder methods
+    const fetchFolders = async () => {
+      try {
+        folders.value = await folderService.getFolders()
+      } catch (err) {
+        console.error('Failed to fetch folders:', err)
+        folders.value = []
+      }
+    }
+
+    const createFolder = async () => {
+      if (!newFolderName.value.trim()) return
+
+      folderError.value = ''
+      creatingFolder.value = true
+      try {
+        const result = await folderService.createFolder(newFolderName.value.trim())
+        folders.value.unshift(result.folder)
+        toast.success('Folder created successfully!')
+        closeNewFolderModal()
+      } catch (err) {
+        console.error('Failed to create folder:', err)
+        folderError.value = err.message || 'Failed to create folder. Please try again.'
+      } finally {
+        creatingFolder.value = false
+      }
+    }
+
+    const closeNewFolderModal = () => {
+      showNewFolderModal.value = false
+      newFolderName.value = ''
+      folderError.value = ''
+    }
+
+    const openFolder = (folder) => {
+      router.push({ name: 'Folder', params: { id: folder.id } })
+    }
+
+    // Move to folder methods
+    const openMoveToFolderModal = (video) => {
+      videosToMove.value = [video.id]
+      showMoveToFolderModal.value = true
+    }
+
+    const openBulkMoveToFolderModal = () => {
+      showBulkActionsDropdown.value = false
+      videosToMove.value = [...selectedVideos.value]
+      showMoveToFolderModal.value = true
+    }
+
+    const closeMoveToFolderModal = () => {
+      showMoveToFolderModal.value = false
+      videosToMove.value = []
+    }
+
+    const moveToFolder = async (folder) => {
+      if (videosToMove.value.length === 0) return
+
+      movingToFolder.value = true
+      try {
+        await folderService.addVideosToFolder(folder.id, videosToMove.value)
+
+        const count = videosToMove.value.length
+        toast.success(`${count > 1 ? count + ' videos' : 'Video'} moved to "${folder.name}"`)
+
+        closeMoveToFolderModal()
+        selectedVideos.value = []
+        fetchFolders() // Refresh folder counts
+      } catch (err) {
+        console.error('Failed to move videos to folder:', err)
+        toast.error('Failed to move videos. Please try again.')
+      } finally {
+        movingToFolder.value = false
+      }
+    }
+
+    // Drag and drop handlers
+    const handleVideoDragStart = (event, video) => {
+      draggedVideo.value = video
+      event.dataTransfer.effectAllowed = 'move'
+      event.dataTransfer.setData('text/plain', video.id)
+    }
+
+    const handleVideoDragEnd = () => {
+      draggedVideo.value = null
+      dragOverFolderId.value = null
+    }
+
+    const handleFolderDragOver = (event, folderId) => {
+      event.dataTransfer.dropEffect = 'move'
+      dragOverFolderId.value = folderId
+    }
+
+    const handleFolderDragLeave = () => {
+      dragOverFolderId.value = null
+    }
+
+    const handleDropOnFolder = async (event, folder) => {
+      dragOverFolderId.value = null
+
+      if (!draggedVideo.value) return
+
+      try {
+        await folderService.addVideosToFolder(folder.id, [draggedVideo.value.id])
+        toast.success(`Video moved to "${folder.name}"`)
+        fetchFolders() // Refresh folder counts
+      } catch (err) {
+        console.error('Failed to move video to folder:', err)
+        toast.error('Failed to move video. Please try again.')
+      } finally {
+        draggedVideo.value = null
+      }
+    }
+
     const fetchVideos = async () => {
       loading.value = true
       currentPage.value = 1
@@ -1046,6 +1369,7 @@ export default {
 
     onMounted(() => {
       fetchVideos()
+      fetchFolders()
       auth.fetchSubscription() // Fetch subscription status
       document.addEventListener('click', handleClickOutside)
     })
@@ -1344,6 +1668,38 @@ export default {
       userInitial,
       subscription,
       canRecord,
+      // Action bar
+      showNewFolderModal,
+      uploading,
+      fileInput,
+      openRecording,
+      handleUpload,
+      onFileSelected,
+      // Folders
+      folders,
+      fetchFolders,
+      newFolderName,
+      creatingFolder,
+      folderError,
+      createFolder,
+      closeNewFolderModal,
+      openFolder,
+      // Move to folder
+      showMoveToFolderModal,
+      videosToMove,
+      movingToFolder,
+      openMoveToFolderModal,
+      openBulkMoveToFolderModal,
+      closeMoveToFolderModal,
+      moveToFolder,
+      // Drag and drop
+      dragOverFolderId,
+      draggedVideo,
+      handleVideoDragStart,
+      handleVideoDragEnd,
+      handleFolderDragOver,
+      handleFolderDragLeave,
+      handleDropOnFolder,
       videos,
       filteredVideos,
       paginatedVideos,
@@ -1439,4 +1795,33 @@ export default {
   to { opacity: 1; transform: translateY(0); }
 }
 .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
+
+/* Modal transitions */
+.modal-enter-active,
+.modal-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.modal-enter-from,
+.modal-leave-to {
+  opacity: 0;
+}
+
+.modal-content-enter-active {
+  transition: all 0.2s ease-out;
+}
+
+.modal-content-leave-active {
+  transition: all 0.15s ease-in;
+}
+
+.modal-content-enter-from {
+  opacity: 0;
+  transform: scale(0.95) translateY(-10px);
+}
+
+.modal-content-leave-to {
+  opacity: 0;
+  transform: scale(0.95) translateY(-10px);
+}
 </style>

@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\GoogleAuthController;
 use App\Http\Controllers\BunnyVideoController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\FeedbackController;
+use App\Http\Controllers\FolderController;
 use App\Http\Controllers\HlsController;
 use App\Http\Controllers\MarkdownBlogController;
 use App\Http\Controllers\NotificationController;
@@ -15,6 +16,9 @@ use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\VideoController;
 use App\Http\Controllers\VideoViewController;
+use App\Http\Controllers\WorkspaceController;
+use App\Http\Controllers\WorkspaceInvitationController;
+use App\Http\Controllers\WorkspaceMemberController;
 use App\Http\Middleware\CheckSubscriptionLimit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -134,6 +138,33 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/', [FeedbackController::class, 'store']);
     });
 
+    // Workspace routes
+    Route::prefix('workspaces')->group(function () {
+        Route::get('/', [WorkspaceController::class, 'index']);
+        Route::post('/', [WorkspaceController::class, 'store']);
+        Route::get('/{slug}', [WorkspaceController::class, 'show']);
+        Route::patch('/{slug}', [WorkspaceController::class, 'update']);
+        Route::delete('/{slug}', [WorkspaceController::class, 'destroy']);
+        Route::post('/{slug}/leave', [WorkspaceController::class, 'leave']);
+        Route::get('/{slug}/videos', [WorkspaceController::class, 'videos']);
+
+        // Member management
+        Route::get('/{slug}/members', [WorkspaceMemberController::class, 'index']);
+        Route::post('/{slug}/members/invite', [WorkspaceMemberController::class, 'invite']);
+        Route::patch('/{slug}/members/{userId}', [WorkspaceMemberController::class, 'update']);
+        Route::delete('/{slug}/members/{userId}', [WorkspaceMemberController::class, 'destroy']);
+
+        // Invitation management within workspace
+        Route::get('/{slug}/invitations', [WorkspaceInvitationController::class, 'index']);
+        Route::post('/{slug}/invitations', [WorkspaceInvitationController::class, 'store']);
+        Route::delete('/{slug}/invitations/{invitationId}', [WorkspaceInvitationController::class, 'destroy']);
+        Route::post('/{slug}/invitations/{invitationId}/resend', [WorkspaceInvitationController::class, 'resend']);
+    });
+
+    // Invitation routes (accessed by token, for accepting invitations)
+    Route::get('/invitations/{token}', [WorkspaceInvitationController::class, 'show'])->withoutMiddleware('auth:sanctum');
+    Route::post('/invitations/{token}/accept', [WorkspaceInvitationController::class, 'accept']);
+
     // Video routes - all require authentication
     Route::prefix('videos')->group(function () {
         Route::get('/', [VideoController::class, 'index']);
@@ -186,6 +217,17 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/{id}/zoom-events', [VideoController::class, 'getZoomEvents']);
         Route::put('/{id}/zoom-events', [VideoController::class, 'updateZoomEvents']);
         Route::get('/{id}/zoom-status', [VideoController::class, 'getZoomStatus']);
+    });
+
+    // Folder routes
+    Route::prefix('folders')->group(function () {
+        Route::get('/', [FolderController::class, 'index']);
+        Route::post('/', [FolderController::class, 'store']);
+        Route::patch('/{id}', [FolderController::class, 'update']);
+        Route::delete('/{id}', [FolderController::class, 'destroy']);
+        Route::get('/{id}/videos', [FolderController::class, 'videos']);
+        Route::post('/{id}/videos', [FolderController::class, 'addVideos']);
+        Route::delete('/{id}/videos/{videoId}', [FolderController::class, 'removeVideo']);
     });
 
     // Playlist routes

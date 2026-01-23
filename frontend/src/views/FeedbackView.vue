@@ -95,9 +95,10 @@
     <p class="text-xs text-gray-400 mt-3 text-center">Limited to 3 submissions per hour</p>
 
     <!-- New Modal -->
-    <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div class="fixed inset-0 bg-black/50" @click="closeModal"></div>
-      <div class="relative bg-white rounded-xl shadow-xl w-full max-w-xl p-5 z-10">
+    <Teleport to="body">
+      <div v-if="showModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <div class="fixed inset-0 bg-black/50" @click="closeModal"></div>
+        <div class="relative bg-white rounded-xl shadow-xl w-full max-w-xl p-5 z-10">
         <div class="flex items-center justify-between mb-4">
           <h2 class="text-base font-semibold text-gray-900">New Feedback</h2>
           <button @click="closeModal" class="p-1.5 hover:bg-gray-100 rounded-lg">
@@ -151,13 +152,15 @@
             </button>
           </div>
         </form>
+        </div>
       </div>
-    </div>
+    </Teleport>
 
     <!-- View Modal -->
-    <div v-if="selectedFeedback" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div class="fixed inset-0 bg-black/50" @click="selectedFeedback = null"></div>
-      <div class="relative bg-white rounded-xl shadow-xl w-full max-w-xl max-h-[90vh] flex flex-col z-10">
+    <Teleport to="body">
+      <div v-if="selectedFeedback" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <div class="fixed inset-0 bg-black/50" @click="selectedFeedback = null"></div>
+        <div class="relative bg-white rounded-xl shadow-xl w-full max-w-xl max-h-[90vh] flex flex-col z-10">
         <div class="flex items-start justify-between p-4 border-b border-gray-100">
           <div class="flex-1 min-w-0 pr-2">
             <h2 class="text-base font-semibold text-gray-900">{{ selectedFeedback.title }}</h2>
@@ -206,8 +209,9 @@
             Close
           </button>
         </div>
+        </div>
       </div>
-    </div>
+    </Teleport>
   </div>
 </template>
 

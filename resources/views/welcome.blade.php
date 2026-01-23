@@ -411,101 +411,34 @@
                 <h2 class="text-3xl font-medium text-white mb-4">Simple, Transparent Pricing</h2>
                 <p class="text-neutral-400">Start free, upgrade when you need more.</p>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
                 <!-- Free Tier -->
                 <div class="p-8 rounded-2xl border border-white/10 bg-neutral-900/40 hover:bg-neutral-900/60 transition-colors flex flex-col">
                     <div class="mb-6">
                         <h3 class="text-lg font-medium text-white">Free</h3>
-                        <div class="mt-2 flex items-baseline gap-1">
+                        <p class="text-sm text-neutral-500 mt-1">Perfect for getting started</p>
+                        <div class="mt-4 flex items-baseline gap-1">
                             <span class="text-4xl font-semibold text-white">$0</span>
-                        </div>
-                        <p class="mt-2 text-sm text-neutral-400">Perfect for trying out ScreenSense</p>
-                    </div>
-                    <div class="flex-1">
-                        <ul class="space-y-3 mb-8">
-                            <li class="flex items-center gap-3 text-sm text-neutral-300">
-                                <i data-lucide="check" class="size-4 text-green-500"></i>
-                                10 video recordings
-                            </li>
-                            <li class="flex items-center gap-3 text-sm text-neutral-300">
-                                <i data-lucide="check" class="size-4 text-green-500"></i>
-                                Screen + audio capture
-                            </li>
-                            <li class="flex items-center gap-3 text-sm text-neutral-300">
-                                <i data-lucide="check" class="size-4 text-green-500"></i>
-                                Shareable links
-                            </li>
-                        </ul>
-                    </div>
-                    <a href="{{ config('app.frontend_url', config('app.url')) }}/login" class="w-full py-3 rounded-lg border border-white/10 bg-white/5 text-sm font-medium text-white hover:bg-white/10 transition-colors text-center">
-                        Get Started
-                    </a>
-                </div>
-
-                <!-- Pro Monthly -->
-                <div class="p-8 rounded-2xl border border-brand-500/40 bg-brand-950/50 relative flex flex-col shadow-[0_0_50px_-15px_rgba(249,115,22,0.2)]">
-                    <span class="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-brand-600 text-[10px] font-semibold text-white uppercase tracking-wider">Most Popular</span>
-                    <div class="mb-6">
-                        <h3 class="text-lg font-medium text-white">Pro Monthly</h3>
-                        <div class="mt-2 flex items-baseline gap-1">
-                            <span class="text-4xl font-semibold text-white">$7</span>
                             <span class="text-neutral-500">/month</span>
                         </div>
-                        <p class="mt-2 text-sm text-brand-200/80">For creators who need more</p>
-                    </div>
-                    <div class="flex-1">
-                        <ul class="space-y-3 mb-8">
-                            <li class="flex items-center gap-3 text-sm text-white">
-                                <i data-lucide="check" class="size-4 text-brand-500"></i>
-                                Unlimited recordings
-                            </li>
-                            <li class="flex items-center gap-3 text-sm text-white">
-                                <i data-lucide="check" class="size-4 text-brand-500"></i>
-                                Screen + audio capture
-                            </li>
-                            <li class="flex items-center gap-3 text-sm text-white">
-                                <i data-lucide="check" class="size-4 text-brand-500"></i>
-                                Shareable links
-                            </li>
-                            <li class="flex items-center gap-3 text-sm text-white">
-                                <i data-lucide="check" class="size-4 text-brand-500"></i>
-                                Priority support
-                            </li>
-                        </ul>
-                    </div>
-                    <a href="{{ config('app.frontend_url', config('app.url')) }}/login" class="w-full py-3 rounded-lg bg-brand-600 text-sm font-medium text-white hover:bg-brand-500 transition-colors text-center">
-                        Get Started
-                    </a>
-                </div>
-
-                <!-- Pro Yearly -->
-                <div class="p-8 rounded-2xl border border-white/10 bg-neutral-900/40 hover:bg-neutral-900/60 transition-colors flex flex-col">
-                    <span class="inline-block w-fit px-2 py-0.5 rounded-full bg-green-500/10 border border-green-500/20 text-[10px] font-medium text-green-400 uppercase tracking-wider mb-3">Save $4</span>
-                    <div class="mb-6">
-                        <h3 class="text-lg font-medium text-white">Pro Yearly</h3>
-                        <div class="mt-2 flex items-baseline gap-1">
-                            <span class="text-4xl font-semibold text-white">$80</span>
-                            <span class="text-neutral-500">/year</span>
-                        </div>
-                        <p class="mt-2 text-sm text-neutral-400">Best value for long-term use</p>
                     </div>
                     <div class="flex-1">
                         <ul class="space-y-3 mb-8">
                             <li class="flex items-center gap-3 text-sm text-neutral-300">
-                                <i data-lucide="check" class="size-4 text-green-500"></i>
-                                Unlimited recordings
+                                <i data-lucide="check" class="size-4 text-neutral-500"></i>
+                                10 videos
                             </li>
                             <li class="flex items-center gap-3 text-sm text-neutral-300">
-                                <i data-lucide="check" class="size-4 text-green-500"></i>
-                                Screen + audio capture
+                                <i data-lucide="check" class="size-4 text-neutral-500"></i>
+                                1 GB storage
                             </li>
                             <li class="flex items-center gap-3 text-sm text-neutral-300">
-                                <i data-lucide="check" class="size-4 text-green-500"></i>
-                                Shareable links
+                                <i data-lucide="check" class="size-4 text-neutral-500"></i>
+                                5 min recordings
                             </li>
                             <li class="flex items-center gap-3 text-sm text-neutral-300">
-                                <i data-lucide="check" class="size-4 text-green-500"></i>
-                                Priority support
+                                <i data-lucide="check" class="size-4 text-neutral-500"></i>
+                                Basic playback
                             </li>
                         </ul>
                     </div>
@@ -513,6 +446,122 @@
                         Get Started
                     </a>
                 </div>
+
+                <!-- Pro Plan -->
+                <div class="p-8 pt-12 rounded-2xl border border-brand-500/30 bg-neutral-900 relative flex flex-col shadow-[0_0_50px_-15px_rgba(249,115,22,0.15)]">
+                    <span class="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-gradient-to-r from-brand-500 to-brand-600 text-[10px] font-semibold text-white uppercase tracking-wider shadow-lg">Popular</span>
+                    <div class="mb-6">
+                        <h3 class="text-lg font-medium text-white">Pro</h3>
+                        <p class="text-sm text-neutral-400 mt-1">For individuals & creators</p>
+                        <div class="mt-4 flex items-baseline gap-1">
+                            <span class="text-4xl font-semibold text-white">$8</span>
+                            <span class="text-neutral-500">/month</span>
+                        </div>
+                    </div>
+                    <div class="flex-1">
+                        <ul class="space-y-3 mb-8">
+                            <li class="flex items-center gap-3 text-sm text-white">
+                                <div class="size-5 rounded-full bg-brand-500/20 flex items-center justify-center">
+                                    <i data-lucide="check" class="size-3 text-brand-400"></i>
+                                </div>
+                                Unlimited videos
+                            </li>
+                            <li class="flex items-center gap-3 text-sm text-white">
+                                <div class="size-5 rounded-full bg-brand-500/20 flex items-center justify-center">
+                                    <i data-lucide="check" class="size-3 text-brand-400"></i>
+                                </div>
+                                50 GB storage
+                            </li>
+                            <li class="flex items-center gap-3 text-sm text-white">
+                                <div class="size-5 rounded-full bg-brand-500/20 flex items-center justify-center">
+                                    <i data-lucide="check" class="size-3 text-brand-400"></i>
+                                </div>
+                                Unlimited recording length
+                            </li>
+                            <li class="flex items-center gap-3 text-sm text-white">
+                                <div class="size-5 rounded-full bg-brand-500/20 flex items-center justify-center">
+                                    <i data-lucide="check" class="size-3 text-brand-400"></i>
+                                </div>
+                                HLS adaptive streaming
+                            </li>
+                            <li class="flex items-center gap-3 text-sm text-white">
+                                <div class="size-5 rounded-full bg-brand-500/20 flex items-center justify-center">
+                                    <i data-lucide="check" class="size-3 text-brand-400"></i>
+                                </div>
+                                Priority support
+                            </li>
+                        </ul>
+                    </div>
+                    <a href="{{ config('app.frontend_url', config('app.url')) }}/login" class="w-full py-3 rounded-lg bg-brand-600 text-sm font-medium text-white hover:bg-brand-500 transition-colors text-center shadow-lg shadow-brand-900/20">
+                        Upgrade to Pro
+                    </a>
+                </div>
+
+                <!-- Team Plan -->
+                <div class="p-8 pt-12 rounded-2xl border border-white/10 bg-neutral-900/40 hover:bg-neutral-900/60 transition-colors flex flex-col relative">
+                    <span class="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 text-[10px] font-semibold text-white uppercase tracking-wider shadow-lg">For Teams</span>
+                    <div class="mb-6">
+                        <h3 class="text-lg font-medium text-white">Team</h3>
+                        <p class="text-sm text-neutral-500 mt-1">For collaborative teams</p>
+                        <div class="mt-4 flex items-baseline gap-1">
+                            <span class="text-4xl font-semibold text-white">$39</span>
+                            <span class="text-neutral-500">/month</span>
+                        </div>
+                        <p class="text-xs text-neutral-500 mt-1">Up to 5 team members</p>
+                    </div>
+                    <div class="flex-1">
+                        <ul class="space-y-3 mb-8">
+                            <li class="flex items-center gap-3 text-sm text-neutral-300">
+                                <div class="size-5 rounded-full bg-indigo-500/20 flex items-center justify-center">
+                                    <i data-lucide="check" class="size-3 text-indigo-400"></i>
+                                </div>
+                                5 team members included
+                            </li>
+                            <li class="flex items-center gap-3 text-sm text-neutral-300">
+                                <div class="size-5 rounded-full bg-indigo-500/20 flex items-center justify-center">
+                                    <i data-lucide="check" class="size-3 text-indigo-400"></i>
+                                </div>
+                                100 GB shared storage
+                            </li>
+                            <li class="flex items-center gap-3 text-sm text-neutral-300">
+                                <div class="size-5 rounded-full bg-indigo-500/20 flex items-center justify-center">
+                                    <i data-lucide="check" class="size-3 text-indigo-400"></i>
+                                </div>
+                                Unlimited recording length
+                            </li>
+                            <li class="flex items-center gap-3 text-sm text-neutral-300">
+                                <div class="size-5 rounded-full bg-indigo-500/20 flex items-center justify-center">
+                                    <i data-lucide="check" class="size-3 text-indigo-400"></i>
+                                </div>
+                                Team workspaces
+                            </li>
+                            <li class="flex items-center gap-3 text-sm text-neutral-300">
+                                <div class="size-5 rounded-full bg-indigo-500/20 flex items-center justify-center">
+                                    <i data-lucide="check" class="size-3 text-indigo-400"></i>
+                                </div>
+                                Shared video library
+                            </li>
+                            <li class="flex items-center gap-3 text-sm text-neutral-300">
+                                <div class="size-5 rounded-full bg-indigo-500/20 flex items-center justify-center">
+                                    <i data-lucide="check" class="size-3 text-indigo-400"></i>
+                                </div>
+                                Admin controls
+                            </li>
+                        </ul>
+                    </div>
+                    <a href="{{ config('app.frontend_url', config('app.url')) }}/login" class="w-full py-3 rounded-lg bg-indigo-600 text-sm font-medium text-white hover:bg-indigo-500 transition-colors text-center">
+                        Get Team
+                    </a>
+                </div>
+            </div>
+
+            <!-- Enterprise Contact -->
+            <div class="mt-12 text-center p-6 bg-white/[0.02] rounded-xl border border-white/5 max-w-2xl mx-auto">
+                <h4 class="text-sm font-semibold text-white mb-1">Need a custom enterprise plan?</h4>
+                <p class="text-sm text-neutral-500 mb-3">For large organizations with specific security, SSO, and compliance needs.</p>
+                <a href="mailto:contact@gurpreetkait.in" class="text-sm font-medium text-white border-b border-neutral-600 hover:border-white transition-colors">
+                    Contact Sales
+                </a>
             </div>
 
             <!-- CTA after Pricing -->

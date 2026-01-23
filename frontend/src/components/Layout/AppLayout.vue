@@ -12,21 +12,6 @@
 
       <!-- Navigation Scroll Area -->
       <div class="flex-1 overflow-y-auto px-3 py-4 flex flex-col gap-6">
-        <!-- Primary Action -->
-        <div>
-          <button
-            @click="recording.openSetupPanel"
-            class="w-full bg-white border border-gray-200 hover:border-orange-200 hover:bg-orange-50 text-gray-700 hover:text-orange-700 font-medium py-2 px-3 rounded-lg shadow-sm transition-all flex items-center justify-center gap-2 text-sm group relative overflow-hidden"
-          >
-            <span class="relative z-10 flex items-center gap-2">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
-              </svg>
-              New Recording
-            </span>
-          </button>
-        </div>
-
         <!-- Main Menu -->
         <nav class="space-y-0.5">
           <router-link
@@ -41,43 +26,16 @@
           </router-link>
 
           <router-link
-            to="/favourites"
+            to="/workspaces"
             class="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all group"
-            :class="isActive('/favourites') ? 'text-gray-900 bg-gray-50' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'"
+            :class="isActive('/workspaces') || route.path.startsWith('/workspace/') ? 'text-gray-900 bg-gray-50' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'"
           >
-            <svg class="w-4 h-4 transition-colors" :class="isActive('/favourites') ? 'text-orange-600' : 'text-gray-400 group-hover:text-gray-600'" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
+            <svg class="w-4 h-4 transition-colors" :class="isActive('/workspaces') || route.path.startsWith('/workspace/') ? 'text-orange-600' : 'text-gray-400 group-hover:text-gray-600'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
             </svg>
-            Favourites
+            Workspaces
           </router-link>
 
-          <router-link
-            to="/playlists"
-            class="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all group"
-            :class="isActive('/playlists') || route.path.startsWith('/playlist/') ? 'text-gray-900 bg-gray-50' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'"
-          >
-            <svg class="w-4 h-4 transition-colors" :class="isActive('/playlists') || route.path.startsWith('/playlist/') ? 'text-orange-600' : 'text-gray-400 group-hover:text-gray-600'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
-            </svg>
-            Playlists
-          </router-link>
-
-          <router-link
-            to="/notifications"
-            class="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all group"
-            :class="isActive('/notifications') ? 'text-gray-900 bg-gray-50' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'"
-          >
-            <svg class="w-4 h-4 transition-colors" :class="isActive('/notifications') ? 'text-orange-600' : 'text-gray-400 group-hover:text-gray-600'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
-            </svg>
-            <span class="flex-1">Notifications</span>
-            <span
-              v-if="unreadCount > 0"
-              class="min-w-[18px] h-[18px] px-1 flex items-center justify-center text-[10px] font-bold text-white bg-orange-500 rounded-full"
-            >
-              {{ unreadCount > 99 ? '99+' : unreadCount }}
-            </span>
-          </router-link>
         </nav>
 
         <!-- Separator -->
@@ -85,17 +43,6 @@
 
         <!-- Settings Menu -->
         <nav class="space-y-0.5">
-          <router-link
-            to="/profile"
-            class="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all group"
-            :class="isActive('/profile') ? 'text-gray-900 bg-gray-50' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'"
-          >
-            <svg class="w-4 h-4 transition-colors" :class="isActive('/profile') ? 'text-orange-600' : 'text-gray-400 group-hover:text-gray-600'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-            </svg>
-            Profile
-          </router-link>
-
           <router-link
             to="/subscription"
             class="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all group"
@@ -168,9 +115,9 @@
       </div>
 
       <!-- User Footer (when authenticated) -->
-      <div v-if="isAuthenticated" class="p-3 border-t border-gray-100 bg-gray-50/30 flex-shrink-0">
+      <div v-if="isAuthenticated" class="p-3 border-t border-gray-100 bg-gray-50/30 flex-shrink-0 relative" ref="userDropdownRef">
         <button
-          @click="showLogoutModal = true"
+          @click="showUserDropdown = !showUserDropdown"
           class="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-white hover:shadow-sm hover:ring-1 hover:ring-gray-200 transition-all text-left group"
         >
           <div class="relative">
@@ -189,10 +136,39 @@
             <p class="text-[13px] font-medium text-gray-900 truncate">{{ userInfo.name }}</p>
             <p class="text-[11px] text-gray-500 truncate">{{ subscription?.is_active ? 'Pro Plan' : 'Free Plan' }}</p>
           </div>
-          <svg class="w-3 h-3 text-gray-400 group-hover:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4"/>
+          <svg class="w-3 h-3 text-gray-400 group-hover:text-gray-600 transition-transform" :class="{ 'rotate-180': showUserDropdown }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
           </svg>
         </button>
+
+        <!-- User Dropdown Menu -->
+        <Transition name="dropdown">
+          <div
+            v-show="showUserDropdown"
+            class="absolute bottom-full left-3 right-3 mb-2 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50"
+          >
+            <router-link
+              to="/profile"
+              @click="showUserDropdown = false"
+              class="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+            >
+              <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+              </svg>
+              Profile
+            </router-link>
+            <div class="border-t border-gray-100 my-1"></div>
+            <button
+              @click="showUserDropdown = false; showLogoutModal = true"
+              class="w-full flex items-center gap-3 px-3 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+              </svg>
+              Logout
+            </button>
+          </div>
+        </Transition>
       </div>
 
       <!-- Sign In Button (when not authenticated) -->
@@ -226,11 +202,9 @@
           </svg>
         </button>
 
-        <!-- Breadcrumbs / Title (Desktop) -->
+        <!-- Page Title (Desktop) -->
         <div class="hidden lg:flex items-center gap-2">
-          <span class="text-sm text-gray-500 font-medium">Workspace</span>
-          <span class="text-gray-300">/</span>
-          <span class="text-sm text-gray-900 font-medium bg-gray-100/50 px-2 py-0.5 rounded-md border border-gray-200/50">{{ currentPageName }}</span>
+          <span class="text-sm text-gray-900 font-semibold">{{ currentPageName }}</span>
         </div>
 
         <!-- Mobile Logo -->
@@ -258,21 +232,131 @@
 
           <div class="hidden md:block h-4 w-px bg-gray-200 mx-1"></div>
 
-          <!-- Notifications Button -->
-          <router-link
-            to="/notifications"
-            class="relative p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-          >
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
-            </svg>
-            <span
-              v-if="unreadCount > 0"
-              class="absolute -top-0.5 -right-0.5 min-w-[16px] h-[16px] px-1 flex items-center justify-center text-[9px] font-bold text-white bg-orange-500 rounded-full border-2 border-white"
+          <!-- Notifications Dropdown -->
+          <div class="relative" ref="notificationsDropdownRef">
+            <button
+              @click="toggleNotificationsDropdown"
+              class="relative p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
             >
-              {{ unreadCount > 9 ? '9+' : unreadCount }}
-            </span>
-          </router-link>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+              </svg>
+              <span
+                v-if="unreadCount > 0"
+                class="absolute -top-0.5 -right-0.5 min-w-[16px] h-[16px] px-1 flex items-center justify-center text-[9px] font-bold text-white bg-orange-500 rounded-full border-2 border-white"
+              >
+                {{ unreadCount > 9 ? '9+' : unreadCount }}
+              </span>
+            </button>
+
+            <!-- Notifications Dropdown Panel -->
+            <Transition name="dropdown">
+              <div
+                v-show="showNotificationsDropdown"
+                class="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-xl border border-gray-200 z-50 overflow-hidden"
+              >
+                <!-- Header -->
+                <div class="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+                  <h3 class="text-sm font-semibold text-gray-900">Notifications</h3>
+                  <button
+                    v-if="unreadCount > 0"
+                    @click="handleMarkAllAsRead"
+                    class="text-xs text-orange-600 hover:text-orange-700 font-medium"
+                  >
+                    Mark all as read
+                  </button>
+                </div>
+
+                <!-- Notification Tabs -->
+                <div class="px-2 py-2 border-b border-gray-100">
+                  <div class="flex gap-1">
+                    <button
+                      v-for="tab in notificationTabs"
+                      :key="tab.id"
+                      @click="activeNotificationTab = tab.id"
+                      class="px-2.5 py-1 text-[11px] font-medium rounded-lg transition-all"
+                      :class="activeNotificationTab === tab.id
+                        ? 'bg-orange-100 text-orange-700'
+                        : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'"
+                    >
+                      {{ tab.label }}
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Notifications List -->
+                <div class="max-h-[400px] overflow-y-auto">
+                  <!-- Loading State -->
+                  <div v-if="loadingNotifications" class="px-4 py-8 text-center">
+                    <div class="inline-block animate-spin rounded-full h-6 w-6 border-2 border-orange-600 border-t-transparent"></div>
+                    <p class="mt-2 text-xs text-gray-500">Loading notifications...</p>
+                  </div>
+
+                  <!-- Empty State -->
+                  <div v-else-if="filteredNotifications.length === 0" class="px-4 py-8 text-center">
+                    <svg class="w-10 h-10 mx-auto text-gray-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                    </svg>
+                    <p class="text-sm text-gray-500">
+                      {{ activeNotificationTab === 'all' ? 'No notifications yet' : `No ${activeNotificationTab} notifications` }}
+                    </p>
+                  </div>
+
+                  <!-- Notifications -->
+                  <div v-else>
+                    <div
+                      v-for="notification in filteredNotifications"
+                      :key="notification.id"
+                      @click="handleNotificationClick(notification)"
+                      class="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-50 last:border-0 transition-colors"
+                      :class="{ 'bg-orange-50/50': !notification.read_at }"
+                    >
+                      <div class="flex items-start gap-3">
+                        <!-- Icon based on type -->
+                        <div
+                          class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
+                          :class="getNotificationIconClass(notification.type)"
+                        >
+                          <svg v-if="notification.type === 'comment'" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                          </svg>
+                          <svg v-else-if="notification.type === 'viewer'" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                          </svg>
+                          <svg v-else-if="notification.type === 'warning'" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                          </svg>
+                          <svg v-else-if="notification.type === 'success'" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                          </svg>
+                          <svg v-else-if="notification.type === 'feedback'" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+                          </svg>
+                          <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                          </svg>
+                        </div>
+
+                        <div class="flex-1 min-w-0">
+                          <!-- Render message as HTML to support formatted content -->
+                          <p
+                            class="text-sm text-gray-700 notification-message"
+                            :class="{ 'font-medium': !notification.read_at }"
+                            v-html="notification.message"
+                          ></p>
+                          <p class="text-[10px] text-gray-400 mt-1">{{ formatNotificationTime(notification.created_at) }}</p>
+                        </div>
+
+                        <!-- Unread indicator -->
+                        <div v-if="!notification.read_at" class="w-2 h-2 bg-orange-500 rounded-full flex-shrink-0 mt-1.5"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Transition>
+          </div>
         </div>
       </header>
 
@@ -310,19 +394,6 @@
 
         <!-- Mobile Navigation -->
         <div class="flex-1 overflow-y-auto px-3 py-4 flex flex-col gap-6">
-          <!-- Primary Action -->
-          <div>
-            <button
-              @click="recording.openSetupPanel(); sidebarOpen = false"
-              class="w-full bg-white border border-gray-200 hover:border-orange-200 hover:bg-orange-50 text-gray-700 hover:text-orange-700 font-medium py-2 px-3 rounded-lg shadow-sm transition-all flex items-center justify-center gap-2 text-sm"
-            >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
-              </svg>
-              New Recording
-            </button>
-          </div>
-
           <!-- Main Menu -->
           <nav class="space-y-0.5">
             <router-link
@@ -338,46 +409,17 @@
             </router-link>
 
             <router-link
-              to="/favourites"
+              to="/workspaces"
               @click="sidebarOpen = false"
               class="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all group"
-              :class="isActive('/favourites') ? 'text-gray-900 bg-gray-50' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'"
+              :class="isActive('/workspaces') || route.path.startsWith('/workspace/') ? 'text-gray-900 bg-gray-50' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'"
             >
-              <svg class="w-4 h-4 transition-colors" :class="isActive('/favourites') ? 'text-orange-600' : 'text-gray-400 group-hover:text-gray-600'" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
+              <svg class="w-4 h-4 transition-colors" :class="isActive('/workspaces') || route.path.startsWith('/workspace/') ? 'text-orange-600' : 'text-gray-400 group-hover:text-gray-600'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
               </svg>
-              Favourites
+              Workspaces
             </router-link>
 
-            <router-link
-              to="/playlists"
-              @click="sidebarOpen = false"
-              class="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all group"
-              :class="isActive('/playlists') || route.path.startsWith('/playlist/') ? 'text-gray-900 bg-gray-50' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'"
-            >
-              <svg class="w-4 h-4 transition-colors" :class="isActive('/playlists') || route.path.startsWith('/playlist/') ? 'text-orange-600' : 'text-gray-400 group-hover:text-gray-600'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
-              </svg>
-              Playlists
-            </router-link>
-
-            <router-link
-              to="/notifications"
-              @click="sidebarOpen = false"
-              class="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all group"
-              :class="isActive('/notifications') ? 'text-gray-900 bg-gray-50' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'"
-            >
-              <svg class="w-4 h-4 transition-colors" :class="isActive('/notifications') ? 'text-orange-600' : 'text-gray-400 group-hover:text-gray-600'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
-              </svg>
-              <span class="flex-1">Notifications</span>
-              <span
-                v-if="unreadCount > 0"
-                class="min-w-[18px] h-[18px] px-1 flex items-center justify-center text-[10px] font-bold text-white bg-orange-500 rounded-full"
-              >
-                {{ unreadCount > 99 ? '99+' : unreadCount }}
-              </span>
-            </router-link>
           </nav>
 
           <!-- Separator -->
@@ -385,18 +427,6 @@
 
           <!-- Settings Menu -->
           <nav class="space-y-0.5">
-            <router-link
-              to="/profile"
-              @click="sidebarOpen = false"
-              class="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all group"
-              :class="isActive('/profile') ? 'text-gray-900 bg-gray-50' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'"
-            >
-              <svg class="w-4 h-4 transition-colors" :class="isActive('/profile') ? 'text-orange-600' : 'text-gray-400 group-hover:text-gray-600'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-              </svg>
-              Profile
-            </router-link>
-
             <router-link
               to="/subscription"
               @click="sidebarOpen = false"
@@ -440,10 +470,7 @@
 
         <!-- Mobile User Footer -->
         <div v-if="isAuthenticated" class="p-3 border-t border-gray-100 bg-gray-50/30">
-          <button
-            @click="showLogoutModal = true"
-            class="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all text-left group"
-          >
+          <div class="flex items-center gap-3 p-2">
             <div class="relative">
               <img
                 v-if="userInfo.avatar"
@@ -457,9 +484,30 @@
             </div>
             <div class="flex-1 min-w-0">
               <p class="text-[13px] font-medium text-gray-900 truncate">{{ userInfo.name }}</p>
-              <p class="text-[11px] text-gray-500 truncate">Tap to logout</p>
+              <p class="text-[11px] text-gray-500 truncate">{{ subscription?.is_active ? 'Pro Plan' : 'Free Plan' }}</p>
             </div>
-          </button>
+          </div>
+          <div class="flex gap-2 mt-2">
+            <router-link
+              to="/profile"
+              @click="sidebarOpen = false"
+              class="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+              </svg>
+              Profile
+            </router-link>
+            <button
+              @click="sidebarOpen = false; showLogoutModal = true"
+              class="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-red-600 bg-white border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+              </svg>
+              Logout
+            </button>
+          </div>
         </div>
 
         <div v-else class="px-4 py-4 border-t border-gray-200">
@@ -516,7 +564,29 @@ export default {
     const showLogoutModal = ref(false)
     const logoutLoading = ref(false)
     const unreadCount = ref(0)
+    const showUserDropdown = ref(false)
+    const userDropdownRef = ref(null)
+    const showNotificationsDropdown = ref(false)
+    const notificationsDropdownRef = ref(null)
+    const notifications = ref([])
+    const loadingNotifications = ref(false)
+    const activeNotificationTab = ref('all')
     let pollInterval = null
+
+    // Notification tabs (matching backend types)
+    const notificationTabs = [
+      { id: 'all', label: 'All' },
+      { id: 'comment', label: 'Comments' },
+      { id: 'viewer', label: 'Views' }
+    ]
+
+    // Filtered notifications based on active tab
+    const filteredNotifications = computed(() => {
+      if (activeNotificationTab.value === 'all') {
+        return notifications.value
+      }
+      return notifications.value.filter(n => n.type === activeNotificationTab.value)
+    })
 
     // Subscription from auth store
     const subscription = computed(() => auth.subscription.value)
@@ -543,21 +613,22 @@ export default {
       return route.path === path
     }
 
-    // Current page name for breadcrumb
+    // Current page name for header
     const currentPageName = computed(() => {
       const pathMap = {
         '/videos': 'Library',
-        '/favourites': 'Favourites',
-        '/playlists': 'Playlists',
-        '/notifications': 'Notifications',
+        '/workspaces': 'Workspaces',
         '/profile': 'Profile',
         '/subscription': 'Subscription',
         '/record': 'Record',
         '/feedback': 'Feedback',
         '/settings': 'Settings'
       }
-      if (route.path.startsWith('/playlist/')) {
-        return 'Playlist'
+      if (route.path.startsWith('/workspace/')) {
+        return 'Workspace'
+      }
+      if (route.path.startsWith('/folder/')) {
+        return 'Folder'
       }
       return pathMap[route.path] || 'Library'
     })
@@ -589,6 +660,104 @@ export default {
       }
     }
 
+    // Fetch notifications
+    const fetchNotifications = async () => {
+      loadingNotifications.value = true
+      try {
+        const data = await notificationService.getNotifications(1, 10)
+        notifications.value = data.notifications || []
+      } catch (error) {
+        console.error('Failed to fetch notifications:', error)
+        notifications.value = []
+      } finally {
+        loadingNotifications.value = false
+      }
+    }
+
+    // Toggle notifications dropdown
+    const toggleNotificationsDropdown = () => {
+      showNotificationsDropdown.value = !showNotificationsDropdown.value
+      if (showNotificationsDropdown.value) {
+        showUserDropdown.value = false
+        fetchNotifications()
+      }
+    }
+
+    // Mark all notifications as read
+    const handleMarkAllAsRead = async () => {
+      try {
+        await notificationService.markAllAsRead()
+        notifications.value = notifications.value.map(n => ({ ...n, read_at: new Date().toISOString() }))
+        unreadCount.value = 0
+      } catch (error) {
+        console.error('Failed to mark all as read:', error)
+      }
+    }
+
+    // Handle notification click
+    const handleNotificationClick = async (notification) => {
+      // Mark as read if unread
+      if (!notification.read_at) {
+        try {
+          await notificationService.markAsRead(notification.id)
+          notification.read_at = new Date().toISOString()
+          unreadCount.value = Math.max(0, unreadCount.value - 1)
+        } catch (error) {
+          console.error('Failed to mark notification as read:', error)
+        }
+      }
+
+      // Navigate to the related content if there's a link
+      if (notification.link) {
+        showNotificationsDropdown.value = false
+        router.push(notification.link)
+      }
+    }
+
+    // Format notification time
+    const formatNotificationTime = (dateString) => {
+      const date = new Date(dateString)
+      const now = new Date()
+      const diffMs = now - date
+      const diffMins = Math.floor(diffMs / 60000)
+      const diffHours = Math.floor(diffMs / 3600000)
+      const diffDays = Math.floor(diffMs / 86400000)
+
+      if (diffMins < 1) return 'Just now'
+      if (diffMins < 60) return `${diffMins}m ago`
+      if (diffHours < 24) return `${diffHours}h ago`
+      if (diffDays < 7) return `${diffDays}d ago`
+      return date.toLocaleDateString()
+    }
+
+    // Get notification icon class based on type
+    const getNotificationIconClass = (type) => {
+      switch (type) {
+        case 'comment':
+          return 'bg-blue-100 text-blue-600'
+        case 'viewer':
+          return 'bg-green-100 text-green-600'
+        case 'warning':
+          return 'bg-yellow-100 text-yellow-600'
+        case 'success':
+          return 'bg-emerald-100 text-emerald-600'
+        case 'feedback':
+          return 'bg-purple-100 text-purple-600'
+        default:
+          return 'bg-gray-100 text-gray-600'
+      }
+    }
+
+    // Handle click outside to close dropdowns
+    const handleClickOutside = (event) => {
+      if (userDropdownRef.value && !userDropdownRef.value.contains(event.target)) {
+        showUserDropdown.value = false
+      }
+      if (notificationsDropdownRef.value && !notificationsDropdownRef.value.contains(event.target)) {
+        showNotificationsDropdown.value = false
+      }
+    }
+
     // Fetch subscription status on mount
     onMounted(() => {
       if (isAuthenticated.value) {
@@ -597,12 +766,14 @@ export default {
         // Poll for new notifications every 30 seconds
         pollInterval = setInterval(fetchUnreadCount, 30000)
       }
+      document.addEventListener('click', handleClickOutside)
     })
 
     onUnmounted(() => {
       if (pollInterval) {
         clearInterval(pollInterval)
       }
+      document.removeEventListener('click', handleClickOutside)
     })
 
     return {
@@ -613,6 +784,15 @@ export default {
       sidebarOpen,
       showLogoutModal,
       logoutLoading,
+      showUserDropdown,
+      userDropdownRef,
+      showNotificationsDropdown,
+      notificationsDropdownRef,
+      notifications,
+      loadingNotifications,
+      activeNotificationTab,
+      notificationTabs,
+      filteredNotifications,
       userInfo,
       subscription,
       subscriptionUsagePercent,
@@ -621,7 +801,12 @@ export default {
       currentPageName,
       unreadCount,
       handleLogin,
-      handleLogout
+      handleLogout,
+      toggleNotificationsDropdown,
+      handleMarkAllAsRead,
+      handleNotificationClick,
+      formatNotificationTime,
+      getNotificationIconClass
     }
   }
 }
@@ -640,4 +825,31 @@ export default {
   to { opacity: 1; transform: translateY(0); }
 }
 .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
+
+/* Dropdown transitions */
+.dropdown-enter-active,
+.dropdown-leave-active {
+  transition: all 0.15s ease;
+}
+
+.dropdown-enter-from,
+.dropdown-leave-to {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+/* Notification message HTML content styling */
+.notification-message span.font-medium {
+  font-weight: 500;
+  color: #111827;
+}
+
+.notification-message a {
+  color: #ea580c;
+  text-decoration: none;
+}
+
+.notification-message a:hover {
+  text-decoration: underline;
+}
 </style>

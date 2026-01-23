@@ -47,16 +47,6 @@ const routes = [
         component: () => import("../views/SubscriptionSuccessView.vue"),
       },
       {
-        path: "notifications",
-        name: "Notifications",
-        component: () => import("../views/NotificationsView.vue"),
-      },
-      {
-        path: "favourites",
-        name: "Favourites",
-        component: () => import("../views/FavouritesView.vue"),
-      },
-      {
         path: "feedback",
         name: "Feedback",
         component: () => import("../views/FeedbackView.vue"),
@@ -67,16 +57,37 @@ const routes = [
         component: () => import("../views/SettingsView.vue"),
       },
       {
-        path: "playlists",
-        name: "Playlists",
-        component: () => import("../views/PlaylistsView.vue"),
+        path: "folder/:id",
+        name: "Folder",
+        component: () => import("../views/FolderView.vue"),
       },
       {
-        path: "playlist/:id",
-        name: "PlaylistDetail",
-        component: () => import("../views/PlaylistDetailView.vue"),
+        path: "workspaces",
+        name: "Workspaces",
+        component: () => import("../views/WorkspacesView.vue"),
+      },
+      {
+        path: "workspace/:slug",
+        name: "WorkspaceDetail",
+        component: () => import("../views/WorkspaceDetailView.vue"),
+      },
+      {
+        path: "workspace/:slug/members",
+        name: "WorkspaceMembers",
+        component: () => import("../views/WorkspaceMembersView.vue"),
+      },
+      {
+        path: "workspace/:slug/settings",
+        name: "WorkspaceSettings",
+        component: () => import("../views/WorkspaceSettingsView.vue"),
       },
     ]
+  },
+  {
+    path: "/invite/:token",
+    name: "AcceptInvitation",
+    component: () => import("../views/AcceptInvitationView.vue"),
+    meta: { requiresAuth: true }
   },
   {
     path: "/video/:id",
@@ -88,12 +99,6 @@ const routes = [
     path: "/share/video/:token",
     name: "SharedVideo",
     component: () => import("../views/SharedVideoView.vue"),
-    // Public - no auth required
-  },
-  {
-    path: "/share/playlist/:token",
-    name: "SharedPlaylist",
-    component: () => import("../views/SharedPlaylistView.vue"),
     // Public - no auth required
   },
   // Blog routes moved to Laravel (server-rendered for SEO)

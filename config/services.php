@@ -48,8 +48,11 @@ return [
     'polar' => [
         'api_key' => env('POLAR_ACCESS_TOKEN', env('POLAR_API_KEY')), // For backward compatibility
         'organization_id' => env('POLAR_ORGANIZATION_ID'),
+        // Pro plan product IDs
         'product_id_monthly' => env('POLAR_PRODUCT_ID_MONTHLY'),
         'product_id_yearly' => env('POLAR_PRODUCT_ID_YEARLY'),
+        // Teams plan product ID (monthly only for now)
+        'product_id_teams_monthly' => env('POLAR_PRODUCT_ID_TEAMS_MONTHLY'),
         'webhook_secret' => env('POLAR_WEBHOOK_SECRET'),
         'environment' => env('POLAR_SERVER', env('POLAR_ENVIRONMENT', 'sandbox')),
         'api_url' => env('POLAR_SERVER', env('POLAR_ENVIRONMENT', 'sandbox')) === 'production'
