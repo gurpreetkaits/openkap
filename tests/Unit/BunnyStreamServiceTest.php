@@ -97,6 +97,7 @@ class BunnyStreamServiceTest extends TestCase
         ]);
 
         $connector = new BunnyConnector;
+        $connector->withoutLogging();
         $connector->withMockClient($mockClient);
 
         $service = new BunnyStreamService($connector);
@@ -117,6 +118,7 @@ class BunnyStreamServiceTest extends TestCase
         ]);
 
         $connector = new BunnyConnector;
+        $connector->withoutLogging();
         $connector->withMockClient($mockClient);
 
         $service = new BunnyStreamService($connector);
@@ -140,6 +142,7 @@ class BunnyStreamServiceTest extends TestCase
         ]);
 
         $connector = new BunnyConnector;
+        $connector->withoutLogging();
         $connector->withMockClient($mockClient);
 
         $this->expectException(\Exception::class);
@@ -264,6 +267,7 @@ class BunnyStreamServiceTest extends TestCase
         ]);
 
         $connector = new BunnyConnector;
+        $connector->withoutLogging();
         $connector->withMockClient($mockClient);
 
         $service = new BunnyStreamService($connector);
@@ -290,6 +294,7 @@ class BunnyStreamServiceTest extends TestCase
         ]);
 
         $connector = new BunnyConnector;
+        $connector->withoutLogging();
         $connector->withMockClient($mockClient);
 
         $service = new BunnyStreamService($connector);
@@ -308,6 +313,7 @@ class BunnyStreamServiceTest extends TestCase
         ]);
 
         $connector = new BunnyConnector;
+        $connector->withoutLogging();
         $connector->withMockClient($mockClient);
 
         $service = new BunnyStreamService($connector);
@@ -326,6 +332,7 @@ class BunnyStreamServiceTest extends TestCase
         ]);
 
         $connector = new BunnyConnector;
+        $connector->withoutLogging();
         $connector->withMockClient($mockClient);
 
         $service = new BunnyStreamService($connector);
@@ -344,6 +351,7 @@ class BunnyStreamServiceTest extends TestCase
         ]);
 
         $connector = new BunnyConnector;
+        $connector->withoutLogging();
         $connector->withMockClient($mockClient);
 
         $service = new BunnyStreamService($connector);
@@ -361,6 +369,7 @@ class BunnyStreamServiceTest extends TestCase
         ]);
 
         $connector = new BunnyConnector;
+        $connector->withoutLogging();
         $connector->withMockClient($mockClient);
 
         $this->expectException(\Exception::class);
@@ -382,6 +391,7 @@ class BunnyStreamServiceTest extends TestCase
         ]);
 
         $connector = new BunnyConnector;
+        $connector->withoutLogging();
         $connector->withMockClient($mockClient);
 
         $service = new BunnyStreamService($connector);
@@ -402,6 +412,7 @@ class BunnyStreamServiceTest extends TestCase
         ]);
 
         $connector = new BunnyConnector;
+        $connector->withoutLogging();
         $connector->withMockClient($mockClient);
 
         $service = new BunnyStreamService($connector);
@@ -422,6 +433,7 @@ class BunnyStreamServiceTest extends TestCase
         ]);
 
         $connector = new BunnyConnector;
+        $connector->withoutLogging();
         $connector->withMockClient($mockClient);
 
         $service = new BunnyStreamService($connector);
@@ -446,6 +458,7 @@ class BunnyStreamServiceTest extends TestCase
         ]);
 
         $connector = new BunnyConnector;
+        $connector->withoutLogging();
         $connector->withMockClient($mockClient);
 
         $service = new BunnyStreamService($connector);
@@ -472,6 +485,7 @@ class BunnyStreamServiceTest extends TestCase
         ]);
 
         $connector = new BunnyConnector;
+        $connector->withoutLogging();
         $connector->withMockClient($mockClient);
 
         $service = new BunnyStreamService($connector);
@@ -492,6 +506,7 @@ class BunnyStreamServiceTest extends TestCase
         ]);
 
         $connector = new BunnyConnector;
+        $connector->withoutLogging();
         $connector->withMockClient($mockClient);
 
         $service = new BunnyStreamService($connector);
@@ -515,6 +530,7 @@ class BunnyStreamServiceTest extends TestCase
         ]);
 
         $connector = new BunnyConnector;
+        $connector->withoutLogging();
         $connector->withMockClient($mockClient);
 
         $service = new BunnyStreamService($connector);
@@ -538,6 +554,7 @@ class BunnyStreamServiceTest extends TestCase
         ]);
 
         $connector = new BunnyConnector;
+        $connector->withoutLogging();
         $connector->withMockClient($mockClient);
 
         $service = new BunnyStreamService($connector);
@@ -560,6 +577,7 @@ class BunnyStreamServiceTest extends TestCase
         ]);
 
         $connector = new BunnyConnector;
+        $connector->withoutLogging();
         $connector->withMockClient($mockClient);
 
         $service = new BunnyStreamService($connector);

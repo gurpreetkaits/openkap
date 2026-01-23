@@ -282,13 +282,16 @@ class BunnyStreamIntegrationTest extends TestCase
     {
         Queue::fake();
 
+        // Create a pro user who should encode videos
+        $proUser = User::factory()->withProSubscription()->create();
+
         // Mock BunnyStreamService to return configured
         $this->mock(BunnyStreamService::class, function ($mock) {
             $mock->shouldReceive('isConfigured')->andReturn(true);
         });
 
         // Start and complete a session (simplified)
-        $startResponse = $this->actingAs($this->user)
+        $startResponse = $this->actingAs($proUser)
             ->postJson('/api/stream/start', ['title' => 'Bunny Test Recording']);
 
         $sessionId = $startResponse->json('session_id');
@@ -301,7 +304,7 @@ class BunnyStreamIntegrationTest extends TestCase
         $metadata['chunks_received'] = 1;
         file_put_contents("{$sessionDir}/metadata.json", json_encode($metadata));
 
-        $response = $this->actingAs($this->user)
+        $response = $this->actingAs($proUser)
             ->postJson("/api/stream/{$sessionId}/complete", ['duration' => 30]);
 
         $response->assertStatus(201);
@@ -713,13 +716,16 @@ class BunnyStreamIntegrationTest extends TestCase
     {
         Queue::fake();
 
+        // Create a pro user who should encode videos
+        $proUser = User::factory()->withProSubscription()->create();
+
         // Mock BunnyStreamService
         $this->mock(BunnyStreamService::class, function ($mock) {
             $mock->shouldReceive('isConfigured')->andReturn(true);
         });
 
         // Step 1: Start upload session
-        $startResponse = $this->actingAs($this->user)
+        $startResponse = $this->actingAs($proUser)
             ->postJson('/api/stream/start', [
                 'title' => 'E2E Test Recording',
                 'mime_type' => 'video/webm',
@@ -739,7 +745,7 @@ class BunnyStreamIntegrationTest extends TestCase
 
         $chunk = new UploadedFile($tempFile, 'chunk_0.webm', 'video/webm', null, true);
 
-        $chunkResponse = $this->actingAs($this->user)
+        $chunkResponse = $this->actingAs($proUser)
             ->postJson("/api/stream/{$sessionId}/chunk", [
                 'chunk' => $chunk,
                 'chunk_index' => 0,
@@ -754,7 +760,7 @@ class BunnyStreamIntegrationTest extends TestCase
         file_put_contents("{$sessionDir}/metadata.json", json_encode($metadata));
 
         // Step 3: Complete upload
-        $completeResponse = $this->actingAs($this->user)
+        $completeResponse = $this->actingAs($proUser)
             ->postJson("/api/stream/{$sessionId}/complete", [
                 'duration' => 180,
             ]);
