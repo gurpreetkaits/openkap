@@ -1,24 +1,27 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'wouter';
-import { 
-  Video, 
-  Plus, 
-  Search, 
-  Filter, 
-  Grid3x3, 
-  List, 
-  MoreVertical, 
-  Edit3, 
-  Share2, 
-  Download, 
+import {
+  Video,
+  Plus,
+  Search,
+  Filter,
+  Grid3x3,
+  List,
+  MoreVertical,
+  Edit3,
+  Share2,
+  Download,
   Trash2,
   Play,
   Monitor,
   Camera,
-  Users
+  Users,
+  CheckCircle
 } from 'lucide-react';
 import { RecordedVideo, downloadVideo } from '@/lib/recording-utils';
 import { ShareModal } from '@/components/share-modal';
+import { InstallExtensionModal } from '@/components/install-extension-modal';
+import { useExtension } from '@/hooks/use-extension';
 
 // Mock data for demonstration - in a real app, this would come from a backend
 const mockRecordings: RecordedVideo[] = [
@@ -45,7 +48,7 @@ const mockRecordings: RecordedVideo[] = [
 type ViewMode = 'grid' | 'list';
 
 export default function Dashboard() {
-  const [location] = useLocation();
+  const [location, navigate] = useLocation();
   const [recordings, setRecordings] = useState<RecordedVideo[]>(mockRecordings);
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [searchQuery, setSearchQuery] = useState('');
@@ -55,6 +58,27 @@ export default function Dashboard() {
   const [editingVideo, setEditingVideo] = useState<RecordedVideo | null>(null);
   const [editTitle, setEditTitle] = useState('');
   const [editDescription, setEditDescription] = useState('');
+  const [installModalOpen, setInstallModalOpen] = useState(false);
+
+  // Extension detection
+  const extension = useExtension();
+
+  const handleNewRecording = () => {
+    if (extension.checking) return; // Still detecting
+
+    if (extension.installed) {
+      // Trigger extension recording panel
+      window.dispatchEvent(new CustomEvent('screensense:website:showPanel'));
+    } else {
+      // Show install extension modal
+      setInstallModalOpen(true);
+    }
+  };
+
+  const handleUseWebRecorder = () => {
+    setInstallModalOpen(false);
+    navigate('/');
+  };
 
   const filteredRecordings = recordings.filter(recording =>
     recording.title.toLowerCase().includes(searchQuery.toLowerCase())
@@ -127,12 +151,24 @@ export default function Dashboard() {
         </div>
         
         <div className="flex-none flex items-center space-x-4">
-          <Link href="/">
-            <button className="btn btn-primary" data-testid="button-new-recording">
-              <Plus className="w-4 h-4 mr-2" />
-              New Recording
-            </button>
-          </Link>
+          {/* Extension status indicator */}
+          {!extension.checking && extension.installed && (
+            <span className="flex items-center gap-1 text-xs text-green-600">
+              <CheckCircle className="w-3 h-3" />
+              Extension
+            </span>
+          )}
+
+          <button
+            className="btn btn-primary"
+            data-testid="button-new-recording"
+            onClick={handleNewRecording}
+            disabled={extension.checking}
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            New Recording
+          </button>
+
           <div className="avatar placeholder">
             <div 
               className="bg-neutral text-neutral-content rounded-full w-8"
@@ -210,12 +246,14 @@ export default function Dashboard() {
                     : 'Start recording your screen to see your videos here.'
                   }
                 </p>
-                <Link href="/">
-                  <button className="btn btn-primary">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Create First Recording
-                  </button>
-                </Link>
+                <button
+                  className="btn btn-primary"
+                  onClick={handleNewRecording}
+                  disabled={extension.checking}
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Create First Recording
+                </button>
               </div>
             </div>
           </div>
@@ -424,6 +462,13 @@ export default function Dashboard() {
         isOpen={shareModalOpen}
         onClose={() => setShareModalOpen(false)}
         videoId={selectedVideoId}
+      />
+
+      {/* Install Extension Modal */}
+      <InstallExtensionModal
+        isOpen={installModalOpen}
+        onClose={() => setInstallModalOpen(false)}
+        onUseWebRecorder={handleUseWebRecorder}
       />
     </div>
   );
