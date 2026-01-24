@@ -12,6 +12,7 @@
             <a href="/#features" class="hover:text-white transition-colors">Features</a>
             <a href="/#pricing" class="hover:text-white transition-colors">Pricing</a>
             <a href="/blog" class="hover:text-white transition-colors {{ request()->is('blog*') ? 'text-white' : '' }}">Blog</a>
+            <a href="/changelog" class="hover:text-white transition-colors {{ request()->is('changelog') ? 'text-white' : '' }}">Changelog</a>
             <a href="{{ config('app.frontend_url', config('app.url')) }}/feedback" class="hover:text-white transition-colors">Feedback</a>
         </div>
 
@@ -43,6 +44,9 @@
             </a>
             <a href="/blog" class="block px-4 py-3 rounded-lg text-sm font-medium text-neutral-300 hover:text-white hover:bg-white/5 transition-colors {{ request()->is('blog*') ? 'text-white bg-white/5' : '' }}">
                 Blog
+            </a>
+            <a href="/changelog" class="block px-4 py-3 rounded-lg text-sm font-medium text-neutral-300 hover:text-white hover:bg-white/5 transition-colors {{ request()->is('changelog') ? 'text-white bg-white/5' : '' }}">
+                Changelog
             </a>
             <a href="{{ config('app.frontend_url', config('app.url')) }}/feedback" class="block px-4 py-3 rounded-lg text-sm font-medium text-neutral-300 hover:text-white hover:bg-white/5 transition-colors">
                 Feedback
