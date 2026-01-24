@@ -1,5 +1,4 @@
 @props([
-    'badgeIcon' => 'solar:stars-minimalistic-linear',
     'badgeText' => 'Product Update',
     'headline',
     'subheadline' => null,
@@ -7,7 +6,6 @@
     'features' => [],
     'ctaText' => 'Learn More',
     'ctaUrl' => '#',
-    'ctaIcon' => 'solar:arrow-right-linear',
     'showVisualCard' => true,
     'visualCardItems' => [],
     'previewText' => null,
@@ -16,18 +14,18 @@
 <x-emails.layout :title="$headline" :preview-text="$previewText ?? $description">
 
     <!-- Badge -->
-    <x-emails.badge :icon="$badgeIcon" :text="$badgeText" />
+    <x-emails.badge :text="$badgeText" />
 
     <!-- Headline -->
-    <h1 class="text-[32px] font-semibold tracking-tighter text-brand-600 leading-[1.15] mb-4">
+    <h1 style="margin: 0 0 12px 0; font-size: 28px; font-weight: 600; color: #ea580c; line-height: 1.2; letter-spacing: -0.025em;">
         {!! nl2br(e($headline)) !!}
         @if($subheadline)
-        <br>{!! nl2br(e($subheadline)) !!}
+        <br><span style="color: #18181b;">{!! nl2br(e($subheadline)) !!}</span>
         @endif
     </h1>
 
     <!-- Main Copy -->
-    <p class="text-[15px] text-zinc-500 leading-relaxed mb-8 font-normal max-w-md">
+    <p style="margin: 0 0 24px 0; font-size: 15px; color: #71717a; line-height: 1.6;">
         {{ $description }}
     </p>
 
@@ -38,19 +36,22 @@
 
     <!-- Feature List -->
     @if(count($features) > 0)
-    <div class="space-y-5 mb-10">
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-bottom: 24px;">
         @foreach($features as $feature)
-        <x-emails.feature-item
-            :icon="$feature['icon'] ?? 'solar:bolt-linear'"
-            :title="$feature['title']"
-            :description="$feature['description']"
-        />
+        <tr>
+            <td style="padding-bottom: 16px;">
+                <x-emails.feature-item
+                    :title="$feature['title']"
+                    :description="$feature['description']"
+                />
+            </td>
+        </tr>
         @endforeach
-    </div>
+    </table>
     @endif
 
     <!-- CTA -->
-    <x-emails.button :url="$ctaUrl" :icon="$ctaIcon">
+    <x-emails.button :url="$ctaUrl">
         {{ $ctaText }}
     </x-emails.button>
 

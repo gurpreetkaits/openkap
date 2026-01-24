@@ -1,19 +1,19 @@
 @props([
     'logoUrl' => null,
     'appName' => 'ScreenSense',
-    'viewInBrowserUrl' => null,
 ])
 <!-- Header -->
-<div class="px-8 pt-8 pb-6 flex justify-between items-center">
-    <!-- Logo -->
-    <a href="{{ $logoUrl ?? config('app.url') }}" class="flex items-center gap-2.5 group cursor-pointer">
-        <img src="{{ url('/logo.png') }}" alt="{{ $appName }}" class="w-8 h-8 rounded-lg">
-        <span class="text-sm font-semibold tracking-tight text-zinc-900">{{ $appName }}</span>
-    </a>
-
-    @if($viewInBrowserUrl)
-    <a href="{{ $viewInBrowserUrl }}" class="text-[10px] font-medium text-zinc-400 hover:text-zinc-600 uppercase tracking-wide transition-colors">
-        View in browser
-    </a>
-    @endif
-</div>
+<tr>
+    <td style="padding: 24px 32px 16px 32px;">
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+            <tr>
+                <td>
+                    <a href="{{ $logoUrl ?? config('app.url') }}" style="text-decoration: none; display: inline-flex; align-items: center;">
+                        <img src="{{ url('/logo.png') }}" alt="{{ $appName }}" width="32" height="32" style="width: 32px; height: 32px; border-radius: 8px; margin-right: 10px;">
+                        <span style="font-size: 14px; font-weight: 600; color: #18181b; letter-spacing: -0.025em;">{{ $appName }}</span>
+                    </a>
+                </td>
+            </tr>
+        </table>
+    </td>
+</tr>

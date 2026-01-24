@@ -1,13 +1,21 @@
 @props([
     'url' => '#',
-    'icon' => 'solar:arrow-right-linear',
 ])
 <!-- CTA Button -->
-<a href="{{ $url }}" class="group block w-full bg-brand-600 hover:bg-brand-700 text-white text-center py-3.5 rounded-lg text-sm font-medium transition-all shadow-[0_2px_10px_rgba(234,88,12,0.3)] hover:shadow-[0_4px_16px_rgba(234,88,12,0.4)] mb-8">
-    <span class="flex items-center justify-center gap-2">
-        {{ $slot }}
-        @if($icon)
-        <iconify-icon icon="{{ $icon }}" class="group-hover:translate-x-0.5 transition-transform"></iconify-icon>
-        @endif
-    </span>
-</a>
+<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-bottom: 24px;">
+    <tr>
+        <td align="center">
+            <!--[if mso]>
+            <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="{{ $url }}" style="height:48px;v-text-anchor:middle;width:100%;" arcsize="17%" strokecolor="#ea580c" fillcolor="#ea580c">
+            <w:anchorlock/>
+            <center style="color:#ffffff;font-family:sans-serif;font-size:14px;font-weight:bold;">{{ $slot }} &rarr;</center>
+            </v:roundrect>
+            <![endif]-->
+            <!--[if !mso]><!-->
+            <a href="{{ $url }}" style="display: inline-block; background-color: #ea580c; color: #ffffff; padding: 14px 32px; border-radius: 8px; font-size: 14px; font-weight: 600; text-decoration: none; text-align: center; box-shadow: 0 2px 8px rgba(234,88,12,0.25);">
+                {{ $slot }} &rarr;
+            </a>
+            <!--<![endif]-->
+        </td>
+    </tr>
+</table>

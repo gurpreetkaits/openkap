@@ -1,15 +1,18 @@
 @props([
-    'icon' => 'solar:bolt-linear',
     'title',
     'description',
 ])
 <!-- Feature Item -->
-<div class="flex gap-4">
-    <div class="mt-0.5 w-8 h-8 rounded-lg bg-zinc-50 border border-zinc-100 flex items-center justify-center shrink-0 text-zinc-900">
-        <iconify-icon icon="{{ $icon }}" class="text-base"></iconify-icon>
-    </div>
-    <div>
-        <h3 class="text-sm font-semibold text-zinc-900 tracking-tight">{{ $title }}</h3>
-        <p class="text-sm text-zinc-500 mt-1 leading-relaxed">{{ $description }}</p>
-    </div>
-</div>
+<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-bottom: 16px;">
+    <tr>
+        <td width="40" valign="top" style="padding-right: 12px;">
+            <div style="width: 32px; height: 32px; background-color: #fafafa; border: 1px solid #f4f4f5; border-radius: 8px; text-align: center; line-height: 32px; font-size: 14px;">
+                &#9889;
+            </div>
+        </td>
+        <td valign="top">
+            <h3 style="margin: 0 0 4px 0; font-size: 14px; font-weight: 600; color: #18181b;">{{ $title }}</h3>
+            <p style="margin: 0; font-size: 14px; color: #71717a; line-height: 1.5;">{{ $description }}</p>
+        </td>
+    </tr>
+</table>

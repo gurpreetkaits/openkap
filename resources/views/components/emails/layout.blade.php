@@ -3,76 +3,82 @@
     'previewText' => '',
 ])
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="x-apple-disable-message-reformatting">
     <title>{{ $title }}</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        brand: {
-                            50: '#fff7ed',
-                            100: '#ffedd5',
-                            200: '#fed7aa',
-                            300: '#fdba74',
-                            400: '#fb923c',
-                            500: '#f97316',
-                            600: '#ea580c',
-                            700: '#c2410c',
-                            800: '#9a3412',
-                            900: '#7c2d12',
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <!--[if mso]>
+    <noscript>
+        <xml>
+            <o:OfficeDocumentSettings>
+                <o:PixelsPerInch>96</o:PixelsPerInch>
+            </o:OfficeDocumentSettings>
+        </xml>
+    </noscript>
+    <![endif]-->
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
+        /* Reset styles */
+        body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+        table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+        img { -ms-interpolation-mode: bicubic; border: 0; height: auto; line-height: 100%; outline: none; text-decoration: none; }
+        body { margin: 0 !important; padding: 0 !important; width: 100% !important; }
+        a[x-apple-data-detectors] { color: inherit !important; text-decoration: none !important; font-size: inherit !important; font-family: inherit !important; font-weight: inherit !important; line-height: inherit !important; }
+        @media only screen and (max-width: 620px) {
+            .email-container { width: 100% !important; padding: 16px !important; }
+            .content-padding { padding: 24px !important; }
         }
-        a { text-decoration: none; }
-        .external-link:hover { text-decoration: underline; }
     </style>
 </head>
-<body class="bg-zinc-50 py-12 px-4 min-h-screen flex justify-center text-zinc-900">
+<body style="margin: 0; padding: 0; background-color: #f4f4f5; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
     @if($previewText)
-    <!-- Preview text for email clients -->
-    <div style="display:none;font-size:1px;color:#333333;line-height:1px;max-height:0px;max-width:0px;opacity:0;overflow:hidden;">
+    <!-- Preview text -->
+    <div style="display: none; max-height: 0; overflow: hidden; mso-hide: all;">
         {{ $previewText }}
+        &nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;
     </div>
     @endif
 
-    <!-- Email Container -->
-    <div class="w-full max-w-[600px] bg-white rounded-2xl shadow-sm border border-zinc-200/60 overflow-hidden mx-auto">
+    <!-- Email wrapper -->
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #f4f4f5;">
+        <tr>
+            <td style="padding: 40px 16px;">
+                <!-- Email container -->
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" class="email-container" style="margin: 0 auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.08);">
 
-        <x-emails.header />
+                    <x-emails.header />
 
-        <!-- Content Body -->
-        <div class="px-8 pb-8">
-            {{ $slot }}
+                    <!-- Content -->
+                    <tr>
+                        <td class="content-padding" style="padding: 32px 32px 24px 32px;">
+                            {{ $slot }}
+                        </td>
+                    </tr>
 
-            <!-- Divider -->
-            <div class="h-px w-full bg-gradient-to-r from-transparent via-zinc-200 to-transparent my-8"></div>
+                    <!-- Divider -->
+                    <tr>
+                        <td style="padding: 0 32px;">
+                            <div style="height: 1px; background: linear-gradient(to right, transparent, #e4e4e7, transparent);"></div>
+                        </td>
+                    </tr>
 
-            <!-- Signature -->
-            <p class="text-sm text-zinc-500 font-normal">
-                Best,<br>
-                <span class="text-zinc-900 font-medium">The ScreenSense Team</span>
-            </p>
-        </div>
+                    <!-- Signature -->
+                    <tr>
+                        <td style="padding: 24px 32px 32px 32px;">
+                            <p style="margin: 0; font-size: 14px; color: #71717a; line-height: 1.5;">
+                                Best,<br>
+                                <span style="color: #18181b; font-weight: 500;">The ScreenSense Team</span>
+                            </p>
+                        </td>
+                    </tr>
 
-    </div>
+                    <x-emails.footer />
 
+                </table>
+            </td>
+        </tr>
+    </table>
 </body>
 </html>

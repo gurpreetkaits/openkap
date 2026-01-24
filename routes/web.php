@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ChangelogController;
 use App\Http\Controllers\MarkdownBlogController;
 use App\Models\Video;
 use Illuminate\Support\Facades\Route;
@@ -27,6 +28,9 @@ Route::get('/contact', function () {
 Route::get('/terms', function () {
     return view('terms');
 });
+
+// Changelog page
+Route::get('/changelog', [ChangelogController::class, 'index']);
 
 // Blog routes (markdown file-driven from storage/app/blog/*.md)
 Route::prefix('blog')->name('blog.')->group(function () {
