@@ -174,26 +174,6 @@
                         </td>
                     </tr>
 
-                    <!-- Footer -->
-                    <tr>
-                        <td style="background-color: #fafafa; padding: 24px 32px; border-top: 1px solid #f4f4f5;">
-                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
-                                <tr>
-                                    <td align="center" style="padding-bottom: 12px;">
-                                        <a href="https://github.com/gurpreetkaits/screensense" style="display: inline-block; color: #a1a1aa; text-decoration: none; font-size: 13px;">GitHub</a>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td align="center">
-                                        <p style="margin: 0; font-size: 11px; color: #a1a1aa;">
-                                            © {{ date('Y') }} ScreenSense. All rights reserved.
-                                        </p>
-                                    </td>
-                                </tr>
-                            </table>
-                        </td>
-                    </tr>
-
                 </table>
             </td>
         </tr>
