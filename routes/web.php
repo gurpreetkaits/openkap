@@ -33,6 +33,15 @@ Route::get('/changelog', function () {
     return view('changelog');
 });
 
+// Compare pages
+Route::get('/compare/loom', function () {
+    return view('compare.loom');
+});
+
+Route::get('/compare/cap', function () {
+    return view('compare.cap');
+});
+
 // Blog routes (markdown file-driven from storage/app/blog/*.md)
 Route::prefix('blog')->name('blog.')->group(function () {
     Route::get('/', [MarkdownBlogController::class, 'index'])->name('index');
