@@ -76,20 +76,17 @@ Route::get('/embed/video/{token}', function ($token) {
 if (app()->environment('local')) {
     Route::get('/email-preview/product-update', function () {
         return view('emails.product-update', [
-            'badgeIcon' => 'solar:stars-minimalistic-linear',
             'badgeText' => 'Product Update 2.0',
             'headline' => 'Filter noise.',
             'subheadline' => 'Find signal.',
             'description' => "We've completely rebuilt the filtering engine. Segment your recordings by duration, user activity, and sentiment in milliseconds—not seconds.",
             'features' => [
-                ['icon' => 'solar:bolt-linear', 'title' => 'Instant Search', 'description' => 'Queries run 10x faster with our new indexing engine.'],
-                ['icon' => 'solar:sidebar-minimalistic-linear', 'title' => 'Saved Views', 'description' => 'Pin your favorite filter combinations to your sidebar.'],
+                ['title' => 'Instant Search', 'description' => 'Queries run 10x faster with our new indexing engine.'],
+                ['title' => 'Saved Views', 'description' => 'Pin your favorite filter combinations to your sidebar.'],
             ],
             'ctaText' => 'Try Smart Filters',
             'ctaUrl' => config('app.url'),
-            'ctaIcon' => 'solar:arrow-right-linear',
             'showVisualCard' => true,
-            'visualCardItems' => [],
             'previewText' => 'New filtering engine is here!',
         ]);
     });
