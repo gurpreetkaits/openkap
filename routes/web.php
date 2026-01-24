@@ -33,13 +33,13 @@ Route::get('/changelog', function () {
     return view('changelog');
 });
 
-// Compare pages
-Route::get('/compare/loom', function () {
-    return view('compare.loom');
+// Alternative comparison pages
+Route::get('/alternative/loom', function () {
+    return view('alternative.loom');
 });
 
-Route::get('/compare/cap', function () {
-    return view('compare.cap');
+Route::get('/alternative/cap', function () {
+    return view('alternative.cap');
 });
 
 // Blog routes (markdown file-driven from storage/app/blog/*.md)

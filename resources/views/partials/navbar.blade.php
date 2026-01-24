@@ -11,19 +11,19 @@
             <a href="/#how-it-works" class="hover:text-white transition-colors">How it works</a>
             <a href="/#features" class="hover:text-white transition-colors">Features</a>
             <a href="/#pricing" class="hover:text-white transition-colors">Pricing</a>
-            <!-- Compare Dropdown -->
-            <div class="relative group" id="compare-dropdown">
-                <button type="button" class="flex items-center gap-1 hover:text-white transition-colors {{ request()->is('compare/*') ? 'text-white' : '' }}">
-                    Compare
+            <!-- Alternative Dropdown -->
+            <div class="relative group">
+                <button type="button" class="flex items-center gap-1 hover:text-white transition-colors {{ request()->is('alternative/*') ? 'text-white' : '' }}">
+                    Alternative
                     <i data-lucide="chevron-down" class="size-3.5 transition-transform group-hover:rotate-180"></i>
                 </button>
                 <div class="absolute top-full left-0 pt-2 w-48 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
                     <div class="py-2 bg-brand-950 border border-white/10 rounded-lg shadow-xl">
-                        <a href="/compare/loom" class="block px-4 py-2 text-sm text-neutral-300 hover:text-white hover:bg-white/5 transition-colors {{ request()->is('compare/loom') ? 'text-white bg-white/5' : '' }}">
-                            vs Loom
+                        <a href="/alternative/loom" class="block px-4 py-2 text-sm text-neutral-300 hover:text-white hover:bg-white/5 transition-colors {{ request()->is('alternative/loom') ? 'text-white bg-white/5' : '' }}">
+                            Loom
                         </a>
-                        <a href="/compare/cap" class="block px-4 py-2 text-sm text-neutral-300 hover:text-white hover:bg-white/5 transition-colors {{ request()->is('compare/cap') ? 'text-white bg-white/5' : '' }}">
-                            vs Cap.so
+                        <a href="/alternative/cap" class="block px-4 py-2 text-sm text-neutral-300 hover:text-white hover:bg-white/5 transition-colors {{ request()->is('alternative/cap') ? 'text-white bg-white/5' : '' }}">
+                            Cap.so
                         </a>
                     </div>
                 </div>
@@ -74,14 +74,14 @@
             <a href="/#pricing" class="block px-4 py-3 rounded-lg text-sm font-medium text-neutral-300 hover:text-white hover:bg-white/5 transition-colors">
                 Pricing
             </a>
-            <!-- Compare Section -->
+            <!-- Alternative Section -->
             <div class="py-2">
-                <div class="px-4 py-2 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Compare</div>
-                <a href="/compare/loom" class="block px-4 py-2 rounded-lg text-sm font-medium text-neutral-300 hover:text-white hover:bg-white/5 transition-colors {{ request()->is('compare/loom') ? 'text-white bg-white/5' : '' }}">
-                    vs Loom
+                <div class="px-4 py-2 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Alternative</div>
+                <a href="/alternative/loom" class="block px-4 py-2 rounded-lg text-sm font-medium text-neutral-300 hover:text-white hover:bg-white/5 transition-colors {{ request()->is('alternative/loom') ? 'text-white bg-white/5' : '' }}">
+                    Loom
                 </a>
-                <a href="/compare/cap" class="block px-4 py-2 rounded-lg text-sm font-medium text-neutral-300 hover:text-white hover:bg-white/5 transition-colors {{ request()->is('compare/cap') ? 'text-white bg-white/5' : '' }}">
-                    vs Cap.so
+                <a href="/alternative/cap" class="block px-4 py-2 rounded-lg text-sm font-medium text-neutral-300 hover:text-white hover:bg-white/5 transition-colors {{ request()->is('alternative/cap') ? 'text-white bg-white/5' : '' }}">
+                    Cap.so
                 </a>
             </div>
             <!-- Resources Section -->
