@@ -135,7 +135,7 @@ class ScreenshotManager
             'title' => $screenshot->title,
             'image_url' => $screenshot->getImageUrl(),
             'thumbnail_url' => $screenshot->getThumbnailUrl(),
-            'share_url' => $screenshot->getShareUrl(),
+            'share_url' => $screenshot->getFrontendShareUrl(),
             'share_token' => $screenshot->share_token,
             'is_public' => $screenshot->is_public,
             'file_size_bytes' => $screenshot->file_size_bytes,

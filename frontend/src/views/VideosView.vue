@@ -1021,13 +1021,12 @@
                   >
                     Copy Link
                   </button>
-                  <a
-                    :href="selectedScreenshot.imageUrl"
-                    download
+                  <button
+                    @click="downloadScreenshot(selectedScreenshot)"
                     class="px-3 py-1.5 bg-white/20 hover:bg-white/30 rounded-lg text-sm font-medium transition-colors"
                   >
                     Download
-                  </a>
+                  </button>
                 </div>
               </div>
             </div>
@@ -2234,6 +2233,46 @@ export default {
       }
     }
 
+    const downloadScreenshot = async (screenshot) => {
+      try {
+        const imageUrl = screenshot.imageUrl || screenshot.image_url
+        if (!imageUrl) {
+          toast.error('No image URL available')
+          return
+        }
+
+        // Fetch the image as a blob
+        const response = await fetch(imageUrl)
+        if (!response.ok) {
+          throw new Error('Failed to fetch image')
+        }
+
+        const blob = await response.blob()
+
+        // Create a download link
+        const url = window.URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+
+        // Generate filename from title or use default
+        const title = screenshot.title || 'screenshot'
+        const extension = blob.type.split('/')[1] || 'png'
+        link.download = `${title}.${extension}`
+
+        // Trigger download
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+
+        // Cleanup
+        window.URL.revokeObjectURL(url)
+        toast.success('Screenshot downloaded!')
+      } catch (err) {
+        console.error('Failed to download screenshot:', err)
+        toast.error('Failed to download screenshot')
+      }
+    }
+
     const deleteScreenshot = (screenshot) => {
       screenshotToDelete.value = screenshot
       showDeleteScreenshotModal.value = true
@@ -2644,6 +2683,7 @@ export default {
       openScreenshotPreview,
       closeScreenshotPreview,
       copyScreenshotLink,
+      downloadScreenshot,
       deleteScreenshot,
       confirmDeleteScreenshot,
       handleScreenshotUpload,

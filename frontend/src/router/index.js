@@ -101,6 +101,12 @@ const routes = [
     component: () => import("../views/SharedVideoView.vue"),
     // Public - no auth required
   },
+  {
+    path: "/share/screenshot/:token",
+    name: "SharedScreenshot",
+    component: () => import("../views/SharedScreenshotView.vue"),
+    // Public - no auth required
+  },
   // Blog routes moved to Laravel (server-rendered for SEO)
   // Access blog at: /blog and /blog/:slug via Laravel routes
   {
