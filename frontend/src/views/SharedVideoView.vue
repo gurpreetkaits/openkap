@@ -31,14 +31,8 @@
         <div class="flex items-center gap-3">
           <a href="/" class="flex items-center gap-2 hover:opacity-80 transition-opacity">
             <img src="/logo.png" alt="ScreenSense" class="w-8 h-8 rounded-lg shadow-sm" />
+            <span class="text-sm font-semibold text-gray-900">ScreenSense</span>
           </a>
-          <div class="h-4 w-px bg-gray-200"></div>
-          <div class="flex flex-col justify-center">
-            <h1 class="text-sm font-semibold text-gray-900 tracking-tight leading-none">
-              {{ video.title }}
-            </h1>
-            <span class="text-[10px] text-gray-500 font-medium mt-0.5">{{ formatTimeAgo(video.created_at) }}</span>
-          </div>
         </div>
 
         <div class="flex items-center gap-2">
@@ -112,20 +106,41 @@
       <main class="flex-1 flex flex-col lg:flex-row h-full pt-14 z-10 relative">
 
         <!-- Center Stage: Video Player -->
-        <div class="flex-1 flex flex-col items-center justify-center p-2 lg:p-6 overflow-y-auto relative bg-[#FAFAFA]/50">
+        <div class="flex-1 flex flex-col items-center justify-center p-3 lg:p-8 relative bg-[#FAFAFA]/50 overflow-hidden">
 
-          <div class="w-full max-w-7xl relative group perspective-1000">
+          <div class="w-full max-w-[min(calc((100vh-280px)*16/9),100%)] flex flex-col">
 
-            <!-- Ambient Glow Behind Video -->
-            <div class="absolute -inset-0.5 bg-gradient-to-r from-orange-500 via-amber-500 to-orange-500 rounded-2xl blur-2xl opacity-[0.05] ambient-glow transition-opacity duration-1000 group-hover:opacity-20 z-0"></div>
+            <!-- Video Title Above Container -->
+            <div class="w-full mb-4">
+              <h1 class="text-2xl font-bold text-gray-900 tracking-tight leading-tight mb-1">
+                {{ video.title }}
+              </h1>
+              <div class="flex items-center gap-3 text-sm text-gray-500">
+                <span class="flex items-center gap-1.5">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                  {{ formatTimeAgo(video.created_at) }}
+                </span>
+                <span class="w-1 h-1 rounded-full bg-gray-300"></span>
+                <span class="flex items-center gap-1.5">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                  </svg>
+                  {{ video.views_count || 0 }} views
+                </span>
+              </div>
+            </div>
 
-            <!-- Video Container - Fixed 16:9 aspect ratio regardless of video content -->
+            <!-- Video Container - Responsive with 16:9 aspect ratio -->
             <div
               class="relative w-full bg-black rounded-xl shadow-2xl ring-1 ring-black/10 overflow-hidden z-20"
               :class="isFullscreen ? 'rounded-none !aspect-auto h-full' : ''"
               :style="{
                 aspectRatio: isFullscreen ? 'auto' : '16 / 9',
-                maxHeight: isFullscreen ? 'none' : '80vh',
+                maxHeight: isFullscreen ? 'none' : 'calc(100vh - 280px)',
+                maxWidth: isFullscreen ? 'none' : 'calc((100vh - 280px) * 16 / 9)',
                 ...(video.thumbnail && !isFullscreen ? { backgroundImage: `url(${video.thumbnail})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {})
               }"
               ref="playerContainer"
@@ -344,52 +359,38 @@
             </div>
 
             <!-- Action Bar Below Video -->
-            <div class="mt-6 flex flex-col sm:flex-row sm:items-center justify-between px-1 gap-4 z-30 relative">
+            <div class="mt-6 flex items-center justify-center gap-3 z-30 relative flex-wrap">
 
-              <!-- Left: Reactions Card -->
-              <div class="bg-white border border-gray-200/60 rounded-full p-1 shadow-sm flex items-center gap-0.5">
-                <button
-                  v-for="(data, type) in reactions"
-                  :key="type"
-                  @click="toggleReaction(type)"
-                  class="w-9 h-9 rounded-full hover:bg-gray-100 flex items-center justify-center text-lg transition-transform hover:-translate-y-0.5 active:scale-95 relative"
-                  :class="userReactions.includes(type) ? 'bg-orange-100' : ''"
-                  :title="type"
-                >
-                  {{ data.emoji }}
-                  <span v-if="data.count > 0" class="absolute -top-1 -right-1 bg-orange-600 text-white text-[10px] font-bold rounded-full min-w-[16px] h-4 flex items-center justify-center px-1">{{ data.count }}</span>
-                </button>
-              </div>
+              <!-- Reactions -->
+              <button
+                v-for="(data, type) in reactions"
+                :key="type"
+                @click="toggleReaction(type)"
+                class="w-9 h-9 rounded-full hover:bg-gray-100 flex items-center justify-center text-lg transition-transform hover:-translate-y-0.5 active:scale-95 relative bg-white border border-gray-200/60 shadow-sm"
+                :class="userReactions.includes(type) ? 'bg-orange-100 border-orange-300' : ''"
+                :title="type"
+              >
+                {{ data.emoji }}
+                <span v-if="data.count > 0" class="absolute -top-1 -right-1 bg-orange-600 text-white text-[10px] font-bold rounded-full min-w-[16px] h-4 flex items-center justify-center px-1">{{ data.count }}</span>
+              </button>
 
-              <!-- Right: Tools Card -->
-              <div class="bg-white border border-gray-200/60 rounded-full p-1 shadow-sm flex items-center gap-1">
-                <!-- Views -->
-                <div class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-500 rounded-full">
-                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                  </svg>
-                  <span>{{ video.views_count || 0 }}</span>
-                </div>
+              <div class="w-px h-6 bg-gray-200"></div>
 
-                <div class="w-px h-4 bg-gray-200 mx-1"></div>
+              <!-- Copy Link -->
+              <button @click="copyShareLink" class="w-9 h-9 rounded-full hover:bg-gray-50 hover:text-orange-600 flex items-center justify-center text-gray-500 transition-colors group/copy relative bg-white border border-gray-200/60 shadow-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+                </svg>
+                <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 text-[11px] font-medium text-white bg-gray-900 rounded opacity-0 group-hover/copy:opacity-100 transition-all pointer-events-none whitespace-nowrap z-50 shadow-md">Copy Link</span>
+              </button>
 
-                <!-- Copy Link -->
-                <button @click="copyShareLink" class="w-9 h-9 rounded-full hover:bg-gray-50 hover:text-orange-600 flex items-center justify-center text-gray-500 transition-colors group/copy relative">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
-                  </svg>
-                  <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 text-[11px] font-medium text-white bg-gray-900 rounded opacity-0 group-hover/copy:opacity-100 transition-all pointer-events-none whitespace-nowrap z-50 shadow-md">Copy Link</span>
-                </button>
-
-                <!-- Embed -->
-                <button @click="copyEmbedCode" class="w-9 h-9 rounded-full hover:bg-gray-50 hover:text-orange-600 flex items-center justify-center text-gray-500 transition-colors group/embed relative">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
-                  </svg>
-                  <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 text-[11px] font-medium text-white bg-gray-900 rounded opacity-0 group-hover/embed:opacity-100 transition-all pointer-events-none whitespace-nowrap z-50 shadow-md">Embed</span>
-                </button>
-              </div>
+              <!-- Embed -->
+              <button @click="copyEmbedCode" class="w-9 h-9 rounded-full hover:bg-gray-50 hover:text-orange-600 flex items-center justify-center text-gray-500 transition-colors group/embed relative bg-white border border-gray-200/60 shadow-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
+                </svg>
+                <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 text-[11px] font-medium text-white bg-gray-900 rounded opacity-0 group-hover/embed:opacity-100 transition-all pointer-events-none whitespace-nowrap z-50 shadow-md">Embed</span>
+              </button>
             </div>
           </div>
         </div>
