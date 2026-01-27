@@ -11,6 +11,7 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PlaylistController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReactionController;
+use App\Http\Controllers\ScreenshotController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\SubscriptionController;
@@ -89,6 +90,9 @@ Route::get('/settings', [SettingController::class, 'publicSettings']);
 
 // Public playlist sharing - anyone can view
 Route::get('/share/playlist/{token}', [PlaylistController::class, 'showShared']);
+
+// Public screenshot sharing - anyone can view
+Route::get('/share/screenshot/{token}', [ScreenshotController::class, 'viewShared']);
 
 // ============================================
 // PROTECTED ROUTES (Authentication required)
@@ -243,6 +247,16 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/{id}/bulk-add-videos', [PlaylistController::class, 'bulkAddVideos']);
         Route::delete('/{id}/videos/{videoId}', [PlaylistController::class, 'removeVideo']);
         Route::put('/{id}/reorder', [PlaylistController::class, 'reorder']);
+    });
+
+    // Screenshot routes
+    Route::prefix('screenshots')->group(function () {
+        Route::get('/', [ScreenshotController::class, 'index']);
+        Route::post('/', [ScreenshotController::class, 'store']);
+        Route::get('/{id}', [ScreenshotController::class, 'show']);
+        Route::put('/{id}', [ScreenshotController::class, 'update']);
+        Route::delete('/{id}', [ScreenshotController::class, 'destroy']);
+        Route::post('/{id}/toggle-sharing', [ScreenshotController::class, 'toggleSharing']);
     });
 });
 
