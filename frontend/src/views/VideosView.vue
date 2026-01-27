@@ -390,7 +390,7 @@
       <div
         v-for="video in paginatedVideos"
         :key="video.id"
-        class="group bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg hover:border-gray-300 transition-all duration-200"
+        class="group bg-white rounded-xl border border-gray-200 hover:shadow-lg hover:border-gray-300 transition-all duration-200"
         :class="selectedVideos.includes(video.id) ? 'ring-2 ring-orange-500 ring-offset-2' : ''"
         :draggable="folders.length > 0"
         @dragstart="handleVideoDragStart($event, video)"
@@ -399,7 +399,7 @@
       >
         <!-- Thumbnail Container -->
         <div
-          class="relative w-full cursor-pointer"
+          class="relative w-full cursor-pointer overflow-hidden rounded-t-xl"
           style="aspect-ratio: 16/9;"
           @click="handleVideoClick(video.id)"
         >
@@ -449,18 +449,16 @@
 
           <!-- Select Checkbox -->
           <div
-            class="absolute top-2 left-2 z-10 transition-opacity duration-150"
+            class="absolute top-2 left-2 z-10 transition-opacity"
             :class="selectedVideos.includes(video.id) || isSelectionMode ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'"
             @click.stop
           >
-            <div class="bg-white/90 backdrop-blur-sm rounded shadow-sm p-0.5">
-              <input
-                type="checkbox"
-                :checked="selectedVideos.includes(video.id)"
-                @change="toggleVideoSelection(video.id)"
-                class="w-4 h-4 text-orange-500 border-gray-300 rounded focus:ring-orange-500 focus:ring-offset-0 cursor-pointer"
-              />
-            </div>
+            <input
+              type="checkbox"
+              :checked="selectedVideos.includes(video.id)"
+              @change="toggleVideoSelection(video.id)"
+              class="w-4 h-4 text-orange-500 bg-white border-2 border-white rounded shadow-sm focus:ring-0 cursor-pointer"
+            />
           </div>
         </div>
 
