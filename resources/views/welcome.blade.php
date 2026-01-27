@@ -130,6 +130,75 @@
 
     </div>
 
+    <!-- Browser Extension Promotion Banner -->
+    <section class="max-w-5xl mx-auto px-6 py-8">
+        <div class="relative overflow-hidden rounded-2xl border border-brand-500/20 bg-gradient-to-br from-brand-900/20 via-neutral-900/40 to-neutral-900/20 p-8 md:p-10">
+            <!-- Glow Effect -->
+            <div class="absolute top-0 right-0 w-64 h-64 bg-brand-500/10 blur-[100px] rounded-full"></div>
+            
+            <div class="relative z-10 flex flex-col md:flex-row items-center gap-8">
+                <!-- Left: Icon & Text -->
+                <div class="flex-1 text-center md:text-left">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-500/10 border border-brand-500/20 text-brand-400 text-xs font-medium mb-4">
+                        <i data-lucide="sparkles" class="size-3"></i>
+                        Now Available
+                    </div>
+                    <h3 class="text-2xl md:text-3xl font-semibold text-white mb-3">
+                        Record with One Click
+                    </h3>
+                    <p class="text-neutral-300 mb-6 max-w-md">
+                        Install our Chrome extension and start recording instantly from your browser. No app download needed.
+                    </p>
+                    
+                    <!-- Extension CTA -->
+                    <div class="flex flex-col sm:flex-row items-center gap-3">
+                        <a href="https://chromewebstore.google.com/detail/nnchnlkilgfemhpcohmgdpcmkjedjkfm" target="_blank" rel="noopener noreferrer" class="group inline-flex items-center gap-3 px-6 py-3 bg-white hover:bg-gray-50 text-gray-900 rounded-lg font-medium transition-all shadow-lg hover:shadow-xl hover:scale-105 active:scale-95">
+                            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 2C10.6868 2 9.38642 2.25866 8.17317 2.7612C6.95991 3.26375 5.85752 4.00035 4.92893 4.92893C3.05357 6.8043 2 9.34784 2 12C2 14.6522 3.05357 17.1957 4.92893 19.0711C5.85752 19.9997 6.95991 20.7362 8.17317 21.2388C9.38642 21.7413 10.6868 22 12 22C14.6522 22 17.1957 20.9464 19.0711 19.0711C20.9464 17.1957 22 14.6522 22 12C22 10.6868 21.7413 9.38642 21.2388 8.17317C20.7362 6.95991 19.9997 5.85752 19.0711 4.92893C18.1425 4.00035 17.0401 3.26375 15.8268 2.7612C14.6136 2.25866 13.3132 2 12 2Z" fill="#4285F4"/>
+                                <path d="M12 2V12L19.0711 19.0711C20.9464 17.1957 22 14.6522 22 12C22 10.6868 21.7413 9.38642 21.2388 8.17317L12 2Z" fill="#34A853"/>
+                                <path d="M12 12L4.92893 19.0711C6.8043 20.9464 9.34784 22 12 22C14.6522 22 17.1957 20.9464 19.0711 19.0711L12 12Z" fill="#FBBC04"/>
+                                <path d="M12 2L2 12H12V2Z" fill="#EA4335"/>
+                            </svg>
+                            <div class="text-left">
+                                <div class="text-xs text-gray-500 leading-none mb-0.5">Add to</div>
+                                <div class="text-sm font-semibold leading-none">Chrome</div>
+                            </div>
+                            <i data-lucide="external-link" class="size-4 text-gray-400 group-hover:text-gray-600 transition-colors"></i>
+                        </a>
+                        
+                        <div class="flex items-center gap-2 text-sm text-neutral-400">
+                            <div class="flex items-center">
+                                <i data-lucide="star" class="size-4 text-yellow-500 fill-yellow-500"></i>
+                                <i data-lucide="star" class="size-4 text-yellow-500 fill-yellow-500"></i>
+                                <i data-lucide="star" class="size-4 text-yellow-500 fill-yellow-500"></i>
+                                <i data-lucide="star" class="size-4 text-yellow-500 fill-yellow-500"></i>
+                                <i data-lucide="star" class="size-4 text-yellow-500 fill-yellow-500"></i>
+                            </div>
+                            <span class="text-neutral-500">Free</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Right: Visual/Screenshot -->
+                <div class="relative shrink-0">
+                    <div class="w-48 h-48 md:w-56 md:h-56 rounded-2xl bg-gradient-to-br from-neutral-800 to-neutral-900 border border-white/10 p-6 flex items-center justify-center shadow-2xl">
+                        <div class="text-center">
+                            <div class="w-16 h-16 mx-auto mb-4 rounded-xl bg-gradient-to-br from-brand-500 to-brand-600 flex items-center justify-center shadow-lg shadow-brand-500/20">
+                                <i data-lucide="chrome" class="size-8 text-white"></i>
+                            </div>
+                            <div class="text-white font-medium mb-1">ScreenSense</div>
+                            <div class="text-xs text-neutral-400">Chrome Extension</div>
+                            <div class="mt-4 inline-flex items-center gap-1 px-2 py-1 rounded-full bg-green-500/10 border border-green-500/20">
+                                <div class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div>
+                                <span class="text-[10px] text-green-400 font-medium">Active</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- Social Proof Section -->
     <section class="max-w-5xl mx-auto px-6 py-16">
         <!-- Trust Indicators -->
