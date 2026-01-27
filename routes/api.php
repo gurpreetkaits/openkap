@@ -21,6 +21,7 @@ use App\Http\Controllers\WorkspaceController;
 use App\Http\Controllers\WorkspaceInvitationController;
 use App\Http\Controllers\WorkspaceMemberController;
 use App\Http\Middleware\CheckSubscriptionLimit;
+use App\Http\Middleware\OptionalSanctumAuthMiddleware;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -68,7 +69,8 @@ Route::get('/share/video/{token}', [VideoController::class, 'viewShared']);
 Route::get('/share/video/{token}/stream', [VideoController::class, 'streamShared']); // Public streaming for shared videos
 Route::get('/share/video/{token}/comments', [CommentController::class, 'indexByToken']);
 Route::get('/share/video/{token}/commenters', [CommentController::class, 'commentersByToken']);
-Route::post('/share/video/{token}/view', [VideoViewController::class, 'recordSharedView']);
+Route::post('/share/video/{token}/view', [VideoViewController::class, 'recordSharedView'])
+    ->middleware(OptionalSanctumAuthMiddleware::class);
 
 // HLS streaming with CORS support (for cross-origin playback)
 Route::get('/share/video/{token}/hls/master.m3u8', [HlsController::class, 'masterPlaylist']);
@@ -140,6 +142,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('feedback')->group(function () {
         Route::get('/', [FeedbackController::class, 'index']);
         Route::post('/', [FeedbackController::class, 'store']);
+        Route::delete('/{id}', [FeedbackController::class, 'destroy']);
     });
 
     // Workspace routes

@@ -3,6 +3,7 @@
     <!-- Action Bar -->
     <div class="flex items-center gap-3 mb-6 pb-6 border-b border-gray-200">
       <button
+        v-if="activeTab !== 'screenshots'"
         @click="openRecording"
         class="inline-flex items-center gap-2 px-4 py-2 bg-orange-500 text-white text-sm font-medium rounded-lg hover:bg-orange-600 transition-colors shadow-sm"
       >
@@ -14,6 +15,7 @@
       </button>
 
       <button
+        v-if="activeTab !== 'screenshots'"
         @click="showNewFolderModal = true"
         class="inline-flex items-center gap-2 px-4 py-2 bg-white text-gray-700 text-sm font-medium rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors"
       >
@@ -23,7 +25,9 @@
         New Folder
       </button>
 
+      <!-- Upload Video Button (shown when not on screenshots tab) -->
       <button
+        v-if="activeTab !== 'screenshots'"
         @click="handleUpload"
         class="inline-flex items-center gap-2 px-4 py-2 bg-white text-gray-700 text-sm font-medium rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors"
         :disabled="uploading"
@@ -38,13 +42,39 @@
         {{ uploading ? 'Uploading...' : 'Upload' }}
       </button>
 
-      <!-- Hidden file input for upload -->
+      <!-- Upload Screenshot Button (shown on screenshots tab) -->
+      <button
+        v-if="activeTab === 'screenshots'"
+        @click="handleScreenshotUpload"
+        class="inline-flex items-center gap-2 px-4 py-2 bg-white text-gray-700 text-sm font-medium rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors"
+        :disabled="uploadingScreenshot"
+      >
+        <svg v-if="!uploadingScreenshot" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+        </svg>
+        <svg v-else class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        {{ uploadingScreenshot ? 'Uploading...' : 'Upload Screenshot' }}
+      </button>
+
+      <!-- Hidden file input for video upload -->
       <input
         ref="fileInput"
         type="file"
         accept="video/*"
         class="hidden"
         @change="onFileSelected"
+      />
+
+      <!-- Hidden file input for screenshot upload -->
+      <input
+        ref="screenshotFileInput"
+        type="file"
+        accept="image/png,image/jpeg,image/webp"
+        class="hidden"
+        @change="onScreenshotFileSelected"
       />
 
       <!-- Right-click hint -->
@@ -57,7 +87,7 @@
     </div>
 
     <!-- Folders Section -->
-    <div v-if="folders.length > 0" class="mb-8">
+    <div v-if="activeTab !== 'screenshots' && folders.length > 0" class="mb-8">
       <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
         <div
           v-for="folder in folders"
@@ -146,9 +176,16 @@
           </span>
         </button>
         <button
-          class="px-3.5 py-1 text-[13px] font-medium text-gray-500 hover:text-gray-900 hover:bg-white/50 rounded-[6px] transition-all"
+          @click="activeTab = 'screenshots'"
+          class="px-3.5 py-1 text-[13px] font-medium rounded-[6px] transition-all"
+          :class="activeTab === 'screenshots' ? 'text-gray-900 bg-white shadow-sm' : 'text-gray-500 hover:text-gray-900 hover:bg-white/50'"
         >
-          Archived
+          <span class="flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            </svg>
+            Screenshots
+          </span>
         </button>
       </div>
 
@@ -386,7 +423,7 @@
     </div>
 
     <!-- Videos Grid View -->
-    <div v-else-if="filteredVideos.length > 0 && viewMode === 'grid'" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+    <div v-else-if="activeTab !== 'screenshots' && filteredVideos.length > 0 && viewMode === 'grid'" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
       <div
         v-for="video in paginatedVideos"
         :key="video.id"
@@ -436,14 +473,49 @@
             </div>
           </div>
 
-          <!-- Hover Overlay with Play Button -->
+          <!-- Hover Overlay with Play Button and Action Icons -->
           <div
-            class="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none"
+            class="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200"
           >
-            <div class="w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-xl transform group-hover:scale-100 scale-90 transition-transform duration-200">
+            <!-- Play Button (clickable area covers most of the overlay) -->
+            <div class="w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-xl transform group-hover:scale-100 scale-90 transition-transform duration-200 pointer-events-none">
               <svg class="w-6 h-6 text-gray-900 ml-1" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.841z"/>
               </svg>
+            </div>
+
+            <!-- Action Icons (bottom right) -->
+            <div class="absolute bottom-2 left-2 flex items-center gap-1" @click.stop>
+              <!-- Share -->
+              <button
+                @click.stop="shareVideo(video)"
+                class="p-2 bg-white/90 hover:bg-white rounded-lg shadow-md transition-all duration-150 hover:scale-105"
+                title="Copy share link"
+              >
+                <svg class="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
+                </svg>
+              </button>
+              <!-- Download -->
+              <button
+                @click.stop="downloadVideo(video)"
+                class="p-2 bg-white/90 hover:bg-white rounded-lg shadow-md transition-all duration-150 hover:scale-105"
+                title="Download"
+              >
+                <svg class="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                </svg>
+              </button>
+              <!-- Delete -->
+              <button
+                @click.stop="deleteVideo(video)"
+                class="p-2 bg-white/90 hover:bg-red-50 rounded-lg shadow-md transition-all duration-150 hover:scale-105"
+                title="Delete"
+              >
+                <svg class="w-4 h-4 text-gray-700 hover:text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+              </button>
             </div>
           </div>
 
@@ -549,7 +621,7 @@
     </div>
 
     <!-- Videos List View -->
-    <div v-else-if="filteredVideos.length > 0 && viewMode === 'list'" class="space-y-2">
+    <div v-else-if="activeTab !== 'screenshots' && filteredVideos.length > 0 && viewMode === 'list'" class="space-y-2">
       <div
         v-for="video in paginatedVideos"
         :key="video.id"
@@ -636,6 +708,11 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
             </svg>
           </button>
+          <button @click="deleteVideo(video)" class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Delete">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+            </svg>
+          </button>
           <!-- More Options -->
           <div class="relative z-20">
             <button
@@ -689,7 +766,7 @@
     </div>
 
     <!-- Pagination -->
-    <div v-if="showPagination && filteredVideos.length > 0" class="mt-10 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-gray-200 pt-6">
+    <div v-if="activeTab !== 'screenshots' && showPagination && filteredVideos.length > 0" class="mt-10 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-gray-200 pt-6">
       <div class="text-xs text-gray-500">
         Showing <span class="font-medium text-gray-900">{{ (currentPage - 1) * itemsPerPage + 1 }}</span> to
         <span class="font-medium text-gray-900">{{ Math.min(currentPage * itemsPerPage, filteredVideos.length) }}</span> of
@@ -743,8 +820,107 @@
       </div>
     </div>
 
-    <!-- Empty State -->
-    <div v-else-if="!loading && filteredVideos.length === 0" class="text-center py-20">
+    <!-- Screenshots Section -->
+    <template v-if="activeTab === 'screenshots'">
+      <!-- Screenshots Loading -->
+      <div v-if="screenshotsLoading" class="flex items-center justify-center py-20">
+        <svg class="animate-spin h-8 w-8 text-orange-500" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+      </div>
+
+      <!-- Screenshots Grid -->
+      <div v-else-if="screenshots.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+        <div
+          v-for="screenshot in screenshots"
+          :key="screenshot.id"
+          class="group relative bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer"
+          @click="openScreenshotPreview(screenshot)"
+        >
+          <!-- Screenshot Image -->
+          <div class="aspect-video bg-gray-100 relative overflow-hidden">
+            <img
+              :src="screenshot.thumbnailUrl"
+              :alt="screenshot.title"
+              class="w-full h-full object-cover"
+              loading="lazy"
+            />
+            <!-- Hover Overlay -->
+            <div class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+              <div class="opacity-0 group-hover:opacity-100 transition-opacity">
+                <svg class="w-12 h-12 text-white drop-shadow-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/>
+                </svg>
+              </div>
+            </div>
+            <!-- Share Badge -->
+            <div v-if="screenshot.isPublic" class="absolute top-2 right-2">
+              <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
+                </svg>
+                Shared
+              </span>
+            </div>
+          </div>
+          <!-- Screenshot Info -->
+          <div class="p-3">
+            <h3 class="text-sm font-medium text-gray-900 truncate mb-1">{{ screenshot.title }}</h3>
+            <div class="flex items-center justify-between text-xs text-gray-500">
+              <span>{{ formatDate(screenshot.createdAt) }}</span>
+              <span v-if="screenshot.fileSize">{{ screenshot.fileSize }}</span>
+            </div>
+          </div>
+          <!-- Actions (visible on hover) -->
+          <div class="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1" @click.stop>
+            <button
+              @click="copyScreenshotLink(screenshot)"
+              class="p-1.5 bg-white/90 hover:bg-white rounded-lg shadow-sm transition-colors"
+              title="Copy share link"
+            >
+              <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/>
+              </svg>
+            </button>
+            <button
+              @click="deleteScreenshot(screenshot)"
+              class="p-1.5 bg-white/90 hover:bg-red-50 rounded-lg shadow-sm transition-colors"
+              title="Delete screenshot"
+            >
+              <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Screenshots Empty State -->
+      <div v-else class="text-center py-20">
+        <div class="w-16 h-16 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center">
+          <svg class="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+          </svg>
+        </div>
+        <h3 class="text-gray-900 font-medium mb-1">No screenshots yet</h3>
+        <p class="text-sm text-gray-500 max-w-md mx-auto mb-6">
+          Take screenshots using the browser extension or upload images directly.
+        </p>
+        <button
+          @click="handleScreenshotUpload"
+          class="inline-flex items-center px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-lg font-medium text-sm shadow-sm transition-colors"
+        >
+          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+          </svg>
+          Upload Screenshot
+        </button>
+      </div>
+    </template>
+
+    <!-- Videos Empty State -->
+    <div v-else-if="activeTab !== 'screenshots' && !loading && filteredVideos.length === 0" class="text-center py-20">
       <div class="w-16 h-16 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center">
         <svg v-if="activeTab === 'favourites'" class="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
@@ -796,6 +972,69 @@
       @confirm="confirmDeleteVideo"
       @cancel="showDeleteModal = false"
     />
+
+    <!-- Delete Screenshot Modal -->
+    <SBDeleteModal
+      v-model="showDeleteScreenshotModal"
+      title="Delete Screenshot"
+      :message="`Are you sure you want to delete '${screenshotToDelete?.title}'? This action cannot be undone.`"
+      :loading="isDeletingScreenshot"
+      @confirm="confirmDeleteScreenshot"
+      @cancel="showDeleteScreenshotModal = false"
+    />
+
+    <!-- Screenshot Preview Modal -->
+    <Teleport to="body">
+      <Transition name="modal">
+        <div
+          v-if="showScreenshotPreview && selectedScreenshot"
+          class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80"
+          @click.self="closeScreenshotPreview"
+        >
+          <div class="relative max-w-5xl max-h-[90vh] w-full">
+            <!-- Close Button -->
+            <button
+              @click="closeScreenshotPreview"
+              class="absolute -top-12 right-0 p-2 text-white/80 hover:text-white transition-colors"
+            >
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
+            <!-- Image -->
+            <img
+              :src="selectedScreenshot.imageUrl"
+              :alt="selectedScreenshot.title"
+              class="w-full h-auto max-h-[85vh] object-contain rounded-lg shadow-2xl"
+            />
+            <!-- Info Bar -->
+            <div class="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/70 to-transparent rounded-b-lg">
+              <div class="flex items-center justify-between text-white">
+                <div>
+                  <h3 class="font-medium">{{ selectedScreenshot.title }}</h3>
+                  <p class="text-sm text-white/70">{{ formatDate(selectedScreenshot.createdAt) }}</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button
+                    @click="copyScreenshotLink(selectedScreenshot)"
+                    class="px-3 py-1.5 bg-white/20 hover:bg-white/30 rounded-lg text-sm font-medium transition-colors"
+                  >
+                    Copy Link
+                  </button>
+                  <a
+                    :href="selectedScreenshot.imageUrl"
+                    download
+                    class="px-3 py-1.5 bg-white/20 hover:bg-white/30 rounded-lg text-sm font-medium transition-colors"
+                  >
+                    Download
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
 
     <!-- Bulk Delete Modal -->
     <SBDeleteModal
@@ -1101,6 +1340,7 @@ import { useRecording } from '@/composables/useRecording'
 import videoService from '@/services/videoService'
 import playlistService from '@/services/playlistService'
 import folderService from '@/services/folderService'
+import screenshotService from '@/services/screenshotService'
 import toast from '@/services/toastService'
 import SBDeleteModal from '@/components/Global/SBDeleteModal.vue'
 import SBUpgradeModal from '@/components/Global/SBUpgradeModal.vue'
@@ -1128,6 +1368,9 @@ export default {
     })
 
     const videos = ref([])
+    const screenshots = ref([])
+    const screenshotsLoading = ref(false)
+    const screenshotsFetched = ref(false)
     const viewMode = ref('grid')
     const loading = ref(false)
     const error = ref(null)
@@ -1809,6 +2052,40 @@ export default {
       }
     }
 
+    const fetchScreenshots = async () => {
+      if (screenshotsFetched.value) return // Don't refetch if already loaded
+
+      screenshotsLoading.value = true
+      try {
+        const fetchedScreenshots = await screenshotService.getScreenshots()
+        screenshots.value = fetchedScreenshots.map(screenshot => ({
+          id: screenshot.id,
+          title: screenshot.title,
+          imageUrl: screenshot.image_url,
+          thumbnailUrl: screenshot.thumbnail_url || screenshot.image_url,
+          shareUrl: screenshot.share_url,
+          shareToken: screenshot.share_token,
+          isPublic: screenshot.is_public,
+          fileSize: screenshot.file_size_formatted,
+          createdAt: new Date(screenshot.created_at)
+        }))
+        screenshotsFetched.value = true
+      } catch (err) {
+        console.error('Failed to fetch screenshots:', err)
+        toast.error('Failed to load screenshots')
+        screenshots.value = []
+      } finally {
+        screenshotsLoading.value = false
+      }
+    }
+
+    // Watch for tab changes to fetch screenshots when needed
+    watch(activeTab, (newTab) => {
+      if (newTab === 'screenshots' && !screenshotsFetched.value) {
+        fetchScreenshots()
+      }
+    })
+
     onMounted(() => {
       fetchVideos()
       fetchFolders()
@@ -1921,6 +2198,107 @@ export default {
         toast.error('Failed to delete video. Please try again.')
       } finally {
         isDeleting.value = false
+      }
+    }
+
+    // Screenshot methods
+    const screenshotToDelete = ref(null)
+    const showDeleteScreenshotModal = ref(false)
+    const isDeletingScreenshot = ref(false)
+    const screenshotFileInput = ref(null)
+    const uploadingScreenshot = ref(false)
+    const selectedScreenshot = ref(null)
+    const showScreenshotPreview = ref(false)
+
+    const openScreenshotPreview = (screenshot) => {
+      selectedScreenshot.value = screenshot
+      showScreenshotPreview.value = true
+    }
+
+    const closeScreenshotPreview = () => {
+      selectedScreenshot.value = null
+      showScreenshotPreview.value = false
+    }
+
+    const copyScreenshotLink = async (screenshot) => {
+      const shareUrl = screenshot.shareUrl || screenshot.share_url
+      if (shareUrl) {
+        try {
+          await navigator.clipboard.writeText(shareUrl)
+          toast.success('Link copied to clipboard!')
+        } catch (err) {
+          toast.error('Failed to copy link')
+        }
+      } else {
+        toast.error('No share link available')
+      }
+    }
+
+    const deleteScreenshot = (screenshot) => {
+      screenshotToDelete.value = screenshot
+      showDeleteScreenshotModal.value = true
+    }
+
+    const confirmDeleteScreenshot = async () => {
+      if (!screenshotToDelete.value) return
+
+      isDeletingScreenshot.value = true
+      try {
+        await screenshotService.deleteScreenshot(screenshotToDelete.value.id)
+        screenshots.value = screenshots.value.filter(s => s.id !== screenshotToDelete.value.id)
+        toast.success('Screenshot deleted!')
+        showDeleteScreenshotModal.value = false
+        screenshotToDelete.value = null
+      } catch (err) {
+        console.error('Failed to delete screenshot:', err)
+        toast.error('Failed to delete screenshot. Please try again.')
+      } finally {
+        isDeletingScreenshot.value = false
+      }
+    }
+
+    const handleScreenshotUpload = () => {
+      screenshotFileInput.value?.click()
+    }
+
+    const onScreenshotFileSelected = async (event) => {
+      const file = event.target.files?.[0]
+      if (!file) return
+
+      // Validate file type
+      const validTypes = ['image/png', 'image/jpeg', 'image/webp']
+      if (!validTypes.includes(file.type)) {
+        toast.error('Please select a valid image file (PNG, JPEG, or WebP)')
+        return
+      }
+
+      // Validate file size (10MB max)
+      if (file.size > 10 * 1024 * 1024) {
+        toast.error('File size must be less than 10MB')
+        return
+      }
+
+      uploadingScreenshot.value = true
+      try {
+        const screenshot = await screenshotService.uploadScreenshot(file)
+        screenshots.value.unshift({
+          id: screenshot.id,
+          title: screenshot.title,
+          imageUrl: screenshot.image_url,
+          thumbnailUrl: screenshot.thumbnail_url || screenshot.image_url,
+          shareUrl: screenshot.share_url,
+          shareToken: screenshot.share_token,
+          isPublic: screenshot.is_public,
+          fileSize: screenshot.file_size_formatted,
+          createdAt: new Date(screenshot.created_at)
+        })
+        toast.success('Screenshot uploaded successfully!')
+      } catch (err) {
+        console.error('Failed to upload screenshot:', err)
+        toast.error(err.message || 'Failed to upload screenshot')
+      } finally {
+        uploadingScreenshot.value = false
+        event.target.value = '' // Reset file input
       }
     }
 
@@ -2250,7 +2628,26 @@ export default {
       // Upgrade modal
       showUpgradeModal,
       handleUpgradeSuccess,
-      openUpgradeModal
+      openUpgradeModal,
+      // Screenshots
+      screenshots,
+      screenshotsLoading,
+      screenshotsFetched,
+      fetchScreenshots,
+      screenshotToDelete,
+      showDeleteScreenshotModal,
+      isDeletingScreenshot,
+      screenshotFileInput,
+      uploadingScreenshot,
+      selectedScreenshot,
+      showScreenshotPreview,
+      openScreenshotPreview,
+      closeScreenshotPreview,
+      copyScreenshotLink,
+      deleteScreenshot,
+      confirmDeleteScreenshot,
+      handleScreenshotUpload,
+      onScreenshotFileSelected
     }
   }
 }

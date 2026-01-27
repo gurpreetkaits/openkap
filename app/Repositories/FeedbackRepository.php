@@ -28,4 +28,12 @@ class FeedbackRepository extends BaseRepository
     {
         return Feedback::find($id);
     }
+
+    public function deleteByIdAndUserId(int $id, int $userId): bool
+    {
+        return Feedback::where('id', $id)
+            ->where('user_id', $userId)
+            ->where('status', 'pending')
+            ->delete() > 0;
+    }
 }

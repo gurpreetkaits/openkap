@@ -34,12 +34,14 @@ class FeedbackController extends Controller
 
         $validated = $request->validate([
             'title' => 'required|string|max:255',
+            'type' => 'required|string|in:bug,feature,general',
             'description' => 'required|string|max:5000',
         ]);
 
         $feedback = $this->feedbackManager->submitFeedback(
             $user,
             $validated['title'],
+            $validated['type'],
             $validated['description']
         );
 
@@ -59,5 +61,23 @@ class FeedbackController extends Controller
         $feedback = $this->feedbackManager->getUserFeedback($request->user()->id);
 
         return FeedbackResource::collection($feedback);
+    }
+
+    /**
+     * Delete user's own feedback (only pending status)
+     */
+    public function destroy(Request $request, int $id): JsonResponse
+    {
+        $deleted = $this->feedbackManager->deleteFeedback($id, $request->user()->id);
+
+        if (! $deleted) {
+            return response()->json([
+                'message' => 'Feedback not found or cannot be deleted.',
+            ], 404);
+        }
+
+        return response()->json([
+            'message' => 'Feedback deleted successfully.',
+        ]);
     }
 }

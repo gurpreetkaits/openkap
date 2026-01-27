@@ -15,17 +15,23 @@ class FeedbackManager
         protected FeedbackRepository $feedbackRepository
     ) {}
 
-    public function submitFeedback(User $user, string $title, string $description): Feedback
+    public function submitFeedback(User $user, string $title, string $type, string $description): Feedback
     {
         $feedback = $this->feedbackRepository->createFeedback([
             'user_id' => $user->id,
             'title' => $title,
+            'type' => $type,
             'description' => $description,
         ]);
 
         $this->sendAdminNotification($feedback, $user);
 
         return $feedback;
+    }
+
+    public function deleteFeedback(int $feedbackId, int $userId): bool
+    {
+        return $this->feedbackRepository->deleteByIdAndUserId($feedbackId, $userId);
     }
 
     public function getUserFeedback(int $userId, int $perPage = 15): LengthAwarePaginator
