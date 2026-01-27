@@ -76,6 +76,18 @@
         </div>
 
         <div class="flex items-center gap-2">
+          <!-- Quick Edit Button -->
+          <button
+            @click="enterBlurMode"
+            :disabled="isApplyingBlur"
+            class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+            </svg>
+            <span v-if="isApplyingBlur">Processing...</span>
+            <span v-else>Quick Edit</span>
+          </button>
           <button @click="showShareModal = true" class="bg-orange-600 hover:bg-orange-700 text-white px-3 py-1.5 rounded-lg text-xs font-medium shadow-md shadow-orange-200 transition-all flex items-center gap-2 group">
             Share Video
             <div class="w-px h-3 bg-white/20"></div>
@@ -144,6 +156,156 @@
                 {{ copied ? 'Copied!' : 'Copy' }}
               </button>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Blur Mode Modal -->
+      <div v-if="isBlurMode" class="fixed inset-0 z-[70] flex items-center justify-center bg-gray-900/90">
+        <!-- Header -->
+        <div class="absolute top-0 left-0 right-0 h-16 bg-gray-800 border-b border-gray-700 flex items-center justify-between px-6">
+          <div class="flex items-center gap-4">
+            <button @click="exitBlurMode" class="text-gray-400 hover:text-white transition-colors">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
+            <h3 class="text-white font-semibold">Blur Region Editor</h3>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-gray-400 text-sm">Draw a rectangle on the video to select area to blur</span>
+            <button
+              v-if="blurRegion"
+              @click="clearBlurRegion"
+              class="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-white rounded-lg text-sm font-medium transition-colors"
+            >
+              Clear Selection
+            </button>
+            <button
+              @click="applyBlur"
+              :disabled="!blurRegion || isApplyingBlur"
+              class="px-4 py-1.5 bg-orange-600 hover:bg-orange-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+            >
+              <svg v-if="isApplyingBlur" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+              </svg>
+              {{ isApplyingBlur ? 'Applying...' : 'Apply Blur' }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Video with blur selection overlay -->
+        <div class="mt-16 p-8 w-full max-w-5xl">
+          <!-- Time range selector -->
+          <div class="mb-4 bg-gray-800 rounded-lg p-4">
+            <div class="flex items-center gap-4 mb-3">
+              <label class="flex items-center gap-2 text-white text-sm">
+                <input
+                  type="checkbox"
+                  v-model="blurEntireVideo"
+                  class="w-4 h-4 rounded border-gray-600 bg-gray-700 text-orange-500 focus:ring-orange-500"
+                />
+                Apply blur to entire video
+              </label>
+            </div>
+            <div v-if="!blurEntireVideo" class="flex items-center gap-4">
+              <div class="flex items-center gap-2">
+                <label class="text-gray-400 text-sm">Start:</label>
+                <input
+                  type="number"
+                  v-model.number="blurStartTime"
+                  :max="blurEndTime"
+                  min="0"
+                  step="0.1"
+                  class="w-24 px-2 py-1 bg-gray-700 border border-gray-600 rounded text-white text-sm focus:outline-none focus:border-orange-500"
+                />
+                <span class="text-gray-500 text-sm">sec</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <label class="text-gray-400 text-sm">End:</label>
+                <input
+                  type="number"
+                  v-model.number="blurEndTime"
+                  :min="blurStartTime"
+                  :max="duration"
+                  step="0.1"
+                  class="w-24 px-2 py-1 bg-gray-700 border border-gray-600 rounded text-white text-sm focus:outline-none focus:border-orange-500"
+                />
+                <span class="text-gray-500 text-sm">sec</span>
+              </div>
+              <button
+                @click="setBlurTimeFromCurrentPosition"
+                class="px-3 py-1 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded text-sm transition-colors"
+              >
+                Use current time
+              </button>
+            </div>
+          </div>
+
+          <!-- Video container with selection overlay -->
+          <div
+            ref="blurVideoContainer"
+            class="relative bg-black rounded-lg overflow-hidden"
+            style="aspect-ratio: 16/9;"
+            @mousedown="startBlurSelection"
+            @mousemove="updateBlurSelection"
+            @mouseup="endBlurSelection"
+            @mouseleave="endBlurSelection"
+          >
+            <video
+              ref="blurVideoRef"
+              :src="video.url"
+              class="w-full h-full object-contain"
+              :poster="video.thumbnail"
+              @loadedmetadata="onBlurVideoLoaded"
+            ></video>
+
+            <!-- Selection rectangle -->
+            <div
+              v-if="blurRegion || isDrawingBlur"
+              class="absolute border-2 border-orange-500 bg-orange-500/20 pointer-events-none"
+              :style="blurSelectionStyle"
+            >
+              <div class="absolute -top-6 left-0 bg-orange-500 text-white text-xs px-2 py-0.5 rounded">
+                {{ Math.round(blurRegionDisplay.width) }}% x {{ Math.round(blurRegionDisplay.height) }}%
+              </div>
+            </div>
+
+            <!-- Video controls -->
+            <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
+              <div class="flex items-center gap-4">
+                <button @click="toggleBlurVideoPlay" class="text-white hover:text-orange-500 transition-colors">
+                  <svg v-if="!isBlurVideoPlaying" class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M8 5v14l11-7z"/>
+                  </svg>
+                  <svg v-else class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
+                  </svg>
+                </button>
+                <div class="flex-1">
+                  <input
+                    type="range"
+                    :value="blurVideoCurrentTime"
+                    :max="blurVideoDuration"
+                    step="0.1"
+                    @input="seekBlurVideo($event.target.value)"
+                    class="w-full h-1 bg-gray-600 rounded-full appearance-none cursor-pointer"
+                  />
+                </div>
+                <span class="text-white text-sm font-mono">
+                  {{ formatTime(blurVideoCurrentTime) }} / {{ formatTime(blurVideoDuration) }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Instructions -->
+          <div class="mt-4 text-center">
+            <p class="text-gray-400 text-sm">
+              Click and drag on the video to select the area you want to blur.
+              The blur will be applied to the selected region.
+            </p>
           </div>
         </div>
       </div>
@@ -974,6 +1136,22 @@ export default {
     const bunnyEncodeProgress = ref(0)
     const bunnyAvailableResolutions = ref([])
     const bunnyPlaybackData = ref(null)
+
+    // Blur mode state
+    const isBlurMode = ref(false)
+    const isApplyingBlur = ref(false)
+    const blurRegion = ref(null)
+    const isDrawingBlur = ref(false)
+    const blurStartPoint = ref({ x: 0, y: 0 })
+    const blurCurrentPoint = ref({ x: 0, y: 0 })
+    const blurVideoContainer = ref(null)
+    const blurVideoRef = ref(null)
+    const blurEntireVideo = ref(true)
+    const blurStartTime = ref(0)
+    const blurEndTime = ref(0)
+    const isBlurVideoPlaying = ref(false)
+    const blurVideoCurrentTime = ref(0)
+    const blurVideoDuration = ref(0)
 
     let controlsTimeout = null
     let toastTimeout = null
@@ -1857,6 +2035,201 @@ export default {
       isFullscreen.value = !!document.fullscreenElement
     }
 
+    // ============================================
+    // BLUR FUNCTIONS
+    // ============================================
+
+    const enterBlurMode = () => {
+      isBlurMode.value = true
+      blurRegion.value = null
+      blurEntireVideo.value = true
+      blurStartTime.value = 0
+      blurEndTime.value = duration.value || 0
+
+      // Pause main video
+      if (videoRef.value) {
+        videoRef.value.pause()
+      }
+    }
+
+    const exitBlurMode = () => {
+      isBlurMode.value = false
+      blurRegion.value = null
+      isDrawingBlur.value = false
+
+      // Stop blur video
+      if (blurVideoRef.value) {
+        blurVideoRef.value.pause()
+      }
+    }
+
+    const onBlurVideoLoaded = () => {
+      if (blurVideoRef.value) {
+        blurVideoDuration.value = blurVideoRef.value.duration || 0
+        blurEndTime.value = blurVideoDuration.value
+
+        // Update current time periodically
+        blurVideoRef.value.addEventListener('timeupdate', () => {
+          blurVideoCurrentTime.value = blurVideoRef.value?.currentTime || 0
+        })
+
+        blurVideoRef.value.addEventListener('play', () => {
+          isBlurVideoPlaying.value = true
+        })
+
+        blurVideoRef.value.addEventListener('pause', () => {
+          isBlurVideoPlaying.value = false
+        })
+      }
+    }
+
+    const toggleBlurVideoPlay = () => {
+      if (!blurVideoRef.value) return
+
+      if (blurVideoRef.value.paused) {
+        blurVideoRef.value.play()
+      } else {
+        blurVideoRef.value.pause()
+      }
+    }
+
+    const seekBlurVideo = (time) => {
+      if (blurVideoRef.value) {
+        blurVideoRef.value.currentTime = parseFloat(time)
+        blurVideoCurrentTime.value = parseFloat(time)
+      }
+    }
+
+    const setBlurTimeFromCurrentPosition = () => {
+      blurStartTime.value = Math.max(0, blurVideoCurrentTime.value - 2)
+      blurEndTime.value = Math.min(blurVideoDuration.value, blurVideoCurrentTime.value + 5)
+    }
+
+    const startBlurSelection = (e) => {
+      if (!blurVideoContainer.value) return
+
+      const rect = blurVideoContainer.value.getBoundingClientRect()
+      const x = ((e.clientX - rect.left) / rect.width) * 100
+      const y = ((e.clientY - rect.top) / rect.height) * 100
+
+      blurStartPoint.value = { x, y }
+      blurCurrentPoint.value = { x, y }
+      isDrawingBlur.value = true
+      blurRegion.value = null
+    }
+
+    const updateBlurSelection = (e) => {
+      if (!isDrawingBlur.value || !blurVideoContainer.value) return
+
+      const rect = blurVideoContainer.value.getBoundingClientRect()
+      const x = Math.min(100, Math.max(0, ((e.clientX - rect.left) / rect.width) * 100))
+      const y = Math.min(100, Math.max(0, ((e.clientY - rect.top) / rect.height) * 100))
+
+      blurCurrentPoint.value = { x, y }
+    }
+
+    const endBlurSelection = () => {
+      if (!isDrawingBlur.value) return
+
+      isDrawingBlur.value = false
+
+      // Calculate the region
+      const x = Math.min(blurStartPoint.value.x, blurCurrentPoint.value.x)
+      const y = Math.min(blurStartPoint.value.y, blurCurrentPoint.value.y)
+      const width = Math.abs(blurCurrentPoint.value.x - blurStartPoint.value.x)
+      const height = Math.abs(blurCurrentPoint.value.y - blurStartPoint.value.y)
+
+      // Only save if region is meaningful (at least 2% in each dimension)
+      if (width >= 2 && height >= 2) {
+        blurRegion.value = { x, y, width, height }
+      }
+    }
+
+    const clearBlurRegion = () => {
+      blurRegion.value = null
+    }
+
+    const blurSelectionStyle = computed(() => {
+      if (isDrawingBlur.value) {
+        const x = Math.min(blurStartPoint.value.x, blurCurrentPoint.value.x)
+        const y = Math.min(blurStartPoint.value.y, blurCurrentPoint.value.y)
+        const width = Math.abs(blurCurrentPoint.value.x - blurStartPoint.value.x)
+        const height = Math.abs(blurCurrentPoint.value.y - blurStartPoint.value.y)
+        return {
+          left: `${x}%`,
+          top: `${y}%`,
+          width: `${width}%`,
+          height: `${height}%`
+        }
+      } else if (blurRegion.value) {
+        return {
+          left: `${blurRegion.value.x}%`,
+          top: `${blurRegion.value.y}%`,
+          width: `${blurRegion.value.width}%`,
+          height: `${blurRegion.value.height}%`
+        }
+      }
+      return {}
+    })
+
+    const blurRegionDisplay = computed(() => {
+      if (isDrawingBlur.value) {
+        return {
+          width: Math.abs(blurCurrentPoint.value.x - blurStartPoint.value.x),
+          height: Math.abs(blurCurrentPoint.value.y - blurStartPoint.value.y)
+        }
+      } else if (blurRegion.value) {
+        return {
+          width: blurRegion.value.width,
+          height: blurRegion.value.height
+        }
+      }
+      return { width: 0, height: 0 }
+    })
+
+    const applyBlur = async () => {
+      if (!blurRegion.value || isApplyingBlur.value) return
+
+      isApplyingBlur.value = true
+
+      try {
+        const startTime = blurEntireVideo.value ? null : blurStartTime.value
+        const endTime = blurEntireVideo.value ? null : blurEndTime.value
+
+        const result = await videoService.applyBlur(
+          video.value.id,
+          blurRegion.value,
+          startTime,
+          endTime
+        )
+
+        // Show success message
+        toast.value = 'Blur effect is being applied. This may take a few minutes.'
+        if (toastTimeout) clearTimeout(toastTimeout)
+        toastTimeout = setTimeout(() => {
+          toast.value = null
+        }, 5000)
+
+        // Exit blur mode
+        exitBlurMode()
+
+        // Refresh video data after a delay
+        setTimeout(async () => {
+          await fetchVideo()
+        }, 2000)
+
+      } catch (err) {
+        console.error('Failed to apply blur:', err)
+        toast.value = 'Failed to apply blur: ' + (err.message || 'Unknown error')
+        if (toastTimeout) clearTimeout(toastTimeout)
+        toastTimeout = setTimeout(() => {
+          toast.value = null
+        }, 5000)
+      } finally {
+        isApplyingBlur.value = false
+      }
+    }
+
     onMounted(async () => {
       await fetchVideo()
       await loadComments()
@@ -1914,6 +2287,12 @@ export default {
       copiedTranscript, copiedSummary, copyTranscript, copySummary,
       // Bunny
       isBunnyVideo, bunnyStatus, bunnyEncodeProgress, bunnyAvailableResolutions,
+      // Blur
+      isBlurMode, isApplyingBlur, blurRegion, isDrawingBlur, blurVideoContainer, blurVideoRef,
+      blurEntireVideo, blurStartTime, blurEndTime, isBlurVideoPlaying, blurVideoCurrentTime, blurVideoDuration,
+      enterBlurMode, exitBlurMode, onBlurVideoLoaded, toggleBlurVideoPlay, seekBlurVideo,
+      setBlurTimeFromCurrentPosition, startBlurSelection, updateBlurSelection, endBlurSelection,
+      clearBlurRegion, blurSelectionStyle, blurRegionDisplay, applyBlur,
     }
   }
 }

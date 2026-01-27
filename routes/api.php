@@ -194,6 +194,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/{id}/toggle-favourite', [VideoController::class, 'toggleFavourite']);
         Route::post('/{id}/regenerate-token', [VideoController::class, 'regenerateShareToken']);
         Route::post('/{id}/trim', [VideoController::class, 'trim']);
+        Route::post('/{id}/blur', [VideoController::class, 'applyBlur']);
+        Route::get('/{id}/blur-status', [VideoController::class, 'blurStatus']);
         Route::get('/{id}/conversion-status', [VideoController::class, 'conversionStatus']);
 
         // Comments

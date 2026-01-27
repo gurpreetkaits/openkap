@@ -52,6 +52,13 @@ class Video extends Model implements HasMedia
         'bunny_resolution',
         'bunny_file_size',
         'storage_type',
+        // Blur fields
+        'blur_status',
+        'blur_progress',
+        'blur_error',
+        'blur_region',
+        'blur_start_time',
+        'blur_end_time',
     ];
 
     protected $casts = [
@@ -69,6 +76,10 @@ class Video extends Model implements HasMedia
         'transcription_segments' => 'array',
         'summary_generated_at' => 'datetime',
         'bunny_file_size' => 'integer',
+        'blur_progress' => 'integer',
+        'blur_region' => 'array',
+        'blur_start_time' => 'float',
+        'blur_end_time' => 'float',
     ];
 
     protected $hidden = [

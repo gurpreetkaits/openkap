@@ -423,6 +423,32 @@ class VideoManager
         }
     }
 
+    /**
+     * Apply blur effect to a region of the video.
+     */
+    public function applyBlur(Video $video, array $blurRegion, ?float $startTime = null, ?float $endTime = null): void
+    {
+        // Update video status
+        $this->videos->updateVideo($video, [
+            'blur_status' => 'pending',
+            'blur_progress' => 0,
+            'blur_error' => null,
+            'blur_region' => $blurRegion,
+            'blur_start_time' => $startTime,
+            'blur_end_time' => $endTime,
+        ]);
+
+        // Dispatch the blur job
+        \App\Jobs\ApplyBlurJob::dispatch($video)->delay(now()->addSeconds(2));
+
+        Log::info('Blur job dispatched', [
+            'video_id' => $video->id,
+            'blur_region' => $blurRegion,
+            'start_time' => $startTime,
+            'end_time' => $endTime,
+        ]);
+    }
+
     public function streamVideo(Video $video, ?string $rangeHeader = null): array
     {
         $media = $video->getFirstMedia('videos');

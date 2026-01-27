@@ -322,6 +322,61 @@ class VideoController extends Controller
         }
     }
 
+    public function applyBlur(Request $request, $id)
+    {
+        $request->validate([
+            'blur_region' => 'required|array',
+            'blur_region.x' => 'required|numeric|min:0|max:100',
+            'blur_region.y' => 'required|numeric|min:0|max:100',
+            'blur_region.width' => 'required|numeric|min:1|max:100',
+            'blur_region.height' => 'required|numeric|min:1|max:100',
+            'start_time' => 'nullable|numeric|min:0',
+            'end_time' => 'nullable|numeric|min:0',
+        ]);
+
+        $video = $this->videoManager->findVideoOrFail($id);
+
+        if ($video->user_id !== Auth::id()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        // Check if video is already being processed
+        if ($video->blur_status === 'processing') {
+            return response()->json(['message' => 'Video is already being processed'], 422);
+        }
+
+        try {
+            $this->videoManager->applyBlur(
+                $video,
+                $request->blur_region,
+                $request->start_time,
+                $request->end_time
+            );
+
+            return response()->json([
+                'message' => 'Blur effect is being applied. This may take a few minutes.',
+                'video' => $video->fresh(),
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 500);
+        }
+    }
+
+    public function blurStatus($id)
+    {
+        $video = $this->videoManager->findVideoOrFail($id);
+
+        if ($video->user_id !== Auth::id()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        return response()->json([
+            'status' => $video->blur_status ?? 'none',
+            'progress' => $video->blur_progress ?? 0,
+            'error' => $video->blur_error,
+        ]);
+    }
+
     public function streamShared($token)
     {
         $video = $this->videoManager->findByShareTokenOrFail($token);

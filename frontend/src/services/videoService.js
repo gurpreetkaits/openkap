@@ -771,6 +771,68 @@ class VideoService {
       throw error
     }
   }
+
+  // ============================================
+  // BLUR EFFECT METHODS
+  // ============================================
+
+  /**
+   * Apply blur to a region of the video
+   * @param {number} id - Video ID
+   * @param {Object} blurRegion - Blur region coordinates (x, y, width, height as percentages)
+   * @param {number|null} startTime - Start time in seconds (null for entire video)
+   * @param {number|null} endTime - End time in seconds (null for entire video)
+   * @returns {Promise<{message: string, video: Object}>}
+   */
+  async applyBlur(id, blurRegion, startTime = null, endTime = null) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/videos/${id}/blur`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({
+          blur_region: blurRegion,
+          start_time: startTime,
+          end_time: endTime
+        })
+      })
+
+      if (handleUnauthorized(response)) return null
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.message || `Failed to apply blur: ${response.statusText}`)
+      }
+
+      const data = await response.json()
+      return data
+    } catch (error) {
+      console.error('Error applying blur:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Get blur status for a video
+   */
+  async getBlurStatus(id) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/videos/${id}/blur-status`, {
+        method: 'GET',
+        headers: getAuthHeaders()
+      })
+
+      if (handleUnauthorized(response)) return null
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch blur status: ${response.statusText}`)
+      }
+
+      return await response.json()
+    } catch (error) {
+      console.error('Error fetching blur status:', error)
+      throw error
+    }
+  }
 }
 
 export default new VideoService()
