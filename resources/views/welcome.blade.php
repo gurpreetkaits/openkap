@@ -85,7 +85,7 @@
                     <a href="{{ config('app.frontend_url', config('app.url')) }}/login" class="btn-primary w-full sm:w-auto inline-flex items-center justify-center h-12 px-8 rounded-lg bg-brand-600 text-white font-medium hover:bg-brand-500">
                         Record Now
                     </a>
-                    <a href="{{ config('app.chrome_extension_url', '#') }}" target="_blank" class="w-full sm:w-auto inline-flex items-center justify-center h-12 px-8 rounded-lg border border-white/10 text-white font-medium hover:bg-white/5 transition-colors">
+                    <a href="https://chromewebstore.google.com/detail/nnchnlkilgfemhpcohmgdpcmkjedjkfm" target="_blank" rel="noopener noreferrer" class="w-full sm:w-auto inline-flex items-center justify-center h-12 px-8 rounded-lg border border-white/10 text-white font-medium hover:bg-white/5 transition-colors">
                         <svg class="size-5 mr-2" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C8.21 0 4.831 1.757 2.632 4.501l3.953 6.848A5.454 5.454 0 0 1 12 6.545h10.691A12 12 0 0 0 12 0zM1.931 5.47A11.943 11.943 0 0 0 0 12c0 6.012 4.42 10.991 10.189 11.864l3.953-6.847a5.45 5.45 0 0 1-6.865-2.29zm13.342 2.166a5.446 5.446 0 0 1 1.819 7.533l-3.954 6.847c.538.054 1.085.084 1.638.084C20.09 22.1 24 17.627 24 12.203V12c0-.338-.014-.672-.041-1.003zM12 16.364a4.364 4.364 0 1 0 0-8.728 4.364 4.364 0 0 0 0 8.728z"/></svg>
                         Add to Chrome
                     </a>
