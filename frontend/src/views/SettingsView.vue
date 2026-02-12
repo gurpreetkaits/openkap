@@ -13,107 +13,48 @@
         <p class="text-sm text-gray-500 mt-1">Manage your recording and playback preferences</p>
       </div>
 
-      <!-- Auto-Zoom Settings Card -->
+      <!-- Bunny Encoding Settings Card -->
       <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
         <!-- Card Header with Toggle -->
-        <div class="p-4 border-b border-gray-100 flex items-center justify-between">
+        <div class="p-4 flex items-center justify-between">
           <div class="flex items-center gap-3">
             <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
               <svg class="w-5 h-5 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" />
               </svg>
             </div>
             <div>
-              <h3 class="text-sm font-semibold text-gray-900">Auto-Zoom Effects</h3>
-              <p class="text-xs text-gray-500">Automatically zoom to clicks during recording</p>
+              <h3 class="text-sm font-semibold text-gray-900">HD Encoding</h3>
+              <p class="text-xs text-gray-500">Use Bunny CDN for HD video encoding and faster playback</p>
             </div>
           </div>
 
           <!-- Toggle Switch -->
           <button
-            @click="settings.auto_zoom_enabled = !settings.auto_zoom_enabled"
+            @click="settings.bunny_encoding_enabled = !settings.bunny_encoding_enabled"
             :class="[
               'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2',
-              settings.auto_zoom_enabled ? 'bg-orange-500' : 'bg-gray-200'
+              settings.bunny_encoding_enabled ? 'bg-orange-500' : 'bg-gray-200'
             ]"
           >
             <span
               :class="[
                 'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out',
-                settings.auto_zoom_enabled ? 'translate-x-5' : 'translate-x-0'
+                settings.bunny_encoding_enabled ? 'translate-x-5' : 'translate-x-0'
               ]"
             />
           </button>
         </div>
 
-        <!-- Expandable Settings (shown when enabled) -->
-        <transition
-          enter-active-class="transition-all duration-300 ease-out"
-          enter-from-class="opacity-0 max-h-0"
-          enter-to-class="opacity-100 max-h-96"
-          leave-active-class="transition-all duration-200 ease-in"
-          leave-from-class="opacity-100 max-h-96"
-          leave-to-class="opacity-0 max-h-0"
-        >
-          <div v-if="settings.auto_zoom_enabled" class="overflow-hidden">
-            <div class="p-4 pt-0 space-y-5">
-              <!-- Zoom Level -->
-              <div class="pt-4">
-                <div class="flex items-center justify-between mb-3">
-                  <div>
-                    <p class="text-sm font-medium text-gray-900">Zoom Level</p>
-                    <p class="text-xs text-gray-500">How much to zoom in on click events</p>
-                  </div>
-                  <span class="text-sm font-semibold text-orange-600 bg-orange-50 px-2 py-1 rounded-md">
-                    {{ settings.default_zoom_level.toFixed(1) }}x
-                  </span>
-                </div>
-                <input
-                  type="range"
-                  v-model.number="settings.default_zoom_level"
-                  min="1.2"
-                  max="4"
-                  step="0.1"
-                  class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-orange-500"
-                />
-                <div class="flex justify-between text-xs text-gray-400 mt-1">
-                  <span>Subtle (1.2x)</span>
-                  <span>Extreme (4x)</span>
-                </div>
-              </div>
-
-              <!-- Animation Speed -->
-              <div>
-                <div class="flex items-center justify-between mb-3">
-                  <div>
-                    <p class="text-sm font-medium text-gray-900">Animation Speed</p>
-                    <p class="text-xs text-gray-500">Duration of zoom in/out transitions</p>
-                  </div>
-                  <span class="text-sm font-semibold text-orange-600 bg-orange-50 px-2 py-1 rounded-md">
-                    {{ animationSpeedLabel }}
-                  </span>
-                </div>
-                <input
-                  type="range"
-                  v-model.number="settings.default_zoom_duration_ms"
-                  min="100"
-                  max="2000"
-                  step="100"
-                  class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-orange-500"
-                />
-                <div class="flex justify-between text-xs text-gray-400 mt-1">
-                  <span>Fast (100ms)</span>
-                  <span>Slow (2000ms)</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </transition>
-
-        <!-- Disabled State Message -->
-        <div v-if="!settings.auto_zoom_enabled" class="px-4 pb-4">
-          <div class="bg-gray-50 rounded-lg p-3 text-center">
-            <p class="text-xs text-gray-500">Enable auto-zoom to configure zoom settings</p>
+        <!-- Info message -->
+        <div class="px-4 pb-4">
+          <div class="bg-gray-50 rounded-lg p-3">
+            <p class="text-xs text-gray-500" v-if="settings.bunny_encoding_enabled">
+              Videos will be encoded via Bunny CDN for HD quality and adaptive streaming.
+            </p>
+            <p class="text-xs text-gray-500" v-else>
+              Videos will be stored and served locally without HD encoding.
+            </p>
           </div>
         </div>
       </div>
@@ -145,7 +86,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import settingsService from '@/services/settingsService'
 import toast from '@/services/toastService'
 
@@ -153,18 +94,7 @@ const loading = ref(true)
 const saving = ref(false)
 
 const settings = ref({
-  auto_zoom_enabled: true,
-  default_zoom_level: 2.0,
-  default_zoom_duration_ms: 500
-})
-
-const animationSpeedLabel = computed(() => {
-  const ms = settings.value.default_zoom_duration_ms
-  if (ms <= 200) return `${ms}ms (Very Fast)`
-  if (ms <= 400) return `${ms}ms (Fast)`
-  if (ms <= 700) return `${ms}ms (Normal)`
-  if (ms <= 1200) return `${ms}ms (Slow)`
-  return `${ms}ms (Very Slow)`
+  bunny_encoding_enabled: true
 })
 
 onMounted(async () => {
@@ -185,9 +115,7 @@ const saveSettings = async () => {
   saving.value = true
 
   try {
-    console.log('Saving settings:', settings.value)
     const result = await settingsService.updateUserSettings(settings.value)
-    console.log('Settings saved, result:', result)
     toast.success('Settings saved successfully')
   } catch (error) {
     console.error('Failed to save settings:', error)

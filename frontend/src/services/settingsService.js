@@ -208,7 +208,8 @@ class SettingsService {
     return {
       auto_zoom_enabled: false,
       default_zoom_level: 2.0,
-      default_zoom_duration_ms: 500
+      default_zoom_duration_ms: 500,
+      bunny_encoding_enabled: true
     }
   }
 }

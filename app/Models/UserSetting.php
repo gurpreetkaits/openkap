@@ -94,6 +94,7 @@ class UserSetting extends Model
             'auto_zoom_enabled' => ['value' => false, 'type' => 'boolean'],
             'default_zoom_level' => ['value' => 2.0, 'type' => 'float'],
             'default_zoom_duration_ms' => ['value' => 500, 'type' => 'integer'],
+            'bunny_encoding_enabled' => ['value' => true, 'type' => 'boolean'],
         ];
     }
 

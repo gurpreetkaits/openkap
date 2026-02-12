@@ -64,7 +64,10 @@ class StreamVideoController extends Controller
         // Store session metadata
         // Only use Bunny if configured AND user has active subscription
         // Free users get local storage only (no encoding cost)
-        $shouldUseBunny = $this->bunnyService->isConfigured() && $user->shouldEncodeVideos();
+        $bunnyEncodingEnabled = $this->userSettings->get($user, 'bunny_encoding_enabled');
+        $shouldUseBunny = $this->bunnyService->isConfigured()
+            && $user->shouldEncodeVideos()
+            && $bunnyEncodingEnabled;
 
         $metadata = [
             'user_id' => Auth::id(),
@@ -231,9 +234,11 @@ class StreamVideoController extends Controller
         // Determine storage type based on Bunny availability AND user subscription
         // Free users cannot use Bunny encoding (to save costs)
         $user = User::find($userId);
+        $bunnyEncodingEnabled = $user ? $this->userSettings->get($user, 'bunny_encoding_enabled') : true;
         $useBunny = ($metadata['use_bunny'] ?? false)
             && $this->bunnyService->isConfigured()
-            && ($user ? $user->shouldEncodeVideos() : false);
+            && ($user ? $user->shouldEncodeVideos() : false)
+            && $bunnyEncodingEnabled;
 
         // Create Video record
         $title = $request->title ?? $metadata['title'];
