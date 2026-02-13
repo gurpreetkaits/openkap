@@ -446,7 +446,7 @@
                   <div class="flex flex-col gap-3 px-2">
                     <!-- Progress -->
                     <div
-                      class="relative h-1.5 w-full group/seek cursor-pointer flex items-center"
+                      class="relative h-2.5 w-full group/seek cursor-pointer flex items-center"
                       @click.stop="seek"
                       @mousedown.stop="startSeeking"
                       @mousemove="updateHoverTime"
@@ -1078,7 +1078,7 @@ export default {
     const duration = ref(0)
     const bufferedPercent = ref(0)
     const playbackSpeed = ref(1)
-    const controlsVisible = ref(true)
+    const controlsVisible = ref(false)
     const hoverTime = ref(null)
     const hoverPercent = ref(0)
     const showSpeedMenu = ref(false)
