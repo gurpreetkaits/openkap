@@ -25,7 +25,7 @@ return new class extends Migration
             $table->string('customer_id');
             $table->string('product_id')->index();
             $table->timestamp('refunded_at')->nullable();
-            $table->timestamp('ordered_at');
+            $table->timestamp('ordered_at')->useCurrent();
             $table->timestamps();
         });
     }

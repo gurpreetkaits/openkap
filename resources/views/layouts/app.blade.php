@@ -35,10 +35,10 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
 
     <style>
-        body { font-family: 'Inter', sans-serif; }
+        body { font-family: 'DM Sans', sans-serif; }
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #0a0a0a; }
         ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
@@ -65,7 +65,7 @@
                         }
                     },
                     fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
+                        sans: ['DM Sans', 'sans-serif'],
                     }
                 }
             }
@@ -105,16 +105,16 @@
     </script>
     @endif
 </head>
-<body class="bg-brand-950 text-neutral-300 antialiased selection:bg-brand-500/30 selection:text-brand-100 flex flex-col min-h-screen overflow-x-hidden">
+<body class="@yield('body_class', 'bg-brand-950 text-neutral-300 selection:bg-brand-500/30 selection:text-brand-100') antialiased flex flex-col min-h-screen overflow-x-hidden">
 
-    @include('partials.navbar')
+    @include('partials.navbar', ['lightMode' => View::hasSection('light_mode')])
 
     <!-- Main Content -->
     <main class="relative flex-grow pt-16 overflow-x-hidden">
         @yield('content')
     </main>
 
-    @include('partials.footer')
+    @include('partials.footer', ['lightMode' => View::hasSection('light_mode')])
 
     <script>
         // Initialize Lucide icons
@@ -125,16 +125,10 @@
             .then(response => response.json())
             .then(data => {
                 const stars = data.stargazers_count || 0;
-                const navEl = document.getElementById('github-stars-nav');
-                if (navEl) navEl.textContent = stars;
-                const heroEl = document.getElementById('github-stars');
-                if (heroEl) heroEl.textContent = stars;
+                document.querySelectorAll('.js-github-stars').forEach(el => el.textContent = stars);
             })
             .catch(() => {
-                const navEl = document.getElementById('github-stars-nav');
-                if (navEl) navEl.textContent = '0';
-                const heroEl = document.getElementById('github-stars');
-                if (heroEl) heroEl.textContent = '0';
+                document.querySelectorAll('.js-github-stars').forEach(el => el.textContent = '0');
             });
     </script>
 
