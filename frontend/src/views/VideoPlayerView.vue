@@ -438,13 +438,9 @@
               </transition>
 
               <!-- Custom Floating Controls -->
-              <transition name="fade">
-                <div
-                  v-show="controlsVisible"
-                  class="absolute bottom-4 left-4 right-4 z-30"
-                >
-                  <div class="flex flex-col gap-3 px-2">
-                    <!-- Progress -->
+              <div class="absolute bottom-4 left-4 right-4 z-30">
+                <div class="flex flex-col gap-3 px-2">
+                  <!-- Progress -->
                     <div
                       class="relative h-2.5 w-full group/seek cursor-pointer flex items-center"
                       @click.stop="seek"
@@ -473,7 +469,8 @@
                     </div>
 
                     <!-- Control Buttons -->
-                    <div class="flex items-center justify-between text-white/90 pt-1 bg-black/40 backdrop-blur-sm rounded-lg px-3 py-2">
+                    <transition name="fade">
+                    <div v-show="controlsVisible" class="flex items-center justify-between text-white/90 pt-1 bg-black/40 backdrop-blur-sm rounded-lg px-3 py-2">
                       <div class="flex items-center gap-5">
                         <button @click.stop="togglePlay" class="hover:text-orange-400 hover:scale-110 transition-all">
                           <svg v-if="isPlaying" class="w-6 h-6 fill-current" viewBox="0 0 24 24">
@@ -573,9 +570,9 @@
                         </button>
                       </div>
                     </div>
+                    </transition>
                   </div>
                 </div>
-              </transition>
             </div>
 
             <!-- Action Bar Below Video -->
