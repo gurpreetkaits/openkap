@@ -395,8 +395,20 @@
           </div>
         </div>
 
+        <!-- Sidebar Toggle Button -->
+        <button
+          @click="toggleSidebar"
+          class="hidden lg:flex fixed top-1/2 -translate-y-1/2 z-50 items-center justify-center w-6 h-12 bg-white border border-gray-200 rounded-l-lg shadow-sm hover:bg-gray-50 transition-all"
+          :class="sidebarVisible ? 'right-[400px]' : 'right-0'"
+          :title="sidebarVisible ? 'Hide sidebar' : 'Show sidebar'"
+        >
+          <svg class="w-3.5 h-3.5 text-gray-500 transition-transform" :class="sidebarVisible ? '' : 'rotate-180'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
+        </button>
+
         <!-- Sidebar -->
-        <aside class="w-full lg:w-[400px] bg-white border-l border-gray-200 flex flex-col z-40 shadow-[-4px_0_24px_rgba(0,0,0,0.02)]">
+        <aside v-show="sidebarVisible" class="w-full lg:w-[400px] bg-white border-l border-gray-200 flex flex-col z-40 shadow-[-4px_0_24px_rgba(0,0,0,0.02)]">
 
           <!-- Functional Tabs -->
           <div class="flex items-center gap-1 px-4 py-3 border-b border-gray-100 sticky top-0 bg-white z-10">
@@ -455,7 +467,16 @@
                   </div>
                   <div class="flex-1 min-w-0">
                     <div class="flex items-center justify-between mb-1">
-                      <span class="text-xs font-semibold text-gray-900">{{ comment.author_name }}</span>
+                      <div class="flex items-center gap-2">
+                        <span class="text-xs font-semibold text-gray-900">{{ comment.author_name }}</span>
+                        <button
+                          v-if="comment.timestamp_seconds != null"
+                          @click="seekToTime(comment.timestamp_seconds)"
+                          class="text-[10px] font-mono bg-orange-50 text-orange-600 px-1.5 py-0.5 rounded hover:bg-orange-100 transition-colors cursor-pointer"
+                        >
+                          {{ formatTime(comment.timestamp_seconds) }}
+                        </button>
+                      </div>
                       <span class="text-[10px] text-gray-400">{{ formatCommentTime(comment.created_at) }}</span>
                     </div>
                     <p class="text-[13px] text-gray-600 leading-relaxed">{{ comment.content }}</p>
@@ -698,6 +719,12 @@ export default {
 
     const showShareModal = ref(false)
     const activeTab = ref('comments')
+    const sidebarVisible = ref(localStorage.getItem('sidebar_visible') !== 'false')
+
+    const toggleSidebar = () => {
+      sidebarVisible.value = !sidebarVisible.value
+      localStorage.setItem('sidebar_visible', sidebarVisible.value)
+    }
 
     // Transcription state (read-only for shared videos)
     const transcription = ref(null)
@@ -1269,6 +1296,7 @@ export default {
 
       isSavingComment.value = true
       const commentText = newComment.value.trim()
+      const timestampSeconds = videoRef.value ? Math.floor(videoRef.value.currentTime) : null
       newComment.value = ''
 
       try {
@@ -1280,7 +1308,8 @@ export default {
           },
           body: JSON.stringify({
             content: commentText,
-            author_name: currentUser.value?.name || 'Anonymous'
+            author_name: currentUser.value?.name || 'Anonymous',
+            timestamp_seconds: timestampSeconds
           })
         })
         const data = await response.json()
@@ -1408,7 +1437,7 @@ export default {
       hoverTime, hoverPercent, showSpeedMenu, showBigPlayButton,
       copied, copiedEmbed, toast, shareUrl,
       newComment, isSavingComment, isAuthenticated, currentUser, userInitial,
-      showShareModal, activeTab,
+      showShareModal, activeTab, sidebarVisible, toggleSidebar,
       // Transcription (read-only for shared view)
       transcription, transcriptionSegments, summary, formattedSummary, seekToTime,
       // Transcript sync
