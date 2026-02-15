@@ -2,6 +2,20 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --color-brand-50: 255 247 237;
+  --color-brand-100: 255 237 213;
+  --color-brand-200: 254 215 170;
+  --color-brand-300: 253 186 116;
+  --color-brand-400: 251 146 60;
+  --color-brand-500: 249 115 22;
+  --color-brand-600: 234 88 12;
+  --color-brand-700: 194 65 12;
+  --color-brand-800: 154 52 18;
+  --color-brand-900: 124 45 18;
+  --color-brand-950: 67 20 7;
+}
+
 @layer base {
   body {
     font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, sans-serif;

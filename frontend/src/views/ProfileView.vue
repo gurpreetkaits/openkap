@@ -1,14 +1,14 @@
 <template>
-  <div class="animate-fade-in max-w-2xl mx-auto py-6 px-4">
+  <div class="animate-fade-in">
     <!-- Loading State -->
-    <div v-if="loading" class="bg-white rounded-xl border border-gray-200 shadow-sm p-8 text-center">
+    <div v-if="loading" class="bg-white rounded-xl border border-gray-100 p-8 text-center">
       <div class="animate-spin w-6 h-6 border-2 border-orange-500 border-t-transparent rounded-full mx-auto"></div>
       <p class="text-sm text-gray-500 mt-2">Loading profile...</p>
     </div>
 
     <div v-else class="space-y-6">
       <!-- Profile Card -->
-      <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+      <div class="bg-white rounded-xl border border-gray-100 overflow-hidden">
         <!-- Header with gradient background -->
         <div class="bg-gradient-to-r from-orange-500 to-orange-600 h-24 relative">
           <!-- Avatar positioned at bottom of header -->
@@ -54,7 +54,7 @@
       </div>
 
       <!-- Account Details -->
-      <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+      <div class="bg-white rounded-xl border border-gray-100 overflow-hidden">
         <div class="p-4 border-b border-gray-100">
           <h3 class="text-sm font-semibold text-gray-900">Account Details</h3>
         </div>
@@ -79,7 +79,7 @@
       </div>
 
       <!-- Account Actions -->
-      <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+      <div class="bg-white rounded-xl border border-gray-100 overflow-hidden">
         <div class="p-4 border-b border-gray-100">
           <h3 class="text-sm font-semibold text-gray-900">Account Actions</h3>
         </div>

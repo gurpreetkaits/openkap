@@ -68,7 +68,7 @@
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-3">
               <a href="/" class="flex items-center gap-2">
-                <img src="/logo.png" alt="ScreenSense" class="w-8 h-8 rounded-lg" />
+                <img :src="branding.logoUrl.value || '/logo.png'" alt="ScreenSense" class="w-8 h-8 rounded-lg" />
                 <span class="text-gray-900 font-semibold text-lg hidden sm:inline">ScreenSense</span>
               </a>
             </div>
@@ -179,7 +179,7 @@
         <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div class="flex items-center gap-2">
-              <img src="/logo.png" alt="ScreenSense" class="w-6 h-6 rounded-lg" />
+              <img :src="branding.logoUrl.value || '/logo.png'" alt="ScreenSense" class="w-6 h-6 rounded-lg" />
               <span class="text-gray-600 text-sm">ScreenSense - Screen Recording Made Simple</span>
             </div>
             <a
@@ -199,7 +199,10 @@
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import playlistService from '@/services/playlistService'
+import { useBranding } from '@/composables/useBranding'
 import { formatDistanceToNow } from 'date-fns'
+
+const branding = useBranding()
 
 const route = useRoute()
 const playlist = ref(null)
@@ -217,6 +220,16 @@ async function fetchPlaylist(password = null) {
 
   try {
     playlist.value = await playlistService.getSharedPlaylist(route.params.token, password)
+
+    // Apply owner's branding
+    if (playlist.value?.branding) {
+      if (playlist.value.branding.brand_color) {
+        branding.setBrandColor(playlist.value.branding.brand_color)
+      }
+      if (playlist.value.branding.logo_url) {
+        branding.setLogoUrl(playlist.value.branding.logo_url)
+      }
+    }
   } catch (err) {
     console.error('Failed to fetch shared playlist:', err)
     if (err.passwordRequired) {

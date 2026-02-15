@@ -7,6 +7,7 @@ use App\Repositories\UserSettingRepository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class SettingsController extends Controller
 {
@@ -62,10 +63,18 @@ class SettingsController extends Controller
 
         $request->validate($rules);
 
+        // Paid-only settings require active subscription
+        $paidOnlySettings = ['brand_color', 'organization_logo'];
+
         // Update each provided setting
         $updatedKeys = [];
         foreach ($defaults as $key => $default) {
             if ($request->has($key)) {
+                // Block paid-only settings for free users
+                if (in_array($key, $paidOnlySettings) && ! $user->hasActiveSubscription()) {
+                    continue;
+                }
+
                 $value = $request->input($key);
 
                 // Apply constraints
@@ -74,6 +83,9 @@ class SettingsController extends Controller
                 }
                 if ($key === 'default_zoom_duration_ms') {
                     $value = max(100, min(2000, (int) $value));
+                }
+                if ($key === 'brand_color') {
+                    $value = preg_match('/^#[0-9A-Fa-f]{6}$/', $value) ? $value : '#F97316';
                 }
 
                 $this->settingsRepository->set($user, $key, $value);
@@ -148,6 +160,63 @@ class SettingsController extends Controller
             'message' => 'Setting updated successfully',
             'key' => $key,
             'value' => $this->settingsRepository->get($user, $key),
+        ]);
+    }
+
+    /**
+     * Upload organization logo (paid users only).
+     */
+    public function uploadLogo(Request $request)
+    {
+        $user = Auth::user();
+
+        if (! $user->hasActiveSubscription()) {
+            return response()->json([
+                'message' => 'An active subscription is required to upload an organization logo.',
+            ], 403);
+        }
+
+        $request->validate([
+            'logo' => 'required|image|mimes:png,jpg,jpeg,svg,webp|max:2048',
+        ]);
+
+        // Delete old logo if it exists
+        $oldLogo = $this->settingsRepository->get($user, 'organization_logo');
+        if ($oldLogo && Storage::disk('public')->exists($oldLogo)) {
+            Storage::disk('public')->delete($oldLogo);
+        }
+
+        $path = $request->file('logo')->store('logos', 'public');
+        $this->settingsRepository->set($user, 'organization_logo', $path);
+
+        Log::info('Organization logo uploaded', [
+            'user_id' => $user->id,
+            'path' => $path,
+        ]);
+
+        return response()->json([
+            'message' => 'Logo uploaded successfully',
+            'path' => $path,
+            'url' => Storage::disk('public')->url($path),
+        ]);
+    }
+
+    /**
+     * Remove organization logo.
+     */
+    public function removeLogo()
+    {
+        $user = Auth::user();
+
+        $logo = $this->settingsRepository->get($user, 'organization_logo');
+        if ($logo && Storage::disk('public')->exists($logo)) {
+            Storage::disk('public')->delete($logo);
+        }
+
+        $this->settingsRepository->set($user, 'organization_logo', '');
+
+        return response()->json([
+            'message' => 'Logo removed successfully',
         ]);
     }
 }

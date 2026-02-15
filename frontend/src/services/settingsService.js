@@ -202,6 +202,66 @@ class SettingsService {
   }
 
   /**
+   * Upload organization logo
+   */
+  async uploadLogo(file) {
+    try {
+      const formData = new FormData()
+      formData.append('logo', file)
+
+      const token = getAuthToken()
+      const headers = { 'Accept': 'application/json' }
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`
+      }
+
+      const response = await fetch(`${API_BASE_URL}/api/user/settings/logo`, {
+        method: 'POST',
+        headers,
+        body: formData
+      })
+
+      if (handleUnauthorized(response)) return null
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.message || 'Failed to upload logo')
+      }
+
+      const data = await response.json()
+      this.userSettingsCache = null
+      return data
+    } catch (error) {
+      console.error('Error uploading logo:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Remove organization logo
+   */
+  async removeLogo() {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/user/settings/logo`, {
+        method: 'DELETE',
+        headers: getAuthHeaders()
+      })
+
+      if (handleUnauthorized(response)) return null
+
+      if (!response.ok) {
+        throw new Error('Failed to remove logo')
+      }
+
+      this.userSettingsCache = null
+      return await response.json()
+    } catch (error) {
+      console.error('Error removing logo:', error)
+      throw error
+    }
+  }
+
+  /**
    * Get user settings defaults
    */
   getUserSettingsDefaults() {
@@ -209,7 +269,9 @@ class SettingsService {
       auto_zoom_enabled: false,
       default_zoom_level: 2.0,
       default_zoom_duration_ms: 500,
-      bunny_encoding_enabled: true
+      bunny_encoding_enabled: true,
+      organization_logo: '',
+      brand_color: '#F97316'
     }
   }
 }

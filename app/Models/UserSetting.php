@@ -95,6 +95,8 @@ class UserSetting extends Model
             'default_zoom_level' => ['value' => 2.0, 'type' => 'float'],
             'default_zoom_duration_ms' => ['value' => 500, 'type' => 'integer'],
             'bunny_encoding_enabled' => ['value' => true, 'type' => 'boolean'],
+            'organization_logo' => ['value' => '', 'type' => 'string'],
+            'brand_color' => ['value' => '#F97316', 'type' => 'string'],
         ];
     }
 

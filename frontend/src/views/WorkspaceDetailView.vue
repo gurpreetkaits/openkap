@@ -1,5 +1,5 @@
 <template>
-  <div class="p-6 max-w-6xl mx-auto">
+  <div>
     <!-- Loading State -->
     <div v-if="loading" class="animate-pulse">
       <div class="flex items-center gap-4 mb-8">
@@ -10,7 +10,7 @@
         </div>
       </div>
       <div class="grid gap-4 md:grid-cols-3 mb-8">
-        <div v-for="i in 3" :key="i" class="bg-white rounded-xl border border-gray-200 p-4">
+        <div v-for="i in 3" :key="i" class="bg-white rounded-xl border border-gray-100 p-4">
           <div class="h-4 bg-gray-200 rounded w-20 mb-2"></div>
           <div class="h-6 bg-gray-200 rounded w-16"></div>
         </div>
@@ -94,7 +94,7 @@
 
       <!-- Stats -->
       <div class="grid gap-4 md:grid-cols-3 mb-8">
-        <div class="bg-white rounded-xl border border-gray-200 p-4">
+        <div class="bg-white rounded-xl border border-gray-100 p-4">
           <p class="text-sm text-gray-500 mb-1">Members</p>
           <div class="flex items-center gap-2">
             <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -105,7 +105,7 @@
           </div>
         </div>
 
-        <div class="bg-white rounded-xl border border-gray-200 p-4">
+        <div class="bg-white rounded-xl border border-gray-100 p-4">
           <p class="text-sm text-gray-500 mb-1">Videos</p>
           <div class="flex items-center gap-2">
             <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -115,7 +115,7 @@
           </div>
         </div>
 
-        <div class="bg-white rounded-xl border border-gray-200 p-4">
+        <div class="bg-white rounded-xl border border-gray-100 p-4">
           <p class="text-sm text-gray-500 mb-1">Storage Used</p>
           <div class="flex items-center gap-2">
             <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -170,7 +170,7 @@
 
         <!-- Videos Loading -->
         <div v-if="videosLoading" class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          <div v-for="i in 3" :key="i" class="bg-white rounded-xl border border-gray-200 overflow-hidden animate-pulse">
+          <div v-for="i in 3" :key="i" class="bg-white rounded-xl border border-gray-100 overflow-hidden animate-pulse">
             <div class="aspect-video bg-gray-200"></div>
             <div class="p-4">
               <div class="h-5 bg-gray-200 rounded w-3/4 mb-2"></div>
@@ -180,7 +180,7 @@
         </div>
 
         <!-- Empty Videos -->
-        <div v-else-if="videos.length === 0" class="bg-white rounded-xl border border-gray-200 p-12 text-center">
+        <div v-else-if="videos.length === 0" class="bg-white rounded-xl border border-gray-100 p-12 text-center">
           <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
             <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
@@ -204,7 +204,7 @@
           <div
             v-for="video in videos"
             :key="video.id"
-            class="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-md transition-shadow"
+            class="bg-white rounded-xl border border-gray-100 overflow-hidden hover:shadow-sm transition-shadow"
           >
             <div class="relative aspect-video bg-gray-100">
               <img

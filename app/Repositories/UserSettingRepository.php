@@ -136,4 +136,18 @@ class UserSettingRepository extends BaseRepository
     {
         return (bool) $this->get($user, 'auto_zoom_enabled');
     }
+
+    /**
+     * Get branding settings (brand_color + organization_logo) for a user.
+     */
+    public function getBrandingForUser(User $user): array
+    {
+        $brandColor = $this->get($user, 'brand_color');
+        $logo = $this->get($user, 'organization_logo');
+
+        return [
+            'brand_color' => $brandColor ?: '#F97316',
+            'logo_url' => $logo ? \Illuminate\Support\Facades\Storage::disk('public')->url($logo) : null,
+        ];
+    }
 }

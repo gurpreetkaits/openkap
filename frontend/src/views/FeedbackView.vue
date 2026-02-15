@@ -1,5 +1,5 @@
 <template>
-  <div class="animate-fade-in py-4 px-4 lg:px-6">
+  <div class="animate-fade-in">
     <!-- Header -->
     <div class="flex items-center justify-between mb-5">
       <div>
@@ -18,7 +18,7 @@
     </div>
 
     <!-- Loading -->
-    <div v-if="loading" class="bg-white rounded-xl border border-gray-200 p-12 text-center shadow-sm">
+    <div v-if="loading" class="bg-white rounded-xl border border-gray-100 p-12 text-center">
       <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-orange-50 mb-3">
         <div class="animate-spin rounded-full h-6 w-6 border-2 border-orange-500 border-t-transparent"></div>
       </div>
@@ -26,7 +26,7 @@
     </div>
 
     <!-- Empty State -->
-    <div v-else-if="feedbackList.length === 0" class="bg-white rounded-xl border border-gray-200 p-12 text-center shadow-sm">
+    <div v-else-if="feedbackList.length === 0" class="bg-white rounded-xl border border-gray-100 p-12 text-center">
       <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
         <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
@@ -45,7 +45,7 @@
         v-for="item in feedbackList"
         :key="item.id"
         @click="viewFeedback(item)"
-        class="group bg-white rounded-xl border border-gray-200 p-4 cursor-pointer transition-all duration-200 hover:border-gray-300 hover:shadow-md"
+        class="group bg-white rounded-xl border border-gray-100 p-4 cursor-pointer transition-all duration-200 hover:border-gray-300 hover:shadow-sm"
       >
         <div class="flex items-start gap-3">
           <!-- Type Icon -->
@@ -101,7 +101,7 @@
           <button
             @click="goToPage(pagination.currentPage - 1)"
             :disabled="pagination.currentPage === 1"
-            class="px-3 py-1.5 text-sm font-medium rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-1"
+            class="px-3 py-1.5 text-sm font-medium rounded-lg border border-gray-100 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-1"
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
@@ -111,7 +111,7 @@
           <button
             @click="goToPage(pagination.currentPage + 1)"
             :disabled="pagination.currentPage === pagination.lastPage"
-            class="px-3 py-1.5 text-sm font-medium rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-1"
+            class="px-3 py-1.5 text-sm font-medium rounded-lg border border-gray-100 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-1"
           >
             Next
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -175,7 +175,7 @@
                         'flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-all duration-200',
                         form.type === t.value
                           ? 'border-orange-500 bg-orange-50'
-                          : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                          : 'border-gray-100 hover:border-gray-300 hover:bg-gray-50'
                       ]"
                       :disabled="submitting"
                     >

@@ -1,5 +1,5 @@
 <template>
-  <div class="animate-fade-in max-w-7xl mx-auto p-6 lg:p-8">
+  <div class="animate-fade-in">
     <!-- Header -->
     <div class="flex items-center justify-between mb-8">
       <div>
@@ -8,7 +8,7 @@
       </div>
 
       <!-- View Toggle -->
-      <div class="flex items-center gap-1 border border-gray-200 rounded-lg p-0.5 bg-white shadow-sm">
+      <div class="flex items-center gap-1 border border-gray-100 rounded-lg p-0.5 bg-white">
         <button
           @click="viewMode = 'grid'"
           class="p-1.5 rounded transition-colors"
@@ -47,7 +47,7 @@
       >
         <!-- Thumbnail -->
         <div
-          class="relative aspect-video bg-gray-900 rounded-xl overflow-hidden mb-3 border border-gray-200/50 shadow-sm group-hover:shadow-md transition-all cursor-pointer"
+          class="relative aspect-video bg-gray-900 rounded-xl overflow-hidden mb-3 border border-gray-100/50 group-hover:shadow-sm transition-all cursor-pointer"
           @click="openVideo(video.id)"
         >
           <img
@@ -143,7 +143,7 @@
       <div
         v-for="video in videos"
         :key="video.id"
-        class="group cursor-pointer flex items-center gap-4 p-3 bg-white border border-gray-200 rounded-xl hover:border-orange-200 hover:shadow-md transition-all duration-200"
+        class="group cursor-pointer flex items-center gap-4 p-3 bg-white border border-gray-100 rounded-xl hover:border-orange-200 hover:shadow-sm transition-all duration-200"
         @click="openVideo(video.id)"
       >
         <!-- Thumbnail -->

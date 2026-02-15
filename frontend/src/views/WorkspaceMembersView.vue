@@ -1,5 +1,5 @@
 <template>
-  <div class="p-6 max-w-4xl mx-auto">
+  <div>
     <!-- Header -->
     <div class="flex items-center justify-between mb-8">
       <div class="flex items-center gap-4">
@@ -26,7 +26,7 @@
     </div>
 
     <!-- Tabs -->
-    <div class="flex gap-1 mb-6 border-b border-gray-200">
+    <div class="flex gap-1 mb-6 border-b border-gray-100">
       <button
         @click="activeTab = 'members'"
         class="px-4 py-2 text-sm font-medium border-b-2 transition-colors"
@@ -59,7 +59,7 @@
       </div>
 
       <!-- Members List -->
-      <div class="bg-white rounded-xl border border-gray-200 divide-y divide-gray-200">
+      <div class="bg-white rounded-xl border border-gray-100 divide-y divide-gray-200">
         <div v-if="loading" class="p-4 animate-pulse">
           <div v-for="i in 3" :key="i" class="flex items-center gap-4 py-3">
             <div class="w-10 h-10 rounded-full bg-gray-200"></div>
@@ -116,7 +116,7 @@
 
               <div
                 v-if="openMemberMenu === member.user_id"
-                class="absolute right-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10"
+                class="absolute right-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-100 py-1 z-10"
               >
                 <button
                   v-if="member.role !== 'admin'"
@@ -147,7 +147,7 @@
 
     <!-- Invitations Tab -->
     <div v-if="activeTab === 'invitations'">
-      <div class="bg-white rounded-xl border border-gray-200 divide-y divide-gray-200">
+      <div class="bg-white rounded-xl border border-gray-100 divide-y divide-gray-200">
         <div v-if="invitationsLoading" class="p-4 animate-pulse">
           <div v-for="i in 2" :key="i" class="flex items-center gap-4 py-3">
             <div class="flex-1">

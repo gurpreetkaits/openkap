@@ -81,6 +81,16 @@ const routes = [
         name: "WorkspaceSettings",
         component: () => import("../views/WorkspaceSettingsView.vue"),
       },
+      {
+        path: "playlists",
+        name: "Playlists",
+        component: () => import("../views/PlaylistsView.vue"),
+      },
+      {
+        path: "playlist/:id",
+        name: "PlaylistDetail",
+        component: () => import("../views/PlaylistDetailView.vue"),
+      },
     ]
   },
   {
@@ -105,6 +115,12 @@ const routes = [
     path: "/share/screenshot/:token",
     name: "SharedScreenshot",
     component: () => import("../views/SharedScreenshotView.vue"),
+    // Public - no auth required
+  },
+  {
+    path: "/share/playlist/:token",
+    name: "SharedPlaylist",
+    component: () => import("../views/SharedPlaylistView.vue"),
     // Public - no auth required
   },
   // Blog routes moved to Laravel (server-rendered for SEO)

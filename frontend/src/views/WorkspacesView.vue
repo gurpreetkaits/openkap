@@ -1,5 +1,5 @@
 <template>
-  <div class="p-6 max-w-6xl mx-auto">
+  <div>
     <!-- Header -->
     <div class="flex items-center justify-between mb-8">
       <div>
@@ -29,7 +29,7 @@
 
     <!-- Loading State -->
     <div v-if="loading" class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-      <div v-for="i in 3" :key="i" class="bg-white rounded-xl border border-gray-200 p-5 animate-pulse">
+      <div v-for="i in 3" :key="i" class="bg-white rounded-xl border border-gray-100 p-5 animate-pulse">
         <div class="flex items-start gap-3 mb-4">
           <div class="w-10 h-10 rounded-lg bg-gray-200"></div>
           <div class="flex-1">
@@ -42,7 +42,7 @@
     </div>
 
     <!-- Empty State -->
-    <div v-else-if="workspaces.length === 0" class="bg-white rounded-xl border border-gray-200 p-12 text-center">
+    <div v-else-if="workspaces.length === 0" class="bg-white rounded-xl border border-gray-100 p-12 text-center">
       <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
         <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
@@ -67,7 +67,7 @@
         v-for="workspace in workspaces"
         :key="workspace.id"
         :to="`/workspace/${workspace.slug}`"
-        class="bg-white rounded-xl border border-gray-200 p-5 hover:shadow-md hover:border-gray-300 transition-all group"
+        class="bg-white rounded-xl border border-gray-100 p-5 hover:shadow-sm hover:border-gray-300 transition-all group"
       >
         <div class="flex items-start justify-between mb-4">
           <div class="flex items-center gap-3">

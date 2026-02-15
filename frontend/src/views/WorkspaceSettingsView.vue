@@ -1,5 +1,5 @@
 <template>
-  <div class="p-6 max-w-2xl mx-auto">
+  <div>
     <!-- Header -->
     <div class="flex items-center gap-4 mb-8">
       <router-link :to="`/workspace/${slug}`" class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
@@ -15,7 +15,7 @@
 
     <!-- Loading State -->
     <div v-if="loading" class="space-y-6 animate-pulse">
-      <div class="bg-white rounded-xl border border-gray-200 p-6">
+      <div class="bg-white rounded-xl border border-gray-100 p-6">
         <div class="h-6 bg-gray-200 rounded w-32 mb-4"></div>
         <div class="space-y-4">
           <div class="h-10 bg-gray-200 rounded w-full"></div>
@@ -26,7 +26,7 @@
 
     <div v-else-if="workspace">
       <!-- General Settings -->
-      <div class="bg-white rounded-xl border border-gray-200 p-6 mb-6">
+      <div class="bg-white rounded-xl border border-gray-100 p-6 mb-6">
         <h2 class="text-lg font-semibold text-gray-900 mb-1">General</h2>
         <p class="text-sm text-gray-500 mb-6">Basic workspace information</p>
 
@@ -82,7 +82,7 @@
       </div>
 
       <!-- Your Plan -->
-      <div class="bg-white rounded-xl border border-gray-200 p-6 mb-6">
+      <div class="bg-white rounded-xl border border-gray-100 p-6 mb-6">
         <h2 class="text-lg font-semibold text-gray-900 mb-1">Your Plan</h2>
         <p class="text-sm text-gray-500 mb-6">Your personal subscription status</p>
 
@@ -113,7 +113,7 @@
       </div>
 
       <!-- Workspace Plan -->
-      <div class="bg-white rounded-xl border border-gray-200 p-6 mb-6">
+      <div class="bg-white rounded-xl border border-gray-100 p-6 mb-6">
         <h2 class="text-lg font-semibold text-gray-900 mb-1">Workspace Plan</h2>
         <p class="text-sm text-gray-500 mb-6">This workspace's subscription and limits</p>
 

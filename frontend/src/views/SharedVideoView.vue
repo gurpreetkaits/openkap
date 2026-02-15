@@ -30,7 +30,7 @@
       <nav class="h-14 border-b border-gray-200/60 bg-white/80 backdrop-blur-md flex items-center justify-between px-4 lg:px-6 z-50 fixed top-0 w-full">
         <div class="flex items-center gap-3">
           <a href="/" class="flex items-center gap-2 hover:opacity-80 transition-opacity">
-            <img src="/logo.png" alt="ScreenSense" class="w-8 h-8 rounded-lg shadow-sm" />
+            <img :src="branding.logoUrl.value || '/logo.png'" alt="ScreenSense" class="w-8 h-8 rounded-lg shadow-sm" />
             <span class="text-sm font-semibold text-gray-900">ScreenSense</span>
           </a>
         </div>
@@ -664,6 +664,7 @@
 import { ref, onMounted, onUnmounted, computed, watch, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuth } from '@/stores/auth'
+import { useBranding } from '@/composables/useBranding'
 import videoService from '@/services/videoService'
 import Hls from 'hls.js'
 
@@ -674,6 +675,7 @@ export default {
   setup() {
     const route = useRoute()
     const auth = useAuth()
+    const branding = useBranding()
     const token = computed(() => route.params.token)
     const isAuthenticated = computed(() => auth.isAuthenticated.value)
     const currentUser = computed(() => auth.user.value)
@@ -808,6 +810,16 @@ export default {
         comments.value = data.video.comments || []
         reactions.value = data.video.reactions || {}
         duration.value = data.video.duration || 0
+
+        // Apply owner's branding
+        if (data.video.branding) {
+          if (data.video.branding.brand_color) {
+            branding.setBrandColor(data.video.branding.brand_color)
+          }
+          if (data.video.branding.logo_url) {
+            branding.setLogoUrl(data.video.branding.logo_url)
+          }
+        }
 
         // Load transcription/summary if available
         transcription.value = data.video.transcription || null
@@ -1427,6 +1439,7 @@ export default {
     })
 
     return {
+      branding,
       video, loading, error, comments, reactions, userReactions, totalReactions,
       videoRef, progressBar, speedMenuRef, playerContainer, qualityMenuRef,
       isPlaying, isBuffering, videoLoading, isMuted, isFullscreen, volume, currentTime, duration,

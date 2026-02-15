@@ -31,7 +31,7 @@
       <nav class="h-14 border-b border-gray-200/60 bg-white/80 backdrop-blur-md flex items-center justify-between px-4 lg:px-6 z-50 fixed top-0 w-full">
         <div class="flex items-center gap-3">
           <a href="/" class="flex items-center gap-2 hover:opacity-80 transition-opacity">
-            <img src="/logo.png" alt="ScreenSense" class="w-8 h-8 rounded-lg shadow-sm" />
+            <img :src="branding.logoUrl.value || '/logo.png'" alt="ScreenSense" class="w-8 h-8 rounded-lg shadow-sm" />
             <span class="text-sm font-semibold text-gray-900">ScreenSense</span>
           </a>
         </div>
@@ -155,11 +155,13 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import screenshotService from '@/services/screenshotService'
+import { useBranding } from '@/composables/useBranding'
 
 export default {
   name: 'SharedScreenshotView',
   setup() {
     const route = useRoute()
+    const branding = useBranding()
     const screenshot = ref(null)
     const loading = ref(true)
     const error = ref(null)
@@ -179,6 +181,16 @@ export default {
         }
 
         screenshot.value = data
+
+        // Apply owner's branding
+        if (data.branding) {
+          if (data.branding.brand_color) {
+            branding.setBrandColor(data.branding.brand_color)
+          }
+          if (data.branding.logo_url) {
+            branding.setLogoUrl(data.branding.logo_url)
+          }
+        }
       } catch (err) {
         console.error('Failed to fetch screenshot:', err)
         error.value = 'This screenshot is no longer available or the link has expired.'
@@ -264,6 +276,7 @@ export default {
     })
 
     return {
+      branding,
       screenshot,
       loading,
       error,

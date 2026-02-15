@@ -1,7 +1,7 @@
 <template>
-  <div class="animate-fade-in max-w-7xl mx-auto p-6 lg:p-8">
+  <div class="animate-fade-in">
     <!-- Action Bar -->
-    <div class="flex items-center gap-3 mb-6 pb-6 border-b border-gray-200">
+    <div class="flex items-center gap-3 mb-6 pb-6 border-b border-gray-100">
       <button
         v-if="activeTab !== 'screenshots'"
         @click="openRecording"
@@ -88,27 +88,33 @@
 
     <!-- Folders Section -->
     <div v-if="activeTab !== 'screenshots' && folders.length > 0" class="mb-8">
-      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+      <div class="flex flex-wrap gap-2">
         <div
           v-for="folder in folders"
           :key="folder.id"
-          class="group relative p-4 bg-white border border-gray-200 rounded-xl shadow-sm transition-all cursor-pointer"
+          class="group relative flex items-center gap-2.5 px-3.5 py-2 bg-gray-50 border border-gray-200/80 rounded-lg transition-all cursor-pointer"
           :class="dragOverFolderId === folder.id
-            ? 'border-orange-400 bg-orange-50 shadow-md shadow-orange-500/10'
-            : 'hover:border-gray-300 hover:shadow-md hover:-translate-y-0.5'"
+            ? 'border-orange-400 bg-orange-50'
+            : 'hover:border-gray-300 hover:bg-gray-100'"
           @click="openFolder(folder)"
           @contextmenu.prevent="handleFolderContextMenu($event, folder)"
           @dragover.prevent="handleFolderDragOver($event, folder.id)"
           @dragleave="handleFolderDragLeave"
           @drop.prevent="handleDropOnFolder($event, folder)"
         >
+          <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z" />
+          </svg>
+          <span class="text-sm font-medium text-gray-700 group-hover:text-gray-900 truncate max-w-[140px]">{{ folder.name }}</span>
+          <span class="text-xs text-gray-400">{{ folder.videos_count }}</span>
+
           <!-- Actions Menu Button -->
-          <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity" @click.stop>
+          <div class="opacity-0 group-hover:opacity-100 transition-opacity ml-0.5" @click.stop>
             <button
               @click="toggleFolderMenu(folder.id)"
-              class="p-1 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+              class="p-0.5 rounded text-gray-400 hover:text-gray-600 transition-colors"
             >
-              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 16 16">
+              <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 16 16">
                 <circle cx="8" cy="3" r="1.5"/>
                 <circle cx="8" cy="8" r="1.5"/>
                 <circle cx="8" cy="13" r="1.5"/>
@@ -118,7 +124,7 @@
             <Transition name="dropdown">
               <div
                 v-show="activeFolderMenu === folder.id"
-                class="absolute right-0 mt-1 w-28 bg-white rounded-lg shadow-lg ring-1 ring-black/5 py-1 z-50"
+                class="absolute right-0 top-full mt-1 w-28 bg-white rounded-lg shadow-lg ring-1 ring-black/5 py-1 z-50"
               >
                 <button
                   @click="openEditFolderModal(folder)"
@@ -135,19 +141,6 @@
               </div>
             </Transition>
           </div>
-
-          <!-- Folder Icon -->
-          <div class="mb-3">
-            <div class="w-11 h-11 rounded-lg bg-gradient-to-br from-orange-400 to-orange-500 flex items-center justify-center shadow-sm group-hover:shadow-md group-hover:scale-105 transition-all">
-              <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z" />
-              </svg>
-            </div>
-          </div>
-          <!-- Folder Name -->
-          <p class="text-sm font-medium text-gray-900 truncate mb-0.5">{{ folder.name }}</p>
-          <!-- Video Count -->
-          <p class="text-xs text-gray-500">{{ folder.videos_count }} {{ folder.videos_count === 1 ? 'video' : 'videos' }}</p>
         </div>
       </div>
     </div>
@@ -155,7 +148,7 @@
     <!-- Library Toolbar -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
       <!-- Tabs -->
-      <div class="flex items-center p-1 bg-gray-100 rounded-lg self-start border border-gray-200/50">
+      <div class="flex items-center p-1 bg-gray-100 rounded-lg self-start border border-gray-100/50">
         <button
           @click="activeTab = 'videos'"
           class="px-3.5 py-1 text-[13px] font-medium rounded-[6px] transition-all"
@@ -213,7 +206,7 @@
             <Transition name="dropdown">
               <div
                 v-show="showBulkActionsDropdown"
-                class="absolute right-0 mt-1.5 w-48 bg-white rounded-xl shadow-lg border border-gray-200 py-1.5 z-50"
+                class="absolute right-0 mt-1.5 w-48 bg-white rounded-xl shadow-lg border border-gray-100 py-1.5 z-50"
               >
                 <button
                   @click="bulkAddToFavourites"
@@ -250,7 +243,7 @@
         </div>
 
         <!-- Select All (shown when videos are selected) -->
-        <div v-if="selectedVideos.length > 0" class="flex items-center gap-2 border-l border-gray-200 pl-3">
+        <div v-if="selectedVideos.length > 0" class="flex items-center gap-2 border-l border-gray-100 pl-3">
           <input
             type="checkbox"
             id="select-all"
@@ -275,7 +268,7 @@
         <div class="relative" ref="sortDropdownRef">
           <button
             @click="showSortDropdown = !showSortDropdown"
-            class="flex items-center gap-2 text-[13px] font-medium text-gray-600 bg-white border border-gray-200 px-3 py-1.5 rounded-lg hover:bg-gray-50 transition-all shadow-sm"
+            class="flex items-center gap-2 text-[13px] font-medium text-gray-600 bg-white border border-gray-100 px-3 py-1.5 rounded-lg hover:bg-gray-50 transition-all shadow-sm"
           >
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/>
@@ -287,7 +280,7 @@
           <Transition name="dropdown">
             <div
               v-show="showSortDropdown"
-              class="absolute right-0 mt-1.5 w-48 bg-white rounded-xl shadow-lg border border-gray-200 py-1.5 z-50"
+              class="absolute right-0 mt-1.5 w-48 bg-white rounded-xl shadow-lg border border-gray-100 py-1.5 z-50"
             >
               <button
                 v-for="option in sortOptions"
@@ -309,7 +302,7 @@
         <div class="relative" ref="filterDropdownRef">
           <button
             @click="showFilterDropdown = !showFilterDropdown"
-            class="flex items-center gap-2 text-[13px] font-medium text-gray-600 bg-white border border-gray-200 px-3 py-1.5 rounded-lg hover:bg-gray-50 transition-all shadow-sm"
+            class="flex items-center gap-2 text-[13px] font-medium text-gray-600 bg-white border border-gray-100 px-3 py-1.5 rounded-lg hover:bg-gray-50 transition-all shadow-sm"
             :class="activeDateFilter !== 'all' ? 'border-orange-300 bg-orange-50 text-orange-700' : ''"
           >
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -323,7 +316,7 @@
           <Transition name="dropdown">
             <div
               v-show="showFilterDropdown"
-              class="absolute right-0 mt-1.5 w-56 bg-white rounded-xl shadow-lg border border-gray-200 py-1.5 z-50"
+              class="absolute right-0 mt-1.5 w-56 bg-white rounded-xl shadow-lg border border-gray-100 py-1.5 z-50"
             >
               <div class="px-3 py-1.5 mb-0.5">
                 <span class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Date Range</span>
@@ -348,7 +341,7 @@
                   <input
                     type="date"
                     v-model="customDateFrom"
-                    class="w-full px-2.5 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                    class="w-full px-2.5 py-1.5 text-sm border border-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
                   />
                 </div>
                 <div>
@@ -356,7 +349,7 @@
                   <input
                     type="date"
                     v-model="customDateTo"
-                    class="w-full px-2.5 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                    class="w-full px-2.5 py-1.5 text-sm border border-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
                   />
                 </div>
               </div>
@@ -375,7 +368,7 @@
         </div>
 
         <!-- View Toggle -->
-        <div class="flex items-center gap-1 border border-gray-200 rounded-lg p-0.5 bg-white shadow-sm">
+        <div class="flex items-center gap-1 border border-gray-100 rounded-lg p-0.5 bg-white">
           <button
             @click="viewMode = 'grid'"
             class="p-1.5 rounded transition-colors"
@@ -427,7 +420,7 @@
       <div
         v-for="video in paginatedVideos"
         :key="video.id"
-        class="group bg-white rounded-xl border border-gray-200 hover:shadow-lg hover:border-gray-300 transition-all duration-200"
+        class="group bg-white rounded-xl border border-gray-100 hover:shadow-sm hover:border-gray-300 transition-all duration-200"
         :class="selectedVideos.includes(video.id) ? 'ring-2 ring-orange-500 ring-offset-2' : ''"
         :draggable="folders.length > 0"
         @dragstart="handleVideoDragStart($event, video)"
@@ -625,7 +618,7 @@
       <div
         v-for="video in paginatedVideos"
         :key="video.id"
-        class="group flex items-center gap-4 p-3 bg-white border border-gray-200 rounded-xl hover:shadow-md hover:border-gray-300 transition-all duration-200 cursor-pointer"
+        class="group flex items-center gap-4 p-3 bg-white border border-gray-100 rounded-xl hover:shadow-sm hover:border-gray-300 transition-all duration-200 cursor-pointer"
         :class="selectedVideos.includes(video.id) ? 'ring-2 ring-orange-500 ring-offset-1 border-orange-200' : ''"
         @click="handleVideoClick(video.id)"
         @contextmenu.prevent="handleVideoContextMenu($event, video)"
@@ -766,7 +759,7 @@
     </div>
 
     <!-- Pagination -->
-    <div v-if="activeTab !== 'screenshots' && showPagination && filteredVideos.length > 0" class="mt-10 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-gray-200 pt-6">
+    <div v-if="activeTab !== 'screenshots' && showPagination && filteredVideos.length > 0" class="mt-10 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-gray-100 pt-6">
       <div class="text-xs text-gray-500">
         Showing <span class="font-medium text-gray-900">{{ (currentPage - 1) * itemsPerPage + 1 }}</span> to
         <span class="font-medium text-gray-900">{{ Math.min(currentPage * itemsPerPage, filteredVideos.length) }}</span> of
@@ -779,8 +772,8 @@
           :disabled="currentPage === 1"
           class="inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-lg border transition-colors"
           :class="currentPage === 1
-            ? 'border-gray-200 text-gray-300 cursor-not-allowed bg-gray-50'
-            : 'border-gray-200 text-gray-700 hover:bg-gray-50 bg-white'"
+            ? 'border-gray-100 text-gray-300 cursor-not-allowed bg-gray-50'
+            : 'border-gray-100 text-gray-700 hover:bg-gray-50 bg-white'"
         >
           <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
@@ -809,8 +802,8 @@
           :disabled="currentPage === totalPages"
           class="inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-lg border transition-colors"
           :class="currentPage === totalPages
-            ? 'border-gray-200 text-gray-300 cursor-not-allowed bg-gray-50'
-            : 'border-gray-200 text-gray-700 hover:bg-gray-50 bg-white'"
+            ? 'border-gray-100 text-gray-300 cursor-not-allowed bg-gray-50'
+            : 'border-gray-100 text-gray-700 hover:bg-gray-50 bg-white'"
         >
           Next
           <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -835,7 +828,7 @@
         <div
           v-for="screenshot in screenshots"
           :key="screenshot.id"
-          class="group relative bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer"
+          class="group relative bg-white rounded-xl border border-gray-100 overflow-hidden hover:shadow-sm hover:-translate-y-0.5 transition-all cursor-pointer"
           @click="openScreenshotPreview(screenshot)"
         >
           <!-- Screenshot Image -->
@@ -938,7 +931,7 @@
       <button
         v-if="activeTab === 'favourites'"
         @click="activeTab = 'videos'"
-        class="inline-flex items-center px-4 py-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 rounded-lg font-medium text-sm shadow-sm transition-colors"
+        class="inline-flex items-center px-4 py-2 bg-white border border-gray-100 hover:bg-gray-50 text-gray-700 rounded-lg font-medium text-sm shadow-sm transition-colors"
       >
         Browse Videos
       </button>
@@ -957,7 +950,7 @@
       <button
         v-else
         @click="clearFilters"
-        class="inline-flex items-center px-4 py-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 rounded-lg font-medium text-sm shadow-sm transition-colors"
+        class="inline-flex items-center px-4 py-2 bg-white border border-gray-100 hover:bg-gray-50 text-gray-700 rounded-lg font-medium text-sm shadow-sm transition-colors"
       >
         Clear Filters
       </button>
@@ -1149,7 +1142,7 @@
                     v-for="folder in folders"
                     :key="folder.id"
                     @click="moveToFolder(folder)"
-                    class="w-full flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:border-orange-300 hover:bg-orange-50 transition-all text-left"
+                    class="w-full flex items-center gap-3 p-3 rounded-lg border border-gray-100 hover:border-orange-300 hover:bg-orange-50 transition-all text-left"
                     :disabled="movingToFolder"
                   >
                     <div class="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center flex-shrink-0">
@@ -1257,7 +1250,7 @@
       class="fixed pointer-events-none z-[-1] opacity-0"
       style="top: -1000px; left: -1000px;"
     >
-      <div class="flex items-center gap-2 px-3 py-2 bg-white rounded-lg shadow-lg border border-gray-200 max-w-[200px]">
+      <div class="flex items-center gap-2 px-3 py-2 bg-white rounded-lg shadow-lg border border-gray-100 max-w-[200px]">
         <svg class="w-4 h-4 text-orange-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
         </svg>

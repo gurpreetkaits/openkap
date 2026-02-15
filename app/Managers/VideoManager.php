@@ -8,6 +8,7 @@ use App\Jobs\GenerateTranscriptionJob;
 use App\Models\Reaction;
 use App\Models\User;
 use App\Models\Video;
+use App\Repositories\UserSettingRepository;
 use App\Repositories\VideoRepository;
 use App\Repositories\VideoZoomSettingRepository;
 use App\Services\BunnyStreamService;
@@ -19,7 +20,8 @@ class VideoManager
     public function __construct(
         protected VideoRepository $videos,
         protected VideoZoomSettingRepository $zoomSettings,
-        protected BunnyStreamService $bunnyService
+        protected BunnyStreamService $bunnyService,
+        protected UserSettingRepository $userSettings
     ) {}
 
     public function getUserVideos(int $userId): array
@@ -278,6 +280,9 @@ class VideoManager
             ];
         });
 
+        // Get video owner's branding
+        $branding = $this->userSettings->getBrandingForUser($video->user);
+
         return [
             'id' => $video->id,
             'title' => $video->title,
@@ -298,6 +303,8 @@ class VideoManager
             'storage_type' => $video->storage_type,
             'bunny_status' => $video->bunny_status,
             'bunny_video_id' => $video->bunny_video_id,
+            // Owner branding
+            'branding' => $branding,
         ];
     }
 

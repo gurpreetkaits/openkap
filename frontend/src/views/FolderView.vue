@@ -1,5 +1,5 @@
 <template>
-  <div class="animate-fade-in max-w-7xl mx-auto p-6 lg:p-8">
+  <div class="animate-fade-in">
     <!-- Breadcrumb & Header -->
     <div class="mb-6">
       <nav class="flex items-center gap-2 text-sm text-gray-500 mb-4">
@@ -80,7 +80,7 @@
       >
         <!-- Thumbnail -->
         <div
-          class="relative aspect-video bg-gray-900 rounded-xl overflow-hidden mb-3 border border-gray-200/50 shadow-sm group-hover:shadow-md transition-all cursor-pointer"
+          class="relative aspect-video bg-gray-900 rounded-xl overflow-hidden mb-3 border border-gray-100/50 group-hover:shadow-sm transition-all cursor-pointer"
           style="aspect-ratio: 16 / 9;"
           @click="openVideo(video.id)"
         >

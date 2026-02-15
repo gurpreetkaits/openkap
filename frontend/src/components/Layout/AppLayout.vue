@@ -1,18 +1,17 @@
 <template>
-  <div class="flex h-screen bg-[#F9FAFB] text-gray-600 overflow-hidden selection:bg-orange-100 selection:text-orange-700">
+  <div class="flex h-screen bg-white text-gray-600 overflow-hidden selection:bg-orange-100 selection:text-orange-700">
     <!-- Sidebar - Hidden on mobile/tablet, shown on desktop (lg and up) -->
     <aside class="hidden lg:flex w-[260px] bg-white border-r border-gray-200 flex-col flex-shrink-0 h-full z-30 transition-all duration-300 relative">
       <!-- Logo -->
       <div class="h-14 flex items-center px-5 border-b border-gray-100/50 flex-shrink-0">
         <router-link to="/videos" class="flex items-center gap-2.5 group cursor-pointer">
-          <img src="/logo.png" alt="ScreenSense" class="w-7 h-7 rounded-lg shadow-sm group-hover:shadow-md transition-all duration-300" />
+          <img :src="branding.logoUrl.value || '/logo.png'" alt="ScreenSense" class="w-7 h-7 rounded-lg shadow-sm group-hover:shadow-md transition-all duration-300" />
           <span class="text-gray-900 font-semibold tracking-tight text-[15px]">ScreenSense</span>
         </router-link>
       </div>
 
       <!-- Navigation Scroll Area -->
-      <div class="flex-1 overflow-y-auto px-3 py-4 flex flex-col gap-6">
-        <!-- Main Menu -->
+      <div class="flex-1 overflow-y-auto px-3 py-4">
         <nav class="space-y-0.5">
           <router-link
             to="/videos"
@@ -36,13 +35,17 @@
             Workspaces
           </router-link>
 
-        </nav>
+          <router-link
+            to="/playlists"
+            class="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all group"
+            :class="isActive('/playlists') || route.path.startsWith('/playlist/') ? 'text-gray-900 bg-gray-50' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'"
+          >
+            <svg class="w-4 h-4 transition-colors" :class="isActive('/playlists') || route.path.startsWith('/playlist/') ? 'text-orange-600' : 'text-gray-400 group-hover:text-gray-600'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+            </svg>
+            Playlists
+          </router-link>
 
-        <!-- Separator -->
-        <div class="border-t border-gray-100 my-2"></div>
-
-        <!-- Settings Menu -->
-        <nav class="space-y-0.5">
           <router-link
             to="/subscription"
             class="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all group"
@@ -65,7 +68,6 @@
             Feedback
           </router-link>
 
-          <!-- Settings hidden for now
           <router-link
             to="/settings"
             class="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all group"
@@ -77,7 +79,6 @@
             </svg>
             Settings
           </router-link>
-          -->
         </nav>
       </div>
 
@@ -209,7 +210,7 @@
 
         <!-- Mobile Logo -->
         <router-link to="/videos" class="lg:hidden flex items-center gap-2.5">
-          <img src="/logo.png" alt="ScreenSense" class="w-7 h-7 rounded-lg" />
+          <img :src="branding.logoUrl.value || '/logo.png'" alt="ScreenSense" class="w-7 h-7 rounded-lg" />
           <span class="text-gray-900 font-semibold tracking-tight text-[15px]">ScreenSense</span>
         </router-link>
 
@@ -361,8 +362,10 @@
       </header>
 
       <!-- Page Content -->
-      <div class="flex-1 overflow-y-auto overflow-x-hidden scroll-smooth">
-        <router-view />
+      <div class="flex-1 overflow-y-auto overflow-x-hidden scroll-smooth bg-white">
+        <div class="p-6 lg:p-8">
+          <router-view />
+        </div>
       </div>
     </main>
 
@@ -378,7 +381,7 @@
         <!-- Mobile Sidebar Logo -->
         <div class="h-14 flex items-center justify-between px-5 border-b border-gray-100/50">
           <router-link to="/videos" class="flex items-center gap-2.5" @click="sidebarOpen = false">
-            <img src="/logo.png" alt="ScreenSense" class="w-7 h-7 rounded-lg" />
+            <img :src="branding.logoUrl.value || '/logo.png'" alt="ScreenSense" class="w-7 h-7 rounded-lg" />
             <span class="text-gray-900 font-semibold tracking-tight text-[15px]">ScreenSense</span>
           </router-link>
 
@@ -393,8 +396,7 @@
         </div>
 
         <!-- Mobile Navigation -->
-        <div class="flex-1 overflow-y-auto px-3 py-4 flex flex-col gap-6">
-          <!-- Main Menu -->
+        <div class="flex-1 overflow-y-auto px-3 py-4">
           <nav class="space-y-0.5">
             <router-link
               to="/videos"
@@ -420,13 +422,18 @@
               Workspaces
             </router-link>
 
-          </nav>
+            <router-link
+              to="/playlists"
+              @click="sidebarOpen = false"
+              class="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all group"
+              :class="isActive('/playlists') || route.path.startsWith('/playlist/') ? 'text-gray-900 bg-gray-50' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'"
+            >
+              <svg class="w-4 h-4 transition-colors" :class="isActive('/playlists') || route.path.startsWith('/playlist/') ? 'text-orange-600' : 'text-gray-400 group-hover:text-gray-600'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+              </svg>
+              Playlists
+            </router-link>
 
-          <!-- Separator -->
-          <div class="border-t border-gray-100 my-2"></div>
-
-          <!-- Settings Menu -->
-          <nav class="space-y-0.5">
             <router-link
               to="/subscription"
               @click="sidebarOpen = false"
@@ -451,7 +458,6 @@
               Feedback
             </router-link>
 
-            <!-- Settings hidden for now
             <router-link
               to="/settings"
               @click="sidebarOpen = false"
@@ -464,7 +470,6 @@
               </svg>
               Settings
             </router-link>
-            -->
           </nav>
         </div>
 
@@ -547,6 +552,7 @@ import { SBLogoutModal } from '../Global'
 import RecordingSetupPanel from '../Global/RecordingSetupPanel.vue'
 import { useAuth } from '@/stores/auth'
 import { useRecording } from '@/composables/useRecording'
+import { useBranding } from '@/composables/useBranding'
 import notificationService from '@/services/notificationService'
 
 export default {
@@ -560,6 +566,7 @@ export default {
     const router = useRouter()
     const auth = useAuth()
     const recording = useRecording()
+    const branding = useBranding()
     const sidebarOpen = ref(false)
     const showLogoutModal = ref(false)
     const logoutLoading = ref(false)
@@ -618,6 +625,7 @@ export default {
       const pathMap = {
         '/videos': 'Library',
         '/workspaces': 'Workspaces',
+        '/playlists': 'Playlists',
         '/profile': 'Profile',
         '/subscription': 'Plans & Billing',
         '/record': 'Record',
@@ -763,6 +771,7 @@ export default {
       if (isAuthenticated.value) {
         auth.fetchSubscription()
         fetchUnreadCount()
+        branding.loadBranding()
         // Poll for new notifications every 30 seconds
         pollInterval = setInterval(fetchUnreadCount, 30000)
       }
@@ -781,6 +790,7 @@ export default {
       route,
       router,
       recording,
+      branding,
       sidebarOpen,
       showLogoutModal,
       logoutLoading,

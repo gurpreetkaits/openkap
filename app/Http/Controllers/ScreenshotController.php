@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Managers\ScreenshotManager;
+use App\Repositories\UserSettingRepository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -10,7 +11,8 @@ use Illuminate\Support\Facades\Log;
 class ScreenshotController extends Controller
 {
     public function __construct(
-        protected ScreenshotManager $screenshotManager
+        protected ScreenshotManager $screenshotManager,
+        protected UserSettingRepository $userSettings
     ) {}
 
     /**
@@ -148,12 +150,15 @@ class ScreenshotController extends Controller
             return response()->json(['message' => 'This screenshot is not publicly shared'], 403);
         }
 
+        $branding = $this->userSettings->getBrandingForUser($screenshot->user);
+
         return response()->json([
             'screenshot' => [
                 'id' => $screenshot->id,
                 'title' => $screenshot->title,
                 'image_url' => $screenshot->getImageUrl(),
                 'created_at' => $screenshot->created_at->toISOString(),
+                'branding' => $branding,
             ],
         ]);
     }

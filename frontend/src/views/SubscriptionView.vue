@@ -1,17 +1,19 @@
 <template>
-  <div class="animate-fade-in max-w-5xl mx-auto p-6 lg:p-8">
+  <div class="animate-fade-in">
     <!-- Success Alert -->
     <div v-if="showSuccessAlert" class="fixed top-20 left-1/2 -translate-x-1/2 z-50 animate-slide-down">
-      <div class="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-4 rounded-xl shadow-lg shadow-green-500/20 flex items-center gap-3">
-        <svg class="w-6 h-6 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-        </svg>
-        <div>
-          <h3 class="font-semibold">Welcome to ScreenSense {{ subscription?.plan_type === 'teams' ? 'Team' : 'Pro' }}!</h3>
-          <p class="text-sm text-white/90">Your subscription is now active. Enjoy unlimited recordings!</p>
+      <div class="bg-white border border-green-200 text-gray-900 px-5 py-3.5 rounded-lg shadow-sm flex items-center gap-3">
+        <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+          <svg class="w-4 h-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+          </svg>
         </div>
-        <button @click="showSuccessAlert = false" class="ml-4 p-1 hover:bg-white/20 rounded-lg transition-colors">
-          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div>
+          <h3 class="text-sm font-semibold">Welcome to ScreenSense {{ subscription?.plan_type === 'teams' ? 'Team' : 'Pro' }}!</h3>
+          <p class="text-xs text-gray-500">Your subscription is now active. Enjoy unlimited recordings!</p>
+        </div>
+        <button @click="showSuccessAlert = false" class="ml-3 p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-md transition-colors">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
@@ -38,14 +40,14 @@
         </svg>
       </div>
       <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ error }}</h3>
-      <button @click="loadSubscription" class="inline-flex items-center px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-lg font-medium text-sm shadow-sm transition-colors">
+      <button @click="loadSubscription" class="inline-flex items-center px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-lg font-medium text-sm transition-colors">
         Try Again
       </button>
     </div>
 
     <template v-else>
       <!-- Row 2: Current Plan -->
-      <div class="bg-white rounded-xl border border-gray-200 p-5 mb-8">
+      <div class="bg-white rounded-xl border border-gray-100 p-5 mb-8">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-4">
             <div class="w-10 h-10 rounded-lg flex items-center justify-center" :class="currentPlanIcon.bg">
@@ -115,7 +117,7 @@
       </div>
 
       <!-- Row 3: Choose Your Plan — Single Card -->
-      <div class="bg-white rounded-xl border border-gray-200 p-6 mb-8">
+      <div class="bg-white rounded-xl border border-gray-100 p-6 mb-8">
         <!-- Header + Switch -->
         <div class="flex items-center justify-between mb-6">
           <h2 class="text-sm font-semibold text-gray-900">Choose Your Plan</h2>
@@ -211,10 +213,10 @@
         </div>
 
         <!-- Row 3: What's Included -->
-        <div class="py-5 border-b border-gray-100">
+        <div class="py-5">
 
           <!-- Free benefits -->
-          <ul v-if="selectedPlan === 'free'" class="grid grid-cols-3 gap-x-6 gap-y-3 text-sm text-gray-700">
+          <ul v-if="selectedPlan === 'free'" class="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-3 text-sm text-gray-700">
             <li class="flex items-center gap-2">
               <svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
               10 videos
@@ -238,7 +240,7 @@
           </ul>
 
           <!-- Pro benefits -->
-          <ul v-else-if="selectedPlan === 'pro'" class="grid grid-cols-3 gap-x-6 gap-y-3 text-sm text-gray-700">
+          <ul v-else-if="selectedPlan === 'pro'" class="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-3 text-sm text-gray-700">
             <li class="flex items-center gap-2">
               <svg class="w-4 h-4 text-orange-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
               Unlimited videos
@@ -266,7 +268,7 @@
           </ul>
 
           <!-- Team benefits -->
-          <ul v-else class="grid grid-cols-3 gap-x-6 gap-y-3 text-sm text-gray-700">
+          <ul v-else class="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-3 text-sm text-gray-700">
             <li class="flex items-center gap-2">
               <svg class="w-4 h-4 text-indigo-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
               Everything in Pro
@@ -300,7 +302,7 @@
           <template v-if="selectedPlan === 'free'">
             <button
               v-if="subscription?.plan_type === 'free'"
-              class="w-full max-w-[280px] py-2.5 rounded-lg border border-gray-200 text-xs font-medium text-gray-500 bg-gray-50 cursor-default"
+              class="w-full max-w-sm py-2.5 rounded-lg border border-gray-100 text-xs font-medium text-gray-500 bg-gray-50 cursor-default"
             >
               Current Plan
             </button>
@@ -308,7 +310,7 @@
               v-else
               @click="cancelSubscription"
               :disabled="canceling || subscription?.is_in_grace_period"
-              class="w-full max-w-[280px] py-2.5 rounded-lg border border-gray-200 text-xs font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              class="w-full max-w-sm py-2.5 rounded-lg border border-gray-100 text-xs font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {{ canceling ? 'Processing...' : subscription?.is_in_grace_period ? 'Cancellation Pending' : 'Downgrade to Free' }}
             </button>
@@ -318,7 +320,7 @@
           <template v-else-if="selectedPlan === 'pro'">
             <button
               v-if="subscription?.plan_type === 'pro' && !subscription?.is_in_grace_period"
-              class="w-full max-w-[280px] py-2.5 rounded-lg bg-green-600 text-xs font-medium text-white flex items-center justify-center gap-1.5"
+              class="w-full max-w-sm py-2.5 rounded-lg bg-green-600 text-xs font-medium text-white flex items-center justify-center gap-1.5 cursor-default"
             >
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
               Current Plan
@@ -327,7 +329,7 @@
               v-else
               @click="startCheckout('pro')"
               :disabled="checkingOut"
-              class="w-full max-w-[280px] py-2.5 rounded-lg bg-orange-600 hover:bg-orange-500 text-xs font-medium text-white transition-all shadow-sm flex items-center justify-center gap-1.5 group disabled:opacity-50 disabled:cursor-not-allowed"
+              class="w-full max-w-sm py-2.5 rounded-lg bg-orange-600 hover:bg-orange-500 text-xs font-medium text-white transition-all flex items-center justify-center gap-1.5 group disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <template v-if="checkingOut === 'pro'">
                 <div class="animate-spin rounded-full h-3.5 w-3.5 border-2 border-white border-t-transparent"></div>
@@ -344,7 +346,7 @@
           <template v-else>
             <button
               v-if="subscription?.plan_type === 'teams' && !subscription?.is_in_grace_period"
-              class="w-full max-w-[280px] py-2.5 rounded-lg bg-green-600 text-xs font-medium text-white flex items-center justify-center gap-1.5"
+              class="w-full max-w-sm py-2.5 rounded-lg bg-green-600 text-xs font-medium text-white flex items-center justify-center gap-1.5 cursor-default"
             >
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
               Current Plan
@@ -353,7 +355,7 @@
               v-else
               @click="startCheckout('teams')"
               :disabled="checkingOut"
-              class="w-full max-w-[280px] py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-xs font-medium text-white transition-all flex items-center justify-center gap-1.5 group disabled:opacity-50 disabled:cursor-not-allowed"
+              class="w-full max-w-sm py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-xs font-medium text-white transition-all flex items-center justify-center gap-1.5 group disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <template v-if="checkingOut === 'teams'">
                 <div class="animate-spin rounded-full h-3.5 w-3.5 border-2 border-white border-t-transparent"></div>
@@ -369,19 +371,19 @@
       </div>
 
       <!-- Enterprise Contact -->
-      <div class="mt-8 flex items-center justify-between p-5 bg-gray-50 rounded-xl border border-gray-200">
+      <div class="mt-8 flex items-center justify-between p-5 bg-white rounded-xl border border-gray-100">
         <div>
           <h4 class="text-sm font-semibold text-gray-900">Need a custom enterprise plan?</h4>
           <p class="text-xs text-gray-500 mt-0.5">For large organizations with specific security, SSO, and compliance needs.</p>
         </div>
-        <button class="inline-flex items-center px-4 py-2 text-xs font-medium text-gray-900 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors shrink-0">
+        <button class="inline-flex items-center px-4 py-2 text-xs font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors shrink-0">
           Contact Sales
         </button>
       </div>
 
       <!-- Billing History -->
       <div v-if="history.length > 0" class="mt-8">
-        <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div class="bg-white rounded-xl border border-gray-100 overflow-hidden">
           <div class="px-5 py-3.5 border-b border-gray-100">
             <h3 class="text-sm font-semibold text-gray-900">Billing History</h3>
           </div>
