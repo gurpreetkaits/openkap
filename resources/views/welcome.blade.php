@@ -87,18 +87,17 @@
                             <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
                             <span class="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
                         </span>
-                        Async video messaging for teams
+                        Say it with a video, not another meeting
                     </div>
 
                     {{-- Main headline --}}
                     <h1 class="text-4xl md:text-5xl lg:text-[3.25rem] font-bold text-gray-900 leading-[1.1] tracking-tight mb-6">
-                        Say it with a video,<br>
-                        <span class="text-gray-300 line-through decoration-gray-300/60">not another meeting</span>
+                        Affordable Loom Alternative for Individuals
                     </h1>
 
                     {{-- Subheadline --}}
                     <p class="text-lg text-gray-500 mb-10 leading-[1.7]">
-                        Record your screen and camera, get a shareable link in seconds. Your team watches on their own time. No scheduling, no calendar tetris.
+                        Record your screen and camera, get a shareable link. Everything as Loom but better at pricing and continue to evolve more in features.
                     </p>
 
                     {{-- CTA buttons --}}
@@ -113,9 +112,6 @@
                         </a>
                     </div>
 
-                    <p class="text-sm text-gray-400">
-                        Free forever for individuals &middot; No credit card required
-                    </p>
                 </div>
 
                 {{-- RIGHT: App Preview Video --}}
