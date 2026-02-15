@@ -1,10 +1,10 @@
 @extends('layouts.app')
 
-@section('title', 'ScreenSense - Screen Recording Software | Loom Alternative')
+@section('title', 'ScreenSense - Affordable Loom Alternative for Individuals and Small Teams')
 @section('meta_description', 'ScreenSense is async video messaging for remote teams. Record your screen, share a link, and communicate without scheduling meetings. Free to start.')
 @section('meta_keywords', 'screen recording software, loom alternative, async video, screen recorder, video messaging, remote team communication, screen capture, video sharing')
 
-@section('og_title', 'ScreenSense - Async Video for Remote Teams')
+@section('og_title', 'ScreenSense - Affordable Loom Alternative for Individuals and Small Teams')
 @section('og_description', 'Record your screen, share a link, skip the meeting. Free screen recording software for teams.')
 
 @section('body_class', 'bg-white text-gray-900 selection:bg-orange-100 selection:text-orange-700')
