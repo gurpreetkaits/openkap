@@ -155,37 +155,6 @@
                 </a>
             </div>
 
-            {{-- Trust Stats --}}
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-                <div class="text-center p-4 rounded-xl bg-white border border-gray-100">
-                    <div class="flex items-center justify-center gap-1.5 mb-1">
-                        <i data-lucide="github" class="size-4 text-gray-900"></i>
-                        <span class="text-2xl font-bold text-gray-900 js-github-stars">-</span>
-                    </div>
-                    <p class="text-xs text-gray-400 font-medium">GitHub Stars</p>
-                </div>
-                <div class="text-center p-4 rounded-xl bg-white border border-gray-100">
-                    <div class="flex items-center justify-center gap-1.5 mb-1">
-                        <i data-lucide="code-2" class="size-4 text-gray-900"></i>
-                        <span class="text-2xl font-bold text-gray-900">100%</span>
-                    </div>
-                    <p class="text-xs text-gray-400 font-medium">Open Source</p>
-                </div>
-                <div class="text-center p-4 rounded-xl bg-white border border-gray-100">
-                    <div class="flex items-center justify-center gap-1.5 mb-1">
-                        <i data-lucide="ban" class="size-4 text-gray-900"></i>
-                        <span class="text-2xl font-bold text-gray-900">Zero</span>
-                    </div>
-                    <p class="text-xs text-gray-400 font-medium">Watermarks</p>
-                </div>
-                <div class="text-center p-4 rounded-xl bg-white border border-gray-100">
-                    <div class="flex items-center justify-center gap-1.5 mb-1">
-                        <i data-lucide="credit-card" class="size-4 text-gray-900"></i>
-                        <span class="text-2xl font-bold text-gray-900">$0</span>
-                    </div>
-                    <p class="text-xs text-gray-400 font-medium">To Get Started</p>
-                </div>
-            </div>
         </div>
     </section>
 
