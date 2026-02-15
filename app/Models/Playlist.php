@@ -18,6 +18,7 @@ class Playlist extends Model
         'description',
         'is_public',
         'share_token',
+        'share_password',
         'sort_by',
     ];
 
@@ -27,6 +28,7 @@ class Playlist extends Model
 
     protected $hidden = [
         'share_token',
+        'share_password',
     ];
 
     /**
@@ -89,6 +91,14 @@ class Playlist extends Model
         $frontendUrl = rtrim(config('app.frontend_url', 'http://localhost:5173'), '/');
 
         return "{$frontendUrl}/share/playlist/{$this->share_token}";
+    }
+
+    /**
+     * Check if the playlist has a share password set.
+     */
+    public function hasPassword(): bool
+    {
+        return $this->share_password !== null;
     }
 
     /**

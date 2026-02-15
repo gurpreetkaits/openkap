@@ -6,13 +6,16 @@ use App\Models\Playlist;
 use App\Models\User;
 use App\Models\Video;
 use App\Repositories\PlaylistRepository;
+use App\Repositories\UserSettingRepository;
 use App\Repositories\VideoRepository;
+use Illuminate\Support\Facades\Hash;
 
 class PlaylistManager
 {
     public function __construct(
         protected PlaylistRepository $playlists,
-        protected VideoRepository $videos
+        protected VideoRepository $videos,
+        protected UserSettingRepository $userSettings
     ) {}
 
     /**
@@ -220,6 +223,24 @@ class PlaylistManager
     }
 
     /**
+     * Set or remove the share password on a playlist.
+     */
+    public function setPlaylistPassword(Playlist $playlist, ?string $plainPassword): Playlist
+    {
+        $hashed = $plainPassword !== null ? Hash::make($plainPassword) : null;
+
+        return $this->playlists->setPassword($playlist, $hashed);
+    }
+
+    /**
+     * Verify a password against the playlist's share password.
+     */
+    public function verifyPlaylistPassword(Playlist $playlist, string $password): bool
+    {
+        return Hash::check($password, $playlist->share_password);
+    }
+
+    /**
      * Find a playlist by ID.
      */
     public function findPlaylist(int $id): ?Playlist
@@ -245,7 +266,8 @@ class PlaylistManager
             'title' => $playlist->title,
             'description' => $playlist->description,
             'is_public' => $playlist->is_public,
-            'share_url' => $playlist->is_public ? $playlist->getShareUrl() : null,
+            'has_password' => $playlist->hasPassword(),
+            'share_url' => $playlist->is_public ? $playlist->getFrontendShareUrl() : null,
             'sort_by' => $playlist->sort_by,
             'videos_count' => $playlist->videos_count ?? $playlist->video_count,
             'created_at' => $playlist->created_at->toISOString(),
@@ -265,7 +287,8 @@ class PlaylistManager
             'title' => $playlist->title,
             'description' => $playlist->description,
             'is_public' => $playlist->is_public,
-            'share_url' => $playlist->is_public ? $playlist->getShareUrl() : null,
+            'has_password' => $playlist->hasPassword(),
+            'share_url' => $playlist->is_public ? $playlist->getFrontendShareUrl() : null,
             'sort_by' => $playlist->sort_by,
             'videos_count' => $videos->count(),
             'videos' => $videos->map(function ($video) {
@@ -288,16 +311,21 @@ class PlaylistManager
             return $video->isShareLinkValid();
         });
 
+        // Get playlist owner's branding
+        $branding = $this->userSettings->getBrandingForUser($playlist->user);
+
         return [
             'id' => $playlist->id,
             'title' => $playlist->title,
             'description' => $playlist->description,
+            'has_password' => $playlist->hasPassword(),
             'sort_by' => $playlist->sort_by,
             'videos_count' => $publicVideos->count(),
             'videos' => $publicVideos->map(function ($video) {
                 return $this->formatSharedVideo($video);
             })->values()->toArray(),
             'created_at' => $playlist->created_at->toISOString(),
+            'branding' => $branding,
         ];
     }
 

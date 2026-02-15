@@ -135,7 +135,7 @@ class PlaylistController extends Controller
         return response()->json([
             'message' => $playlist->is_public ? 'Playlist is now public' : 'Playlist is now private',
             'is_public' => $playlist->is_public,
-            'share_url' => $playlist->is_public ? $playlist->getShareUrl() : null,
+            'share_url' => $playlist->is_public ? $playlist->getFrontendShareUrl() : null,
         ]);
     }
 
@@ -291,9 +291,36 @@ class PlaylistController extends Controller
     }
 
     /**
+     * Set or remove the share password for a playlist.
+     */
+    public function setPassword(Request $request, $id)
+    {
+        $request->validate([
+            'password' => 'nullable|string|min:4',
+        ]);
+
+        $playlist = $this->playlistManager->findPlaylist($id);
+
+        if (! $playlist) {
+            return response()->json(['message' => 'Playlist not found'], 404);
+        }
+
+        if ($playlist->user_id !== Auth::id()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $playlist = $this->playlistManager->setPlaylistPassword($playlist, $request->password);
+
+        return response()->json([
+            'message' => $request->password ? 'Password set successfully' : 'Password removed',
+            'has_password' => $playlist->hasPassword(),
+        ]);
+    }
+
+    /**
      * View a shared playlist (public access).
      */
-    public function showShared($token)
+    public function showShared(Request $request, $token)
     {
         $playlist = $this->playlistManager->findByShareToken($token);
 
@@ -301,13 +328,31 @@ class PlaylistController extends Controller
             return response()->json(['message' => 'Playlist not found'], 404);
         }
 
-        $playlistDetails = $this->playlistManager->getSharedPlaylistDetails($playlist);
-
-        if ($playlistDetails === null) {
+        if (! $playlist->isShareLinkValid()) {
             return response()->json([
                 'message' => 'This playlist is no longer available for sharing',
             ], 403);
         }
+
+        if ($playlist->hasPassword()) {
+            $password = $request->query('password', $request->input('password'));
+
+            if (! $password) {
+                return response()->json([
+                    'password_required' => true,
+                    'message' => 'This playlist is password protected',
+                ], 423);
+            }
+
+            if (! $this->playlistManager->verifyPlaylistPassword($playlist, $password)) {
+                return response()->json([
+                    'password_required' => true,
+                    'message' => 'Incorrect password',
+                ], 423);
+            }
+        }
+
+        $playlistDetails = $this->playlistManager->getSharedPlaylistDetails($playlist);
 
         return response()->json([
             'playlist' => $playlistDetails,

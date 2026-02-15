@@ -136,6 +136,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/', [SettingsController::class, 'index']);
         Route::put('/', [SettingsController::class, 'update']);
         Route::post('/reset', [SettingsController::class, 'reset']);
+        Route::post('/logo', [SettingsController::class, 'uploadLogo']);
+        Route::delete('/logo', [SettingsController::class, 'removeLogo']);
     });
 
     // Feedback routes (rate limited: 3 per hour)
@@ -247,6 +249,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/{id}', [PlaylistController::class, 'update']);
         Route::delete('/{id}', [PlaylistController::class, 'destroy']);
         Route::post('/{id}/toggle-sharing', [PlaylistController::class, 'toggleSharing']);
+        Route::put('/{id}/password', [PlaylistController::class, 'setPassword']);
         Route::put('/{id}/sort-by', [PlaylistController::class, 'updateSortBy']);
         Route::post('/{id}/videos', [PlaylistController::class, 'addVideo']);
         Route::post('/{id}/bulk-add-videos', [PlaylistController::class, 'bulkAddVideos']);

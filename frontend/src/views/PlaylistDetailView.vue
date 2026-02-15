@@ -1,5 +1,5 @@
 <template>
-  <div class="animate-fade-in max-w-7xl mx-auto p-6 lg:p-8">
+  <div class="animate-fade-in">
     <!-- Loading State -->
     <div v-if="loading" class="text-center py-24">
       <div class="inline-block animate-spin rounded-full h-10 w-10 border-4 border-orange-600 border-t-transparent"></div>
@@ -49,7 +49,7 @@
               </svg>
               {{ playlist.sort_by === 'manual' ? 'Manual Order' : 'Date Added' }}
             </button>
-            <div v-if="showSortMenu" class="absolute right-0 mt-1 w-40 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+            <div v-if="showSortMenu" class="absolute right-0 mt-1 w-40 bg-white border border-gray-100 rounded-lg shadow-lg z-10">
               <button
                 @click="updateSortBy('manual')"
                 class="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors flex items-center gap-2"
@@ -73,16 +73,81 @@
             </div>
           </div>
 
-          <!-- Share Button -->
+          <!-- Visibility Dropdown -->
+          <div class="relative">
+            <button
+              @click="showVisibilityMenu = !showVisibilityMenu"
+              class="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg transition-colors"
+              :class="playlist.is_public ? 'text-green-700 bg-green-50 hover:bg-green-100' : 'text-gray-600 hover:bg-gray-100'"
+            >
+              <!-- Public icon -->
+              <svg v-if="playlist.is_public" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              <!-- Private icon -->
+              <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+              </svg>
+              {{ playlist.is_public ? 'Public' : 'Private' }}
+              <svg class="w-3 h-3 ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </button>
+            <div v-if="showVisibilityMenu" class="absolute right-0 mt-1 w-44 bg-white border border-gray-100 rounded-lg shadow-lg z-10">
+              <button
+                @click="setVisibility(false)"
+                class="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors flex items-center gap-2"
+                :class="!playlist.is_public ? 'text-orange-600' : 'text-gray-700'"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                </svg>
+                Private
+                <svg v-if="!playlist.is_public" class="w-4 h-4 ml-auto" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                </svg>
+              </button>
+              <button
+                @click="setVisibility(true)"
+                class="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors flex items-center gap-2"
+                :class="playlist.is_public ? 'text-orange-600' : 'text-gray-700'"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                Public
+                <svg v-if="playlist.is_public" class="w-4 h-4 ml-auto" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Password Lock Button (visible when public) -->
           <button
-            @click="toggleSharing"
+            v-if="playlist.is_public"
+            @click="showPasswordModal = true"
             class="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg transition-colors"
-            :class="playlist.is_public ? 'text-green-700 bg-green-50 hover:bg-green-100' : 'text-gray-600 hover:bg-gray-100'"
+            :class="playlist.has_password ? 'text-amber-700 bg-amber-50 hover:bg-amber-100' : 'text-gray-600 hover:bg-gray-100'"
+            :title="playlist.has_password ? 'Change or remove password' : 'Set password'"
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
             </svg>
-            {{ playlist.is_public ? 'Shared' : 'Share' }}
+            {{ playlist.has_password ? 'Locked' : 'Lock' }}
+          </button>
+
+          <!-- Copy Link Button (visible when public) -->
+          <button
+            v-if="playlist.is_public"
+            @click="copyShareLink"
+            class="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+            title="Copy share link"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/>
+            </svg>
+            Copy Link
           </button>
 
           <!-- Add Videos Button -->
@@ -103,7 +168,7 @@
         <div
           v-for="(video, index) in playlist.videos"
           :key="video.id"
-          class="group flex items-center gap-4 p-3 bg-white border border-gray-200 rounded-xl hover:border-orange-200 hover:shadow-md transition-all"
+          class="group flex items-center gap-4 p-3 bg-white border border-gray-100 rounded-xl hover:border-orange-200 hover:shadow-sm transition-all"
           :class="{ 'cursor-move': playlist.sort_by === 'manual' }"
           draggable="true"
           @dragstart="onDragStart($event, index)"
@@ -200,6 +265,54 @@
       </div>
     </template>
 
+    <!-- Password Modal -->
+    <SBModal v-model="showPasswordModal" :title="playlist?.has_password ? 'Change Password' : 'Set Password'">
+      <form @submit.prevent="savePassword" class="space-y-4">
+        <p class="text-sm text-gray-500">
+          {{ playlist?.has_password ? 'Change or remove the password for this shared playlist.' : 'Add a password to protect this shared playlist. Viewers will need to enter the password to access it.' }}
+        </p>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+          <input
+            v-model="passwordForm.password"
+            type="password"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm"
+            placeholder="Enter password (min 4 characters)"
+            :required="!playlist?.has_password"
+            minlength="4"
+          />
+        </div>
+        <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+          <button
+            v-if="playlist?.has_password"
+            type="button"
+            @click="removePassword"
+            :disabled="savingPassword"
+            class="px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+          >
+            Remove Password
+          </button>
+          <div v-else></div>
+          <div class="flex gap-2">
+            <button
+              type="button"
+              @click="showPasswordModal = false"
+              class="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              :disabled="savingPassword || (!passwordForm.password || passwordForm.password.length < 4)"
+              class="px-4 py-2 bg-orange-600 hover:bg-orange-700 disabled:bg-gray-300 text-white rounded-lg font-medium text-sm transition-colors"
+            >
+              {{ savingPassword ? 'Saving...' : 'Set Password' }}
+            </button>
+          </div>
+        </div>
+      </form>
+    </SBModal>
+
     <!-- Add Videos Modal -->
     <SBModal v-model="showAddVideosModal" title="Add Videos to Playlist" size="lg">
       <div v-if="loadingVideos" class="text-center py-8">
@@ -275,7 +388,11 @@ const router = useRouter()
 const playlist = ref(null)
 const loading = ref(true)
 const showSortMenu = ref(false)
+const showVisibilityMenu = ref(false)
 const showAddVideosModal = ref(false)
+const showPasswordModal = ref(false)
+const savingPassword = ref(false)
+const passwordForm = ref({ password: '' })
 const loadingVideos = ref(false)
 const addingVideos = ref(false)
 const availableVideos = ref([])
@@ -351,21 +468,67 @@ async function removeVideo(video) {
   }
 }
 
-async function toggleSharing() {
+async function setVisibility(makePublic) {
+  showVisibilityMenu.value = false
+  if (playlist.value.is_public === makePublic) return
+
   try {
     const result = await playlistService.toggleSharing(playlist.value.id)
     playlist.value.is_public = result.is_public
     playlist.value.share_url = result.share_url
 
-    if (result.is_public && result.share_url) {
-      await navigator.clipboard.writeText(result.share_url)
-      toast.success('Playlist is now public. Link copied!')
+    if (result.is_public) {
+      toast.success('Playlist is now public')
     } else {
       toast.success('Playlist is now private')
     }
   } catch (error) {
-    console.error('Failed to toggle sharing:', error)
-    toast.error('Failed to update sharing')
+    console.error('Failed to update visibility:', error)
+    toast.error('Failed to update visibility')
+  }
+}
+
+async function copyShareLink() {
+  if (!playlist.value.share_url) return
+  try {
+    await navigator.clipboard.writeText(playlist.value.share_url)
+    toast.success('Link copied to clipboard!')
+  } catch (error) {
+    toast.error('Failed to copy link')
+  }
+}
+
+async function savePassword() {
+  if (!passwordForm.value.password || passwordForm.value.password.length < 4) return
+
+  savingPassword.value = true
+  try {
+    const result = await playlistService.setPassword(playlist.value.id, passwordForm.value.password)
+    playlist.value.has_password = result.has_password
+    showPasswordModal.value = false
+    passwordForm.value.password = ''
+    toast.success('Password set successfully')
+  } catch (error) {
+    console.error('Failed to set password:', error)
+    toast.error(error.message || 'Failed to set password')
+  } finally {
+    savingPassword.value = false
+  }
+}
+
+async function removePassword() {
+  savingPassword.value = true
+  try {
+    const result = await playlistService.removePassword(playlist.value.id)
+    playlist.value.has_password = result.has_password
+    showPasswordModal.value = false
+    passwordForm.value.password = ''
+    toast.success('Password removed')
+  } catch (error) {
+    console.error('Failed to remove password:', error)
+    toast.error(error.message || 'Failed to remove password')
+  } finally {
+    savingPassword.value = false
   }
 }
 
@@ -446,8 +609,9 @@ function formatDate(date) {
 
 // Close sort menu when clicking outside
 function handleClickOutside(event) {
-  if (showSortMenu.value && !event.target.closest('.relative')) {
+  if (!event.target.closest('.relative')) {
     showSortMenu.value = false
+    showVisibilityMenu.value = false
   }
 }
 

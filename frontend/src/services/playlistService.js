@@ -307,17 +307,61 @@ class PlaylistService {
   }
 
   /**
+   * Set a share password on a playlist
+   */
+  async setPassword(playlistId, password) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/playlists/${playlistId}/password`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ password })
+      })
+
+      if (handleUnauthorized(response)) return null
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.message || `Failed to set password: ${response.statusText}`)
+      }
+
+      return await response.json()
+    } catch (error) {
+      console.error('Error setting playlist password:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Remove the share password from a playlist
+   */
+  async removePassword(playlistId) {
+    return this.setPassword(playlistId, null)
+  }
+
+  /**
    * Get a shared playlist by token (public access)
    */
-  async getSharedPlaylist(token) {
+  async getSharedPlaylist(token, password = null) {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/share/playlist/${token}`, {
+      let url = `${API_BASE_URL}/api/share/playlist/${token}`
+      if (password) {
+        url += `?password=${encodeURIComponent(password)}`
+      }
+
+      const response = await fetch(url, {
         method: 'GET',
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json'
         }
       })
+
+      if (response.status === 423) {
+        const data = await response.json()
+        const err = new Error(data.message || 'Password required')
+        err.passwordRequired = true
+        throw err
+      }
 
       if (!response.ok) {
         if (response.status === 404) {

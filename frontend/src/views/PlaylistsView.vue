@@ -1,21 +1,20 @@
 <template>
-  <div class="animate-fade-in max-w-7xl mx-auto p-6 lg:p-8">
-    <!-- Header -->
-    <div class="flex items-center justify-between mb-8">
-      <div>
-        <h1 class="text-xl font-semibold text-gray-900">Playlists</h1>
-        <p class="text-sm text-gray-500 mt-1">Organize your videos into collections</p>
-      </div>
-
+  <div class="animate-fade-in">
+    <!-- Action Bar -->
+    <div class="flex items-center gap-3 mb-6 pb-6 border-b border-gray-100">
       <button
         @click="showCreateModal = true"
-        class="inline-flex items-center gap-2 px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-lg font-medium text-sm shadow-sm transition-colors"
+        class="inline-flex items-center gap-2 px-4 py-2 bg-orange-500 text-white text-sm font-medium rounded-lg hover:bg-orange-600 transition-colors shadow-sm"
       >
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
         </svg>
         New Playlist
       </button>
+
+      <div class="ml-auto text-xs text-gray-400" v-if="!loading && playlists.length > 0">
+        {{ playlists.length }} {{ playlists.length === 1 ? 'playlist' : 'playlists' }}
+      </div>
     </div>
 
     <!-- Loading State -->
@@ -25,69 +24,56 @@
     </div>
 
     <!-- Playlists Grid -->
-    <div v-else-if="playlists.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+    <div v-else-if="playlists.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
       <div
         v-for="playlist in playlists"
         :key="playlist.id"
-        class="group relative bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg hover:border-orange-200 transition-all cursor-pointer"
+        class="group relative bg-white border border-gray-100 rounded-xl p-4 hover:border-gray-200 hover:shadow-sm transition-all cursor-pointer"
         @click="openPlaylist(playlist.id)"
       >
-        <!-- Playlist Cover -->
-        <div class="relative aspect-video bg-gradient-to-br from-gray-100 to-gray-200">
-          <!-- Stack effect for multiple videos -->
-          <div class="absolute inset-0 flex items-center justify-center">
-            <div class="w-16 h-16 bg-white/80 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-lg">
-              <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
-              </svg>
-            </div>
-          </div>
-
-          <!-- Video Count Badge -->
-          <div class="absolute bottom-2 right-2 bg-black/60 backdrop-blur-md text-white text-[10px] font-medium px-2 py-1 rounded-md border border-white/10">
-            {{ playlist.videos_count }} {{ playlist.videos_count === 1 ? 'video' : 'videos' }}
-          </div>
-
-          <!-- Public Badge -->
-          <div v-if="playlist.is_public" class="absolute top-2 left-2 bg-green-500 text-white p-1.5 rounded-lg" title="Public playlist">
-            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        <!-- Row 1: Icon + Name + Visibility badge -->
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-lg bg-orange-50 border border-orange-100 flex items-center justify-center flex-shrink-0 group-hover:bg-orange-100 transition-colors">
+            <svg class="w-4.5 h-4.5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
             </svg>
           </div>
-
-          <!-- Hover Overlay -->
-          <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all duration-200 flex items-center justify-center">
-            <div class="w-12 h-12 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg text-orange-600">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-              </svg>
-            </div>
-          </div>
-        </div>
-
-        <!-- Playlist Info -->
-        <div class="p-4">
-          <h3 class="font-medium text-gray-900 text-[14px] leading-snug truncate group-hover:text-orange-600 transition-colors">
+          <h3 class="text-sm font-medium text-gray-900 truncate flex-1 min-w-0 group-hover:text-orange-600 transition-colors flex items-center gap-1.5">
             {{ playlist.title }}
+            <svg v-if="playlist.has_password" class="w-3.5 h-3.5 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" title="Password protected">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+            </svg>
           </h3>
-          <p v-if="playlist.description" class="text-xs text-gray-500 mt-1 line-clamp-2">
-            {{ playlist.description }}
-          </p>
-          <div class="flex items-center gap-2 text-[11px] text-gray-400 mt-2">
-            <span>{{ formatDate(playlist.created_at) }}</span>
-            <span v-if="playlist.sort_by === 'date_added'" class="flex items-center gap-1">
-              <span class="w-0.5 h-0.5 bg-gray-300 rounded-full"></span>
-              Auto-sorted
-            </span>
-          </div>
+          <span
+            class="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full flex-shrink-0"
+            :class="playlist.is_public
+              ? 'text-green-700 bg-green-50 border border-green-200/60'
+              : 'text-gray-500 bg-gray-50 border border-gray-200/60'"
+          >
+            <!-- Public icon -->
+            <svg v-if="playlist.is_public" class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <!-- Private icon -->
+            <svg v-else class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+            </svg>
+            {{ playlist.is_public ? 'Public' : 'Private' }}
+          </span>
         </div>
 
-        <!-- Quick Actions -->
-        <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+        <!-- Row 2: Video count + Created date -->
+        <div class="flex items-center gap-2 mt-2.5 pl-12">
+          <span class="text-xs text-gray-400">{{ playlist.videos_count }} {{ playlist.videos_count === 1 ? 'video' : 'videos' }}</span>
+          <span class="w-0.5 h-0.5 bg-gray-300 rounded-full"></span>
+          <span class="text-xs text-gray-400">{{ formatDate(playlist.created_at) }}</span>
+        </div>
+
+        <!-- Hover Actions -->
+        <div class="absolute top-3 right-3 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity" @click.stop>
           <button
-            @click.stop="sharePlaylist(playlist)"
-            class="p-1.5 bg-white text-gray-600 hover:text-blue-600 rounded-lg shadow-sm transition-colors"
+            @click="sharePlaylist(playlist)"
+            class="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
             :title="playlist.is_public ? 'Copy share link' : 'Make public to share'"
           >
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -95,8 +81,8 @@
             </svg>
           </button>
           <button
-            @click.stop="editPlaylist(playlist)"
-            class="p-1.5 bg-white text-gray-600 hover:text-orange-600 rounded-lg shadow-sm transition-colors"
+            @click="editPlaylist(playlist)"
+            class="p-1.5 text-gray-400 hover:text-orange-600 hover:bg-orange-50 rounded-md transition-colors"
             title="Edit playlist"
           >
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -104,8 +90,8 @@
             </svg>
           </button>
           <button
-            @click.stop="confirmDelete(playlist)"
-            class="p-1.5 bg-white text-gray-600 hover:text-red-600 rounded-lg shadow-sm transition-colors"
+            @click="confirmDelete(playlist)"
+            class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
             title="Delete playlist"
           >
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -129,7 +115,7 @@
       </p>
       <button
         @click="showCreateModal = true"
-        class="inline-flex items-center gap-2 px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-lg font-medium text-sm shadow-sm transition-colors"
+        class="inline-flex items-center gap-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium text-sm shadow-sm transition-colors"
       >
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
@@ -332,11 +318,4 @@ onMounted(() => {
   to { opacity: 1; transform: translateY(0); }
 }
 .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
-
-.line-clamp-2 {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
 </style>

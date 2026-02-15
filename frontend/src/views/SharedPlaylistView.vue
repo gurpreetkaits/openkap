@@ -8,6 +8,39 @@
       </div>
     </div>
 
+    <!-- Password Required State -->
+    <div v-else-if="passwordRequired" class="flex items-center justify-center min-h-screen">
+      <div class="w-full max-w-sm mx-auto p-8">
+        <div class="bg-white rounded-2xl shadow-lg border border-gray-200 p-8 text-center">
+          <div class="w-16 h-16 mx-auto mb-6 bg-amber-100 rounded-full flex items-center justify-center">
+            <svg class="w-8 h-8 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+            </svg>
+          </div>
+          <h2 class="text-xl font-semibold text-gray-900 mb-2">Password Protected</h2>
+          <p class="text-gray-500 mb-6 text-sm">This playlist is password protected. Enter the password to view it.</p>
+          <form @submit.prevent="submitPassword" class="space-y-4">
+            <input
+              v-model="passwordInput"
+              type="password"
+              placeholder="Enter password"
+              required
+              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm"
+              :class="{ 'border-red-300 focus:ring-red-500 focus:border-red-500': passwordError }"
+            />
+            <p v-if="passwordError" class="text-sm text-red-600">{{ passwordError }}</p>
+            <button
+              type="submit"
+              :disabled="submittingPassword || !passwordInput"
+              class="w-full px-4 py-2.5 bg-orange-600 hover:bg-orange-700 disabled:bg-gray-300 text-white rounded-lg font-medium text-sm transition-colors"
+            >
+              {{ submittingPassword ? 'Checking...' : 'Unlock Playlist' }}
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
     <!-- Error State -->
     <div v-else-if="error" class="flex items-center justify-center min-h-screen">
       <div class="text-center max-w-md mx-auto p-8">
@@ -172,18 +205,41 @@ const route = useRoute()
 const playlist = ref(null)
 const loading = ref(true)
 const error = ref(null)
+const passwordRequired = ref(false)
+const passwordInput = ref('')
+const passwordError = ref('')
+const submittingPassword = ref(false)
 
-async function fetchPlaylist() {
+async function fetchPlaylist(password = null) {
   loading.value = true
   error.value = null
+  passwordRequired.value = false
 
   try {
-    playlist.value = await playlistService.getSharedPlaylist(route.params.token)
+    playlist.value = await playlistService.getSharedPlaylist(route.params.token, password)
   } catch (err) {
     console.error('Failed to fetch shared playlist:', err)
-    error.value = err.message || 'This playlist is not available.'
+    if (err.passwordRequired) {
+      passwordRequired.value = true
+      if (password) {
+        passwordError.value = 'Incorrect password'
+      }
+    } else {
+      error.value = err.message || 'This playlist is not available.'
+    }
   } finally {
     loading.value = false
+  }
+}
+
+async function submitPassword() {
+  if (!passwordInput.value) return
+  passwordError.value = ''
+  submittingPassword.value = true
+  try {
+    await fetchPlaylist(passwordInput.value)
+  } finally {
+    submittingPassword.value = false
   }
 }
 

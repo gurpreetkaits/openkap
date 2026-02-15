@@ -167,4 +167,15 @@ class PlaylistRepository extends BaseRepository
     {
         return $playlist->videos()->where('video_id', $videoId)->exists();
     }
+
+    /**
+     * Set or clear the share password on a playlist.
+     */
+    public function setPassword(Playlist $playlist, ?string $hashedPassword): Playlist
+    {
+        $playlist->share_password = $hashedPassword;
+        $playlist->save();
+
+        return $playlist;
+    }
 }
