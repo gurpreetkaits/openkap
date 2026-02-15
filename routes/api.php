@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\GoogleAuthController;
 use App\Http\Controllers\BunnyVideoController;
+use App\Http\Controllers\ChatController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\FolderController;
@@ -265,6 +266,15 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/{id}', [ScreenshotController::class, 'update']);
         Route::delete('/{id}', [ScreenshotController::class, 'destroy']);
         Route::post('/{id}/toggle-sharing', [ScreenshotController::class, 'toggleSharing']);
+    });
+
+    // Chat routes
+    Route::prefix('chat')->middleware('throttle:30,1')->group(function () {
+        Route::get('/conversations', [ChatController::class, 'conversations']);
+        Route::post('/conversations', [ChatController::class, 'createConversation']);
+        Route::get('/conversations/{id}/messages', [ChatController::class, 'messages']);
+        Route::delete('/conversations/{id}', [ChatController::class, 'destroyConversation']);
+        Route::post('/send', [ChatController::class, 'send']);
     });
 });
 

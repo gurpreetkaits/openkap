@@ -306,6 +306,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Relationship: User has many chat conversations
+     */
+    public function chatConversations()
+    {
+        return $this->hasMany(ChatConversation::class);
+    }
+
+    /**
      * Get unread notifications count
      */
     public function getUnreadNotificationsCount(): int

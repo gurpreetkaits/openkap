@@ -542,6 +542,9 @@
 
     <!-- Global Recording Components -->
     <RecordingSetupPanel />
+
+    <!-- AI Chat Widget -->
+    <ChatbotWidget />
   </div>
 </template>
 
@@ -550,6 +553,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { SBLogoutModal } from '../Global'
 import RecordingSetupPanel from '../Global/RecordingSetupPanel.vue'
+import ChatbotWidget from '../Global/ChatbotWidget.vue'
 import { useAuth } from '@/stores/auth'
 import { useRecording } from '@/composables/useRecording'
 import { useBranding } from '@/composables/useBranding'
@@ -559,7 +563,8 @@ export default {
   name: 'AppLayout',
   components: {
     SBLogoutModal,
-    RecordingSetupPanel
+    RecordingSetupPanel,
+    ChatbotWidget
   },
   setup() {
     const route = useRoute()
