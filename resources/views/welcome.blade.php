@@ -97,7 +97,7 @@
                     </h1>
 
                     {{-- Subheadline --}}
-                    <p class="text-lg text-gray-500 mb-10 leading-relaxed">
+                    <p class="text-lg text-gray-500 mb-10 leading-[1.7]">
                         Record your screen and camera, get a shareable link in seconds. Your team watches on their own time. No scheduling, no calendar tetris.
                     </p>
 
@@ -402,7 +402,7 @@
             <div class="text-center mb-16">
                 <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-50 border border-orange-100 text-orange-600 text-xs font-semibold uppercase tracking-wider mb-4">How it works</div>
                 <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Three steps. Zero meetings.</h2>
-                <p class="text-gray-500 text-lg max-w-2xl mx-auto">Replace your next unnecessary meeting with an async video</p>
+                <p class="text-gray-500 text-lg max-w-2xl mx-auto leading-[1.7]">Replace your next unnecessary meeting with an async video</p>
             </div>
 
             <div class="grid md:grid-cols-3 gap-6 md:gap-8">
@@ -416,7 +416,7 @@
                         <i data-lucide="video" class="size-6 text-orange-600"></i>
                     </div>
                     <h3 class="text-xl font-semibold text-gray-900 mb-3">Record your screen</h3>
-                    <p class="text-gray-500 leading-relaxed">Click record, select a window or your whole screen. Add your microphone to explain what you're showing.</p>
+                    <p class="text-gray-500 leading-[1.7]">Click record, select a window or your whole screen. Add your microphone to explain what you're showing.</p>
                 </div>
 
                 {{-- Step 2 --}}
@@ -429,7 +429,7 @@
                         <i data-lucide="link" class="size-6 text-blue-600"></i>
                     </div>
                     <h3 class="text-xl font-semibold text-gray-900 mb-3">Get a shareable link</h3>
-                    <p class="text-gray-500 leading-relaxed">The moment you stop recording, your link is ready. Paste it anywhere — Slack, email, Notion, Linear.</p>
+                    <p class="text-gray-500 leading-[1.7]">The moment you stop recording, your link is ready. Paste it anywhere — Slack, email, Notion, Linear.</p>
                 </div>
 
                 {{-- Step 3 --}}
@@ -441,43 +441,40 @@
                         <i data-lucide="play-circle" class="size-6 text-emerald-600"></i>
                     </div>
                     <h3 class="text-xl font-semibold text-gray-900 mb-3">They watch when ready</h3>
-                    <p class="text-gray-500 leading-relaxed">No account needed. Plays instantly in any browser. They watch at 1.5x, skip ahead, or replay the tricky parts.</p>
+                    <p class="text-gray-500 leading-[1.7]">No account needed. Plays instantly in any browser. They watch at 1.5x, skip ahead, or replay the tricky parts.</p>
                 </div>
             </div>
 
             {{-- Demo GIF section --}}
-            <div class="mt-20 grid lg:grid-cols-2 gap-8 items-start">
-                <div class="space-y-4">
-                    <button onclick="showDemo('record')" id="demo-btn-record" class="w-full text-left p-5 rounded-xl border border-orange-200 bg-orange-50/50 transition-all">
-                        <div class="flex items-center gap-4">
-                            <div class="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center text-orange-600">
-                                <i data-lucide="video" class="size-5"></i>
-                            </div>
-                            <div>
-                                <div class="font-medium text-gray-900">Recording a video</div>
-                                <p class="text-sm text-gray-500">Select source, hit record, explain your point</p>
-                            </div>
+            <div class="mt-20 grid md:grid-cols-2 gap-6">
+                {{-- Record a Video --}}
+                <div>
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center text-orange-600">
+                            <i data-lucide="video" class="size-5"></i>
                         </div>
-                    </button>
-
-                    <button onclick="showDemo('share')" id="demo-btn-share" class="w-full text-left p-5 rounded-xl border border-gray-200 hover:border-gray-300 transition-all">
-                        <div class="flex items-center gap-4">
-                            <div class="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center text-gray-400">
-                                <i data-lucide="share" class="size-5"></i>
-                            </div>
-                            <div>
-                                <div class="font-medium text-gray-900">Sharing with your team</div>
-                                <p class="text-sm text-gray-500">Copy link, paste anywhere, done</p>
-                            </div>
+                        <div>
+                            <div class="font-medium text-gray-900">Record a Video</div>
+                            <p class="text-sm text-gray-500">Select source, hit record, explain your point</p>
                         </div>
-                    </button>
-                </div>
-
-                <div class="rounded-2xl overflow-hidden border border-gray-200 bg-gray-50 shadow-lg shadow-gray-200/50">
-                    <div id="demo-record" class="block">
+                    </div>
+                    <div class="rounded-2xl overflow-hidden border border-gray-200 bg-gray-50 shadow-lg shadow-gray-200/50">
                         <img src="/demo/how-to-record-screen.gif" alt="How to record your screen with ScreenSense" class="w-full h-auto">
                     </div>
-                    <div id="demo-share" class="hidden">
+                </div>
+
+                {{-- Sharing With Your Friends --}}
+                <div>
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600">
+                            <i data-lucide="share" class="size-5"></i>
+                        </div>
+                        <div>
+                            <div class="font-medium text-gray-900">Sharing With Your Friends</div>
+                            <p class="text-sm text-gray-500">Copy link, paste anywhere, done</p>
+                        </div>
+                    </div>
+                    <div class="rounded-2xl overflow-hidden border border-gray-200 bg-gray-50 shadow-lg shadow-gray-200/50">
                         <img src="/demo/copy-share-link.gif" alt="How to share your screen recording" class="w-full h-auto">
                     </div>
                 </div>
@@ -491,7 +488,7 @@
             <div class="text-center mb-16">
                 <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-50 border border-orange-100 text-orange-600 text-xs font-semibold uppercase tracking-wider mb-4">Features</div>
                 <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Everything you need, nothing you don't</h2>
-                <p class="text-gray-500 text-lg max-w-2xl mx-auto">No bloated feature list. Just the essentials, done well.</p>
+                <p class="text-gray-500 text-lg max-w-2xl mx-auto leading-[1.7]">No bloated feature list. Just the essentials, done well.</p>
             </div>
 
             <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -501,7 +498,7 @@
                         <i data-lucide="zap" class="size-5 text-orange-600"></i>
                     </div>
                     <h3 class="text-lg font-semibold text-gray-900 mb-2">Instant links</h3>
-                    <p class="text-gray-500 text-sm leading-relaxed">Your video link is ready the moment you stop recording. Share it before you even close the tab.</p>
+                    <p class="text-gray-500 text-sm leading-[1.7]">Your video link is ready the moment you stop recording. Share it before you even close the tab.</p>
                 </div>
 
                 {{-- Feature 2 --}}
@@ -510,7 +507,7 @@
                         <i data-lucide="mic" class="size-5 text-blue-600"></i>
                     </div>
                     <h3 class="text-lg font-semibold text-gray-900 mb-2">Screen + audio</h3>
-                    <p class="text-gray-500 text-sm leading-relaxed">Record your screen with microphone audio. Show and tell — way clearer than screenshots.</p>
+                    <p class="text-gray-500 text-sm leading-[1.7]">Record your screen with microphone audio. Show and tell — way clearer than screenshots.</p>
                 </div>
 
                 {{-- Feature 3 --}}
@@ -519,7 +516,7 @@
                         <i data-lucide="user-x" class="size-5 text-emerald-600"></i>
                     </div>
                     <h3 class="text-lg font-semibold text-gray-900 mb-2">No viewer signup</h3>
-                    <p class="text-gray-500 text-sm leading-relaxed">Anyone with the link can watch. No login walls, no "create an account" nonsense.</p>
+                    <p class="text-gray-500 text-sm leading-[1.7]">Anyone with the link can watch. No login walls, no "create an account" nonsense.</p>
                 </div>
 
                 {{-- Feature 4 --}}
@@ -528,7 +525,7 @@
                         <i data-lucide="monitor" class="size-5 text-violet-600"></i>
                     </div>
                     <h3 class="text-lg font-semibold text-gray-900 mb-2">HD recording</h3>
-                    <p class="text-gray-500 text-sm leading-relaxed">1080p capture so every detail is visible. Code, designs, spreadsheets — crystal clear.</p>
+                    <p class="text-gray-500 text-sm leading-[1.7]">1080p capture so every detail is visible. Code, designs, spreadsheets — crystal clear.</p>
                 </div>
 
                 {{-- Feature 5 --}}
@@ -537,7 +534,7 @@
                         <i data-lucide="play" class="size-5 text-sky-600"></i>
                     </div>
                     <h3 class="text-lg font-semibold text-gray-900 mb-2">Fast playback</h3>
-                    <p class="text-gray-500 text-sm leading-relaxed">HLS adaptive streaming means videos start playing immediately, even on slow connections.</p>
+                    <p class="text-gray-500 text-sm leading-[1.7]">HLS adaptive streaming means videos start playing immediately, even on slow connections.</p>
                 </div>
 
                 {{-- Feature 6 --}}
@@ -546,192 +543,178 @@
                         <i data-lucide="sparkles" class="size-5 text-amber-600"></i>
                     </div>
                     <h3 class="text-lg font-semibold text-gray-900 mb-2">No watermarks</h3>
-                    <p class="text-gray-500 text-sm leading-relaxed">Your videos look professional. No logos stamped on your content, even on the free plan.</p>
+                    <p class="text-gray-500 text-sm leading-[1.7]">Your videos look professional. No logos stamped on your content, even on the free plan.</p>
                 </div>
-            </div>
-        </div>
-    </section>
-
-    {{-- Chrome Extension Banner --}}
-    <section class="py-14 md:py-20">
-        <div class="max-w-4xl mx-auto px-6">
-            <div class="relative flex flex-col md:flex-row items-center justify-between gap-8 p-8 md:p-10 rounded-2xl bg-gray-900 overflow-hidden">
-                {{-- Background decoration --}}
-                <div class="absolute inset-0 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900"></div>
-                <div class="absolute top-0 right-0 w-64 h-64 bg-orange-600/10 rounded-full blur-3xl pointer-events-none"></div>
-                <div class="absolute bottom-0 left-0 w-48 h-48 bg-blue-600/10 rounded-full blur-3xl pointer-events-none"></div>
-
-                <div class="relative flex items-center gap-5">
-                    <div class="w-14 h-14 rounded-2xl bg-white/10 border border-white/10 flex items-center justify-center shrink-0">
-                        <svg class="size-7 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C8.21 0 4.831 1.757 2.632 4.501l3.953 6.848A5.454 5.454 0 0 1 12 6.545h10.691A12 12 0 0 0 12 0zM1.931 5.47A11.943 11.943 0 0 0 0 12c0 6.012 4.42 10.991 10.189 11.864l3.953-6.847a5.45 5.45 0 0 1-6.865-2.29zm13.342 2.166a5.446 5.446 0 0 1 1.819 7.533l-3.954 6.847c.538.054 1.085.084 1.638.084C20.09 22.1 24 17.627 24 12.203V12c0-.338-.014-.672-.041-1.003zM12 16.364a4.364 4.364 0 1 0 0-8.728 4.364 4.364 0 0 0 0 8.728z"/></svg>
-                    </div>
-                    <div>
-                        <h3 class="text-xl font-semibold text-white mb-1">Chrome extension</h3>
-                        <p class="text-gray-400 text-sm">Record from your browser toolbar. One click to start recording.</p>
-                    </div>
-                </div>
-                <a href="https://chromewebstore.google.com/detail/nnchnlkilgfemhpcohmgdpcmkjedjkfm" target="_blank" rel="noopener noreferrer" class="relative shrink-0 inline-flex items-center gap-2 h-11 px-6 bg-white text-gray-900 rounded-xl font-semibold hover:bg-gray-100 transition-colors shadow-lg">
-                    Add to Chrome
-                    <i data-lucide="external-link" class="size-4"></i>
-                </a>
             </div>
         </div>
     </section>
 
     {{-- Pricing Section --}}
     <section id="pricing" class="py-20 md:py-28 border-t border-gray-100">
-        <div class="max-w-5xl mx-auto px-6">
+        <div class="max-w-3xl mx-auto px-6">
             <div class="text-center mb-16">
                 <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-50 border border-orange-100 text-orange-600 text-xs font-semibold uppercase tracking-wider mb-4">Pricing</div>
                 <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Simple, transparent pricing</h2>
-                <p class="text-gray-500 text-lg">Start free. Upgrade when your team grows.</p>
+                <p class="text-gray-500 text-lg leading-[1.7]">Start free. Upgrade when your team grows.</p>
             </div>
 
-            <div class="grid md:grid-cols-3 gap-5 items-start">
-                {{-- Free Plan --}}
-                <div class="pricing-card p-8 rounded-2xl border border-gray-200 bg-white hover:shadow-xl hover:shadow-gray-100/80 transition-all duration-300">
-                    <div class="mb-6">
-                        <div class="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center mb-4">
-                            <i data-lucide="user" class="size-5 text-gray-500"></i>
+            {{-- Single Card with Plan Switcher --}}
+            <div class="bg-white rounded-xl border border-gray-200 p-6" id="pricing-card">
+                {{-- Header + Switch --}}
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-sm font-semibold text-gray-900">Choose Your Plan</h3>
+                    <div class="flex items-center gap-0.5 bg-gray-100 rounded-lg p-0.5">
+                        <button onclick="switchPlan('free')" id="plan-btn-free" class="px-3 py-1.5 text-xs font-medium rounded-md transition-all text-gray-500 hover:text-gray-700">Free</button>
+                        <button onclick="switchPlan('pro')" id="plan-btn-pro" class="px-3 py-1.5 text-xs font-medium rounded-md transition-all bg-white text-gray-900 shadow-sm">Pro</button>
+                        <button onclick="switchPlan('teams')" id="plan-btn-teams" class="px-3 py-1.5 text-xs font-medium rounded-md transition-all text-gray-500 hover:text-gray-700">Team</button>
+                    </div>
+                </div>
+
+                {{-- Plan Title + Price (centered) --}}
+                <div class="text-center py-6">
+                    {{-- Free --}}
+                    <div id="plan-free" class="hidden">
+                        <h4 class="text-lg font-bold text-gray-900 mb-1">Free</h4>
+                        <p class="text-xs text-gray-400 mb-4">For getting started</p>
+                        <div>
+                            <span class="text-4xl font-bold text-gray-900">$0</span>
+                            <span class="text-gray-400 text-sm">/mo</span>
                         </div>
-                        <h3 class="text-xl font-semibold text-gray-900 mb-1">Free</h3>
-                        <p class="text-sm text-gray-400">For individuals getting started</p>
                     </div>
-                    <div class="mb-6">
-                        <span class="text-5xl font-bold text-gray-900">$0</span>
-                        <span class="text-gray-400 text-sm ml-1">/month</span>
-                    </div>
-                    <ul class="space-y-3.5 mb-8 text-sm">
-                        <li class="flex items-center gap-3 text-gray-600">
-                            <div class="w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center shrink-0">
-                                <i data-lucide="check" class="size-3 text-gray-500"></i>
+
+                    {{-- Pro --}}
+                    <div id="plan-pro" class="">
+                        <h4 class="text-lg font-bold text-gray-900 mb-1">Pro</h4>
+                        <p class="text-xs text-gray-400 mb-3">For individuals & creators</p>
+                        {{-- Billing cycle toggle --}}
+                        <div class="flex items-center justify-center mb-4">
+                            <div class="flex items-center gap-0.5 bg-gray-100 rounded-md p-0.5">
+                                <button onclick="switchBilling('monthly')" id="billing-btn-monthly" class="px-2.5 py-1 text-[11px] font-medium rounded transition-all bg-white text-gray-900 shadow-sm">Monthly</button>
+                                <button onclick="switchBilling('yearly')" id="billing-btn-yearly" class="px-2.5 py-1 text-[11px] font-medium rounded transition-all text-gray-500 hover:text-gray-700">Yearly</button>
                             </div>
+                        </div>
+                        <div id="price-monthly" class="">
+                            <span class="text-4xl font-bold text-gray-900">$8</span>
+                            <span class="text-gray-400 text-sm">/mo</span>
+                        </div>
+                        <div id="price-yearly" class="hidden">
+                            <span class="text-4xl font-bold text-gray-900">$80</span>
+                            <span class="text-gray-400 text-sm">/yr</span>
+                            <div class="mt-1.5">
+                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-100 text-green-700 text-[10px] font-medium">Save 17%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Teams --}}
+                    <div id="plan-teams" class="hidden">
+                        <h4 class="text-lg font-bold text-gray-900 mb-1">Team</h4>
+                        <p class="text-xs text-gray-400 mb-4">For collaborative teams</p>
+                        <div>
+                            <span class="text-4xl font-bold text-gray-900">$39</span>
+                            <span class="text-gray-400 text-sm">/mo</span>
+                            <div class="mt-1">
+                                <span class="text-[10px] text-gray-400">Up to 5 members</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Benefits Grid --}}
+                <div class="py-5 border-b border-gray-100">
+                    {{-- Free benefits --}}
+                    <ul id="benefits-free" class="hidden grid grid-cols-3 gap-x-6 gap-y-3 text-sm text-gray-700">
+                        <li class="flex items-center gap-2">
+                            <svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                             10 videos
                         </li>
-                        <li class="flex items-center gap-3 text-gray-600">
-                            <div class="w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center shrink-0">
-                                <i data-lucide="check" class="size-3 text-gray-500"></i>
-                            </div>
-                            5 minutes per recording
+                        <li class="flex items-center gap-2">
+                            <svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            5 min per recording
                         </li>
-                        <li class="flex items-center gap-3 text-gray-600">
-                            <div class="w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center shrink-0">
-                                <i data-lucide="check" class="size-3 text-gray-500"></i>
-                            </div>
+                        <li class="flex items-center gap-2">
+                            <svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                             1 GB storage
                         </li>
-                        <li class="flex items-center gap-3 text-gray-600">
-                            <div class="w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center shrink-0">
-                                <i data-lucide="check" class="size-3 text-gray-500"></i>
-                            </div>
+                        <li class="flex items-center gap-2">
+                            <svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            No watermarks
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            Shareable links
+                        </li>
+                    </ul>
+
+                    {{-- Pro benefits --}}
+                    <ul id="benefits-pro" class="grid grid-cols-3 gap-x-6 gap-y-3 text-sm text-gray-700">
+                        <li class="flex items-center gap-2">
+                            <svg class="w-4 h-4 text-orange-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            Unlimited videos
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <svg class="w-4 h-4 text-orange-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            Unlimited recording
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <svg class="w-4 h-4 text-orange-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            50 GB storage
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <svg class="w-4 h-4 text-orange-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            HLS streaming
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <svg class="w-4 h-4 text-orange-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            Priority support
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <svg class="w-4 h-4 text-orange-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                             No watermarks
                         </li>
                     </ul>
-                    <a href="{{ config('app.frontend_url', config('app.url')) }}/login" class="block w-full py-3 rounded-xl border border-gray-200 text-center font-semibold text-gray-700 hover:bg-gray-50 transition-colors">
-                        Get started free
-                    </a>
-                </div>
 
-                {{-- Pro Plan --}}
-                <div class="pricing-card p-8 rounded-2xl border-2 border-orange-500 bg-white relative shadow-xl shadow-orange-100/50 md:-mt-4 md:mb-4">
-                    <div class="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-orange-600 text-xs font-semibold text-white shadow-lg shadow-orange-600/30">
-                        Most popular
-                    </div>
-                    <div class="mb-6">
-                        <div class="w-10 h-10 rounded-xl bg-orange-100 flex items-center justify-center mb-4">
-                            <i data-lucide="rocket" class="size-5 text-orange-600"></i>
-                        </div>
-                        <h3 class="text-xl font-semibold text-gray-900 mb-1">Pro</h3>
-                        <p class="text-sm text-gray-500">For power users and creators</p>
-                    </div>
-                    <div class="mb-6">
-                        <span class="text-5xl font-bold text-gray-900">$8</span>
-                        <span class="text-gray-400 text-sm ml-1">/month</span>
-                    </div>
-                    <ul class="space-y-3.5 mb-8 text-sm">
-                        <li class="flex items-center gap-3 text-gray-700">
-                            <div class="w-5 h-5 rounded-full bg-orange-100 flex items-center justify-center shrink-0">
-                                <i data-lucide="check" class="size-3 text-orange-600"></i>
-                            </div>
-                            Unlimited videos
+                    {{-- Team benefits --}}
+                    <ul id="benefits-teams" class="hidden grid grid-cols-3 gap-x-6 gap-y-3 text-sm text-gray-700">
+                        <li class="flex items-center gap-2">
+                            <svg class="w-4 h-4 text-indigo-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            Everything in Pro
                         </li>
-                        <li class="flex items-center gap-3 text-gray-700">
-                            <div class="w-5 h-5 rounded-full bg-orange-100 flex items-center justify-center shrink-0">
-                                <i data-lucide="check" class="size-3 text-orange-600"></i>
-                            </div>
-                            Unlimited recording length
+                        <li class="flex items-center gap-2">
+                            <svg class="w-4 h-4 text-indigo-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            5 team members
                         </li>
-                        <li class="flex items-center gap-3 text-gray-700">
-                            <div class="w-5 h-5 rounded-full bg-orange-100 flex items-center justify-center shrink-0">
-                                <i data-lucide="check" class="size-3 text-orange-600"></i>
-                            </div>
-                            50 GB storage
+                        <li class="flex items-center gap-2">
+                            <svg class="w-4 h-4 text-indigo-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            100 GB storage
                         </li>
-                        <li class="flex items-center gap-3 text-gray-700">
-                            <div class="w-5 h-5 rounded-full bg-orange-100 flex items-center justify-center shrink-0">
-                                <i data-lucide="check" class="size-3 text-orange-600"></i>
-                            </div>
-                            HLS adaptive streaming
-                        </li>
-                        <li class="flex items-center gap-3 text-gray-700">
-                            <div class="w-5 h-5 rounded-full bg-orange-100 flex items-center justify-center shrink-0">
-                                <i data-lucide="check" class="size-3 text-orange-600"></i>
-                            </div>
-                            Priority support
-                        </li>
-                    </ul>
-                    <a href="{{ config('app.frontend_url', config('app.url')) }}/login" class="btn-primary block w-full py-3 rounded-xl bg-orange-600 text-center font-semibold text-white hover:bg-orange-500 transition-colors shadow-lg shadow-orange-600/20">
-                        Upgrade to Pro
-                    </a>
-                </div>
-
-                {{-- Team Plan --}}
-                <div class="pricing-card p-8 rounded-2xl border border-gray-200 bg-white hover:shadow-xl hover:shadow-gray-100/80 transition-all duration-300">
-                    <div class="mb-6">
-                        <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center mb-4">
-                            <i data-lucide="users" class="size-5 text-blue-600"></i>
-                        </div>
-                        <h3 class="text-xl font-semibold text-gray-900 mb-1">Team</h3>
-                        <p class="text-sm text-gray-400">For growing teams</p>
-                    </div>
-                    <div class="mb-6">
-                        <span class="text-5xl font-bold text-gray-900">$39</span>
-                        <span class="text-gray-400 text-sm ml-1">/month</span>
-                    </div>
-                    <ul class="space-y-3.5 mb-8 text-sm">
-                        <li class="flex items-center gap-3 text-gray-600">
-                            <div class="w-5 h-5 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
-                                <i data-lucide="check" class="size-3 text-blue-600"></i>
-                            </div>
-                            Up to 5 team members
-                        </li>
-                        <li class="flex items-center gap-3 text-gray-600">
-                            <div class="w-5 h-5 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
-                                <i data-lucide="check" class="size-3 text-blue-600"></i>
-                            </div>
-                            100 GB shared storage
-                        </li>
-                        <li class="flex items-center gap-3 text-gray-600">
-                            <div class="w-5 h-5 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
-                                <i data-lucide="check" class="size-3 text-blue-600"></i>
-                            </div>
-                            Shared video library
-                        </li>
-                        <li class="flex items-center gap-3 text-gray-600">
-                            <div class="w-5 h-5 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
-                                <i data-lucide="check" class="size-3 text-blue-600"></i>
-                            </div>
+                        <li class="flex items-center gap-2">
+                            <svg class="w-4 h-4 text-indigo-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                             Team workspaces
                         </li>
-                        <li class="flex items-center gap-3 text-gray-600">
-                            <div class="w-5 h-5 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
-                                <i data-lucide="check" class="size-3 text-blue-600"></i>
-                            </div>
+                        <li class="flex items-center gap-2">
+                            <svg class="w-4 h-4 text-indigo-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            Shared video library
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <svg class="w-4 h-4 text-indigo-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                             Admin controls
                         </li>
                     </ul>
-                    <a href="{{ config('app.frontend_url', config('app.url')) }}/login" class="block w-full py-3 rounded-xl border border-gray-200 text-center font-semibold text-gray-700 hover:bg-gray-50 transition-colors">
+                </div>
+
+                {{-- Action Button --}}
+                <div class="pt-5 flex justify-center">
+                    <a id="cta-free" href="{{ config('app.frontend_url', config('app.url')) }}/login" class="hidden w-full max-w-[280px] py-2.5 rounded-lg border border-gray-200 text-xs font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors text-center">
+                        Get started free
+                    </a>
+                    <a id="cta-pro" href="{{ config('app.frontend_url', config('app.url')) }}/login" class="flex w-full max-w-[280px] py-2.5 rounded-lg bg-orange-600 hover:bg-orange-500 text-xs font-medium text-white transition-all shadow-sm text-center items-center justify-center gap-1.5">
+                        Upgrade to Pro
+                        <svg class="w-3.5 h-3.5 inline-block ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                    </a>
+                    <a id="cta-teams" href="{{ config('app.frontend_url', config('app.url')) }}/login" class="hidden w-full max-w-[280px] py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-xs font-medium text-white transition-all text-center items-center justify-center gap-1.5">
                         Get Team
+                        <svg class="w-3.5 h-3.5 inline-block ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
                     </a>
                 </div>
             </div>
@@ -742,74 +725,13 @@
         </div>
     </section>
 
-    {{-- Use Cases Section --}}
-    <section class="py-20 md:py-28 bg-gray-50/60 border-y border-gray-100">
-        <div class="max-w-6xl mx-auto px-6">
-            <div class="text-center mb-16">
-                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-50 border border-orange-100 text-orange-600 text-xs font-semibold uppercase tracking-wider mb-4">Use cases</div>
-                <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Built for async-first teams</h2>
-                <p class="text-gray-500 text-lg max-w-2xl mx-auto">Replace meetings, not productivity</p>
-            </div>
-
-            <div class="grid md:grid-cols-2 gap-5">
-                <div class="group p-8 rounded-2xl border border-gray-200 bg-white hover:shadow-lg hover:shadow-gray-100/80 hover:border-gray-300 transition-all duration-300">
-                    <div class="flex items-start gap-5">
-                        <div class="w-12 h-12 rounded-xl bg-violet-50 flex items-center justify-center shrink-0">
-                            <i data-lucide="code-2" class="size-6 text-violet-600"></i>
-                        </div>
-                        <div>
-                            <h3 class="text-lg font-semibold text-gray-900 mb-2">Engineering teams</h3>
-                            <p class="text-gray-500 leading-relaxed text-sm">Record PR walkthroughs, explain architecture decisions, or demo a bug fix. Your teammates review when they're in the zone, not when your calendar says so.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="group p-8 rounded-2xl border border-gray-200 bg-white hover:shadow-lg hover:shadow-gray-100/80 hover:border-gray-300 transition-all duration-300">
-                    <div class="flex items-start gap-5">
-                        <div class="w-12 h-12 rounded-xl bg-pink-50 flex items-center justify-center shrink-0">
-                            <i data-lucide="palette" class="size-6 text-pink-600"></i>
-                        </div>
-                        <div>
-                            <h3 class="text-lg font-semibold text-gray-900 mb-2">Design reviews</h3>
-                            <p class="text-gray-500 leading-relaxed text-sm">Walk through your Figma files with context. Stakeholders watch the full explanation instead of asking "what does this button do?" in comments.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="group p-8 rounded-2xl border border-gray-200 bg-white hover:shadow-lg hover:shadow-gray-100/80 hover:border-gray-300 transition-all duration-300">
-                    <div class="flex items-start gap-5">
-                        <div class="w-12 h-12 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
-                            <i data-lucide="headphones" class="size-6 text-emerald-600"></i>
-                        </div>
-                        <div>
-                            <h3 class="text-lg font-semibold text-gray-900 mb-2">Customer support</h3>
-                            <p class="text-gray-500 leading-relaxed text-sm">Show customers exactly how to fix their issue. A 30-second video beats a 500-word email every time.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="group p-8 rounded-2xl border border-gray-200 bg-white hover:shadow-lg hover:shadow-gray-100/80 hover:border-gray-300 transition-all duration-300">
-                    <div class="flex items-start gap-5">
-                        <div class="w-12 h-12 rounded-xl bg-amber-50 flex items-center justify-center shrink-0">
-                            <i data-lucide="graduation-cap" class="size-6 text-amber-600"></i>
-                        </div>
-                        <div>
-                            <h3 class="text-lg font-semibold text-gray-900 mb-2">Remote onboarding</h3>
-                            <p class="text-gray-500 leading-relaxed text-sm">Create reusable training videos for new hires. They watch at their own pace and can replay the tricky parts.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
     {{-- Testimonials Section --}}
     <section class="py-20 md:py-28">
         <div class="max-w-6xl mx-auto px-6">
             <div class="text-center mb-14">
                 <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-50 border border-orange-100 text-orange-600 text-xs font-semibold uppercase tracking-wider mb-4">Testimonials</div>
                 <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Loved by developers and teams</h2>
-                <p class="text-gray-500 text-lg">Honest feedback from people who switched</p>
+                <p class="text-gray-500 text-lg leading-[1.7]">Honest feedback from people who switched</p>
             </div>
 
             <div class="grid md:grid-cols-3 gap-5">
@@ -822,7 +744,7 @@
                         <i data-lucide="star" class="size-4 text-amber-400 fill-amber-400"></i>
                         <i data-lucide="star" class="size-4 text-amber-400 fill-amber-400"></i>
                     </div>
-                    <p class="text-gray-600 text-sm leading-relaxed mb-5">"Finally, a screen recorder that doesn't nag me to upgrade every 5 seconds. It just works. I replaced Loom for my entire dev team."</p>
+                    <p class="text-gray-600 text-sm leading-[1.7] mb-5">"Finally, a screen recorder that doesn't nag me to upgrade every 5 seconds. It just works. I replaced Loom for my entire dev team."</p>
                     <div class="flex items-center gap-3">
                         <div class="w-9 h-9 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-xs font-bold text-white">SK</div>
                         <div>
@@ -841,7 +763,7 @@
                         <i data-lucide="star" class="size-4 text-amber-400 fill-amber-400"></i>
                         <i data-lucide="star" class="size-4 text-amber-400 fill-amber-400"></i>
                     </div>
-                    <p class="text-gray-600 text-sm leading-relaxed mb-5">"I send 3-4 quick videos to clients daily. Saves me hours of back-and-forth emails. The instant link sharing is a game changer."</p>
+                    <p class="text-gray-600 text-sm leading-[1.7] mb-5">"I send 3-4 quick videos to clients daily. Saves me hours of back-and-forth emails. The instant link sharing is a game changer."</p>
                     <div class="flex items-center gap-3">
                         <div class="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-xs font-bold text-white">MR</div>
                         <div>
@@ -860,7 +782,7 @@
                         <i data-lucide="star" class="size-4 text-amber-400 fill-amber-400"></i>
                         <i data-lucide="star" class="size-4 text-amber-400 fill-amber-400"></i>
                     </div>
-                    <p class="text-gray-600 text-sm leading-relaxed mb-5">"Simple pricing, no bloat. My whole team switched over in a day. Way better than paying Loom's enterprise tax."</p>
+                    <p class="text-gray-600 text-sm leading-[1.7] mb-5">"Simple pricing, no bloat. My whole team switched over in a day. Way better than paying Loom's enterprise tax."</p>
                     <div class="flex items-center gap-3">
                         <div class="w-9 h-9 rounded-full bg-gradient-to-br from-violet-400 to-violet-600 flex items-center justify-center text-xs font-bold text-white">AT</div>
                         <div>
@@ -883,7 +805,7 @@
                     </div>
                     <div>
                         <h4 class="text-sm font-semibold text-gray-900 mb-1">Fully open source</h4>
-                        <p class="text-xs text-gray-500 leading-relaxed">Inspect every line of code. No hidden trackers, no black boxes. MIT licensed.</p>
+                        <p class="text-xs text-gray-500 leading-[1.7]">Inspect every line of code. No hidden trackers, no black boxes. MIT licensed.</p>
                     </div>
                 </div>
                 <div class="flex items-start gap-4">
@@ -892,7 +814,7 @@
                     </div>
                     <div>
                         <h4 class="text-sm font-semibold text-gray-900 mb-1">Your data stays yours</h4>
-                        <p class="text-xs text-gray-500 leading-relaxed">Videos are encrypted in transit. No selling your data. Delete anytime, it's actually gone.</p>
+                        <p class="text-xs text-gray-500 leading-[1.7]">Videos are encrypted in transit. No selling your data. Delete anytime, it's actually gone.</p>
                     </div>
                 </div>
                 <div class="flex items-start gap-4">
@@ -901,7 +823,7 @@
                     </div>
                     <div>
                         <h4 class="text-sm font-semibold text-gray-900 mb-1">No vendor lock-in</h4>
-                        <p class="text-xs text-gray-500 leading-relaxed">Export your videos anytime. Self-host if you want. You're never trapped.</p>
+                        <p class="text-xs text-gray-500 leading-[1.7]">Export your videos anytime. Self-host if you want. You're never trapped.</p>
                     </div>
                 </div>
             </div>
@@ -923,7 +845,7 @@
                         <i data-lucide="plus" class="size-5 text-gray-400 shrink-0 faq-icon transition-transform duration-200"></i>
                     </button>
                     <div class="faq-content hidden px-5 pb-5 -mt-1">
-                        <p class="text-gray-500 leading-relaxed text-sm">Yes. The free plan includes 10 recordings with no watermarks. After that, Pro is $8/month for unlimited videos. We don't do the "free trial then surprise you with a paywall" thing.</p>
+                        <p class="text-gray-500 leading-[1.7] text-sm">Yes. The free plan includes 10 recordings with no watermarks. After that, Pro is $8/month for unlimited videos. We don't do the "free trial then surprise you with a paywall" thing.</p>
                     </div>
                 </div>
 
@@ -933,7 +855,7 @@
                         <i data-lucide="plus" class="size-5 text-gray-400 shrink-0 faq-icon transition-transform duration-200"></i>
                     </button>
                     <div class="faq-content hidden px-5 pb-5 -mt-1">
-                        <p class="text-gray-500 leading-relaxed text-sm">No. Anyone with the link can watch immediately in their browser. No signup, no app download, no friction.</p>
+                        <p class="text-gray-500 leading-[1.7] text-sm">No. Anyone with the link can watch immediately in their browser. No signup, no app download, no friction.</p>
                     </div>
                 </div>
 
@@ -943,7 +865,7 @@
                         <i data-lucide="plus" class="size-5 text-gray-400 shrink-0 faq-icon transition-transform duration-200"></i>
                     </button>
                     <div class="faq-content hidden px-5 pb-5 -mt-1">
-                        <p class="text-gray-500 leading-relaxed text-sm">Free plan: 5 minutes per video. Pro and Team: no limit. Most async updates are under 3 minutes anyway.</p>
+                        <p class="text-gray-500 leading-[1.7] text-sm">Free plan: 5 minutes per video. Pro and Team: no limit. Most async updates are under 3 minutes anyway.</p>
                     </div>
                 </div>
 
@@ -953,7 +875,7 @@
                         <i data-lucide="plus" class="size-5 text-gray-400 shrink-0 faq-icon transition-transform duration-200"></i>
                     </button>
                     <div class="faq-content hidden px-5 pb-5 -mt-1">
-                        <p class="text-gray-500 leading-relaxed text-sm">Chrome, Firefox, Safari, and Edge. We also have a <a href="https://chromewebstore.google.com/detail/nnchnlkilgfemhpcohmgdpcmkjedjkfm" target="_blank" rel="noopener noreferrer" class="text-orange-600 font-medium hover:text-orange-500 underline decoration-orange-200">Chrome extension</a> for one-click recording.</p>
+                        <p class="text-gray-500 leading-[1.7] text-sm">Chrome, Firefox, Safari, and Edge. We also have a <a href="https://chromewebstore.google.com/detail/nnchnlkilgfemhpcohmgdpcmkjedjkfm" target="_blank" rel="noopener noreferrer" class="text-orange-600 font-medium hover:text-orange-500 underline decoration-orange-200">Chrome extension</a> for one-click recording.</p>
                     </div>
                 </div>
 
@@ -963,7 +885,7 @@
                         <i data-lucide="plus" class="size-5 text-gray-400 shrink-0 faq-icon transition-transform duration-200"></i>
                     </button>
                     <div class="faq-content hidden px-5 pb-5 -mt-1">
-                        <p class="text-gray-500 leading-relaxed text-sm">Simpler pricing, no aggressive upsells, and a free tier that actually lets you use the product. We're focused on doing one thing well: helping you share quick video explanations with your team.</p>
+                        <p class="text-gray-500 leading-[1.7] text-sm">Simpler pricing, no aggressive upsells, and a free tier that actually lets you use the product. We're focused on doing one thing well: helping you share quick video explanations with your team.</p>
                     </div>
                 </div>
             </div>
@@ -984,7 +906,7 @@
                 Free to get started
             </div>
             <h2 class="text-3xl md:text-5xl font-bold text-gray-900 mb-6 leading-tight">Ready to skip your<br class="hidden sm:block"> next meeting?</h2>
-            <p class="text-lg text-gray-500 mb-10 max-w-lg mx-auto">Record your first video in under a minute. Free, no credit card required.</p>
+            <p class="text-lg text-gray-500 mb-10 max-w-lg mx-auto leading-[1.7]">Record your first video in under a minute. Free, no credit card required.</p>
             <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
                 <a href="{{ config('app.frontend_url', config('app.url')) }}/login" class="btn-primary inline-flex items-center justify-center h-14 px-10 rounded-xl bg-orange-600 text-white text-lg font-semibold hover:bg-orange-500 shadow-xl shadow-orange-600/25 transition-all">
                     Start recording
@@ -1024,6 +946,43 @@
         }
 
         lucide.createIcons();
+    }
+
+    function switchPlan(plan) {
+        var plans = ['free', 'pro', 'teams'];
+        plans.forEach(function(p) {
+            document.getElementById('plan-' + p).classList.add('hidden');
+            document.getElementById('benefits-' + p).classList.add('hidden');
+            document.getElementById('cta-' + p).classList.add('hidden');
+            document.getElementById('cta-' + p).classList.remove('flex');
+            var btn = document.getElementById('plan-btn-' + p);
+            btn.className = 'px-3 py-1.5 text-xs font-medium rounded-md transition-all text-gray-500 hover:text-gray-700';
+        });
+        document.getElementById('plan-' + plan).classList.remove('hidden');
+        document.getElementById('benefits-' + plan).classList.remove('hidden');
+        document.getElementById('cta-' + plan).classList.remove('hidden');
+        if (plan !== 'free') document.getElementById('cta-' + plan).classList.add('flex');
+        document.getElementById('plan-btn-' + plan).className = 'px-3 py-1.5 text-xs font-medium rounded-md transition-all bg-white text-gray-900 shadow-sm';
+    }
+
+    function switchBilling(cycle) {
+        var monthly = document.getElementById('price-monthly');
+        var yearly = document.getElementById('price-yearly');
+        var btnMonthly = document.getElementById('billing-btn-monthly');
+        var btnYearly = document.getElementById('billing-btn-yearly');
+        var active = 'px-2.5 py-1 text-[11px] font-medium rounded transition-all bg-white text-gray-900 shadow-sm';
+        var inactive = 'px-2.5 py-1 text-[11px] font-medium rounded transition-all text-gray-500 hover:text-gray-700';
+        if (cycle === 'yearly') {
+            monthly.classList.add('hidden');
+            yearly.classList.remove('hidden');
+            btnYearly.className = active;
+            btnMonthly.className = inactive;
+        } else {
+            yearly.classList.add('hidden');
+            monthly.classList.remove('hidden');
+            btnMonthly.className = active;
+            btnYearly.className = inactive;
+        }
     }
 
     function showDemo(type) {
