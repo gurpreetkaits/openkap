@@ -93,6 +93,11 @@ return [
             'retry_after' => 60,
         ],
 
+        'unosend' => [
+            'transport' => 'unosend',
+            'api_key' => env('UNOSEND_API_KEY'),
+        ],
+
     ],
 
     /*
