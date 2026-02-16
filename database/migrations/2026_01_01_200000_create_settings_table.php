@@ -23,7 +23,7 @@ return new class extends Migration
         DB::table('settings')->insert([
             [
                 'key' => 'free_video_limit',
-                'value' => '1',
+                'value' => '5',
                 'type' => 'integer',
                 'group' => 'subscription',
                 'description' => 'Maximum number of videos for free plan users',

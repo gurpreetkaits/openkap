@@ -38,7 +38,7 @@ class BunnyVideoController extends Controller
         if (! $user->shouldEncodeVideos()) {
             return response()->json([
                 'error' => 'subscription_required',
-                'message' => 'Video encoding requires an active subscription. Free accounts can upload up to 10 videos without encoding.',
+                'message' => 'Video encoding requires an active subscription. Free accounts can upload up to 5 videos without encoding.',
                 'use_local_storage' => true,
                 'upgrade_url' => config('services.frontend.url').'/subscription',
             ], 403);

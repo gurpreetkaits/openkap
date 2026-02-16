@@ -25,17 +25,6 @@
           </router-link>
 
           <router-link
-            to="/workspaces"
-            class="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all group"
-            :class="isActive('/workspaces') || route.path.startsWith('/workspace/') ? 'text-gray-900 bg-gray-50' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'"
-          >
-            <svg class="w-4 h-4 transition-colors" :class="isActive('/workspaces') || route.path.startsWith('/workspace/') ? 'text-orange-600' : 'text-gray-400 group-hover:text-gray-600'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
-            </svg>
-            Workspaces
-          </router-link>
-
-          <router-link
             to="/playlists"
             class="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all group"
             :class="isActive('/playlists') || route.path.startsWith('/playlist/') ? 'text-gray-900 bg-gray-50' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'"
@@ -254,7 +243,7 @@
             <Transition name="dropdown">
               <div
                 v-show="showNotificationsDropdown"
-                class="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-xl border border-gray-200 z-50 overflow-hidden"
+                class="absolute right-0 mt-2 w-[480px] bg-white rounded-xl shadow-xl border border-gray-200 z-50 overflow-hidden"
               >
                 <!-- Header -->
                 <div class="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
@@ -286,7 +275,7 @@
                 </div>
 
                 <!-- Notifications List -->
-                <div class="max-h-[400px] overflow-y-auto">
+                <div class="max-h-[560px] overflow-y-auto">
                   <!-- Loading State -->
                   <div v-if="loadingNotifications" class="px-4 py-8 text-center">
                     <div class="inline-block animate-spin rounded-full h-6 w-6 border-2 border-orange-600 border-t-transparent"></div>
@@ -349,8 +338,18 @@
                           <p class="text-[10px] text-gray-400 mt-1">{{ formatNotificationTime(notification.created_at) }}</p>
                         </div>
 
-                        <!-- Unread indicator -->
-                        <div v-if="!notification.read_at" class="w-2 h-2 bg-orange-500 rounded-full flex-shrink-0 mt-1.5"></div>
+                        <!-- Mark as read button -->
+                        <button
+                          v-if="!notification.read_at"
+                          @click.stop="markSingleAsRead(notification)"
+                          class="flex-shrink-0 p-1 text-gray-400 hover:text-orange-600 hover:bg-orange-50 rounded-md transition-colors"
+                          title="Mark as read"
+                        >
+                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                          </svg>
+                        </button>
+                        <div v-else class="w-6 flex-shrink-0"></div>
                       </div>
                     </div>
                   </div>
@@ -408,18 +407,6 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
               </svg>
               Library
-            </router-link>
-
-            <router-link
-              to="/workspaces"
-              @click="sidebarOpen = false"
-              class="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all group"
-              :class="isActive('/workspaces') || route.path.startsWith('/workspace/') ? 'text-gray-900 bg-gray-50' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'"
-            >
-              <svg class="w-4 h-4 transition-colors" :class="isActive('/workspaces') || route.path.startsWith('/workspace/') ? 'text-orange-600' : 'text-gray-400 group-hover:text-gray-600'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
-              </svg>
-              Workspaces
             </router-link>
 
             <router-link
@@ -588,6 +575,7 @@ export default {
     // Notification tabs (matching backend types)
     const notificationTabs = [
       { id: 'all', label: 'All' },
+      { id: 'unread', label: 'Unread' },
       { id: 'comment', label: 'Comments' },
       { id: 'viewer', label: 'Views' }
     ]
@@ -596,6 +584,9 @@ export default {
     const filteredNotifications = computed(() => {
       if (activeNotificationTab.value === 'all') {
         return notifications.value
+      }
+      if (activeNotificationTab.value === 'unread') {
+        return notifications.value.filter(n => !n.read_at)
       }
       return notifications.value.filter(n => n.type === activeNotificationTab.value)
     })
@@ -727,6 +718,18 @@ export default {
       }
     }
 
+    // Mark a single notification as read (without navigating)
+    const markSingleAsRead = async (notification) => {
+      if (notification.read_at) return
+      try {
+        await notificationService.markAsRead(notification.id)
+        notification.read_at = new Date().toISOString()
+        unreadCount.value = Math.max(0, unreadCount.value - 1)
+      } catch (error) {
+        console.error('Failed to mark notification as read:', error)
+      }
+    }
+
     // Format notification time
     const formatNotificationTime = (dateString) => {
       const date = new Date(dateString)
@@ -820,6 +823,7 @@ export default {
       toggleNotificationsDropdown,
       handleMarkAllAsRead,
       handleNotificationClick,
+      markSingleAsRead,
       formatNotificationTime,
       getNotificationIconClass
     }

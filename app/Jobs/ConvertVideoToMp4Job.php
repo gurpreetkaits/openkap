@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\Video;
+use App\Repositories\WorkspaceRepository;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -75,7 +76,10 @@ class ConvertVideoToMp4Job implements ShouldQueue
                 'conversion_status' => 'completed',
                 'conversion_progress' => 100,
                 'converted_at' => now(),
+                'file_size_bytes' => filesize($inputPath),
             ]);
+
+            $this->recalculateWorkspaceStorage($video);
 
             // Dispatch next job in pipeline (zoom if enabled, otherwise HLS)
             $this->dispatchNextJob($video);
@@ -186,6 +190,7 @@ class ConvertVideoToMp4Job implements ShouldQueue
                 'conversion_progress' => 100,
                 'conversion_error' => null,
                 'converted_at' => now(),
+                'file_size_bytes' => $outputSize,
             ]);
 
             Log::info('Video conversion completed successfully', [
@@ -194,6 +199,8 @@ class ConvertVideoToMp4Job implements ShouldQueue
                 'output_size' => $outputSize,
                 'duration' => $duration,
             ]);
+
+            $this->recalculateWorkspaceStorage($video);
 
             // Dispatch next job in pipeline (zoom if enabled, otherwise HLS)
             $this->dispatchNextJob($video);
@@ -283,6 +290,19 @@ class ConvertVideoToMp4Job implements ShouldQueue
         // Check if moov atom appears early in the file (indicates faststart)
         // This is a simplified check - moov should come before mdat for faststart
         return str_contains($header, 'ftyp') && str_contains($header, 'moov');
+    }
+
+    /**
+     * Recalculate workspace storage if the video belongs to a workspace.
+     */
+    private function recalculateWorkspaceStorage(Video $video): void
+    {
+        if ($video->workspace_id) {
+            $video->load('workspace');
+            if ($video->workspace) {
+                app(WorkspaceRepository::class)->recalculateStorage($video->workspace);
+            }
+        }
     }
 
     /**

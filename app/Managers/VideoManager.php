@@ -11,6 +11,7 @@ use App\Models\Video;
 use App\Repositories\UserSettingRepository;
 use App\Repositories\VideoRepository;
 use App\Repositories\VideoZoomSettingRepository;
+use App\Repositories\WorkspaceRepository;
 use App\Services\BunnyStreamService;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Log;
@@ -21,7 +22,8 @@ class VideoManager
         protected VideoRepository $videos,
         protected VideoZoomSettingRepository $zoomSettings,
         protected BunnyStreamService $bunnyService,
-        protected UserSettingRepository $userSettings
+        protected UserSettingRepository $userSettings,
+        protected WorkspaceRepository $workspaces
     ) {}
 
     public function getUserVideos(int $userId): array
@@ -79,8 +81,10 @@ class VideoManager
             'title' => $data['title'] ?? 'no title',
         ]);
 
+        $workspace = $user->ownedWorkspaces()->first();
         $video = $this->videos->createVideo([
             'user_id' => $user->id,
+            'workspace_id' => $workspace?->id,
             'title' => $data['title'],
             'description' => $data['description'] ?? null,
             'duration' => $data['duration'] ?? null,
@@ -182,8 +186,13 @@ class VideoManager
 
     public function deleteVideo(Video $video, User $user): void
     {
+        $workspace = $video->workspace;
         $this->videos->deleteVideo($video);
         $user->decrement('videos_count');
+
+        if ($workspace) {
+            $this->workspaces->recalculateStorage($workspace);
+        }
     }
 
     /**
@@ -199,9 +208,14 @@ class VideoManager
         $deleted = 0;
         $failed = 0;
         $errors = [];
+        $affectedWorkspaceIds = [];
 
         foreach ($videos as $video) {
             try {
+                if ($video->workspace_id) {
+                    $affectedWorkspaceIds[$video->workspace_id] = true;
+                }
+
                 // Delete from Bunny CDN if it's a Bunny video
                 if ($video->storage_type === 'bunny' && $video->bunny_video_id) {
                     try {
@@ -231,6 +245,14 @@ class VideoManager
                     'title' => $video->title,
                     'error' => $e->getMessage(),
                 ];
+            }
+        }
+
+        // Recalculate storage for all affected workspaces
+        foreach (array_keys($affectedWorkspaceIds) as $workspaceId) {
+            $workspace = $this->workspaces->find($workspaceId);
+            if ($workspace) {
+                $this->workspaces->recalculateStorage($workspace);
             }
         }
 

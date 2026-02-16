@@ -242,8 +242,10 @@ class StreamVideoController extends Controller
 
         // Create Video record
         $title = $request->title ?? $metadata['title'];
+        $workspace = $user->ownedWorkspaces()->first();
         $videoData = [
             'user_id' => $userId,
+            'workspace_id' => $workspace?->id,
             'title' => $title,
             'description' => null,
             'duration' => $request->duration ?? 0,

@@ -45,7 +45,7 @@
           <svg class="icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
           </svg>
-          <span>Unlimited storage</span>
+          <span>Unlimited recording time</span>
         </div>
         <div class="feature-item">
           <svg class="icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">

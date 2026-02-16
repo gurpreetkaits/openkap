@@ -204,7 +204,7 @@
 
         <h3>5.1 Free Plan</h3>
         <p>
-            Our free plan includes 1 video recording with basic features. Free accounts are subject to storage limits and may have
+            Our free plan includes 5 video recordings (up to 5 minutes each) with basic features. Free accounts may have
             restricted access to premium features.
         </p>
 
@@ -277,8 +277,9 @@
 
         <h3>8.1 Storage Limits</h3>
         <p>
-            Free accounts have storage limitations. Pro accounts have significantly higher limits. We reserve the right to
-            enforce storage limits and may delete content if limits are exceeded after notice.
+            Free accounts are limited by video count (5 videos). Pro accounts have unlimited videos. Team plans have storage
+            limits managed at the workspace level. We reserve the right to enforce limits and may delete content if limits
+            are exceeded after notice.
         </p>
 
         <h3>8.2 Data Retention</h3>

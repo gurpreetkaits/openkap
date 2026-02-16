@@ -246,7 +246,7 @@
             <tbody>
                 <tr class="highlight-row">
                     <td>Free plan videos</td>
-                    <td>10 videos</td>
+                    <td>5 videos</td>
                     <td>25 videos (5 min limit)</td>
                 </tr>
                 <tr>
@@ -298,11 +298,6 @@
                     <td>Pro pricing</td>
                     <td>$8/month</td>
                     <td>$15/month</td>
-                </tr>
-                <tr class="highlight-row">
-                    <td>Team pricing (5 users)</td>
-                    <td>$39/month</td>
-                    <td>$75/month ($15 x 5)</td>
                 </tr>
                 <tr>
                     <td>Desktop app</td>

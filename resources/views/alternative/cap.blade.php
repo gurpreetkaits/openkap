@@ -323,7 +323,7 @@
                 </tr>
                 <tr>
                     <td>Free tier</td>
-                    <td><span class="check-icon">10 videos</span></td>
+                    <td><span class="check-icon">5 videos</span></td>
                     <td><span class="check-icon">Unlimited (local)</span></td>
                 </tr>
                 <tr>

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Video;
+use App\Repositories\WorkspaceRepository;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Log;
@@ -82,6 +83,7 @@ class BunnyWebhookController extends Controller
             }
             if (isset($payload['StorageSize'])) {
                 $updateData['bunny_file_size'] = (int) $payload['StorageSize'];
+                $updateData['file_size_bytes'] = (int) $payload['StorageSize'];
             }
 
             Log::info('Bunny video ready', [
@@ -104,6 +106,14 @@ class BunnyWebhookController extends Controller
         }
 
         $video->update($updateData);
+
+        // Recalculate workspace storage if video belongs to a workspace
+        if ($video->workspace_id) {
+            $video->load('workspace');
+            if ($video->workspace) {
+                app(WorkspaceRepository::class)->recalculateStorage($video->workspace);
+            }
+        }
 
         Log::info('Bunny webhook processed', [
             'video_id' => $video->id,

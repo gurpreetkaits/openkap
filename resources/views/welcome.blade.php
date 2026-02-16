@@ -324,7 +324,6 @@
                     <div class="flex items-center gap-0.5 bg-gray-100 rounded-lg p-0.5">
                         <button onclick="switchPlan('free')" id="plan-btn-free" class="px-3 py-1.5 text-xs font-medium rounded-md transition-all text-gray-500 hover:text-gray-700">Free</button>
                         <button onclick="switchPlan('pro')" id="plan-btn-pro" class="px-3 py-1.5 text-xs font-medium rounded-md transition-all bg-white text-gray-900 shadow-sm">Pro</button>
-                        <button onclick="switchPlan('teams')" id="plan-btn-teams" class="px-3 py-1.5 text-xs font-medium rounded-md transition-all text-gray-500 hover:text-gray-700">Team</button>
                     </div>
                 </div>
 
@@ -364,18 +363,6 @@
                         </div>
                     </div>
 
-                    {{-- Teams --}}
-                    <div id="plan-teams" class="hidden">
-                        <h4 class="text-lg font-bold text-gray-900 mb-1">Team</h4>
-                        <p class="text-xs text-gray-400 mb-4">For collaborative teams</p>
-                        <div>
-                            <span class="text-4xl font-bold text-gray-900">$39</span>
-                            <span class="text-gray-400 text-sm">/mo</span>
-                            <div class="mt-1">
-                                <span class="text-[10px] text-gray-400">Up to 5 members</span>
-                            </div>
-                        </div>
-                    </div>
                 </div>
 
                 {{-- Benefits Grid --}}
@@ -384,15 +371,11 @@
                     <ul id="benefits-free" class="hidden grid grid-cols-3 gap-x-6 gap-y-3 text-sm text-gray-700">
                         <li class="flex items-center gap-2">
                             <svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                            10 videos
+                            5 videos
                         </li>
                         <li class="flex items-center gap-2">
                             <svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                             5 min per recording
-                        </li>
-                        <li class="flex items-center gap-2">
-                            <svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                            1 GB storage
                         </li>
                         <li class="flex items-center gap-2">
                             <svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
@@ -416,10 +399,6 @@
                         </li>
                         <li class="flex items-center gap-2">
                             <svg class="w-4 h-4 text-orange-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                            50 GB storage
-                        </li>
-                        <li class="flex items-center gap-2">
-                            <svg class="w-4 h-4 text-orange-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                             HLS streaming
                         </li>
                         <li class="flex items-center gap-2">
@@ -433,32 +412,6 @@
                     </ul>
 
                     {{-- Team benefits --}}
-                    <ul id="benefits-teams" class="hidden grid grid-cols-3 gap-x-6 gap-y-3 text-sm text-gray-700">
-                        <li class="flex items-center gap-2">
-                            <svg class="w-4 h-4 text-indigo-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                            Everything in Pro
-                        </li>
-                        <li class="flex items-center gap-2">
-                            <svg class="w-4 h-4 text-indigo-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                            5 team members
-                        </li>
-                        <li class="flex items-center gap-2">
-                            <svg class="w-4 h-4 text-indigo-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                            100 GB storage
-                        </li>
-                        <li class="flex items-center gap-2">
-                            <svg class="w-4 h-4 text-indigo-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                            Team workspaces
-                        </li>
-                        <li class="flex items-center gap-2">
-                            <svg class="w-4 h-4 text-indigo-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                            Shared video library
-                        </li>
-                        <li class="flex items-center gap-2">
-                            <svg class="w-4 h-4 text-indigo-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                            Admin controls
-                        </li>
-                    </ul>
                 </div>
 
                 {{-- Action Button --}}
@@ -468,10 +421,6 @@
                     </a>
                     <a id="cta-pro" href="{{ config('app.frontend_url', config('app.url')) }}/login" class="flex w-full max-w-[280px] py-2.5 rounded-lg bg-orange-600 hover:bg-orange-500 text-xs font-medium text-white transition-all shadow-sm text-center items-center justify-center gap-1.5">
                         Upgrade to Pro
-                        <svg class="w-3.5 h-3.5 inline-block ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
-                    </a>
-                    <a id="cta-teams" href="{{ config('app.frontend_url', config('app.url')) }}/login" class="hidden w-full max-w-[280px] py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-xs font-medium text-white transition-all text-center items-center justify-center gap-1.5">
-                        Get Team
                         <svg class="w-3.5 h-3.5 inline-block ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
                     </a>
                 </div>
@@ -603,7 +552,7 @@
                         <i data-lucide="plus" class="size-5 text-gray-400 shrink-0 faq-icon transition-transform duration-200"></i>
                     </button>
                     <div class="faq-content hidden px-5 pb-5 -mt-1">
-                        <p class="text-gray-500 leading-[1.7] text-sm">Yes. The free plan includes 10 recordings with no watermarks. After that, Pro is $8/month for unlimited videos. We don't do the "free trial then surprise you with a paywall" thing.</p>
+                        <p class="text-gray-500 leading-[1.7] text-sm">Yes. The free plan includes 5 recordings with no watermarks. After that, Pro is $8/month for unlimited videos. We don't do the "free trial then surprise you with a paywall" thing.</p>
                     </div>
                 </div>
 
@@ -707,7 +656,7 @@
     }
 
     function switchPlan(plan) {
-        var plans = ['free', 'pro', 'teams'];
+        var plans = ['free', 'pro'];
         plans.forEach(function(p) {
             document.getElementById('plan-' + p).classList.add('hidden');
             document.getElementById('benefits-' + p).classList.add('hidden');

@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Models\User;
+use App\Models\Video;
 use App\Models\Workspace;
 use App\Models\WorkspaceMember;
 use Illuminate\Database\Eloquent\Collection;
@@ -197,6 +198,15 @@ class WorkspaceRepository
     public function decrementStorage(Workspace $workspace, int $bytes): void
     {
         $workspace->decrement('storage_used_bytes', max(0, $bytes));
+    }
+
+    /**
+     * Recalculate storage used by summing file_size_bytes from workspace videos
+     */
+    public function recalculateStorage(Workspace $workspace): void
+    {
+        $totalBytes = Video::where('workspace_id', $workspace->id)->sum('file_size_bytes');
+        $workspace->update(['storage_used_bytes' => (int) $totalBytes]);
     }
 
     /**

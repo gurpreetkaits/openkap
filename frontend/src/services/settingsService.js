@@ -96,7 +96,7 @@ class SettingsService {
   getDefaults() {
     return {
       subscription: {
-        free_video_limit: 1,
+        free_video_limit: 5,
         free_recording_duration_limit: 300,
         monthly_price: 8,
         yearly_price: 80,
@@ -104,7 +104,7 @@ class SettingsService {
         yearly_savings_percent: 5,
       },
       free_plan: {
-        max_videos: 1,
+        max_videos: 5,
         max_duration_seconds: 300,
         max_duration_minutes: 5,
       }
