@@ -51,7 +51,7 @@ class SubscriptionControllerTest extends TestCase
         $response->assertStatus(401);
     }
 
-    public function test_it_shows_free_user_can_record_one_video()
+    public function test_it_shows_free_user_can_record_five_videos()
     {
         $response = $this->actingAs($this->user)
             ->getJson('/api/subscription/status');
@@ -62,15 +62,15 @@ class SubscriptionControllerTest extends TestCase
                     'status' => 'free',
                     'is_active' => false,
                     'can_record' => true,
-                    'remaining_quota' => 1,
+                    'remaining_quota' => 5,
                 ],
             ]);
     }
 
     public function test_it_shows_free_user_cannot_record_after_limit()
     {
-        // Create 1 video to reach the free tier limit
-        \App\Models\Video::factory()->create(['user_id' => $this->user->id]);
+        // Create 5 videos to reach the free tier limit
+        \App\Models\Video::factory()->count(5)->create(['user_id' => $this->user->id]);
 
         $response = $this->actingAs($this->user)
             ->getJson('/api/subscription/status');

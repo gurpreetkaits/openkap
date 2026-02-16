@@ -53,8 +53,8 @@ class UserSubscriptionTest extends TestCase
             'subscription_status' => 'free',
         ]);
 
-        // Create 1 video to reach the free tier limit
-        \App\Models\Video::factory()->create(['user_id' => $user->id]);
+        // Create 5 videos to reach the free tier limit
+        \App\Models\Video::factory()->count(5)->create(['user_id' => $user->id]);
 
         $this->assertFalse($user->canRecordVideo());
     }
@@ -69,24 +69,24 @@ class UserSubscriptionTest extends TestCase
         $this->assertTrue($user->canRecordVideo());
     }
 
-    public function test_free_user_has_remaining_quota_of_one()
+    public function test_free_user_has_remaining_quota_of_five()
     {
         $user = User::factory()->create([
             'subscription_status' => 'free',
             'videos_count' => 0,
         ]);
 
-        $this->assertEquals(1, $user->getRemainingVideoQuota());
+        $this->assertEquals(5, $user->getRemainingVideoQuota());
     }
 
-    public function test_free_user_has_zero_quota_after_one_video()
+    public function test_free_user_has_zero_quota_after_five_videos()
     {
         $user = User::factory()->create([
             'subscription_status' => 'free',
         ]);
 
-        // Create 1 video to reach the free tier limit
-        \App\Models\Video::factory()->create(['user_id' => $user->id]);
+        // Create 5 videos to reach the free tier limit
+        \App\Models\Video::factory()->count(5)->create(['user_id' => $user->id]);
 
         $this->assertEquals(0, $user->getRemainingVideoQuota());
     }
