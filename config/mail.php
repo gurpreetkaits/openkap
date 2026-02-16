@@ -61,8 +61,9 @@ return [
             // ],
         ],
 
-        'resend' => [
-            'transport' => 'resend',
+        'unosend' => [
+            'transport' => 'unosend',
+            'key' => env('UNOSEND_API_KEY'),
         ],
 
         'sendmail' => [
