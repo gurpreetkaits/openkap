@@ -2,10 +2,9 @@
 
 namespace App\Console\Commands;
 
-use App\Data\EmailData;
 use App\Models\User;
-use App\Services\ResendService;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Mail;
 
 class SendExtensionLaunchEmailCommand extends Command
 {
@@ -16,12 +15,6 @@ class SendExtensionLaunchEmailCommand extends Command
                             {--dry-run : Preview without sending}';
 
     protected $description = 'Send the Chrome extension launch announcement to all users';
-
-    public function __construct(
-        private ResendService $resendService
-    ) {
-        parent::__construct();
-    }
 
     public function handle(): int
     {
@@ -95,16 +88,12 @@ HTML;
         }
 
         try {
-            $resendEmailData = new EmailData(
-                from: config('mail.from.name') . ' <' . config('mail.from.address') . '>',
-                to: $email,
-                subject: $subject,
-                html: $this->getHtml(),
-            );
+            Mail::html($this->getHtml(), function ($message) use ($email, $subject) {
+                $message->to($email)
+                    ->subject($subject);
+            });
 
-            $response = $this->resendService->sendEmail($resendEmailData);
-            $this->info("✓ Sent to {$email} (ID: {$response->id})");
-
+            $this->info("✓ Sent to {$email}");
             return self::SUCCESS;
         } catch (\Exception $e) {
             $this->error("✗ Failed to send to {$email}: {$e->getMessage()}");
@@ -155,14 +144,11 @@ HTML;
             }
 
             try {
-                $resendEmailData = new EmailData(
-                    from: config('mail.from.name') . ' <' . config('mail.from.address') . '>',
-                    to: $user->email,
-                    subject: $subject,
-                    html: $html,
-                );
+                Mail::html($html, function ($message) use ($user, $subject) {
+                    $message->to($user->email)
+                        ->subject($subject);
+                });
 
-                $this->resendService->forUser($user)->sendEmail($resendEmailData);
                 $sent++;
 
                 // Rate limiting - 2 emails per second max
