@@ -19,8 +19,7 @@
         "saloonphp/saloon": "^3.14",
         "spatie/laravel-medialibrary": "^11.0",
         "standard-webhooks/standard-webhooks": "@dev",
-        "symfony/yaml": "^7.4",
-        "unosend/unosend-php": "^1.0"
+        "symfony/yaml": "^7.4"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",

@@ -2,7 +2,6 @@
 
 namespace App\Providers;
 
-use App\Mail\Transport\UnosendTransport;
 use Danestves\LaravelPolar\Events\SubscriptionActive;
 use Danestves\LaravelPolar\Events\SubscriptionCanceled;
 use Danestves\LaravelPolar\Events\SubscriptionCreated;
@@ -10,9 +9,7 @@ use Danestves\LaravelPolar\Events\SubscriptionRevoked;
 use Danestves\LaravelPolar\Events\WebhookReceived;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\ServiceProvider;
-use Unosend\Unosend;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -29,13 +26,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Register Unosend mail transport
-        Mail::extend('unosend', function (array $config) {
-            $apiKey = $config['key'] ?? config('services.unosend.key');
-
-            return new UnosendTransport(new Unosend($apiKey));
-        });
-
         // Log incoming Polar webhooks
         Event::listen(WebhookReceived::class, function ($event) {
             Log::channel('daily')->info('Polar webhook received', [

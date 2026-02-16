@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "9370e31a9e29afdcd382e091e26bb7e3",
+    "content-hash": "b199e5dab70f4a84f7109a8c6aede9f7",
     "packages": [
         {
             "name": "brick/date-time",
@@ -8750,50 +8750,6 @@
                 "source": "https://github.com/tijsverkoyen/CssToInlineStyles/tree/v2.4.0"
             },
             "time": "2025-12-02T11:56:42+00:00"
-        },
-        {
-            "name": "unosend/unosend-php",
-            "version": "1.0.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/unosend/Unosend-php.git",
-                "reference": "92cb7ebd74da3687d0d1f130d1ea15087a765ad9"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/unosend/Unosend-php/zipball/92cb7ebd74da3687d0d1f130d1ea15087a765ad9",
-                "reference": "92cb7ebd74da3687d0d1f130d1ea15087a765ad9",
-                "shasum": ""
-            },
-            "require": {
-                "guzzlehttp/guzzle": "^7.0",
-                "php": ">=8.0"
-            },
-            "require-dev": {
-                "phpunit/phpunit": "^10.0"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Unosend\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Unosend",
-                    "email": "support@unosend.co"
-                }
-            ],
-            "description": "Official PHP SDK for Unosend - Email API Service",
-            "support": {
-                "issues": "https://github.com/unosend/Unosend-php/issues",
-                "source": "https://github.com/unosend/Unosend-php/tree/v1.0.0"
-            },
-            "time": "2025-12-27T18:11:29+00:00"
         },
         {
             "name": "vlucas/phpdotenv",
