@@ -3,8 +3,6 @@
 namespace App\Console\Commands;
 
 use App\Data\EmailData;
-use App\Data\ProductUpdateEmailData;
-use App\Mail\ProductUpdateMail;
 use App\Models\User;
 use App\Services\ResendService;
 use Illuminate\Console\Command;
@@ -32,77 +30,76 @@ class SendExtensionLaunchEmailCommand extends Command
         $limit = $this->option('limit');
         $offset = (int) $this->option('offset');
 
-        // Email content
-        $subject = 'ScreenSense Chrome Extension is Here!';
-        
-        $emailData = ProductUpdateEmailData::featureAnnouncement(
-            headline: 'Record Directly from Your Browser',
-            description: 'No apps required! Install our Chrome extension and start recording in seconds. Capture your screen, webcam, or both — right from your browser toolbar.',
-            features: [
-                [
-                    'icon' => 'solar:chrome-bold',
-                    'title' => 'One-Click Recording',
-                    'description' => 'Click the extension icon and start recording instantly. No downloads, no setup.',
-                ],
-                [
-                    'icon' => 'solar:monitor-smartphone-bold',
-                    'title' => 'Full Screen or Tab',
-                    'description' => 'Record your entire screen, a specific window, or just the current tab.',
-                ],
-                [
-                    'icon' => 'solar:camera-bold',
-                    'title' => 'Webcam Overlay',
-                    'description' => 'Add a webcam bubble to your recordings for that personal touch.',
-                ],
-                [
-                    'icon' => 'solar:cloud-upload-bold',
-                    'title' => 'Instant Upload',
-                    'description' => 'Your recordings are automatically uploaded and ready to share.',
-                ],
-            ],
-            ctaText: 'Install Extension',
-            ctaUrl: 'https://chromewebstore.google.com/detail/screensense-screen-record/liloedaflfodiakjaiogpopgkegbkfod',
-            subheadline: 'The Easiest Way to Record'
-        );
-
-        $emailData = new ProductUpdateEmailData(
-            headline: $emailData->headline,
-            description: $emailData->description,
-            features: $emailData->features,
-            ctaText: $emailData->ctaText,
-            ctaUrl: $emailData->ctaUrl,
-            subheadline: $emailData->subheadline,
-            badgeText: 'New: Chrome Extension',
-            badgeIcon: 'solar:chrome-bold',
-            showVisualCard: false,
-            previewText: 'Record your screen directly from Chrome — no app required!',
-        );
+        $subject = 'Chrome Extension is Live';
 
         if ($specificEmail) {
-            return $this->sendToEmail($specificEmail, $subject, $emailData, $dryRun);
+            return $this->sendToEmail($specificEmail, $subject, $dryRun);
         }
 
-        return $this->sendToAllUsers($subject, $emailData, $limit, $offset, $dryRun);
+        return $this->sendToAllUsers($subject, $limit, $offset, $dryRun);
     }
 
-    private function sendToEmail(string $email, string $subject, ProductUpdateEmailData $emailData, bool $dryRun): int
+    private function getHtml(): string
+    {
+        return <<<'HTML'
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 48px 24px; background: #ffffff; font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', Menlo, Monaco, Consolas, monospace; font-size: 14px; line-height: 1.8; color: #1a1a1a;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 520px; margin: 0 auto;">
+        <tr>
+            <td>
+                <h1 style="margin: 0 0 32px; font-size: 16px; font-weight: 600; color: #000; letter-spacing: -0.5px;">screensense.in</h1>
+                
+                <p style="margin: 0 0 20px;">
+                    The <strong>Chrome extension</strong> is live.
+                </p>
+                
+                <p style="margin: 0 0 20px;">
+                    Record your screen directly from your browser. No app required.
+                </p>
+                
+                <p style="margin: 0 0 32px; color: #666;">
+                    > click extension<br>
+                    > hit record<br>
+                    > done.
+                </p>
+                
+                <a href="https://chromewebstore.google.com/detail/screensense-screen-record/liloedaflfodiakjaiogpopgkegbkfod" style="display: inline-block; background: #000; color: #fff; text-decoration: none; padding: 10px 20px; font-size: 13px; font-family: inherit;">
+                    install extension →
+                </a>
+                
+                <p style="margin: 40px 0 0; font-size: 12px; color: #999;">
+                    — screensense
+                </p>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+HTML;
+    }
+
+    private function sendToEmail(string $email, string $subject, bool $dryRun): int
     {
         $this->info("Sending to: {$email}");
 
         if ($dryRun) {
             $this->warn('[DRY RUN] Would send email to: ' . $email);
+            $this->newLine();
+            $this->line('Subject: ' . $subject);
             return self::SUCCESS;
         }
 
         try {
-            $mailable = new ProductUpdateMail($emailData, $subject);
-            $html = $mailable->render();
-
             $resendEmailData = new EmailData(
                 from: config('mail.from.name') . ' <' . config('mail.from.address') . '>',
                 to: $email,
                 subject: $subject,
-                html: $html,
+                html: $this->getHtml(),
             );
 
             $response = $this->resendService->sendEmail($resendEmailData);
@@ -115,7 +112,7 @@ class SendExtensionLaunchEmailCommand extends Command
         }
     }
 
-    private function sendToAllUsers(string $subject, ProductUpdateEmailData $emailData, ?int $limit, int $offset, bool $dryRun): int
+    private function sendToAllUsers(string $subject, ?int $limit, int $offset, bool $dryRun): int
     {
         $query = User::query()
             ->whereNotNull('email')
@@ -148,6 +145,7 @@ class SendExtensionLaunchEmailCommand extends Command
 
         $sent = 0;
         $failed = 0;
+        $html = $this->getHtml();
 
         foreach ($users as $user) {
             if ($dryRun) {
@@ -157,9 +155,6 @@ class SendExtensionLaunchEmailCommand extends Command
             }
 
             try {
-                $mailable = new ProductUpdateMail($emailData, $subject);
-                $html = $mailable->render();
-
                 $resendEmailData = new EmailData(
                     from: config('mail.from.name') . ' <' . config('mail.from.address') . '>',
                     to: $user->email,
