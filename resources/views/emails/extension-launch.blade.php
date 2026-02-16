@@ -24,7 +24,7 @@
                     > done.
                 </p>
                 
-                <a href="https://chromewebstore.google.com/detail/screensense-screen-record/liloedaflfodiakjaiogpopgkegbkfod" style="display: inline-block; background: #000; color: #fff; text-decoration: none; padding: 10px 20px; font-size: 13px; font-family: inherit;">
+                <a href="https://chromewebstore.google.com/detail/screensense/nnchnlkilgfemhpcohmgdpcmkjedjkfm" style="display: inline-block; background: #000; color: #fff; text-decoration: none; padding: 10px 20px; font-size: 13px; font-family: inherit;">
                     install extension →
                 </a>
                 
