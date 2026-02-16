@@ -26,6 +26,12 @@ class BulkEmailNotification extends Notification implements ShouldQueue
     {
         return (new MailMessage)
             ->subject($this->emailSubject)
+            ->withSymfonyMessage(function ($message) {
+                $message->getHeaders()->addTextHeader(
+                    'List-Unsubscribe',
+                    '<mailto:unsubscribe@screensense.in>'
+                );
+            })
             ->view($this->view, array_merge($this->data, [
                 'user' => $notifiable,
             ]));
