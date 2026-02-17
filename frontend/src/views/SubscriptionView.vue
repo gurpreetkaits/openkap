@@ -1,5 +1,5 @@
 <template>
-  <div class="animate-fade-in">
+  <div class="animate-fade-in max-w-4xl mx-auto">
     <!-- Success Alert -->
     <div v-if="showSuccessAlert" class="fixed top-20 left-1/2 -translate-x-1/2 z-50 animate-slide-down">
       <div class="bg-white border border-green-200 text-gray-900 px-5 py-3.5 rounded-lg shadow-sm flex items-center gap-3">
