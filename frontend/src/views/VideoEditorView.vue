@@ -274,11 +274,12 @@
 import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import videoService from '@/services/videoService'
-import { showToast } from '@/services/toastService'
+import { useToast } from '@/services/toastService'
 import Hls from 'hls.js'
 
 const route = useRoute()
 const router = useRouter()
+const toast = useToast()
 
 const loading = ref(true)
 const error = ref(null)
@@ -749,14 +750,14 @@ async function applyEdits() {
           clearInterval(pollTimer)
           pollTimer = null
           isApplying.value = false
-          showToast('Video edits applied successfully! A new copy was created.', 'success')
+          toast.success('Video edits applied successfully! A new copy was created.')
           const targetId = status.output_video_id || video.value.id
           router.push(`/video/${targetId}`)
         } else if (status.status === 'failed') {
           clearInterval(pollTimer)
           pollTimer = null
           isApplying.value = false
-          showToast(status.error || 'Edit processing failed', 'error')
+          toast.error(status.error || 'Edit processing failed')
         }
       } catch {
         // ignore polling errors
@@ -764,7 +765,7 @@ async function applyEdits() {
     }, 3000)
   } catch (e) {
     isApplying.value = false
-    showToast(e.message || 'Failed to apply edits', 'error')
+    toast.error(e.message || 'Failed to apply edits')
   }
 }
 
