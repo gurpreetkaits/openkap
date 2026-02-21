@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Data\BlurRegionData;
 use App\Data\OverlayConfigData;
+use App\Data\TextOverlayData;
 use App\Data\VideoEditData;
 use App\Http\Requests\ApplyVideoEditsRequest;
 use App\Http\Requests\BulkDeleteVideosRequest;
@@ -644,9 +645,15 @@ class VideoController extends Controller
                 $request->input('overlay_configs', [])
             );
 
+            $textOverlays = array_map(
+                fn ($t) => TextOverlayData::from($t),
+                $request->input('text_overlays', [])
+            );
+
             $editData = new VideoEditData(
                 blur_regions: $blurRegions,
                 overlay_configs: $overlayConfigs,
+                text_overlays: $textOverlays,
             );
 
             $overlayFiles = $request->file('overlay_files', []);

@@ -17,6 +17,7 @@ class VideoEdit extends Model implements HasMedia
         'output_video_id',
         'blur_regions',
         'overlay_configs',
+        'text_overlays',
         'status',
         'progress',
         'error',
@@ -25,6 +26,7 @@ class VideoEdit extends Model implements HasMedia
     protected $casts = [
         'blur_regions' => 'array',
         'overlay_configs' => 'array',
+        'text_overlays' => 'array',
         'progress' => 'integer',
     ];
 

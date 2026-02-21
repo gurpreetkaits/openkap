@@ -33,6 +33,16 @@ class ApplyVideoEditsRequest extends FormRequest
 
             'overlay_files' => 'nullable|array|max:5',
             'overlay_files.*' => 'file|mimes:webm,mp4,mov|max:512000',
+
+            'text_overlays' => 'nullable|array|max:10',
+            'text_overlays.*.text' => 'required|string|max:200',
+            'text_overlays.*.x' => 'required|numeric|min:0|max:100',
+            'text_overlays.*.y' => 'required|numeric|min:0|max:100',
+            'text_overlays.*.font_size' => 'required|integer|min:12|max:120',
+            'text_overlays.*.font_color' => 'required|string|max:20',
+            'text_overlays.*.background_color' => 'nullable|string|max:20',
+            'text_overlays.*.start_time' => 'nullable|numeric|min:0',
+            'text_overlays.*.end_time' => 'nullable|numeric|min:0',
         ];
     }
 }

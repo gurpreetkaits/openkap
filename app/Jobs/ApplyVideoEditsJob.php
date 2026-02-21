@@ -35,6 +35,7 @@ class ApplyVideoEditsJob implements ShouldQueue
             'video_id' => $video->id,
             'blur_count' => count($edit->blur_regions ?? []),
             'overlay_count' => count($edit->overlay_configs ?? []),
+            'text_count' => count($edit->text_overlays ?? []),
         ]);
 
         $media = $video->getFirstMedia('videos');
@@ -73,6 +74,7 @@ class ApplyVideoEditsJob implements ShouldQueue
 
             $blurRegions = $edit->blur_regions ?? [];
             $overlayConfigs = $edit->overlay_configs ?? [];
+            $textOverlays = $edit->text_overlays ?? [];
             $overlayMedia = $edit->getMedia('overlays');
 
             $filterParts = [];
@@ -159,6 +161,34 @@ class ApplyVideoEditsJob implements ShouldQueue
                 }
 
                 $filterComplex[] = "[{$currentLabel}][{$scaledLabel}]overlay={$targetX}:{$targetY}{$enableStr}[{$outLabel}]";
+                $currentLabel = $outLabel;
+                $stepIndex++;
+            }
+
+            // Process text overlays
+            foreach ($textOverlays as $textOverlay) {
+                $text = $this->escapeFFmpegText($textOverlay['text'] ?? 'Text');
+                $textX = round($dimensions['width'] * (($textOverlay['x'] ?? 0) / 100));
+                $textY = round($dimensions['height'] * (($textOverlay['y'] ?? 0) / 100));
+                $fontSize = (int) ($textOverlay['font_size'] ?? 32);
+                $fontColor = $textOverlay['font_color'] ?? 'white';
+                $bgColor = $textOverlay['background_color'] ?? null;
+
+                $outLabel = "step_{$stepIndex}";
+
+                $drawtext = "drawtext=text='{$text}':x={$textX}:y={$textY}:fontsize={$fontSize}:fontcolor={$fontColor}";
+
+                if ($bgColor) {
+                    $drawtext .= ":box=1:boxcolor={$bgColor}@0.5:boxborderw=8";
+                }
+
+                $startTime = $textOverlay['start_time'] ?? null;
+                $endTime = $textOverlay['end_time'] ?? null;
+                if ($startTime !== null && $endTime !== null) {
+                    $drawtext .= sprintf(":enable='between(t,%.2f,%.2f)'", $startTime, $endTime);
+                }
+
+                $filterComplex[] = "[{$currentLabel}]{$drawtext}[{$outLabel}]";
                 $currentLabel = $outLabel;
                 $stepIndex++;
             }
@@ -288,6 +318,17 @@ class ApplyVideoEditsJob implements ShouldQueue
 
             throw $e;
         }
+    }
+
+    private function escapeFFmpegText(string $text): string
+    {
+        // Escape special characters for FFmpeg drawtext filter
+        $text = str_replace('\\', '\\\\', $text);
+        $text = str_replace("'", "\\'", $text);
+        $text = str_replace(':', '\\:', $text);
+        $text = str_replace('%', '%%', $text);
+
+        return $text;
     }
 
     private function getVideoDimensions(string $filePath): ?array

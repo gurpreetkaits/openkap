@@ -822,7 +822,7 @@ class VideoService {
    * @param {Array} overlayConfigs - Array of overlay config objects
    * @param {File[]} overlayFiles - Array of overlay video files
    */
-  async applyEdits(id, blurRegions = [], overlayConfigs = [], overlayFiles = []) {
+  async applyEdits(id, blurRegions = [], overlayConfigs = [], overlayFiles = [], textOverlays = []) {
     try {
       const formData = new FormData()
 
@@ -838,6 +838,14 @@ class VideoService {
         Object.entries(config).forEach(([key, value]) => {
           if (value !== null && value !== undefined) {
             formData.append(`overlay_configs[${i}][${key}]`, value)
+          }
+        })
+      })
+
+      textOverlays.forEach((overlay, i) => {
+        Object.entries(overlay).forEach(([key, value]) => {
+          if (value !== null && value !== undefined) {
+            formData.append(`text_overlays[${i}][${key}]`, value)
           }
         })
       })

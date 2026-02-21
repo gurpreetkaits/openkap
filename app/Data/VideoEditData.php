@@ -9,9 +9,11 @@ class VideoEditData extends Data
     /**
      * @param  BlurRegionData[]  $blur_regions
      * @param  OverlayConfigData[]  $overlay_configs
+     * @param  TextOverlayData[]  $text_overlays
      */
     public function __construct(
         public array $blur_regions = [],
         public array $overlay_configs = [],
+        public array $text_overlays = [],
     ) {}
 }

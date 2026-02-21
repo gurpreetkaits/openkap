@@ -870,6 +870,7 @@ class VideoManager
             'user_id' => $user->id,
             'blur_regions' => array_map(fn ($r) => $r->toArray(), $editData->blur_regions),
             'overlay_configs' => array_map(fn ($o) => $o->toArray(), $editData->overlay_configs),
+            'text_overlays' => array_map(fn ($t) => $t->toArray(), $editData->text_overlays),
             'status' => 'pending',
             'progress' => 0,
         ]);
@@ -885,6 +886,7 @@ class VideoManager
             'edit_id' => $videoEdit->id,
             'blur_count' => count($editData->blur_regions),
             'overlay_count' => count($editData->overlay_configs),
+            'text_count' => count($editData->text_overlays),
         ]);
     }
 
