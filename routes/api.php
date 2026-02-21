@@ -229,6 +229,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/{id}/zoom-events', [VideoController::class, 'getZoomEvents']);
         Route::put('/{id}/zoom-events', [VideoController::class, 'updateZoomEvents']);
         Route::get('/{id}/zoom-status', [VideoController::class, 'getZoomStatus']);
+
+        // Video editor
+        Route::post('/{id}/apply-edits', [VideoController::class, 'applyEdits']);
+        Route::get('/{id}/edit-status', [VideoController::class, 'editStatus']);
     });
 
     // Folder routes

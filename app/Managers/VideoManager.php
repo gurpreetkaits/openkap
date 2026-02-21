@@ -2,6 +2,8 @@
 
 namespace App\Managers;
 
+use App\Data\VideoEditData;
+use App\Jobs\ApplyVideoEditsJob;
 use App\Jobs\ConvertVideoToMp4Job;
 use App\Jobs\GenerateSummaryJob;
 use App\Jobs\GenerateTranscriptionJob;
@@ -9,6 +11,7 @@ use App\Models\Reaction;
 use App\Models\User;
 use App\Models\Video;
 use App\Repositories\UserSettingRepository;
+use App\Repositories\VideoEditRepository;
 use App\Repositories\VideoRepository;
 use App\Repositories\VideoZoomSettingRepository;
 use App\Repositories\WorkspaceRepository;
@@ -23,7 +26,8 @@ class VideoManager
         protected VideoZoomSettingRepository $zoomSettings,
         protected BunnyStreamService $bunnyService,
         protected UserSettingRepository $userSettings,
-        protected WorkspaceRepository $workspaces
+        protected WorkspaceRepository $workspaces,
+        protected VideoEditRepository $videoEdits
     ) {}
 
     public function getUserVideos(int $userId): array
@@ -852,6 +856,56 @@ class VideoManager
         return [
             'recording_resolution' => $settings->recording_resolution,
             'events' => $settings->events,
+        ];
+    }
+
+    // ============================================
+    // VIDEO EDITOR METHODS
+    // ============================================
+
+    public function applyEdits(Video $video, User $user, VideoEditData $editData, array $overlayFiles = []): void
+    {
+        $videoEdit = $this->videoEdits->createEdit([
+            'video_id' => $video->id,
+            'user_id' => $user->id,
+            'blur_regions' => array_map(fn ($r) => $r->toArray(), $editData->blur_regions),
+            'overlay_configs' => array_map(fn ($o) => $o->toArray(), $editData->overlay_configs),
+            'status' => 'pending',
+            'progress' => 0,
+        ]);
+
+        foreach ($overlayFiles as $file) {
+            $videoEdit->addMedia($file)->toMediaCollection('overlays');
+        }
+
+        ApplyVideoEditsJob::dispatch($videoEdit)->delay(now()->addSeconds(2));
+
+        Log::info('Video edit job dispatched', [
+            'video_id' => $video->id,
+            'edit_id' => $videoEdit->id,
+            'blur_count' => count($editData->blur_regions),
+            'overlay_count' => count($editData->overlay_configs),
+        ]);
+    }
+
+    public function getEditStatus(Video $video): array
+    {
+        $edit = $this->videoEdits->findLatestForVideo($video->id);
+
+        if (! $edit) {
+            return [
+                'status' => 'none',
+                'progress' => 0,
+                'error' => null,
+                'output_video_id' => null,
+            ];
+        }
+
+        return [
+            'status' => $edit->status,
+            'progress' => $edit->progress,
+            'error' => $edit->error,
+            'output_video_id' => $edit->output_video_id,
         ];
     }
 }

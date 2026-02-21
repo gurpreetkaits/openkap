@@ -811,6 +811,90 @@ class VideoService {
     }
   }
 
+  // ============================================
+  // VIDEO EDITOR METHODS
+  // ============================================
+
+  /**
+   * Apply edits (blur regions + overlays) to a video
+   * @param {number} id - Video ID
+   * @param {Array} blurRegions - Array of blur region objects
+   * @param {Array} overlayConfigs - Array of overlay config objects
+   * @param {File[]} overlayFiles - Array of overlay video files
+   */
+  async applyEdits(id, blurRegions = [], overlayConfigs = [], overlayFiles = []) {
+    try {
+      const formData = new FormData()
+
+      blurRegions.forEach((region, i) => {
+        Object.entries(region).forEach(([key, value]) => {
+          if (value !== null && value !== undefined) {
+            formData.append(`blur_regions[${i}][${key}]`, value)
+          }
+        })
+      })
+
+      overlayConfigs.forEach((config, i) => {
+        Object.entries(config).forEach(([key, value]) => {
+          if (value !== null && value !== undefined) {
+            formData.append(`overlay_configs[${i}][${key}]`, value)
+          }
+        })
+      })
+
+      overlayFiles.forEach((file) => {
+        formData.append('overlay_files[]', file)
+      })
+
+      const token = getAuthToken()
+      const headers = { 'Accept': 'application/json' }
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`
+      }
+
+      const response = await fetch(`${API_BASE_URL}/api/videos/${id}/apply-edits`, {
+        method: 'POST',
+        headers,
+        body: formData
+      })
+
+      if (handleUnauthorized(response)) return null
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.message || `Failed to apply edits: ${response.statusText}`)
+      }
+
+      return await response.json()
+    } catch (error) {
+      console.error('Error applying edits:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Get edit status for a video
+   */
+  async getEditStatus(id) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/videos/${id}/edit-status`, {
+        method: 'GET',
+        headers: getAuthHeaders()
+      })
+
+      if (handleUnauthorized(response)) return null
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch edit status: ${response.statusText}`)
+      }
+
+      return await response.json()
+    } catch (error) {
+      console.error('Error fetching edit status:', error)
+      throw error
+    }
+  }
+
   /**
    * Get blur status for a video
    */

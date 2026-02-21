@@ -2,6 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Data\BlurRegionData;
+use App\Data\OverlayConfigData;
+use App\Data\VideoEditData;
+use App\Http\Requests\ApplyVideoEditsRequest;
 use App\Http\Requests\BulkDeleteVideosRequest;
 use App\Http\Requests\BulkFavouriteVideosRequest;
 use App\Managers\VideoManager;
@@ -611,5 +615,60 @@ class VideoController extends Controller
         }
 
         return response()->json($this->videoManager->getZoomStatus($video));
+    }
+
+    // ============================================
+    // VIDEO EDITOR ENDPOINTS
+    // ============================================
+
+    public function applyEdits(ApplyVideoEditsRequest $request, $id)
+    {
+        $video = $this->videoManager->findVideoOrFail($id);
+
+        if ($video->user_id !== Auth::id()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        if ($video->isEditProcessing()) {
+            return response()->json(['message' => 'Video is already being processed'], 422);
+        }
+
+        try {
+            $blurRegions = array_map(
+                fn ($r) => BlurRegionData::from($r),
+                $request->input('blur_regions', [])
+            );
+
+            $overlayConfigs = array_map(
+                fn ($o) => OverlayConfigData::from($o),
+                $request->input('overlay_configs', [])
+            );
+
+            $editData = new VideoEditData(
+                blur_regions: $blurRegions,
+                overlay_configs: $overlayConfigs,
+            );
+
+            $overlayFiles = $request->file('overlay_files', []);
+
+            $this->videoManager->applyEdits($video, Auth::user(), $editData, $overlayFiles);
+
+            return response()->json([
+                'message' => 'Video edits are being applied. This may take a few minutes.',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 500);
+        }
+    }
+
+    public function editStatus($id)
+    {
+        $video = $this->videoManager->findVideoOrFail($id);
+
+        if ($video->user_id !== Auth::id()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        return response()->json($this->videoManager->getEditStatus($video));
     }
 }

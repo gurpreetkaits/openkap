@@ -237,6 +237,24 @@ class Video extends Model implements HasMedia
     }
 
     /**
+     * Get all edits for the video.
+     */
+    public function videoEdits()
+    {
+        return $this->hasMany(VideoEdit::class);
+    }
+
+    /**
+     * Check if video edit is currently processing.
+     */
+    public function isEditProcessing(): bool
+    {
+        return $this->videoEdits()
+            ->whereIn('status', ['pending', 'processing'])
+            ->exists();
+    }
+
+    /**
      * Get all playlists that contain this video.
      */
     public function playlists()

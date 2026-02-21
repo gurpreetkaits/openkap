@@ -106,6 +106,12 @@ const routes = [
     meta: { requiresAuth: true }
   },
   {
+    path: "/video/:id/edit",
+    name: "VideoEditor",
+    component: () => import("../views/VideoEditorView.vue"),
+    meta: { requiresAuth: true }
+  },
+  {
     path: "/share/video/:token",
     name: "SharedVideo",
     component: () => import("../views/SharedVideoView.vue"),
