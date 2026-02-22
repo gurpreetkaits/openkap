@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\GoogleAuthController;
 use App\Http\Controllers\BunnyVideoController;
 use App\Http\Controllers\ChatController;
+use App\Http\Controllers\ClipForgeController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\FolderController;
@@ -340,4 +341,16 @@ Route::middleware('auth:sanctum')->prefix('bunny/videos')->group(function () {
 
     // Delete video
     Route::delete('/{id}', [BunnyVideoController::class, 'destroy']);
+});
+
+// ClipForge - Video clip extraction tool (public, per-endpoint rate limits)
+Route::prefix('clipforge')->group(function () {
+    // Expensive operations: tight limits
+    Route::post('/youtube', [ClipForgeController::class, 'youtube'])->middleware('throttle:5,10');   // 5 per 10 min
+    Route::post('/upload', [ClipForgeController::class, 'upload'])->middleware('throttle:5,10');      // 5 per 10 min
+    Route::post('/clip', [ClipForgeController::class, 'clip'])->middleware('throttle:15,10');         // 15 per 10 min
+
+    // File serving: generous (browser makes many range requests)
+    Route::get('/video/{filename}', [ClipForgeController::class, 'video'])->middleware('throttle:120,1');
+    Route::get('/download/{filename}', [ClipForgeController::class, 'download'])->middleware('throttle:30,1');
 });

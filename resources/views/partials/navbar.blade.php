@@ -47,6 +47,20 @@
                     </div>
                 </div>
             </div>
+            <!-- Tools Dropdown -->
+            <div class="relative group">
+                <button type="button" class="flex items-center gap-1 {{ $light ? 'hover:text-gray-900' : 'hover:text-white' }} transition-colors {{ request()->is('tools/*') ? ($light ? 'text-gray-900' : 'text-white') : '' }}">
+                    Tools
+                    <i data-lucide="chevron-down" class="size-3.5 transition-transform group-hover:rotate-180"></i>
+                </button>
+                <div class="absolute top-full left-0 pt-2 w-48 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                    <div class="py-2 {{ $light ? 'bg-white border border-gray-200 shadow-lg shadow-gray-200/50' : 'bg-brand-950 border border-white/10 shadow-xl' }} rounded-lg">
+                        <a href="/tools/clipforge" class="block px-4 py-2 text-sm {{ $light ? 'text-gray-600 hover:text-gray-900 hover:bg-gray-50' : 'text-neutral-300 hover:text-white hover:bg-white/5' }} transition-colors {{ request()->is('tools/clipforge') ? ($light ? 'text-gray-900 bg-gray-50' : 'text-white bg-white/5') : '' }}">
+                            ClipForge
+                        </a>
+                    </div>
+                </div>
+            </div>
             <a href="{{ config('app.frontend_url', config('app.url')) }}/feedback" class="{{ $light ? 'hover:text-gray-900' : 'hover:text-white' }} transition-colors">Feedback</a>
         </div>
 
@@ -94,6 +108,13 @@
                 </a>
                 <a href="/changelog" class="block px-4 py-2 rounded-lg text-sm font-medium {{ $light ? 'text-gray-600 hover:text-gray-900 hover:bg-gray-50' : 'text-neutral-300 hover:text-white hover:bg-white/5' }} transition-colors {{ request()->is('changelog') ? ($light ? 'text-gray-900 bg-gray-50' : 'text-white bg-white/5') : '' }}">
                     Changelog
+                </a>
+            </div>
+            <!-- Tools Section -->
+            <div class="py-2">
+                <div class="px-4 py-2 text-xs font-semibold {{ $light ? 'text-gray-400' : 'text-neutral-500' }} uppercase tracking-wider">Tools</div>
+                <a href="/tools/clipforge" class="block px-4 py-2 rounded-lg text-sm font-medium {{ $light ? 'text-gray-600 hover:text-gray-900 hover:bg-gray-50' : 'text-neutral-300 hover:text-white hover:bg-white/5' }} transition-colors {{ request()->is('tools/clipforge') ? ($light ? 'text-gray-900 bg-gray-50' : 'text-white bg-white/5') : '' }}">
+                    ClipForge
                 </a>
             </div>
             <a href="{{ config('app.frontend_url', config('app.url')) }}/feedback" class="block px-4 py-3 rounded-lg text-sm font-medium {{ $light ? 'text-gray-600 hover:text-gray-900 hover:bg-gray-50' : 'text-neutral-300 hover:text-white hover:bg-white/5' }} transition-colors">

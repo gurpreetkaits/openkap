@@ -33,6 +33,11 @@ Route::get('/changelog', function () {
     return view('changelog');
 });
 
+// Tools
+Route::get('/tools/clipforge', function () {
+    return view('tools.clipforge');
+});
+
 // Alternative comparison pages
 Route::get('/alternative/loom', function () {
     return view('alternative.loom');
