@@ -5,7 +5,10 @@
     <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
         <a href="/" class="flex items-center gap-2 group cursor-pointer">
             <img src="/logo.png" alt="ScreenSense" class="size-8 rounded-lg {{ $light ? 'shadow-md shadow-orange-200/60' : 'shadow-[0_0_15px_-3px_rgba(249,115,22,0.4)] group-hover:shadow-[0_0_25px_-5px_rgba(249,115,22,0.6)]' }} transition-all duration-300">
-            <span class="text-lg font-medium tracking-tight {{ $light ? 'text-gray-900' : 'text-white' }}">ScreenSense</span>
+            <div class="flex flex-col">
+                <span class="text-lg font-medium tracking-tight leading-tight {{ $light ? 'text-gray-900' : 'text-white' }}">ScreenSense</span>
+                <span class="text-[9px] font-medium tracking-wide {{ $light ? 'text-gray-400' : 'text-neutral-500' }}">Loom alternative for individuals</span>
+            </div>
         </a>
 
         <!-- Desktop Nav Links -->
