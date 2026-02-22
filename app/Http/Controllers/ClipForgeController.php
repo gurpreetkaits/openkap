@@ -150,6 +150,6 @@ class ClipForgeController extends Controller
             return response()->json(['message' => 'File not found'], 404);
         }
 
-        return response()->download($path, $filename);
+        return response()->download($path, $filename)->deleteFileAfterSend(true);
     }
 }

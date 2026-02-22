@@ -344,11 +344,11 @@ class ClipForgeService
     }
 
     /**
-     * Clean up files older than 30 minutes
+     * Clean up files older than the given minutes
      */
-    public function cleanupStaleFiles(): void
+    public function cleanupStaleFiles(int $minutes = 10): void
     {
-        $threshold = now()->subMinutes(30)->getTimestamp();
+        $threshold = now()->subMinutes($minutes)->getTimestamp();
         $files = glob($this->tmpDir.'/*');
 
         foreach ($files as $file) {
@@ -356,6 +356,37 @@ class ClipForgeService
                 unlink($file);
                 Log::info('ClipForge: cleaned up stale file', ['file' => basename($file)]);
             }
+        }
+    }
+
+    /**
+     * Delete all files in the tmp directory
+     */
+    public function purgeAllFiles(): int
+    {
+        $files = glob($this->tmpDir.'/*');
+        $count = 0;
+
+        foreach ($files as $file) {
+            if (is_file($file)) {
+                unlink($file);
+                $count++;
+            }
+        }
+
+        return $count;
+    }
+
+    /**
+     * Delete a specific file from the tmp directory
+     */
+    public function deleteFile(string $filename): void
+    {
+        $path = $this->tmpDir.'/'.basename($filename);
+
+        if (is_file($path)) {
+            unlink($path);
+            Log::info('ClipForge: deleted file', ['file' => basename($filename)]);
         }
     }
 

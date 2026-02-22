@@ -12,3 +12,8 @@ Schedule::command('queue:work --stop-when-empty --max-time=50')
 Schedule::command('uploads:process-stale --timeout=300 --cleanup=3600')
     ->everyFiveMinutes()
     ->withoutOverlapping();
+
+// Clean up stale ClipForge temp files every 10 minutes
+Schedule::command('clipforge:cleanup')
+    ->everyTenMinutes()
+    ->withoutOverlapping();

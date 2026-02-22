@@ -95,7 +95,12 @@ class ClipForgeManager
             throw new \RuntimeException('Source video not found. It may have expired.');
         }
 
-        return $this->clipForgeService->extractClip($sourceFilename, $startTime, $endTime, $format);
+        $result = $this->clipForgeService->extractClip($sourceFilename, $startTime, $endTime, $format);
+
+        // Delete the source video — no longer needed after clip extraction
+        $this->clipForgeService->deleteFile($sourceFilename);
+
+        return $result;
     }
 
     /**
