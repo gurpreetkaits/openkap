@@ -107,7 +107,7 @@ class StreamVideoController extends Controller
     public function uploadChunk(Request $request, $sessionId)
     {
         if (! $this->validateSessionId($sessionId)) {
-            return response()->json(['message' => 'Invalid session ID'], 400);
+            return response()->json(['message' => 'Invalid session'], 404);
         }
 
         $request->validate([
@@ -196,7 +196,7 @@ class StreamVideoController extends Controller
     public function completeUpload(Request $request, $sessionId)
     {
         if (! $this->validateSessionId($sessionId)) {
-            return response()->json(['message' => 'Invalid session ID'], 400);
+            return response()->json(['message' => 'Invalid session'], 404);
         }
 
         $request->validate([
@@ -357,7 +357,7 @@ class StreamVideoController extends Controller
     public function cancelUpload(Request $request, $sessionId)
     {
         if (! $this->validateSessionId($sessionId)) {
-            return response()->json(['message' => 'Invalid session ID'], 400);
+            return response()->json(['message' => 'Invalid session'], 404);
         }
 
         $chunkDir = storage_path("app/temp/stream-uploads/{$sessionId}");
@@ -387,7 +387,7 @@ class StreamVideoController extends Controller
     public function getStatus($sessionId)
     {
         if (! $this->validateSessionId($sessionId)) {
-            return response()->json(['message' => 'Invalid session ID'], 400);
+            return response()->json(['message' => 'Invalid session'], 404);
         }
 
         $chunkDir = storage_path("app/temp/stream-uploads/{$sessionId}");
