@@ -329,6 +329,9 @@ class VideoManager
             'storage_type' => $video->storage_type,
             'bunny_status' => $video->bunny_status,
             'bunny_video_id' => $video->bunny_video_id,
+            // Creator identity
+            'user_name' => $video->user?->name,
+            'user_avatar' => $video->user?->avatar_url,
             // Owner branding
             'branding' => $branding,
         ];

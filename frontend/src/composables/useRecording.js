@@ -207,11 +207,29 @@ export function useRecording() {
         }
     };
 
-    // Process upload queue (retry failed chunks)
-    const processUploadQueue = async () => {
-        while (uploadQueue.value.length > 0) {
-            const { chunk, index } = uploadQueue.value.shift();
-            await uploadChunk(chunk, index);
+    // Process upload queue (retry failed chunks with max attempts)
+    const processUploadQueue = async (maxRetries = 3) => {
+        let retryCount = 0;
+        while (uploadQueue.value.length > 0 && retryCount < maxRetries) {
+            const queueLength = uploadQueue.value.length;
+            const currentBatch = uploadQueue.value.splice(0, queueLength);
+
+            for (const { chunk, index } of currentBatch) {
+                await uploadChunk(chunk, index);
+            }
+
+            // If items were re-added to the queue (failed again), increment retry count
+            if (uploadQueue.value.length > 0) {
+                retryCount++;
+                if (retryCount < maxRetries) {
+                    const delay = Math.pow(2, retryCount) * 1000;
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                }
+            }
+        }
+
+        if (uploadQueue.value.length > 0) {
+            console.warn(`Failed to upload ${uploadQueue.value.length} chunks after ${maxRetries} retries`);
         }
     };
 

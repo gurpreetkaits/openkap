@@ -44,6 +44,7 @@ class ConvertVideoToMp4Job implements ShouldQueue
     public function handle(): void
     {
         $video = $this->video;
+        $video->refresh();
 
         Log::info('Starting video conversion', [
             'video_id' => $video->id,

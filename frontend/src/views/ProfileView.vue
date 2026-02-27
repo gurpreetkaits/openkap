@@ -90,12 +90,9 @@
               <p class="text-sm font-medium text-gray-900">Export Data</p>
               <p class="text-xs text-gray-500 mt-0.5">Download all your recordings and data</p>
             </div>
-            <button
-              @click="exportData"
-              class="px-3 py-1.5 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
-            >
-              Export
-            </button>
+            <span class="px-3 py-1.5 text-xs font-medium text-gray-400 bg-gray-50 rounded-lg cursor-default">
+              Coming Soon
+            </span>
           </div>
 
           <!-- Delete Account -->
@@ -104,35 +101,20 @@
               <p class="text-sm font-medium text-red-900">Delete Account</p>
               <p class="text-xs text-red-600 mt-0.5">Permanently delete your account and all data</p>
             </div>
-            <button
-              @click="deleteAccount"
-              class="px-3 py-1.5 text-xs font-medium text-red-700 bg-red-100 hover:bg-red-200 rounded-lg transition-colors"
-            >
-              Delete
-            </button>
+            <span class="px-3 py-1.5 text-xs font-medium text-gray-400 bg-gray-50 rounded-lg cursor-default">
+              Coming Soon
+            </span>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Delete Account Modal -->
-    <SBDeleteModal
-      v-model="showDeleteAccountModal"
-      title="Delete Account"
-      message="Are you sure you want to delete your account? This action cannot be undone. All your videos and data will be permanently deleted."
-      confirm-text="Delete Account"
-      :loading="isDeletingAccount"
-      @confirm="confirmDeleteAccount"
-      @cancel="showDeleteAccountModal = false"
-    />
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useAuth } from '@/stores/auth'
-import toast from '@/services/toastService'
-import SBDeleteModal from '@/components/Global/SBDeleteModal.vue'
 
 const auth = useAuth()
 const loading = ref(true)
@@ -162,9 +144,6 @@ const memberSince = computed(() => {
   }
 })
 
-// Delete account modal state
-const showDeleteAccountModal = ref(false)
-const isDeletingAccount = ref(false)
 
 onMounted(async () => {
   try {
@@ -177,22 +156,6 @@ onMounted(async () => {
   }
 })
 
-const exportData = () => {
-  toast.info('Data export will be available for download shortly')
-}
-
-const deleteAccount = () => {
-  showDeleteAccountModal.value = true
-}
-
-const confirmDeleteAccount = () => {
-  isDeletingAccount.value = true
-  setTimeout(() => {
-    toast.warning('Account deletion functionality coming soon')
-    showDeleteAccountModal.value = false
-    isDeletingAccount.value = false
-  }, 1000)
-}
 </script>
 
 <style scoped>

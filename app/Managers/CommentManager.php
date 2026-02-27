@@ -142,6 +142,11 @@ class CommentManager
 
     public function deleteComment(int $videoId, int $commentId, ?int $userId = null): bool
     {
+        // Require authenticated user for deletion
+        if (! $userId) {
+            return false;
+        }
+
         $comment = $this->comments->findByVideoAndId($videoId, $commentId);
 
         if (! $comment) {
@@ -151,7 +156,7 @@ class CommentManager
         $video = $this->videos->findOrFail($videoId);
 
         // Check if user can delete (own comment or video owner)
-        if ($userId && ! $comment->canDelete($userId, $video->user_id)) {
+        if (! $comment->canDelete($userId, $video->user_id)) {
             return false;
         }
 

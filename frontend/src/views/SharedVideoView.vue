@@ -60,14 +60,14 @@
           </div>
           <div class="p-5">
             <div class="flex gap-4 mb-6">
-              <button class="flex-1 flex flex-col items-center gap-2 p-3 rounded-lg border border-gray-200 hover:border-orange-500 hover:bg-orange-50/50 transition-all group">
+              <a :href="`mailto:?subject=${encodeURIComponent(video.title || 'Check out this video')}&body=${encodeURIComponent(shareUrl || '')}`" class="flex-1 flex flex-col items-center gap-2 p-3 rounded-lg border border-gray-200 hover:border-orange-500 hover:bg-orange-50/50 transition-all group no-underline">
                 <div class="w-8 h-8 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center group-hover:scale-110 transition-transform">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                   </svg>
                 </div>
                 <span class="text-xs font-medium text-gray-600 group-hover:text-orange-700">Email</span>
-              </button>
+              </a>
               <button @click="copyEmbedCode" class="flex-1 flex flex-col items-center gap-2 p-3 rounded-lg border border-gray-200 hover:border-orange-500 hover:bg-orange-50/50 transition-all group">
                 <div class="w-8 h-8 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center group-hover:scale-110 transition-transform">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -76,14 +76,14 @@
                 </div>
                 <span class="text-xs font-medium text-gray-600 group-hover:text-pink-700">{{ copiedEmbed ? 'Copied!' : 'Embed' }}</span>
               </button>
-              <button class="flex-1 flex flex-col items-center gap-2 p-3 rounded-lg border border-gray-200 hover:border-orange-500 hover:bg-orange-50/50 transition-all group">
+              <a :href="`https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl || '')}&text=${encodeURIComponent(video.title || 'Check out this video')}`" target="_blank" rel="noopener noreferrer" class="flex-1 flex flex-col items-center gap-2 p-3 rounded-lg border border-gray-200 hover:border-orange-500 hover:bg-orange-50/50 transition-all group no-underline">
                 <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform">
                   <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
                   </svg>
                 </div>
                 <span class="text-xs font-medium text-gray-600 group-hover:text-blue-700">Twitter</span>
-              </button>
+              </a>
             </div>
 
             <label class="text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-2 block">Public Link</label>
@@ -112,9 +112,17 @@
 
             <!-- Video Title Above Container -->
             <div class="w-full mb-4">
-              <h1 class="text-2xl font-bold text-gray-900 tracking-tight leading-tight mb-1">
+              <h1 class="text-2xl font-bold text-gray-900 tracking-tight leading-tight mb-2">
                 {{ video.title }}
               </h1>
+              <!-- Creator Identity -->
+              <div v-if="video.user_name" class="flex items-center gap-2 mb-2">
+                <img v-if="video.user_avatar" :src="video.user_avatar" :alt="video.user_name" class="w-6 h-6 rounded-full object-cover ring-1 ring-gray-200" />
+                <div v-else class="w-6 h-6 rounded-full bg-gradient-to-br from-orange-100 to-amber-100 flex items-center justify-center text-orange-600 text-xs font-bold ring-1 ring-orange-200/50">
+                  {{ (video.user_name || 'U').charAt(0).toUpperCase() }}
+                </div>
+                <span class="text-sm font-medium text-gray-700">{{ video.user_name }}</span>
+              </div>
               <div class="flex items-center gap-3 text-sm text-gray-500">
                 <span class="flex items-center gap-1.5">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -648,7 +656,7 @@
     <transition name="toast">
       <div
         v-if="toast"
-        class="fixed bottom-8 left-1/2 -translate-x-1/2 px-5 py-3 bg-white text-gray-900 rounded-xl text-sm font-medium shadow-2xl border border-gray-200 flex items-center gap-2 z-[100]"
+        class="fixed bottom-20 left-1/2 -translate-x-1/2 px-5 py-3 bg-white text-gray-900 rounded-xl text-sm font-medium shadow-2xl border border-gray-200 flex items-center gap-2 z-[100]"
       >
         <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
           <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
@@ -656,6 +664,25 @@
         {{ toast }}
       </div>
     </transition>
+
+    <!-- Signup CTA Banner (for non-authenticated users) -->
+    <div v-if="!isAuthenticated && !loading" class="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-t border-gray-200 shadow-[0_-4px_24px_rgba(0,0,0,0.08)]">
+      <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
+        <div class="flex items-center gap-3 min-w-0">
+          <img src="/logo.png" alt="ScreenSense" class="w-7 h-7 rounded-lg shadow-sm flex-shrink-0" />
+          <p class="text-sm text-gray-700 truncate">
+            <span class="font-semibold text-gray-900">Made with ScreenSense</span>
+            <span class="hidden sm:inline"> — Record and share screen recordings for free</span>
+          </p>
+        </div>
+        <a
+          href="/login"
+          class="flex-shrink-0 inline-flex items-center px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium rounded-lg shadow-sm shadow-orange-200 transition-colors"
+        >
+          Try Free
+        </a>
+      </div>
+    </div>
 
   </div>
 </template>

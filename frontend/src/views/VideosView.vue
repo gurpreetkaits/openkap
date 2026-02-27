@@ -109,7 +109,7 @@
           <span class="text-xs text-gray-400">{{ folder.videos_count }}</span>
 
           <!-- Actions Menu Button -->
-          <div class="opacity-0 group-hover:opacity-100 transition-opacity ml-0.5" @click.stop>
+          <div class="opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity ml-0.5" @click.stop>
             <button
               @click="toggleFolderMenu(folder.id)"
               class="p-0.5 rounded text-gray-400 hover:text-gray-600 transition-colors"
@@ -393,10 +393,15 @@
       </div>
     </div>
 
-    <!-- Loading State -->
-    <div v-if="loading" class="text-center py-24">
-      <div class="inline-block animate-spin rounded-full h-10 w-10 border-4 border-orange-600 border-t-transparent"></div>
-      <p class="mt-4 text-sm text-gray-500">Loading videos...</p>
+    <!-- Loading State (Skeleton Grid) -->
+    <div v-if="loading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 animate-pulse">
+      <div v-for="n in 8" :key="n" class="bg-white rounded-xl border border-gray-100 overflow-hidden">
+        <div class="w-full bg-gray-200" style="aspect-ratio: 16/9;"></div>
+        <div class="p-3 space-y-2">
+          <div class="h-4 w-3/4 bg-gray-200 rounded"></div>
+          <div class="h-3 w-1/2 bg-gray-100 rounded"></div>
+        </div>
+      </div>
     </div>
 
     <!-- Error State -->
@@ -452,6 +457,15 @@
             </svg>
           </div>
 
+          <!-- Processing Badge -->
+          <div
+            v-if="video.conversion_status === 'processing' || video.bunny_status === 'transcoding' || video.bunny_status === 'pending'"
+            class="absolute top-2 left-2 z-10 bg-black/70 backdrop-blur-sm text-white text-[10px] font-medium px-2 py-1 rounded-md flex items-center gap-1.5"
+          >
+            <div class="w-2 h-2 bg-orange-400 rounded-full animate-pulse"></div>
+            Processing
+          </div>
+
           <!-- Duration Badge -->
           <div class="absolute bottom-2 right-2 z-10 bg-black/75 backdrop-blur-sm text-white text-xs font-medium px-1.5 py-0.5 rounded pointer-events-none">
             {{ formatDuration(video.duration) }}
@@ -466,9 +480,9 @@
             </div>
           </div>
 
-          <!-- Hover Overlay with Play Button and Action Icons -->
+          <!-- Hover Overlay with Play Button and Action Icons (visible on touch via tap, visible on hover for desktop) -->
           <div
-            class="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+            class="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 lg:opacity-0 lg:group-hover:opacity-100"
           >
             <!-- Play Button (clickable area covers most of the overlay) -->
             <div class="w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-xl transform group-hover:scale-100 scale-90 transition-transform duration-200 pointer-events-none">
@@ -938,7 +952,7 @@
       <button
         v-else-if="videos.length === 0"
         @click="goToRecord"
-        class="inline-flex items-center px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-lg font-medium text-sm shadow-sm transition-colors"
+        class="inline-flex items-center px-5 py-2.5 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-medium text-sm shadow-sm shadow-orange-200 transition-colors"
         :disabled="!canRecord"
         :class="{ 'opacity-50 cursor-not-allowed': !canRecord }"
       >
@@ -1334,6 +1348,7 @@ import playlistService from '@/services/playlistService'
 import folderService from '@/services/folderService'
 import screenshotService from '@/services/screenshotService'
 import toast from '@/services/toastService'
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8888'
 import SBDeleteModal from '@/components/Global/SBDeleteModal.vue'
 import SBUpgradeModal from '@/components/Global/SBUpgradeModal.vue'
 import SBModal from '@/components/Global/SBModal.vue'
@@ -1677,8 +1692,8 @@ export default {
     }
 
     const handleUpload = () => {
-      // Check if user has active subscription for bunny upload
-      if (!subscription.value?.is_active) {
+      // Check if user can still upload (quota not exceeded)
+      if (subscription.value?.can_record === false) {
         showUpgradeModal.value = true
         return
       }
@@ -1698,7 +1713,7 @@ export default {
         formData.append('video', file)
         formData.append('title', title)
 
-        const response = await fetch('/api/videos', {
+        const response = await fetch(`${API_BASE_URL}/api/videos`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('auth_token')}`

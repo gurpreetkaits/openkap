@@ -44,6 +44,7 @@ class ProcessHlsConversionJob implements ShouldQueue
     public function handle(HlsService $hlsService): void
     {
         $video = $this->video;
+        $video->refresh();
 
         Log::info('Starting HLS conversion', [
             'video_id' => $video->id,

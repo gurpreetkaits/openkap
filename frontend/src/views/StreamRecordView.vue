@@ -16,42 +16,31 @@
     <main class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16">
       <!-- Recording Setup -->
       <div v-if="!isRecording && !hasRecorded" class="text-center">
-        <!-- Header -->
-        <div class="mb-10 sm:mb-12">
-          <div class="inline-flex items-center justify-center w-16 h-16 bg-orange-100 rounded-full mb-6">
-            <svg class="w-8 h-8 text-orange-600" fill="currentColor" viewBox="0 0 20 20">
-              <circle cx="10" cy="10" r="6"/>
-            </svg>
-          </div>
-          <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
+        <!-- Header (compact) -->
+        <div class="mb-6 sm:mb-8">
+          <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
             Ready to Record?
           </h1>
-          <p class="text-lg sm:text-xl text-gray-600 max-w-2xl mx-auto">
-            Capture your screen with crystal-clear quality. Perfect for tutorials, demos, and presentations.
+          <p class="text-base text-gray-500 max-w-lg mx-auto">
+            Capture your screen with crystal-clear quality
           </p>
         </div>
 
-        <!-- Recording Options Cards -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-10 max-w-2xl mx-auto">
-          <!-- Screen Option -->
-          <label class="relative cursor-pointer group">
-            <input
-              v-model="recordingOptions.screen"
-              type="checkbox"
-              class="peer sr-only"
-            >
-            <div class="bg-white border-2 border-gray-200 rounded-xl p-8 transition-all peer-checked:border-orange-500 peer-checked:bg-orange-50 peer-checked:shadow-lg hover:shadow-md">
-              <div class="flex flex-col items-center">
-                <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4 peer-checked:bg-orange-100 transition-colors">
-                  <svg class="w-8 h-8 text-gray-600 peer-checked:text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-                  </svg>
-                </div>
-                <h3 class="font-semibold text-gray-900 mb-2 text-lg">Screen</h3>
-                <p class="text-sm text-gray-500 text-center">Capture your entire display or specific window</p>
+        <!-- Recording Options Cards (compact) -->
+        <div class="grid grid-cols-2 gap-4 mb-6 max-w-lg mx-auto">
+          <!-- Screen Option (always enabled, shown as info) -->
+          <div class="bg-orange-50 border-2 border-orange-500 rounded-xl p-5 shadow-sm">
+            <div class="flex flex-col items-center">
+              <div class="w-11 h-11 bg-orange-100 rounded-full flex items-center justify-center mb-3">
+                <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                </svg>
               </div>
+              <h3 class="font-semibold text-gray-900 text-sm">Screen</h3>
+              <p class="text-xs text-gray-500 mt-1">Display or window</p>
             </div>
-          </label>
+            <input v-model="recordingOptions.screen" type="checkbox" class="sr-only" checked>
+          </div>
 
           <!-- Microphone Option -->
           <label class="relative cursor-pointer group">
@@ -60,53 +49,62 @@
               type="checkbox"
               class="peer sr-only"
             >
-            <div class="bg-white border-2 border-gray-200 rounded-xl p-8 transition-all peer-checked:border-orange-500 peer-checked:bg-orange-50 peer-checked:shadow-lg hover:shadow-md">
+            <div class="bg-white border-2 border-gray-200 rounded-xl p-5 transition-all peer-checked:border-orange-500 peer-checked:bg-orange-50 peer-checked:shadow-sm hover:shadow-sm">
               <div class="flex flex-col items-center">
-                <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4 peer-checked:bg-orange-100 transition-colors">
-                  <svg class="w-8 h-8 text-gray-600 peer-checked:text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="w-11 h-11 bg-gray-100 rounded-full flex items-center justify-center mb-3 peer-checked:bg-orange-100 transition-colors">
+                  <svg class="w-5 h-5 text-gray-500 peer-checked:text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/>
                   </svg>
                 </div>
-                <h3 class="font-semibold text-gray-900 mb-2 text-lg">Microphone</h3>
-                <p class="text-sm text-gray-500 text-center">Record your voice with the screen</p>
+                <h3 class="font-semibold text-gray-900 text-sm">Microphone</h3>
+                <p class="text-xs text-gray-500 mt-1">Record your voice</p>
               </div>
             </div>
           </label>
         </div>
 
-        <!-- Zoom Settings -->
-        <div class="max-w-md mx-auto mb-8">
-          <ZoomSettingsPanel
-            v-model:zoomEnabled="zoomTracking.zoomEnabled.value"
-            v-model:zoomLevel="zoomTracking.zoomLevel.value"
-            v-model:zoomDurationMs="zoomTracking.zoomDurationMs.value"
-            :eventCount="zoomTracking.eventCount.value"
-            :clickEventCount="zoomTracking.clickEventCount.value"
-            :keyboardEventCount="zoomTracking.keyboardEventCount.value"
-          />
-        </div>
-
-        <!-- Start Recording Button -->
+        <!-- Start Recording Button (primary CTA, above the fold) -->
         <button
           @click="startRecording"
           :disabled="!canRecord || isStartingRecording"
-          class="group relative inline-flex items-center px-8 sm:px-12 py-4 sm:py-5 border border-transparent text-lg sm:text-xl font-semibold rounded-full text-white bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 focus:outline-none focus:ring-4 focus:ring-orange-300 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:scale-105"
+          class="group relative inline-flex items-center px-10 py-4 border border-transparent text-lg font-semibold rounded-full text-white bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 focus:outline-none focus:ring-4 focus:ring-orange-300 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:scale-105"
         >
-          <svg v-if="!isStartingRecording" class="w-7 h-7 mr-3" fill="currentColor" viewBox="0 0 20 20">
+          <svg v-if="!isStartingRecording" class="w-6 h-6 mr-2.5" fill="currentColor" viewBox="0 0 20 20">
             <circle cx="10" cy="10" r="7" fill="currentColor"/>
           </svg>
-          <svg v-else class="w-7 h-7 mr-3 animate-spin" fill="none" viewBox="0 0 24 24">
+          <svg v-else class="w-6 h-6 mr-2.5 animate-spin" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
           </svg>
           <span>{{ isStartingRecording ? 'Starting...' : 'Start Recording' }}</span>
         </button>
 
-        <!-- Help Text -->
-        <p class="mt-6 text-sm text-gray-500">
+        <p class="mt-4 text-xs text-gray-400">
           <span v-if="!settingsLoaded">Loading settings...</span>
-          <span v-else>Click to select what to share and start recording</span>
+          <span v-else>You'll choose what to share after clicking</span>
         </p>
+
+        <!-- Advanced: Zoom Settings (collapsed by default) -->
+        <div class="max-w-md mx-auto mt-8">
+          <details class="group">
+            <summary class="flex items-center justify-center gap-2 text-sm text-gray-500 hover:text-gray-700 cursor-pointer select-none">
+              <svg class="w-4 h-4 transition-transform group-open:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+              </svg>
+              Advanced: Auto-Zoom Settings
+            </summary>
+            <div class="mt-4">
+              <ZoomSettingsPanel
+                v-model:zoomEnabled="zoomTracking.zoomEnabled.value"
+                v-model:zoomLevel="zoomTracking.zoomLevel.value"
+                v-model:zoomDurationMs="zoomTracking.zoomDurationMs.value"
+                :eventCount="zoomTracking.eventCount.value"
+                :clickEventCount="zoomTracking.clickEventCount.value"
+                :keyboardEventCount="zoomTracking.keyboardEventCount.value"
+              />
+            </div>
+          </details>
+        </div>
       </div>
 
       <!-- Recording in Progress -->
@@ -703,6 +701,9 @@ export default {
         }
         if (stream._audioStream) {
           stream._audioStream.getTracks().forEach(track => track.stop())
+        }
+        if (stream._audioContext) {
+          stream._audioContext.close()
         }
       }
 

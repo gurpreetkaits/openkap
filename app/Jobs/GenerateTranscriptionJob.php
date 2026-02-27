@@ -31,10 +31,16 @@ class GenerateTranscriptionJob implements ShouldQueue
      */
     public int $backoff = 120;
 
+    /**
+     * Maximum number of times to reschedule when waiting for conversion.
+     */
+    private int $maxReschedules = 10;
+
     public function __construct(
         public Video $video,
         public bool $generateSummary = true,
-        public bool $generateTitle = true
+        public bool $generateTitle = true,
+        public int $rescheduleCount = 0
     ) {}
 
     public function handle(TranscriptionService $service): void
@@ -46,15 +52,41 @@ class GenerateTranscriptionJob implements ShouldQueue
             'title' => $video->title,
         ]);
 
+        // Refresh model to get latest status from DB
+        $video->refresh();
+
         // Verify video conversion is complete
         if (! $video->isConversionComplete()) {
+            // Abort if conversion permanently failed
+            if ($video->conversion_status === 'failed') {
+                Log::error('Video conversion failed, aborting transcription', [
+                    'video_id' => $video->id,
+                ]);
+                $this->markAsFailed($video, 'Video conversion failed, cannot transcribe');
+
+                return;
+            }
+
+            // Abort if rescheduled too many times
+            if ($this->rescheduleCount >= $this->maxReschedules) {
+                Log::error('Transcription rescheduled too many times, aborting', [
+                    'video_id' => $video->id,
+                    'reschedule_count' => $this->rescheduleCount,
+                ]);
+                $this->markAsFailed($video, 'Video conversion did not complete in time');
+
+                return;
+            }
+
             Log::warning('Video conversion not complete, rescheduling transcription', [
                 'video_id' => $video->id,
                 'conversion_status' => $video->conversion_status,
+                'reschedule_count' => $this->rescheduleCount + 1,
             ]);
 
-            // Reschedule for later
-            self::dispatch($video, $this->generateSummary, $this->generateTitle)->delay(now()->addMinutes(2));
+            // Reschedule for later with incremented counter
+            self::dispatch($video, $this->generateSummary, $this->generateTitle, $this->rescheduleCount + 1)
+                ->delay(now()->addMinutes(2));
 
             return;
         }

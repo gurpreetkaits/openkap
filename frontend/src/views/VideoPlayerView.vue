@@ -4,9 +4,30 @@
     <!-- Subtle Background Grid -->
     <div class="fixed inset-0 z-0 pointer-events-none" style="background-image: radial-gradient(#e5e7eb 1px, transparent 1px); background-size: 32px 32px; opacity: 0.4;"></div>
 
-    <!-- Loading State -->
-    <div v-if="loading" class="flex items-center justify-center min-h-screen">
-      <div class="animate-spin rounded-full h-12 w-12 border-4 border-orange-500 border-t-transparent"></div>
+    <!-- Loading State (Skeleton) -->
+    <div v-if="loading" class="flex flex-col lg:flex-row h-full pt-14 animate-pulse">
+      <div class="flex-1 p-4 lg:p-8 flex flex-col items-center">
+        <div class="w-full max-w-4xl">
+          <div class="h-7 w-2/3 bg-gray-200 rounded-lg mb-3"></div>
+          <div class="h-4 w-1/3 bg-gray-100 rounded mb-6"></div>
+          <div class="w-full rounded-xl bg-gray-200" style="aspect-ratio: 16/9;"></div>
+        </div>
+      </div>
+      <div class="w-full lg:w-[400px] bg-white border-l border-gray-200 p-4 space-y-4">
+        <div class="flex gap-2">
+          <div class="h-9 w-24 bg-gray-100 rounded-lg"></div>
+          <div class="h-9 w-24 bg-gray-100 rounded-lg"></div>
+        </div>
+        <div class="space-y-3">
+          <div class="flex gap-3 items-start" v-for="n in 3" :key="n">
+            <div class="w-8 h-8 rounded-full bg-gray-200 flex-shrink-0"></div>
+            <div class="flex-1 space-y-2">
+              <div class="h-3 w-20 bg-gray-200 rounded"></div>
+              <div class="h-3 w-full bg-gray-100 rounded"></div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Error State -->
@@ -117,14 +138,14 @@
           </div>
           <div class="p-5">
             <div class="flex gap-4 mb-6">
-              <button class="flex-1 flex flex-col items-center gap-2 p-3 rounded-lg border border-gray-200 hover:border-orange-500 hover:bg-orange-50/50 transition-all group">
+              <a :href="`mailto:?subject=${encodeURIComponent(video.title || 'Check out this video')}&body=${encodeURIComponent(video.shareUrl || '')}`" class="flex-1 flex flex-col items-center gap-2 p-3 rounded-lg border border-gray-200 hover:border-orange-500 hover:bg-orange-50/50 transition-all group no-underline">
                 <div class="w-8 h-8 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center group-hover:scale-110 transition-transform">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                   </svg>
                 </div>
                 <span class="text-xs font-medium text-gray-600 group-hover:text-orange-700">Email</span>
-              </button>
+              </a>
               <button @click="copyEmbedCode" class="flex-1 flex flex-col items-center gap-2 p-3 rounded-lg border border-gray-200 hover:border-orange-500 hover:bg-orange-50/50 transition-all group">
                 <div class="w-8 h-8 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center group-hover:scale-110 transition-transform">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -133,14 +154,14 @@
                 </div>
                 <span class="text-xs font-medium text-gray-600 group-hover:text-pink-700">{{ copiedEmbed ? 'Copied!' : 'Embed' }}</span>
               </button>
-              <button class="flex-1 flex flex-col items-center gap-2 p-3 rounded-lg border border-gray-200 hover:border-orange-500 hover:bg-orange-50/50 transition-all group">
+              <a :href="`https://twitter.com/intent/tweet?url=${encodeURIComponent(video.shareUrl || '')}&text=${encodeURIComponent(video.title || 'Check out this video')}`" target="_blank" rel="noopener noreferrer" class="flex-1 flex flex-col items-center gap-2 p-3 rounded-lg border border-gray-200 hover:border-orange-500 hover:bg-orange-50/50 transition-all group no-underline">
                 <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform">
                   <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
                   </svg>
                 </div>
                 <span class="text-xs font-medium text-gray-600 group-hover:text-blue-700">Twitter</span>
-              </button>
+              </a>
             </div>
 
             <label class="text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-2 block">Public Link</label>
@@ -843,7 +864,11 @@
                 class="w-full bg-transparent border-none text-[13px] text-gray-900 placeholder:text-gray-400 focus:ring-0 p-3 resize-none min-h-[44px]"
               ></textarea>
 
-              <div class="flex items-center justify-end px-2 pb-2">
+              <div class="flex items-center justify-between px-2 pb-2">
+                <span v-if="currentTime > 0" class="text-[11px] text-gray-400 font-mono bg-gray-50 px-1.5 py-0.5 rounded">
+                  @ {{ formatTime(currentTime) }}
+                </span>
+                <span v-else></span>
                 <button
                   @click="addComment"
                   :disabled="!newComment.trim() || isSavingComment"
@@ -1844,7 +1869,7 @@ export default {
     })
 
     const handleKeydown = (e) => {
-      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) return
 
       switch (e.key.toLowerCase()) {
         case ' ':

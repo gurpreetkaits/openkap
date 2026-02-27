@@ -39,7 +39,7 @@
 
         <div class="flex items-center gap-2">
           <!-- Sort Toggle -->
-          <div class="relative">
+          <div class="relative" data-dropdown-menu>
             <button
               @click="showSortMenu = !showSortMenu"
               class="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
@@ -74,7 +74,7 @@
           </div>
 
           <!-- Visibility Dropdown -->
-          <div class="relative">
+          <div class="relative" data-dropdown-menu>
             <button
               @click="showVisibilityMenu = !showVisibilityMenu"
               class="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg transition-colors"
@@ -170,7 +170,7 @@
           :key="video.id"
           class="group flex items-center gap-4 p-3 bg-white border border-gray-100 rounded-xl hover:border-orange-200 hover:shadow-sm transition-all"
           :class="{ 'cursor-move': playlist.sort_by === 'manual' }"
-          draggable="true"
+          :draggable="playlist.sort_by === 'manual'"
           @dragstart="onDragStart($event, index)"
           @dragover.prevent="onDragOver($event, index)"
           @drop="onDrop($event, index)"
@@ -374,7 +374,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import playlistService from '@/services/playlistService'
 import videoService from '@/services/videoService'
@@ -609,7 +609,7 @@ function formatDate(date) {
 
 // Close sort menu when clicking outside
 function handleClickOutside(event) {
-  if (!event.target.closest('.relative')) {
+  if (!event.target.closest('[data-dropdown-menu]')) {
     showSortMenu.value = false
     showVisibilityMenu.value = false
   }
@@ -625,6 +625,10 @@ watch(showAddVideosModal, (newValue) => {
 onMounted(() => {
   fetchPlaylist()
   document.addEventListener('click', handleClickOutside)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside)
 })
 </script>
 

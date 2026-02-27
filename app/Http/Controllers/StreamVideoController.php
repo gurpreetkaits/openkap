@@ -23,6 +23,14 @@ class StreamVideoController extends Controller
     ) {}
 
     /**
+     * Validate session ID is a strict UUID to prevent path traversal.
+     */
+    private function validateSessionId(string $sessionId): bool
+    {
+        return (bool) preg_match('/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/', $sessionId);
+    }
+
+    /**
      * Start a new streaming upload session.
      * Always uses local chunked upload for speed during recording.
      * Bunny upload happens in background after recording completes.
@@ -98,6 +106,10 @@ class StreamVideoController extends Controller
      */
     public function uploadChunk(Request $request, $sessionId)
     {
+        if (! $this->validateSessionId($sessionId)) {
+            return response()->json(['message' => 'Invalid session ID'], 400);
+        }
+
         $request->validate([
             'chunk' => 'required|file',
             'chunk_index' => 'required|integer|min:0',
@@ -183,6 +195,10 @@ class StreamVideoController extends Controller
      */
     public function completeUpload(Request $request, $sessionId)
     {
+        if (! $this->validateSessionId($sessionId)) {
+            return response()->json(['message' => 'Invalid session ID'], 400);
+        }
+
         $request->validate([
             'duration' => 'nullable|integer',
             'title' => 'nullable|string|max:255',
@@ -340,16 +356,22 @@ class StreamVideoController extends Controller
      */
     public function cancelUpload(Request $request, $sessionId)
     {
+        if (! $this->validateSessionId($sessionId)) {
+            return response()->json(['message' => 'Invalid session ID'], 400);
+        }
+
         $chunkDir = storage_path("app/temp/stream-uploads/{$sessionId}");
 
-        if (file_exists("{$chunkDir}/metadata.json")) {
-            $metadata = json_decode(file_get_contents("{$chunkDir}/metadata.json"), true);
+        if (! file_exists("{$chunkDir}/metadata.json")) {
+            return response()->json(['message' => 'Session not found'], 404);
+        }
 
-            // Verify user owns this session
-            $userId = Auth::id();
-            if (! $userId || $metadata['user_id'] !== $userId) {
-                return response()->json(['message' => 'Unauthorized'], 403);
-            }
+        $metadata = json_decode(file_get_contents("{$chunkDir}/metadata.json"), true);
+
+        // Verify user owns this session
+        $userId = Auth::id();
+        if (! $userId || $metadata['user_id'] !== $userId) {
+            return response()->json(['message' => 'Unauthorized'], 403);
         }
 
         $this->cleanupSession($sessionId);
@@ -364,6 +386,10 @@ class StreamVideoController extends Controller
      */
     public function getStatus($sessionId)
     {
+        if (! $this->validateSessionId($sessionId)) {
+            return response()->json(['message' => 'Invalid session ID'], 400);
+        }
+
         $chunkDir = storage_path("app/temp/stream-uploads/{$sessionId}");
 
         if (! file_exists("{$chunkDir}/metadata.json")) {

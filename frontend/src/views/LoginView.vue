@@ -7,6 +7,7 @@
         <h2 class="mt-6 text-2xl font-bold text-gray-900">
           Welcome to ScreenSense
         </h2>
+        <p class="mt-2 text-base text-gray-500">The fastest way to record and share your screen</p>
       </div>
 
       <!-- Error Message -->
@@ -52,22 +53,22 @@
           <!-- Features -->
           <div class="space-y-3">
             <div class="flex items-center text-sm text-gray-600">
-              <svg class="w-5 h-5 text-green-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-5 h-5 text-green-500 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
               </svg>
-              Unlimited screen recordings
+              Record your screen in one click
             </div>
             <div class="flex items-center text-sm text-gray-600">
-              <svg class="w-5 h-5 text-green-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-5 h-5 text-green-500 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
               </svg>
-              One-click shareable links
+              Share instantly with a link
             </div>
             <div class="flex items-center text-sm text-gray-600">
-              <svg class="w-5 h-5 text-green-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-5 h-5 text-green-500 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
               </svg>
-              Self-host or use our cloud
+              AI transcripts, summaries, and comments
             </div>
           </div>
         </div>
@@ -75,7 +76,7 @@
 
       <!-- Footer -->
       <p class="text-center text-xs text-gray-500">
-        By signing in, you agree to our Terms of Service and Privacy Policy
+        By signing in, you agree to our <a href="/terms" class="text-orange-600 hover:text-orange-700 underline">Terms of Service</a> and <a href="/privacy-policy" class="text-orange-600 hover:text-orange-700 underline">Privacy Policy</a>
       </p>
     </div>
   </div>

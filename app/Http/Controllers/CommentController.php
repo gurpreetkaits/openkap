@@ -14,6 +14,16 @@ class CommentController extends Controller
 
     public function index($videoId)
     {
+        $video = \App\Models\Video::find($videoId);
+        if (! $video) {
+            return response()->json(['message' => 'Video not found'], 404);
+        }
+
+        // Verify user has access to this video (owner, public, or workspace member)
+        if (! $video->canBeAccessedBy(Auth::user())) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
         $comments = $this->commentManager->getVideoComments($videoId);
 
         return response()->json([
@@ -74,6 +84,15 @@ class CommentController extends Controller
 
     public function commenters($videoId)
     {
+        $video = \App\Models\Video::find($videoId);
+        if (! $video) {
+            return response()->json(['message' => 'Video not found'], 404);
+        }
+
+        if (! $video->canBeAccessedBy(Auth::user())) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
         $commenters = $this->commentManager->getVideoCommenters($videoId);
 
         return response()->json([
