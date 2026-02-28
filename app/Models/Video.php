@@ -16,6 +16,7 @@ class Video extends Model implements HasMedia
         'title',
         'description',
         'duration',
+        'has_audio',
         'user_id',
         'folder_id',
         'workspace_id',
@@ -67,6 +68,7 @@ class Video extends Model implements HasMedia
 
     protected $casts = [
         'duration' => 'integer',
+        'has_audio' => 'boolean',
         'file_size_bytes' => 'integer',
         'is_public' => 'boolean',
         'is_favourite' => 'boolean',
@@ -602,6 +604,7 @@ class Video extends Model implements HasMedia
             'pending' => 'Waiting for transcription...',
             'processing' => "Transcribing... {$this->transcription_progress}%",
             'completed' => 'Transcription ready',
+            'skipped' => 'No audio detected',
             'failed' => 'Transcription failed: '.($this->transcription_error ?? 'Unknown error'),
             default => 'Unknown status',
         };
@@ -616,6 +619,7 @@ class Video extends Model implements HasMedia
             'pending' => 'Waiting for summary...',
             'processing' => 'Generating summary...',
             'completed' => 'Summary ready',
+            'skipped' => 'No audio detected',
             'failed' => 'Summary failed: '.($this->summary_error ?? 'Unknown error'),
             default => 'Unknown status',
         };
@@ -654,6 +658,7 @@ class Video extends Model implements HasMedia
             'pending' => 'Waiting for bug detection...',
             'processing' => 'Detecting bugs...',
             'completed' => 'Bug detection complete',
+            'skipped' => 'No audio detected',
             'failed' => 'Bug detection failed: '.($this->bug_detection_error ?? 'Unknown error'),
             default => 'Unknown status',
         };

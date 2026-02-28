@@ -717,6 +717,7 @@ class VideoManager
     public function getTranscriptionStatus(Video $video): array
     {
         return [
+            'has_audio' => $video->has_audio,
             'transcription_status' => $video->transcription_status,
             'transcription_progress' => $video->transcription_progress,
             'transcription_error' => $video->transcription_error,

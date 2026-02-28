@@ -91,6 +91,24 @@ class GenerateTranscriptionJob implements ShouldQueue
             return;
         }
 
+        // Check if video has audio streams
+        if (! $this->videoHasAudio($video)) {
+            Log::info('Video has no audio, skipping transcription pipeline', [
+                'video_id' => $video->id,
+            ]);
+
+            $video->update([
+                'has_audio' => false,
+                'transcription_status' => 'skipped',
+                'summary_status' => 'skipped',
+                'bug_detection_status' => 'skipped',
+            ]);
+
+            return;
+        }
+
+        $video->update(['has_audio' => true]);
+
         // Mark as processing
         $video->update([
             'transcription_status' => 'processing',
@@ -207,6 +225,42 @@ class GenerateTranscriptionJob implements ShouldQueue
 
             throw $e;
         }
+    }
+
+    protected function videoHasAudio(Video $video): bool
+    {
+        $media = $video->getFirstMedia('videos');
+
+        if (! $media) {
+            return false;
+        }
+
+        $ffprobePath = config('media-library.ffprobe_path');
+        $videoPath = $media->getPath();
+
+        $command = sprintf(
+            '%s -v quiet -select_streams a -show_entries stream=codec_type -of json %s 2>&1',
+            escapeshellarg($ffprobePath),
+            escapeshellarg($videoPath)
+        );
+
+        $output = [];
+        $returnCode = 0;
+        exec($command, $output, $returnCode);
+
+        if ($returnCode !== 0) {
+            Log::warning('ffprobe audio detection failed, assuming audio present', [
+                'video_id' => $video->id,
+                'return_code' => $returnCode,
+            ]);
+
+            return true;
+        }
+
+        $result = json_decode(implode('', $output), true);
+        $streams = $result['streams'] ?? [];
+
+        return count($streams) > 0;
     }
 
     protected function markAsFailed(Video $video, string $error): void
