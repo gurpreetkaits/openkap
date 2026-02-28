@@ -68,15 +68,14 @@ class IntegrationApiTest extends TestCase
             ]);
 
         $integrations = $response->json('integrations');
-        $this->assertCount(2, $integrations);
+        $this->assertCount(1, $integrations);
     }
 
     #[Test]
     public function connected_integration_shows_as_connected(): void
     {
-        Integration::factory()->create([
+        Integration::factory()->jira()->create([
             'user_id' => $this->user->id,
-            'provider' => 'slack',
             'status' => 'active',
         ]);
 
@@ -86,10 +85,10 @@ class IntegrationApiTest extends TestCase
         $response->assertStatus(200);
 
         $integrations = collect($response->json('integrations'));
-        $slack = $integrations->firstWhere('id', 'slack');
+        $jira = $integrations->firstWhere('id', 'jira');
 
-        $this->assertTrue($slack['connected']);
-        $this->assertEquals('active', $slack['status']);
+        $this->assertTrue($jira['connected']);
+        $this->assertEquals('active', $jira['status']);
     }
 
     #[Test]
@@ -108,13 +107,13 @@ class IntegrationApiTest extends TestCase
     public function user_can_initiate_oauth_connection(): void
     {
         $response = $this->actingAs($this->user)
-            ->getJson('/api/integrations/slack/connect');
+            ->getJson('/api/integrations/jira/connect');
 
         $response->assertStatus(200)
             ->assertJsonStructure(['url']);
 
         $url = $response->json('url');
-        $this->assertStringContainsString('slack.com/oauth/v2/authorize', $url);
+        $this->assertStringContainsString('auth.atlassian.com/authorize', $url);
         $this->assertStringContainsString('state=', $url);
     }
 
@@ -137,27 +136,32 @@ class IntegrationApiTest extends TestCase
         $state = 'test-state-abc123';
         Cache::put("integration_oauth:{$state}", [
             'user_id' => $this->user->id,
-            'provider' => 'slack',
+            'provider' => 'jira',
         ], now()->addMinutes(10));
 
         Http::fake([
-            'slack.com/api/oauth.v2.access' => Http::response([
-                'ok' => true,
-                'access_token' => 'xoxb-test-token',
-                'authed_user' => ['id' => 'U123'],
-                'team' => ['id' => 'T456', 'name' => 'Test Team'],
-                'bot_user_id' => 'B789',
+            'auth.atlassian.com/oauth/token' => Http::response([
+                'access_token' => 'jira-test-token',
+                'refresh_token' => 'jira-refresh-token',
+                'expires_in' => 3600,
+            ], 200),
+            'api.atlassian.com/oauth/token/accessible-resources' => Http::response([
+                [
+                    'id' => 'cloud-id-abc',
+                    'name' => 'My Jira Site',
+                    'url' => 'https://mysite.atlassian.net',
+                ],
             ], 200),
         ]);
 
-        $response = $this->get("/api/integrations/slack/callback?code=test-code&state={$state}");
+        $response = $this->get("/api/integrations/jira/callback?code=test-code&state={$state}");
 
         $response->assertRedirect();
-        $this->assertStringContainsString('connected=slack', $response->headers->get('Location'));
+        $this->assertStringContainsString('connected=jira', $response->headers->get('Location'));
 
         $this->assertDatabaseHas('integrations', [
             'user_id' => $this->user->id,
-            'provider' => 'slack',
+            'provider' => 'jira',
             'status' => 'active',
         ]);
     }
@@ -183,29 +187,33 @@ class IntegrationApiTest extends TestCase
     #[Test]
     public function reconnecting_updates_existing_integration(): void
     {
-        $existing = Integration::factory()->create([
+        $existing = Integration::factory()->jira()->create([
             'user_id' => $this->user->id,
-            'provider' => 'slack',
             'status' => 'expired',
         ]);
 
         $state = 'reconnect-state';
         Cache::put("integration_oauth:{$state}", [
             'user_id' => $this->user->id,
-            'provider' => 'slack',
+            'provider' => 'jira',
         ], now()->addMinutes(10));
 
         Http::fake([
-            'slack.com/api/oauth.v2.access' => Http::response([
-                'ok' => true,
-                'access_token' => 'xoxb-new-token',
-                'authed_user' => ['id' => 'U123'],
-                'team' => ['id' => 'T456', 'name' => 'Updated Team'],
-                'bot_user_id' => 'B789',
+            'auth.atlassian.com/oauth/token' => Http::response([
+                'access_token' => 'jira-new-token',
+                'refresh_token' => 'jira-new-refresh-token',
+                'expires_in' => 3600,
+            ], 200),
+            'api.atlassian.com/oauth/token/accessible-resources' => Http::response([
+                [
+                    'id' => 'cloud-id-abc',
+                    'name' => 'Updated Jira Site',
+                    'url' => 'https://mysite.atlassian.net',
+                ],
             ], 200),
         ]);
 
-        $response = $this->get("/api/integrations/slack/callback?code=new-code&state={$state}");
+        $response = $this->get("/api/integrations/jira/callback?code=new-code&state={$state}");
 
         $response->assertRedirect();
 
@@ -259,39 +267,6 @@ class IntegrationApiTest extends TestCase
     // ==================
 
     #[Test]
-    public function user_can_get_slack_targets(): void
-    {
-        Integration::factory()->create([
-            'user_id' => $this->user->id,
-            'provider' => 'slack',
-        ]);
-
-        Http::fake([
-            'slack.com/api/conversations.list*' => Http::response([
-                'ok' => true,
-                'channels' => [
-                    ['id' => 'C001', 'name' => 'general', 'is_private' => false],
-                    ['id' => 'C002', 'name' => 'random', 'is_private' => false],
-                ],
-            ], 200),
-        ]);
-
-        $response = $this->actingAs($this->user)
-            ->getJson('/api/integrations/slack/targets');
-
-        $response->assertStatus(200)
-            ->assertJsonStructure(['targets' => [['id', 'name', 'type']]]);
-
-        $targets = $response->json('targets');
-        $this->assertCount(2, $targets);
-        $this->assertEquals('#general', $targets[0]['name']);
-    }
-
-    // Google Drive provider removed from factory — test skipped
-    // #[Test]
-    // public function user_can_get_google_drive_targets(): void { ... }
-
-    #[Test]
     public function user_can_get_jira_targets(): void
     {
         $integration = Integration::factory()->jira()->create([
@@ -312,12 +287,19 @@ class IntegrationApiTest extends TestCase
         $response = $this->actingAs($this->user)
             ->getJson('/api/integrations/jira/targets');
 
-        $response->assertStatus(200);
+        $response->assertStatus(200)
+            ->assertJsonStructure(['targets' => [['id', 'name', 'type']]]);
 
         $targets = $response->json('targets');
         $this->assertCount(2, $targets);
         $this->assertEquals('PROJ', $targets[0]['id']);
     }
+
+    // Google Drive provider removed from factory — test skipped
+    // #[Test]
+    // public function user_can_get_google_drive_targets(): void { ... }
+
+    // Slack provider removed from factory — test merged into user_can_get_jira_targets above
 
     // Trello provider removed from factory — test skipped
     // #[Test]
@@ -337,11 +319,17 @@ class IntegrationApiTest extends TestCase
     // ==================
 
     #[Test]
-    public function user_can_share_video_to_slack(): void
+    public function user_can_share_video_to_jira(): void
     {
-        $integration = Integration::factory()->create([
+        $cloudId = 'cloud-id-share-test';
+        $integration = Integration::factory()->jira()->create([
             'user_id' => $this->user->id,
-            'provider' => 'slack',
+            'metadata' => [
+                'cloud_id' => $cloudId,
+                'site_name' => 'mysite',
+                'site_url' => 'https://mysite.atlassian.net',
+            ],
+            'external_user_id' => $cloudId,
         ]);
 
         $video = Video::factory()->create([
@@ -351,17 +339,22 @@ class IntegrationApiTest extends TestCase
         ]);
 
         Http::fake([
-            'slack.com/api/chat.postMessage' => Http::response([
-                'ok' => true,
-                'ts' => '1234567890.123456',
-                'channel' => 'C001',
+            "api.atlassian.com/ex/jira/{$cloudId}/rest/api/3/issue/createmeta/PROJ/issuetypes" => Http::response([
+                'values' => [
+                    ['id' => '10001', 'name' => 'Task', 'subtask' => false],
+                ],
             ], 200),
+            "api.atlassian.com/ex/jira/{$cloudId}/rest/api/3/issue" => Http::response([
+                'id' => '10001',
+                'key' => 'PROJ-42',
+                'self' => 'https://mysite.atlassian.net/rest/api/3/issue/10001',
+            ], 201),
         ]);
 
         $response = $this->actingAs($this->user)
-            ->postJson("/api/integrations/slack/videos/{$video->id}/share", [
-                'target_id' => 'C001',
-                'target_name' => '#general',
+            ->postJson("/api/integrations/jira/videos/{$video->id}/share", [
+                'target_id' => 'PROJ',
+                'target_name' => 'My Project',
                 'message' => 'Check this out!',
             ]);
 
@@ -434,9 +427,15 @@ class IntegrationApiTest extends TestCase
     #[Test]
     public function failed_share_logs_error_in_action(): void
     {
-        $integration = Integration::factory()->create([
+        $cloudId = 'cloud-id-fail-test';
+        $integration = Integration::factory()->jira()->create([
             'user_id' => $this->user->id,
-            'provider' => 'slack',
+            'metadata' => [
+                'cloud_id' => $cloudId,
+                'site_name' => 'mysite',
+                'site_url' => 'https://mysite.atlassian.net',
+            ],
+            'external_user_id' => $cloudId,
         ]);
 
         $video = Video::factory()->create([
@@ -446,16 +445,20 @@ class IntegrationApiTest extends TestCase
         ]);
 
         Http::fake([
-            'slack.com/api/chat.postMessage' => Http::response([
-                'ok' => false,
-                'error' => 'channel_not_found',
+            "api.atlassian.com/ex/jira/{$cloudId}/rest/api/3/issue/createmeta/INVALID/issuetypes" => Http::response([
+                'values' => [
+                    ['id' => '10001', 'name' => 'Task', 'subtask' => false],
+                ],
             ], 200),
+            "api.atlassian.com/ex/jira/{$cloudId}/rest/api/3/issue" => Http::response([
+                'errorMessages' => ['Project not found: INVALID.'],
+            ], 404),
         ]);
 
         $response = $this->actingAs($this->user)
-            ->postJson("/api/integrations/slack/videos/{$video->id}/share", [
+            ->postJson("/api/integrations/jira/videos/{$video->id}/share", [
                 'target_id' => 'INVALID',
-                'target_name' => '#nonexistent',
+                'target_name' => 'Nonexistent',
             ]);
 
         $response->assertStatus(200);
@@ -469,7 +472,7 @@ class IntegrationApiTest extends TestCase
 
         $action = IntegrationAction::where('video_id', $video->id)->first();
         $this->assertNotNull($action->error);
-        $this->assertStringContainsString('channel_not_found', $action->error);
+        $this->assertStringContainsString('Project not found', $action->error);
     }
 
     // ==================

@@ -302,6 +302,12 @@ class IntegrationProviderTest extends TestCase
         $cloudId = 'cloud-id-xyz';
 
         Http::fake([
+            "api.atlassian.com/ex/jira/{$cloudId}/rest/api/3/issue/createmeta/PROJ/issuetypes" => Http::response([
+                'values' => [
+                    ['id' => '10001', 'name' => 'Task', 'subtask' => false],
+                    ['id' => '10002', 'name' => 'Bug', 'subtask' => false],
+                ],
+            ], 200),
             "api.atlassian.com/ex/jira/{$cloudId}/rest/api/3/issue" => Http::response([
                 'id' => '10001',
                 'key' => 'PROJ-42',
