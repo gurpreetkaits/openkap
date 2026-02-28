@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ShareVideoRequest;
+use App\Jobs\CreateBugInIntegrationJob;
 use App\Managers\IntegrationManager;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -116,18 +117,17 @@ class IntegrationController extends Controller
             'steps_to_reproduce.*' => 'string',
         ]);
 
-        try {
-            $result = $this->integrationManager->createBugInIntegration(
-                $request->user(),
-                $videoId,
-                $provider,
-                $validated,
-            );
+        CreateBugInIntegrationJob::dispatch(
+            $request->user(),
+            $videoId,
+            $provider,
+            $validated,
+        );
 
-            return response()->json($result);
-        } catch (\RuntimeException $e) {
-            return response()->json(['message' => $e->getMessage()], 400);
-        }
+        return response()->json([
+            'success' => true,
+            'message' => 'Bug is being created in Jira. You\'ll see it in your project shortly.',
+        ]);
     }
 
     public function shareHistory(Request $request, int $videoId): JsonResponse

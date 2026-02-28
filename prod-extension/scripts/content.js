@@ -11,10 +11,20 @@
   window.__screensenseExtensionInstalled = true;
   console.log('ScreenSense content script loaded');
 
+  // Mark DOM so the page can detect extension (crosses isolation boundary)
+  document.documentElement.setAttribute('data-screensense-extension', 'true');
+
   // Dispatch event to notify website that extension is installed
   window.dispatchEvent(new CustomEvent('screensense:extension:ready', {
     detail: { version: '1.0.0' }
   }));
+
+  // Listen for "New Recording" button click from the website
+  window.addEventListener('screensense:new-recording', () => {
+    if (typeof createRecordingPanel === 'function') {
+      createRecordingPanel();
+    }
+  });
 
 let mediaRecorder = null;
 let recordedChunks = [];

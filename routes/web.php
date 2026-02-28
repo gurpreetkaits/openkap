@@ -89,6 +89,12 @@ Route::get('/embed/video/{token}', function ($token) {
 
 // Email template preview (local only)
 if (app()->environment('local')) {
+    Route::get('/email-preview/jira-integration', function () {
+        return view('emails.jira-integration', [
+            'firstName' => 'Gurpreet',
+        ]);
+    });
+
     Route::get('/email-preview/product-update', function () {
         return view('emails.product-update', [
             'badgeText' => 'Product Update 2.0',

@@ -13,6 +13,13 @@ class FreeUserEncodingTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->markTestSkipped('Bunny disabled - encoding costs too high');
+    }
+
     #[Test]
     public function free_user_cannot_use_bunny_encoding(): void
     {

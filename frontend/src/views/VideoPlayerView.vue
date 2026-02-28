@@ -654,6 +654,18 @@
                 </button>
               </div>
 
+              <!-- Skipped - no audio -->
+              <div v-else-if="transcriptionStatus === 'skipped'" class="flex flex-col items-center justify-center h-64 text-center px-5">
+                <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+                  <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"/>
+                  </svg>
+                </div>
+                <p class="text-base font-semibold text-gray-900">No Audio Detected</p>
+                <p class="text-sm text-gray-500 mt-1">This video has no audio track, so transcription is not available</p>
+              </div>
+
               <!-- Error state -->
               <div v-else-if="transcriptionStatus === 'failed'" class="flex flex-col items-center justify-center h-64 text-center px-5">
                 <div class="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mb-4">
@@ -829,6 +841,18 @@
                 <p class="text-sm text-gray-500 mt-1">AI is analyzing your video</p>
               </div>
 
+              <!-- Skipped - no audio -->
+              <div v-else-if="summaryStatus === 'skipped'" class="flex flex-col items-center justify-center h-64 text-center px-5">
+                <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+                  <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"/>
+                  </svg>
+                </div>
+                <p class="text-base font-semibold text-gray-900">No Audio Detected</p>
+                <p class="text-sm text-gray-500 mt-1">Summary is not available for videos without audio</p>
+              </div>
+
               <!-- Empty state - waiting for transcript -->
               <div v-else-if="summaryStatus === 'pending' && transcriptionStatus !== 'completed'" class="flex flex-col items-center justify-center h-64 text-center px-5">
                 <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
@@ -899,6 +923,18 @@
                 </div>
                 <p class="text-base font-semibold text-gray-900">Detecting Bugs...</p>
                 <p class="text-sm text-gray-500 mt-1">AI is analyzing your transcript for bugs</p>
+              </div>
+
+              <!-- Skipped - no audio -->
+              <div v-else-if="bugDetectionStatus === 'skipped'" class="flex flex-col items-center justify-center h-64 text-center px-5">
+                <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+                  <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"/>
+                  </svg>
+                </div>
+                <p class="text-base font-semibold text-gray-900">No Audio Detected</p>
+                <p class="text-sm text-gray-500 mt-1">Bug detection is not available for videos without audio</p>
               </div>
 
               <!-- Pending state -->
@@ -1040,6 +1076,15 @@
                         </svg>
                         {{ bug.jira_key }} - View in Jira
                       </a>
+                      <span
+                        v-else-if="bug.jira_queued"
+                        class="inline-flex items-center gap-2 px-3 py-2 text-xs font-medium text-green-700 bg-green-50 rounded-lg"
+                      >
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        Creating in Jira...
+                      </span>
                       <button
                         v-else
                         @click="createBugInJira(bug)"
@@ -1053,9 +1098,9 @@
                         <svg v-else class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
                           <path d="M11.571 11.513H0a5.218 5.218 0 0 0 5.232 5.215h2.13v2.057A5.215 5.215 0 0 0 12.575 24V12.518a1.005 1.005 0 0 0-1.005-1.005zm5.723-5.756H5.736a5.215 5.215 0 0 0 5.215 5.214h2.129v2.058a5.218 5.218 0 0 0 5.215 5.214V6.758a1.001 1.001 0 0 0-1.001-1.001zM23.013 0H11.455a5.215 5.215 0 0 0 5.215 5.215h2.129v2.057A5.215 5.215 0 0 0 24.013 12.487V1.005A1.005 1.005 0 0 0 23.013 0z"/>
                         </svg>
-                        {{ creatingBugId === bug.id ? 'Creating...' : 'Create Bug in Jira' }}
+                        Create Bug in Jira
                       </button>
-                      <p v-if="!selectedBugProject && !bug.jira_url" class="text-[11px] text-gray-400 mt-1">Select a Jira project above first</p>
+                      <p v-if="!selectedBugProject && !bug.jira_url && !bug.jira_queued" class="text-[11px] text-gray-400 mt-1">Select a Jira project above first</p>
                     </div>
                   </div>
                 </div>
@@ -2235,16 +2280,15 @@ export default {
         })
 
         if (result && result.success) {
-          // Update the bug card with the Jira URL
+          // Mark as sent — the job will create it in the background
           const idx = detectedBugs.value.findIndex(b => b.id === bug.id)
           if (idx !== -1) {
             detectedBugs.value[idx] = {
               ...detectedBugs.value[idx],
-              jira_url: result.external_url,
-              jira_key: result.external_url ? result.external_url.split('/').pop() : null
+              jira_queued: true
             }
           }
-          showToast('Bug created in Jira!')
+          showToast('Bug will be created in Jira shortly')
         } else {
           showToast(result?.error || 'Failed to create bug in Jira')
         }

@@ -22,16 +22,6 @@ const routes = [
         component: () => import("../views/VideosView.vue"),
       },
       {
-        path: "record",
-        name: "Record",
-        component: () => import("../views/StreamRecordView.vue"),
-      },
-      {
-        path: "record-legacy",
-        name: "RecordLegacy",
-        component: () => import("../views/RecordView.vue"),
-      },
-      {
         path: "profile",
         name: "Profile",
         component: () => import("../views/ProfileView.vue"),
@@ -80,6 +70,11 @@ const routes = [
         path: "workspace/:slug/settings",
         name: "WorkspaceSettings",
         component: () => import("../views/WorkspaceSettingsView.vue"),
+      },
+      {
+        path: "integrations",
+        name: "Integrations",
+        component: () => import("../views/IntegrationsView.vue"),
       },
       {
         path: "playlists",
@@ -131,6 +126,12 @@ const routes = [
   },
   // Blog routes moved to Laravel (server-rendered for SEO)
   // Access blog at: /blog and /blog/:slug via Laravel routes
+  {
+    path: "/integrations/trello/callback",
+    name: "TrelloCallback",
+    component: () => import("../views/TrelloCallbackView.vue"),
+    meta: { requiresAuth: true }
+  },
   {
     path: "/auth/callback",
     name: "AuthCallback",

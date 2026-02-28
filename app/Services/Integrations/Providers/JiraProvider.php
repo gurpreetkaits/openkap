@@ -35,7 +35,7 @@ class JiraProvider implements IntegrationProviderInterface
         $params = http_build_query([
             'audience' => 'api.atlassian.com',
             'client_id' => $this->clientId,
-            'scope' => 'read:jira-work write:jira-work offline_access',
+            'scope' => 'read:jira-work write:jira-work read:me offline_access',
             'redirect_uri' => $this->redirectUri,
             'state' => $state,
             'response_type' => 'code',
@@ -132,6 +132,8 @@ class JiraProvider implements IntegrationProviderInterface
                 ? "{$message}\n\nVideo: [{$video->title}|{$shareUrl}]"
                 : "Video: [{$video->title}|{$shareUrl}]";
 
+            $issueType = $this->findIssueType($integration->access_token, $cloudId, $projectKey, 'Task');
+
             $response = Http::withToken($integration->access_token)
                 ->post("https://api.atlassian.com/ex/jira/{$cloudId}/rest/api/3/issue", [
                     'fields' => [
@@ -159,7 +161,7 @@ class JiraProvider implements IntegrationProviderInterface
                                 ],
                             ],
                         ],
-                        'issuetype' => ['name' => 'Task'],
+                        'issuetype' => $issueType,
                     ],
                 ]);
 
@@ -286,18 +288,27 @@ class JiraProvider implements IntegrationProviderInterface
                 ],
             ];
 
+            $issueType = $this->findIssueType($integration->access_token, $cloudId, $projectKey, 'Bug');
+            $accountId = $this->getCurrentUserAccountId($integration->access_token, $cloudId);
+
+            $fields = [
+                'project' => ['key' => $projectKey],
+                'summary' => $bugData['bug_title'] ?? 'Bug from ScreenBuddy',
+                'description' => [
+                    'type' => 'doc',
+                    'version' => 1,
+                    'content' => $descriptionContent,
+                ],
+                'issuetype' => $issueType,
+            ];
+
+            if ($accountId) {
+                $fields['assignee'] = ['accountId' => $accountId];
+            }
+
             $response = Http::withToken($integration->access_token)
                 ->post("https://api.atlassian.com/ex/jira/{$cloudId}/rest/api/3/issue", [
-                    'fields' => [
-                        'project' => ['key' => $projectKey],
-                        'summary' => $bugData['bug_title'] ?? 'Bug from ScreenBuddy',
-                        'description' => [
-                            'type' => 'doc',
-                            'version' => 1,
-                            'content' => $descriptionContent,
-                        ],
-                        'issuetype' => ['name' => 'Bug'],
-                    ],
+                    'fields' => $fields,
                 ]);
 
             $data = $response->json();
@@ -335,6 +346,72 @@ class JiraProvider implements IntegrationProviderInterface
                 metadata: null,
             );
         }
+    }
+
+    /**
+     * Get the current authenticated Jira user's account ID.
+     */
+    protected function getCurrentUserAccountId(string $accessToken, string $cloudId): ?string
+    {
+        try {
+            // Use Atlassian platform /me endpoint (requires read:me scope)
+            $response = Http::withToken($accessToken)
+                ->get('https://api.atlassian.com/me');
+
+            $accountId = $response->json('account_id');
+
+            if (! $accountId) {
+                Log::warning('Atlassian /me returned no account_id', [
+                    'status' => $response->status(),
+                    'body' => $response->json(),
+                ]);
+            }
+
+            return $accountId;
+        } catch (\Exception $e) {
+            Log::warning('Failed to fetch Jira user for assignment', ['error' => $e->getMessage()]);
+
+            return null;
+        }
+    }
+
+    /**
+     * Find the best matching issue type for a project.
+     * Searches for the target name first, then falls back to common alternatives.
+     */
+    protected function findIssueType(string $accessToken, string $cloudId, string $projectKey, string $preferredType = 'Bug'): array
+    {
+        $response = Http::withToken($accessToken)
+            ->get("https://api.atlassian.com/ex/jira/{$cloudId}/rest/api/3/issue/createmeta/{$projectKey}/issuetypes");
+
+        $issueTypes = $response->json('issueTypes', $response->json('values', []));
+
+        if (empty($issueTypes)) {
+            return ['name' => $preferredType];
+        }
+
+        // Preferred type names in order of priority
+        $candidates = $preferredType === 'Bug'
+            ? ['Bug', 'Defect', 'bug', 'defect']
+            : ['Task', 'Story', 'task', 'story'];
+
+        foreach ($candidates as $name) {
+            foreach ($issueTypes as $type) {
+                if (strcasecmp($type['name'], $name) === 0) {
+                    return ['id' => $type['id']];
+                }
+            }
+        }
+
+        // Fall back to first available non-subtask type
+        foreach ($issueTypes as $type) {
+            if (empty($type['subtask'])) {
+                return ['id' => $type['id']];
+            }
+        }
+
+        // Last resort: first type
+        return ['id' => $issueTypes[0]['id']];
     }
 
     public function revokeAccess(Integration $integration): bool

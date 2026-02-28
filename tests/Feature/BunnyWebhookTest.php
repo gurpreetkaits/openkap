@@ -18,6 +18,8 @@ class BunnyWebhookTest extends TestCase
     {
         parent::setUp();
 
+        $this->markTestSkipped('Bunny disabled - encoding costs too high');
+
         $this->user = User::factory()->create();
     }
 

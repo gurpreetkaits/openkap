@@ -314,6 +314,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Relationship: User has many integrations
+     */
+    public function integrations()
+    {
+        return $this->hasMany(Integration::class);
+    }
+
+    /**
      * Get unread notifications count
      */
     public function getUnreadNotificationsCount(): int

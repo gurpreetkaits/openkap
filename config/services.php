@@ -77,6 +77,19 @@ return [
         'chat_model' => env('OPENAI_CHAT_MODEL', 'gpt-4o-mini'),
     ],
 
+    'integrations' => [
+        'slack' => [
+            'client_id' => env('SLACK_CLIENT_ID'),
+            'client_secret' => env('SLACK_CLIENT_SECRET'),
+            'redirect_uri' => env('SLACK_REDIRECT_URI', env('APP_URL').'/api/integrations/slack/callback'),
+        ],
+        'jira' => [
+            'client_id' => env('JIRA_CLIENT_ID'),
+            'client_secret' => env('JIRA_CLIENT_SECRET'),
+            'redirect_uri' => env('JIRA_REDIRECT_URI', env('APP_URL').'/api/integrations/jira/callback'),
+        ],
+    ],
+
     'bunny' => [
         'library_id' => env('BUNNY_STREAM_LIBRARY_ID'),
         'api_key' => env('BUNNY_STREAM_API_KEY'),

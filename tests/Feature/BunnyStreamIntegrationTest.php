@@ -23,6 +23,8 @@ class BunnyStreamIntegrationTest extends TestCase
     {
         parent::setUp();
 
+        $this->markTestSkipped('Bunny disabled - encoding costs too high');
+
         $this->user = User::factory()->create([
             'videos_count' => 0,
         ]);
