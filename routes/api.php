@@ -25,7 +25,6 @@ use App\Http\Controllers\WorkspaceInvitationController;
 use App\Http\Controllers\WorkspaceMemberController;
 use App\Http\Middleware\CheckSubscriptionLimit;
 use App\Http\Middleware\OptionalSanctumAuthMiddleware;
-use App\Http\Middleware\RequireSubscriptionMiddleware;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -279,8 +278,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/{id}/toggle-sharing', [ScreenshotController::class, 'toggleSharing']);
     });
 
-    // Integration routes (paid users only)
-    Route::prefix('integrations')->middleware(RequireSubscriptionMiddleware::class)->group(function () {
+    // Integration routes
+    Route::prefix('integrations')->group(function () {
         Route::get('/', [IntegrationController::class, 'index']);
         Route::get('/providers', [IntegrationController::class, 'availableProviders']);
         Route::get('/{provider}/connect', [IntegrationController::class, 'connect']);

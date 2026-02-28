@@ -24,80 +24,106 @@
     </div>
 
     <!-- Playlists Grid -->
-    <div v-else-if="playlists.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+    <div v-else-if="playlists.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
       <div
         v-for="playlist in playlists"
         :key="playlist.id"
-        class="group relative bg-white border border-gray-100 rounded-xl p-4 hover:border-gray-200 hover:shadow-sm transition-all cursor-pointer"
+        class="group relative bg-white border border-gray-100 rounded-2xl overflow-hidden hover:border-orange-200/60 hover:shadow-md hover:shadow-orange-500/5 transition-all duration-200 cursor-pointer"
         @click="openPlaylist(playlist.id)"
       >
-        <!-- Row 1: Icon + Name + Visibility badge -->
-        <div class="flex items-center gap-3">
-          <div class="w-9 h-9 rounded-lg bg-orange-50 border border-orange-100 flex items-center justify-center flex-shrink-0 group-hover:bg-orange-100 transition-colors">
-            <svg class="w-4.5 h-4.5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+        <!-- Top Banner -->
+        <div class="h-20 relative overflow-hidden" :style="{ background: getPlaylistGradient(playlist) }">
+          <!-- Decorative pattern -->
+          <div class="absolute inset-0 opacity-[0.08]">
+            <svg class="w-full h-full" viewBox="0 0 200 80" fill="none">
+              <circle cx="160" cy="10" r="40" fill="white"/>
+              <circle cx="30" cy="70" r="25" fill="white"/>
+              <circle cx="120" cy="60" r="15" fill="white"/>
             </svg>
           </div>
-          <h3 class="text-sm font-medium text-gray-900 truncate flex-1 min-w-0 group-hover:text-orange-600 transition-colors flex items-center gap-1.5">
+          <!-- Video count badge -->
+          <div class="absolute top-3 left-3 flex items-center gap-1.5 bg-white/90 backdrop-blur-sm rounded-lg px-2.5 py-1 shadow-sm">
+            <svg class="w-3.5 h-3.5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <span class="text-xs font-semibold text-gray-700">{{ playlist.videos_count }}</span>
+          </div>
+          <!-- Visibility badge -->
+          <div class="absolute top-3 right-3">
+            <span
+              class="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full shadow-sm"
+              :class="playlist.is_public
+                ? 'text-emerald-700 bg-emerald-50/90 backdrop-blur-sm border border-emerald-200/60'
+                : 'text-gray-600 bg-white/90 backdrop-blur-sm border border-gray-200/60'"
+            >
+              <svg v-if="playlist.is_public" class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              <svg v-else class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+              </svg>
+              {{ playlist.is_public ? 'Public' : 'Private' }}
+            </span>
+          </div>
+          <!-- Hover Actions (on banner) -->
+          <div class="absolute bottom-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all duration-200" @click.stop>
+            <button
+              @click="sharePlaylist(playlist)"
+              class="p-1.5 text-white/80 hover:text-white bg-black/20 hover:bg-black/40 backdrop-blur-sm rounded-lg transition-colors"
+              :title="playlist.is_public ? 'Copy share link' : 'Make public to share'"
+            >
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
+              </svg>
+            </button>
+            <button
+              @click="editPlaylist(playlist)"
+              class="p-1.5 text-white/80 hover:text-white bg-black/20 hover:bg-black/40 backdrop-blur-sm rounded-lg transition-colors"
+              title="Edit playlist"
+            >
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+              </svg>
+            </button>
+            <button
+              @click="confirmDelete(playlist)"
+              class="p-1.5 text-white/80 hover:text-red-300 bg-black/20 hover:bg-black/40 backdrop-blur-sm rounded-lg transition-colors"
+              title="Delete playlist"
+            >
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Content -->
+        <div class="p-4">
+          <!-- Title -->
+          <h3 class="text-sm font-semibold text-gray-900 truncate group-hover:text-orange-600 transition-colors flex items-center gap-1.5">
             {{ playlist.title }}
             <svg v-if="playlist.has_password" class="w-3.5 h-3.5 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" title="Password protected">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
             </svg>
           </h3>
-          <span
-            class="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full flex-shrink-0"
-            :class="playlist.is_public
-              ? 'text-green-700 bg-green-50 border border-green-200/60'
-              : 'text-gray-500 bg-gray-50 border border-gray-200/60'"
-          >
-            <!-- Public icon -->
-            <svg v-if="playlist.is_public" class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-            <!-- Private icon -->
-            <svg v-else class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-            </svg>
-            {{ playlist.is_public ? 'Public' : 'Private' }}
-          </span>
-        </div>
 
-        <!-- Row 2: Video count + Created date -->
-        <div class="flex items-center gap-2 mt-2.5 pl-12">
-          <span class="text-xs text-gray-400">{{ playlist.videos_count }} {{ playlist.videos_count === 1 ? 'video' : 'videos' }}</span>
-          <span class="w-0.5 h-0.5 bg-gray-300 rounded-full"></span>
-          <span class="text-xs text-gray-400">{{ formatDate(playlist.created_at) }}</span>
-        </div>
+          <!-- Description -->
+          <p v-if="playlist.description" class="text-xs text-gray-500 mt-1 line-clamp-2 leading-relaxed">{{ playlist.description }}</p>
+          <p v-else class="text-xs text-gray-300 mt-1 italic">No description</p>
 
-        <!-- Hover Actions -->
-        <div class="absolute top-3 right-3 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity" @click.stop>
-          <button
-            @click="sharePlaylist(playlist)"
-            class="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
-            :title="playlist.is_public ? 'Copy share link' : 'Make public to share'"
-          >
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
-            </svg>
-          </button>
-          <button
-            @click="editPlaylist(playlist)"
-            class="p-1.5 text-gray-400 hover:text-orange-600 hover:bg-orange-50 rounded-md transition-colors"
-            title="Edit playlist"
-          >
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-            </svg>
-          </button>
-          <button
-            @click="confirmDelete(playlist)"
-            class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
-            title="Delete playlist"
-          >
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-            </svg>
-          </button>
+          <!-- Footer -->
+          <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-50">
+            <div class="flex items-center gap-1.5 text-xs text-gray-400">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              {{ formatDate(playlist.created_at) }}
+            </div>
+            <div class="flex items-center gap-1 text-xs text-gray-400">
+              <span>{{ playlist.videos_count }} {{ playlist.videos_count === 1 ? 'video' : 'videos' }}</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -299,6 +325,22 @@ async function sharePlaylist(playlist) {
   }
 }
 
+const gradients = [
+  'linear-gradient(135deg, #f97316, #fb923c)',
+  'linear-gradient(135deg, #8b5cf6, #a78bfa)',
+  'linear-gradient(135deg, #3b82f6, #60a5fa)',
+  'linear-gradient(135deg, #10b981, #34d399)',
+  'linear-gradient(135deg, #ec4899, #f472b6)',
+  'linear-gradient(135deg, #f59e0b, #fbbf24)',
+  'linear-gradient(135deg, #6366f1, #818cf8)',
+  'linear-gradient(135deg, #14b8a6, #2dd4bf)',
+]
+
+function getPlaylistGradient(playlist) {
+  const index = playlist.id % gradients.length
+  return gradients[index]
+}
+
 function formatDate(date) {
   try {
     return formatDistanceToNow(new Date(date), { addSuffix: true })
@@ -318,4 +360,10 @@ onMounted(() => {
   to { opacity: 1; transform: translateY(0); }
 }
 .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
 </style>

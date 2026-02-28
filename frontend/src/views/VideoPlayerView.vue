@@ -557,7 +557,7 @@
               Summary
             </button>
             <button
-              v-if="auth.hasActiveSubscription.value && jiraConnected"
+              v-if="jiraConnected"
               @click="activeTab = 'bugs'; loadBugTabData()"
               class="px-4 py-2 text-[13px] rounded-lg transition-all flex items-center gap-1.5"
               :class="activeTab === 'bugs' ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'"
@@ -2310,8 +2310,9 @@ export default {
     }
 
     onMounted(async () => {
-      // Load user branding (this page is outside AppLayout)
+      // Load user branding and subscription (this page is outside AppLayout)
       branding.loadBranding()
+      auth.fetchSubscription()
 
       await fetchVideo()
       await loadComments()

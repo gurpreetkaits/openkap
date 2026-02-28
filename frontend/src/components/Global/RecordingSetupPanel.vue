@@ -193,7 +193,7 @@
             <div class="p-5 border-b border-gray-200">
               <div
                 @mousedown="startDrag"
-                class="flex items-center justify-between mb-3 cursor-move select-none"
+                class="flex items-center justify-between cursor-move select-none"
               >
                 <div class="flex items-center gap-2">
                   <svg class="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -202,7 +202,7 @@
                   <svg class="w-4 h-4 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                   </svg>
-                  <h2 class="text-base font-bold text-gray-900">ScreenSense</h2>
+                  <h2 class="text-base font-bold text-gray-900">Quick Record</h2>
                 </div>
                 <button
                   @click="closeSetupPanel"
@@ -214,61 +214,10 @@
                   </svg>
                 </button>
               </div>
-
-              <!-- Source Selection -->
-              <div class="flex items-center gap-2">
-                <button
-                  @click="selectedSource = 'screen'"
-                  :class="[
-                    'flex-1 flex flex-col items-center gap-1.5 p-2.5 rounded-lg border-2 transition-all',
-                    selectedSource === 'screen'
-                      ? 'border-blue-600 bg-blue-50'
-                      : 'border-gray-200 hover:border-gray-300'
-                  ]"
-                >
-                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                  </svg>
-                  <span class="text-xs font-medium">Screen</span>
-                </button>
-
-                <button
-                  @click="selectedSource = 'window'"
-                  :class="[
-                    'flex-1 flex flex-col items-center gap-1.5 p-2.5 rounded-lg border-2 transition-all',
-                    selectedSource === 'window'
-                      ? 'border-blue-600 bg-blue-50'
-                      : 'border-gray-200 hover:border-gray-300'
-                  ]"
-                >
-                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
-                  </svg>
-                  <span class="text-xs font-medium">Window</span>
-                </button>
-
-                <button
-                  @click="selectedSource = 'tab'"
-                  :class="[
-                    'flex-1 flex flex-col items-center gap-1.5 p-2.5 rounded-lg border-2 transition-all',
-                    selectedSource === 'tab'
-                      ? 'border-blue-600 bg-blue-50'
-                      : 'border-gray-200 hover:border-gray-300'
-                  ]"
-                >
-                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                  </svg>
-                  <span class="text-xs font-medium">Tab</span>
-                </button>
-              </div>
             </div>
 
-            <!-- Recording Settings -->
+            <!-- Microphone Selection -->
             <div class="p-5 space-y-3">
-              <h3 class="text-sm font-semibold text-gray-900">Recording Settings</h3>
-
-              <!-- Microphone -->
               <div>
                 <div class="flex items-center justify-between mb-2">
                   <label class="text-sm font-medium text-gray-700 flex items-center gap-2">
@@ -302,50 +251,10 @@
                   </option>
                 </select>
               </div>
-
-              <!-- Camera -->
-              <div>
-                <div class="flex items-center justify-between mb-2">
-                  <label class="text-sm font-medium text-gray-700 flex items-center gap-2">
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                    </svg>
-                    Camera
-                  </label>
-                  <button
-                    @click="cameraEnabled = !cameraEnabled"
-                    :class="[
-                      'relative inline-flex h-5 w-9 items-center rounded-full transition-colors',
-                      cameraEnabled ? 'bg-blue-600' : 'bg-gray-300'
-                    ]"
-                  >
-                    <span
-                      :class="[
-                        'inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform',
-                        cameraEnabled ? 'translate-x-5' : 'translate-x-0.5'
-                      ]"
-                    />
-                  </button>
-                </div>
-                <select
-                  v-if="cameraEnabled"
-                  v-model="selectedCamera"
-                  class="w-full px-2.5 py-1.5 border border-gray-300 rounded-lg text-xs focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option v-for="camera in availableCameras" :key="camera.deviceId" :value="camera.deviceId">
-                    {{ camera.label || `Camera ${availableCameras.indexOf(camera) + 1}` }}
-                  </option>
-                </select>
-              </div>
-
-              <!-- Advanced Options (Collapsed by default, shows key specs) -->
-              <div class="text-xs text-gray-500 pt-2">
-                <p>4K • 60fps • VP9 codec</p>
-              </div>
             </div>
 
             <!-- Actions -->
-            <div class="px-5 pb-5 pt-0 space-y-2">
+            <div class="px-5 pb-5 pt-0 space-y-3">
               <button
                 @click="handleStartRecording"
                 :disabled="loading"
@@ -360,6 +269,22 @@
                   Starting...
                 </span>
               </button>
+
+              <!-- Extension info message -->
+              <a
+                href="https://chromewebstore.google.com/detail/screensense/nnchnlkilgfemhpcohmgdpcmkjedjkfm"
+                target="_blank"
+                class="flex items-center gap-2 p-2.5 bg-blue-50 border border-blue-100 rounded-lg hover:bg-blue-100 transition-colors"
+              >
+                <svg class="w-4 h-4 text-blue-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <p class="text-xs text-blue-700">Use extension for 10x experience</p>
+                <svg class="w-3 h-3 text-blue-400 ml-auto flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+              </a>
+
               <button
                 @click="closeSetupPanel"
                 class="w-full px-4 py-2 text-sm text-gray-600 font-medium hover:text-gray-900 transition-colors"

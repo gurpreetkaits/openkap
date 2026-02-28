@@ -2,16 +2,16 @@
   <div class="animate-fade-in">
     <!-- Action Bar -->
     <div class="flex items-center gap-3 mb-6 pb-6 border-b border-gray-100">
+      <!-- Record Without Extension Button -->
       <button
         v-if="activeTab !== 'screenshots'"
         @click="openRecording"
-        class="inline-flex items-center gap-2 px-4 py-2 bg-orange-500 text-white text-sm font-medium rounded-lg hover:bg-orange-600 transition-colors shadow-sm"
+        class="inline-flex items-center gap-2 px-4 py-2 bg-white text-gray-700 text-sm font-medium rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors"
       >
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <circle cx="12" cy="12" r="10" stroke-width="2"/>
-          <circle cx="12" cy="12" r="4" fill="currentColor"/>
+        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+          <circle cx="10" cy="10" r="6"/>
         </svg>
-        Record
+        Record Without Extension
       </button>
 
       <button
@@ -459,7 +459,7 @@
 
           <!-- Processing Badge -->
           <div
-            v-if="video.conversion_status === 'processing' || video.bunny_status === 'transcoding' || video.bunny_status === 'pending'"
+            v-if="video.conversion_status === 'processing'"
             class="absolute top-2 left-2 z-10 bg-black/70 backdrop-blur-sm text-white text-[10px] font-medium px-2 py-1 rounded-md flex items-center gap-1.5"
           >
             <div class="w-2 h-2 bg-orange-400 rounded-full animate-pulse"></div>
@@ -2112,8 +2112,12 @@ export default {
         showUpgradeModal.value = true
         return
       }
-      // Open the new recording setup panel
-      recording.openSetupPanel()
+      // Trigger extension recording popup
+      if (document.documentElement.hasAttribute('data-screensense-extension')) {
+        window.dispatchEvent(new CustomEvent('screensense:new-recording'))
+      } else {
+        window.open('https://chromewebstore.google.com/detail/screensense/nnchnlkilgfemhpcohmgdpcmkjedjkfm', '_blank')
+      }
     }
 
     const openVideo = (id) => {

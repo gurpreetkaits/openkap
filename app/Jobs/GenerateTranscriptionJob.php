@@ -112,14 +112,35 @@ class GenerateTranscriptionJob implements ShouldQueue
             $transcriptionData = $service->transcribe($audioPath, $video);
             $video->update(['transcription_progress' => 80]);
 
-            // Format segments for storage (simplify for frontend)
+            // Build word timestamp index for precise caption sync
+            $wordTimestamps = $transcriptionData->words ?? [];
+
+            // Format segments for storage with word-level timestamps
             $segments = null;
             if (! empty($transcriptionData->segments)) {
-                $segments = array_map(function ($segment) {
+                $segments = array_map(function ($segment) use ($wordTimestamps) {
+                    $segStart = round($segment['start'], 2);
+                    $segEnd = round($segment['end'], 2);
+
+                    // Find words that fall within this segment's time range
+                    $segWords = [];
+                    foreach ($wordTimestamps as $w) {
+                        $wStart = round($w['start'] ?? 0, 2);
+                        $wEnd = round($w['end'] ?? 0, 2);
+                        if ($wStart >= $segStart && $wEnd <= $segEnd + 0.05) {
+                            $segWords[] = [
+                                'start' => $wStart,
+                                'end' => $wEnd,
+                                'text' => trim($w['word'] ?? ''),
+                            ];
+                        }
+                    }
+
                     return [
-                        'start' => round($segment['start'], 2),
-                        'end' => round($segment['end'], 2),
+                        'start' => $segStart,
+                        'end' => $segEnd,
                         'text' => trim($segment['text']),
+                        'words' => ! empty($segWords) ? $segWords : null,
                     ];
                 }, $transcriptionData->segments);
             }
@@ -148,10 +169,11 @@ class GenerateTranscriptionJob implements ShouldQueue
             if ($this->generateTitle && ! empty($transcriptionData->text)) {
                 try {
                     $newTitle = $service->generateTitle($transcriptionData->text, $video);
-                    if ($newTitle && $newTitle !== $video->title) {
+                    if ($newTitle !== null && $newTitle !== $video->title) {
                         $video->update(['title' => $newTitle]);
                         Log::info('Video title updated', [
                             'video_id' => $video->id,
+                            'old_title' => $video->title,
                             'new_title' => $newTitle,
                         ]);
                     }

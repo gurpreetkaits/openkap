@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Jobs\ConvertVideoToMp4Job;
 use App\Jobs\GenerateThumbnailJob;
+use App\Jobs\GenerateTranscriptionJob;
 use App\Jobs\UploadToBunnyJob;
 use App\Models\User;
 use App\Models\Video;
@@ -346,6 +347,10 @@ class StreamVideoController extends Controller
                 Log::info('Dispatching ConvertVideoToMp4Job', ['video_id' => $video->id]);
                 ConvertVideoToMp4Job::dispatch($video);
             }
+
+            // Auto-transcribe (has built-in rescheduling that waits for conversion)
+            Log::info('Dispatching GenerateTranscriptionJob', ['video_id' => $video->id]);
+            GenerateTranscriptionJob::dispatch($video, generateSummary: true, generateTitle: true);
         })->afterResponse();
 
         return $response;

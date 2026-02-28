@@ -11,6 +11,7 @@
     "@polar-sh/checkout": "^0.1.14",
     "canvas-confetti": "^1.9.4",
     "hls.js": "^1.6.15",
+    "marked": "^17.0.3",
     "posthog-js": "^1.313.0",
     "vite-plugin-pwa": "^1.2.0",
     "vue": "^3.5.12",

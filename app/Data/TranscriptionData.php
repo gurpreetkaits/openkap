@@ -11,5 +11,6 @@ class TranscriptionData extends Data
         public string $language,
         public float $duration,
         public ?array $segments = null,
+        public ?array $words = null,
     ) {}
 }

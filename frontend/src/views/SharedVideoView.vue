@@ -161,8 +161,8 @@
                 <p class="text-white/70 text-sm font-medium">Loading video...</p>
               </div>
 
-              <!-- Bunny Encoding Progress (shown when transcoding) -->
-              <div
+              <!-- Bunny Encoding Progress (disabled - Bunny costs too high) -->
+              <!-- <div
                 v-if="isBunnyVideo && bunnyStatus === 'transcoding' && !isPlaying"
                 class="absolute top-4 left-4 z-20 bg-black/70 backdrop-blur-sm rounded-lg px-3 py-2 flex items-center gap-2"
               >
@@ -173,13 +173,14 @@
                     ({{ bunnyAvailableResolutions.join(', ') }} ready)
                   </span>
                 </div>
-              </div>
+              </div> -->
 
               <video
                 ref="videoRef"
                 class="w-full h-full object-contain"
                 :poster="video.thumbnail"
                 preload="metadata"
+                crossorigin="anonymous"
                 @click="togglePlay"
                 @dblclick="toggleFullscreen"
                 @timeupdate="updateProgress"
@@ -195,7 +196,8 @@
                 @pause="isPlaying = false"
                 @error="onVideoError"
                 playsinline
-              ></video>
+              >
+              </video>
 
               <!-- Buffering -->
               <div v-if="isBuffering" class="absolute inset-0 flex items-center justify-center bg-black/40 pointer-events-none">
@@ -221,6 +223,12 @@
               <!-- Custom Floating Controls -->
               <div class="absolute bottom-4 left-4 right-4 z-30">
                 <div class="flex flex-col gap-3 px-2">
+                  <!-- Captions Bar -->
+                  <div v-if="captionsEnabled && activeCaptionCue" class="flex justify-center pointer-events-none">
+                    <div class="caption-bar">
+                      <span v-for="(word, wi) in activeCaptionCue.words" :key="wi" class="caption-word" :class="word.active ? 'caption-active' : 'caption-inactive'">{{ word.text }}</span>
+                    </div>
+                  </div>
                   <!-- Progress -->
                     <div
                       class="relative h-2.5 w-full group/seek cursor-pointer flex items-center"
@@ -340,6 +348,20 @@
                             </button>
                           </div>
                         </div>
+                        <!-- Captions Toggle -->
+                        <button
+                          v-if="captionsUrl"
+                          @click.stop="toggleCaptions"
+                          class="hover:text-white hover:scale-110 transition-transform relative"
+                          :class="captionsEnabled ? 'text-orange-400' : 'opacity-70 hover:opacity-100'"
+                          title="Toggle captions"
+                        >
+                          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <rect x="2" y="4" width="20" height="16" rx="2"/>
+                            <text x="12" y="15" text-anchor="middle" fill="currentColor" stroke="none" font-size="8" font-weight="bold">CC</text>
+                          </svg>
+                          <div v-if="captionsEnabled" class="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-3 h-0.5 bg-orange-400 rounded-full"></div>
+                        </button>
                         <!-- PiP -->
                         <button @click.stop="togglePiP" class="hover:text-white hover:scale-110 transition-transform opacity-70 hover:opacity-100" title="Picture in Picture">
                           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -694,6 +716,7 @@ import { useAuth } from '@/stores/auth'
 import { useBranding } from '@/composables/useBranding'
 import videoService from '@/services/videoService'
 import Hls from 'hls.js'
+import { marked } from 'marked'
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8888'
 
@@ -760,6 +783,103 @@ export default {
     // Copy states
     const copiedTranscript = ref(false)
     const copiedSummary = ref(false)
+
+    // Captions state
+    const captionsEnabled = ref(true)
+    const captionsUrl = computed(() => {
+      if (!transcriptionSegments.value || transcriptionSegments.value.length === 0) return null
+      return true // indicates captions are available
+    })
+
+    // Build caption cues with word-level timing from segments
+    const captionCues = computed(() => {
+      if (!transcriptionSegments.value || transcriptionSegments.value.length === 0) return []
+      const cues = []
+      const MAX_CUE = 3.0
+
+      for (const seg of transcriptionSegments.value) {
+        const text = (seg.text || '').trim()
+        if (!text) continue
+
+        // Use real word timestamps when available
+        if (seg.words && seg.words.length > 0) {
+          let cueWords = []
+          let cueStart = null
+
+          for (const w of seg.words) {
+            const wText = (w.text || '').trim()
+            if (!wText) continue
+            if (cueStart === null) cueStart = w.start
+
+            cueWords.push({ text: wText, start: w.start, end: w.end })
+            const cueDur = w.end - cueStart
+
+            if (cueDur >= MAX_CUE) {
+              cues.push({ start: cueStart, end: w.end, words: [...cueWords] })
+              cueWords = []
+              cueStart = null
+            }
+          }
+          if (cueWords.length > 0 && cueStart !== null) {
+            const last = cueWords[cueWords.length - 1]
+            cues.push({ start: cueStart, end: last.end, words: [...cueWords] })
+          }
+          continue
+        }
+
+        // Fallback: no word timestamps — split by duration
+        const dur = seg.end - seg.start
+        if (dur <= MAX_CUE) {
+          const splitWords = text.split(/\s+/)
+          const wordDur = dur / splitWords.length
+          cues.push({
+            start: seg.start, end: seg.end,
+            words: splitWords.map((w, i) => ({
+              text: w,
+              start: +(seg.start + i * wordDur).toFixed(2),
+              end: +(seg.start + (i + 1) * wordDur).toFixed(2)
+            }))
+          })
+          continue
+        }
+        const splitWords = text.split(/\s+/)
+        const chunks = Math.ceil(dur / MAX_CUE)
+        const perChunk = Math.max(1, Math.ceil(splitWords.length / chunks))
+        const groups = []
+        for (let i = 0; i < splitWords.length; i += perChunk) {
+          groups.push(splitWords.slice(i, i + perChunk))
+        }
+        const chunkDur = dur / groups.length
+        groups.forEach((g, gi) => {
+          const gStart = +(seg.start + gi * chunkDur).toFixed(2)
+          const gEnd = gi === groups.length - 1 ? seg.end : +(seg.start + (gi + 1) * chunkDur).toFixed(2)
+          const wDur = (gEnd - gStart) / g.length
+          cues.push({
+            start: gStart, end: gEnd,
+            words: g.map((w, wi) => ({
+              text: w,
+              start: +(gStart + wi * wDur).toFixed(2),
+              end: +(gStart + (wi + 1) * wDur).toFixed(2)
+            }))
+          })
+        })
+      }
+      return cues
+    })
+
+    // Find active cue and highlight words by their actual timestamps
+    const activeCaptionCue = computed(() => {
+      const t = currentTime.value
+      const cue = captionCues.value.find(c => t >= c.start && t < c.end)
+      if (!cue) return null
+      return {
+        words: cue.words.map(w => ({ text: w.text, active: t >= w.start }))
+      }
+    })
+
+    const toggleCaptions = () => {
+      captionsEnabled.value = !captionsEnabled.value
+    }
 
     // Transcript sync state
     const transcriptContainer = ref(null)
@@ -853,42 +973,31 @@ export default {
         transcriptionSegments.value = data.video.transcription_segments || []
         summary.value = data.video.summary || null
 
-        // Check if this is a Bunny video
-        if (data.video.storage_type === 'bunny') {
-          isBunnyVideo.value = true
-          bunnyStatus.value = data.video.bunny_status
-
-          // Fetch Bunny playback data if video is ready or transcoding
-          if (['ready', 'transcoding'].includes(data.video.bunny_status)) {
-            try {
-              const bunnyData = await videoService.getBunnySharedPlayback(token.value)
-
-              // Update video with Bunny HLS URL only (keep local thumbnail)
-              if (bunnyData.playback) {
-                video.value.hls_url = bunnyData.playback.hlsUrl
-                video.value.is_hls_ready = true
-                // Note: Keep local thumbnail, don't use Bunny's
-              }
-
-              // Store Bunny-specific data
-              if (bunnyData.video) {
-                bunnyStatus.value = bunnyData.video.status
-                bunnyEncodeProgress.value = bunnyData.video.encode_progress || 0
-                bunnyAvailableResolutions.value = bunnyData.video.available_resolutions || []
-
-                // Update duration if available
-                if (bunnyData.video.duration && bunnyData.video.duration > 0) {
-                  video.value.duration = bunnyData.video.duration
-                  duration.value = bunnyData.video.duration
-                }
-              }
-            } catch (bunnyErr) {
-              console.warn('Failed to fetch Bunny playback, falling back to local file:', bunnyErr)
-              // Fallback to local webm file - keep video.url as is
-            }
-          }
-          // If Bunny video is not ready, fallback to local webm file (video.url is already set)
-        }
+        // Bunny playback disabled - encoding costs too high, using local storage only
+        // if (data.video.storage_type === 'bunny') {
+        //   isBunnyVideo.value = true
+        //   bunnyStatus.value = data.video.bunny_status
+        //   if (['ready', 'transcoding'].includes(data.video.bunny_status)) {
+        //     try {
+        //       const bunnyData = await videoService.getBunnySharedPlayback(token.value)
+        //       if (bunnyData.playback) {
+        //         video.value.hls_url = bunnyData.playback.hlsUrl
+        //         video.value.is_hls_ready = true
+        //       }
+        //       if (bunnyData.video) {
+        //         bunnyStatus.value = bunnyData.video.status
+        //         bunnyEncodeProgress.value = bunnyData.video.encode_progress || 0
+        //         bunnyAvailableResolutions.value = bunnyData.video.available_resolutions || []
+        //         if (bunnyData.video.duration && bunnyData.video.duration > 0) {
+        //           video.value.duration = bunnyData.video.duration
+        //           duration.value = bunnyData.video.duration
+        //         }
+        //       }
+        //     } catch (bunnyErr) {
+        //       console.warn('Failed to fetch Bunny playback, falling back to local file:', bunnyErr)
+        //     }
+        //   }
+        // }
 
         // Initialize HLS after video data is loaded
         setTimeout(() => initHls(), 100)
@@ -943,15 +1052,7 @@ export default {
 
     const formattedSummary = computed(() => {
       if (!summary.value) return ''
-      // Convert markdown-style bullet points to HTML
-      return summary.value
-        .replace(/^[-•]\s+/gm, '<li>')
-        .replace(/<li>/g, '</li><li>')
-        .replace(/^<\/li>/, '')
-        .replace(/<li>([^<]+)$/gm, '<li>$1</li>')
-        .replace(/(<li>.*<\/li>)/gs, '<ul class="list-disc pl-4 space-y-1">$1</ul>')
-        .replace(/\n\n/g, '</p><p class="mt-3">')
-        .replace(/\n/g, '<br>')
+      return marked.parse(summary.value, { breaks: true })
     })
 
     const initHls = () => {
@@ -1477,6 +1578,8 @@ export default {
       showShareModal, activeTab, sidebarVisible, toggleSidebar,
       // Transcription (read-only for shared view)
       transcription, transcriptionSegments, summary, formattedSummary, seekToTime,
+      // Captions
+      captionsEnabled, captionsUrl, toggleCaptions, activeCaptionCue,
       // Transcript sync
       transcriptContainer, segmentRefs, activeSegmentIndex,
       // Copy
@@ -1523,4 +1626,28 @@ input[type=range]::-webkit-slider-runnable-track {
   cursor: pointer; background: rgba(255,255,255,0.3);
   border-radius: 10px;
 }
+.caption-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  border-radius: 8px;
+  padding: 6px 14px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(229, 231, 235, 0.5);
+  max-width: 80%;
+}
+.caption-word {
+  font-size: 14px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.5;
+  transition: color 0.2s ease;
+}
+.caption-active { color: #111827; }
+.caption-inactive { color: #d1d5db; }
 </style>

@@ -37,6 +37,8 @@ class TranscribeAudioRequest extends Request implements HasBody
             new MultipartValue(name: 'model', value: $this->model),
             new MultipartValue(name: 'language', value: $this->language),
             new MultipartValue(name: 'response_format', value: $this->responseFormat),
+            new MultipartValue(name: 'timestamp_granularities[]', value: 'word'),
+            new MultipartValue(name: 'timestamp_granularities[]', value: 'segment'),
         ];
     }
 

@@ -15,75 +15,6 @@
     </div>
 
     <div v-else class="space-y-6">
-      <!-- Settings Card -->
-      <div class="bg-white rounded-xl border border-gray-100">
-        <!-- HD Encoding -->
-        <div class="p-5 flex items-center justify-between">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
-              <svg class="w-5 h-5 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" />
-              </svg>
-            </div>
-            <div>
-              <h3 class="text-sm font-semibold text-gray-900">HD Encoding</h3>
-              <p class="text-xs text-gray-500">Use Bunny CDN for HD video encoding and faster playback</p>
-            </div>
-          </div>
-
-          <!-- Toggle Switch -->
-          <button
-            @click="settings.bunny_encoding_enabled = !settings.bunny_encoding_enabled"
-            :class="[
-              'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2',
-              settings.bunny_encoding_enabled ? 'bg-orange-500' : 'bg-gray-200'
-            ]"
-          >
-            <span
-              :class="[
-                'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out',
-                settings.bunny_encoding_enabled ? 'translate-x-5' : 'translate-x-0'
-              ]"
-            />
-          </button>
-        </div>
-
-        <!-- Info message -->
-        <div class="px-5 pb-5">
-          <div class="bg-gray-50 rounded-lg p-3">
-            <p class="text-xs text-gray-500" v-if="settings.bunny_encoding_enabled">
-              Videos will be encoded via Bunny CDN for HD quality and adaptive streaming.
-            </p>
-            <p class="text-xs text-gray-500" v-else>
-              Videos will be stored and served locally without HD encoding.
-            </p>
-          </div>
-        </div>
-
-        <!-- Divider + Action Buttons -->
-        <div class="border-t border-gray-100 px-5 py-4 flex items-center justify-end gap-3">
-          <button
-            @click="resetSettings"
-            :disabled="saving"
-            class="px-4 py-2 text-xs font-medium text-gray-600 hover:text-gray-900 bg-white border border-gray-100 hover:bg-gray-50 rounded-lg transition-colors disabled:opacity-50"
-          >
-            Revert
-          </button>
-
-          <button
-            @click="saveSettings"
-            :disabled="saving"
-            class="px-5 py-2 text-xs font-medium text-white bg-orange-500 hover:bg-orange-600 rounded-lg shadow-sm transition-colors disabled:opacity-50 flex items-center gap-2"
-          >
-            <svg v-if="saving" class="animate-spin w-3.5 h-3.5" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            {{ saving ? 'Saving...' : 'Save' }}
-          </button>
-        </div>
-      </div>
-
       <!-- Branding Card (Paid only) -->
       <div class="bg-white rounded-xl border border-gray-100" :class="{ 'opacity-60 pointer-events-none': !isPaid }">
         <!-- Header -->
@@ -256,7 +187,7 @@ const isPaid = computed(() => auth.subscription.value?.is_active || false)
 const presetColors = ['#F97316', '#EF4444', '#8B5CF6', '#3B82F6', '#10B981', '#F59E0B', '#EC4899', '#1F2937']
 
 const settings = ref({
-  bunny_encoding_enabled: true,
+  // bunny_encoding_enabled: true, // Bunny disabled - encoding costs too high
   organization_logo: '',
   brand_color: '#F97316'
 })
@@ -282,7 +213,7 @@ const saveSettings = async () => {
   saving.value = true
   try {
     await settingsService.updateUserSettings({
-      bunny_encoding_enabled: settings.value.bunny_encoding_enabled
+      // bunny_encoding_enabled: settings.value.bunny_encoding_enabled // Bunny disabled
     })
     toast.success('Settings saved successfully')
   } catch (error) {

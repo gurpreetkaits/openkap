@@ -10,6 +10,7 @@ use App\Http\Requests\ApplyVideoEditsRequest;
 use App\Http\Requests\BulkDeleteVideosRequest;
 use App\Http\Requests\BulkFavouriteVideosRequest;
 use App\Managers\VideoManager;
+use App\Services\CaptionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -399,6 +400,27 @@ class VideoController extends Controller
         }
 
         return $this->buildStreamResponse($streamData);
+    }
+
+    public function sharedCaptions($token, CaptionService $captionService)
+    {
+        $video = $this->videoManager->findByShareTokenOrFail($token);
+
+        if (! $video->isShareLinkValid()) {
+            return response()->json(['message' => 'This video is no longer available'], 403);
+        }
+
+        $vtt = $captionService->generateWebVtt($video);
+
+        if ($vtt === null) {
+            return response('', 204);
+        }
+
+        return response($vtt, 200, [
+            'Content-Type' => 'text/vtt; charset=utf-8',
+            'Access-Control-Allow-Origin' => '*',
+            'Cache-Control' => 'public, max-age=300',
+        ]);
     }
 
     protected function buildStreamResponse(array $streamData): mixed
