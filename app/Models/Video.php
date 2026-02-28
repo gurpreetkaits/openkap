@@ -44,6 +44,10 @@ class Video extends Model implements HasMedia
         'summary',
         'summary_error',
         'summary_generated_at',
+        'bug_detection_status',
+        'detected_bugs',
+        'bug_detection_error',
+        'bug_detection_generated_at',
         // Bunny Stream fields
         'bunny_video_id',
         'bunny_library_id',
@@ -75,6 +79,8 @@ class Video extends Model implements HasMedia
         'transcription_generated_at' => 'datetime',
         'transcription_segments' => 'array',
         'summary_generated_at' => 'datetime',
+        'detected_bugs' => 'array',
+        'bug_detection_generated_at' => 'datetime',
         'bunny_file_size' => 'integer',
         'blur_progress' => 'integer',
         'blur_region' => 'array',
@@ -613,6 +619,52 @@ class Video extends Model implements HasMedia
             'failed' => 'Summary failed: '.($this->summary_error ?? 'Unknown error'),
             default => 'Unknown status',
         };
+    }
+
+    /**
+     * Check if bug detection is in progress.
+     */
+    public function isBugDetecting(): bool
+    {
+        return in_array($this->bug_detection_status, ['pending', 'processing']);
+    }
+
+    /**
+     * Check if bug detection is complete.
+     */
+    public function isBugDetectionReady(): bool
+    {
+        return $this->bug_detection_status === 'completed';
+    }
+
+    /**
+     * Check if bug detection failed.
+     */
+    public function isBugDetectionFailed(): bool
+    {
+        return $this->bug_detection_status === 'failed';
+    }
+
+    /**
+     * Get bug detection status message.
+     */
+    public function getBugDetectionStatusMessage(): string
+    {
+        return match ($this->bug_detection_status) {
+            'pending' => 'Waiting for bug detection...',
+            'processing' => 'Detecting bugs...',
+            'completed' => 'Bug detection complete',
+            'failed' => 'Bug detection failed: '.($this->bug_detection_error ?? 'Unknown error'),
+            default => 'Unknown status',
+        };
+    }
+
+    /**
+     * Get the number of detected bugs.
+     */
+    public function getDetectedBugCount(): int
+    {
+        return count($this->detected_bugs ?? []);
     }
 
     // ============================================

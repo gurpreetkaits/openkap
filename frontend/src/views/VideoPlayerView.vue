@@ -176,6 +176,9 @@
                 {{ copied ? 'Copied!' : 'Copy' }}
               </button>
             </div>
+
+            <!-- Integration Sharing -->
+            <VideoShareIntegrations v-if="video.id" :videoId="video.id" />
           </div>
         </div>
       </div>
@@ -249,8 +252,8 @@
                 <p class="text-white/70 text-sm font-medium">Loading video...</p>
               </div>
 
-              <!-- Bunny Encoding Progress (shown when transcoding) -->
-              <div
+              <!-- Bunny Encoding Progress (disabled - Bunny costs too high) -->
+              <!-- <div
                 v-if="isBunnyVideo && bunnyStatus === 'transcoding' && !isPlaying"
                 class="absolute top-4 left-4 z-20 bg-black/70 backdrop-blur-sm rounded-lg px-3 py-2 flex items-center gap-2"
               >
@@ -261,7 +264,7 @@
                     ({{ bunnyAvailableResolutions.join(', ') }} ready)
                   </span>
                 </div>
-              </div>
+              </div> -->
 
               <video
                 ref="videoRef"
@@ -269,7 +272,7 @@
                 class="w-full h-full object-contain"
                 :poster="video.thumbnail"
                 preload="metadata"
-                crossorigin="use-credentials"
+                crossorigin="anonymous"
                 @click="togglePlay"
                 @dblclick="toggleFullscreen"
                 @timeupdate="updateProgress"
@@ -285,7 +288,8 @@
                 @pause="isPlaying = false"
                 @error="onVideoError"
                 playsinline
-              ></video>
+              >
+              </video>
 
               <!-- Buffering -->
               <div v-if="isBuffering" class="absolute inset-0 flex items-center justify-center bg-black/40 pointer-events-none">
@@ -311,6 +315,12 @@
               <!-- Custom Floating Controls -->
               <div class="absolute bottom-4 left-4 right-4 z-30">
                 <div class="flex flex-col gap-3 px-2">
+                  <!-- Captions Bar -->
+                  <div v-if="captionsEnabled && activeCaptionCue" class="flex justify-center pointer-events-none">
+                    <div class="caption-bar">
+                      <span v-for="(word, wi) in activeCaptionCue.words" :key="wi" class="caption-word" :class="word.active ? 'caption-active' : 'caption-inactive'">{{ word.text }}</span>
+                    </div>
+                  </div>
                   <!-- Progress -->
                     <div
                       class="relative h-2.5 w-full group/seek cursor-pointer flex items-center"
@@ -430,6 +440,20 @@
                             </button>
                           </div>
                         </div>
+                        <!-- Captions Toggle -->
+                        <button
+                          v-if="captionsUrl"
+                          @click.stop="toggleCaptions"
+                          class="hover:text-white hover:scale-110 transition-transform relative"
+                          :class="captionsEnabled ? 'text-orange-400' : 'opacity-70 hover:opacity-100'"
+                          title="Toggle captions"
+                        >
+                          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <rect x="2" y="4" width="20" height="16" rx="2"/>
+                            <text x="12" y="15" text-anchor="middle" fill="currentColor" stroke="none" font-size="8" font-weight="bold">CC</text>
+                          </svg>
+                          <div v-if="captionsEnabled" class="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-3 h-0.5 bg-orange-400 rounded-full"></div>
+                        </button>
                         <!-- Fullscreen -->
                         <button @click.stop="toggleFullscreen" class="hover:text-white hover:scale-110 transition-transform">
                           <svg v-if="!isFullscreen" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -531,6 +555,18 @@
                 <path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/>
               </svg>
               Summary
+            </button>
+            <button
+              v-if="auth.hasActiveSubscription.value && jiraConnected"
+              @click="activeTab = 'bugs'; loadBugTabData()"
+              class="px-4 py-2 text-[13px] rounded-lg transition-all flex items-center gap-1.5"
+              :class="activeTab === 'bugs' ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'"
+            >
+              <svg class="w-3.5 h-3.5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+              </svg>
+              Bugs
+              <span v-if="detectedBugs.length" class="text-[11px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full font-medium">{{ detectedBugs.length }}</span>
             </button>
           </div>
 
@@ -851,6 +887,181 @@
               </div>
             </div>
 
+            <!-- TAB: BUGS -->
+            <div v-show="activeTab === 'bugs'" class="flex flex-col min-h-full">
+              <!-- Processing state -->
+              <div v-if="bugDetectionStatus === 'processing'" class="flex flex-col items-center justify-center h-64 text-center px-5">
+                <div class="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mb-4 animate-pulse">
+                  <svg class="w-8 h-8 text-red-500 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                </div>
+                <p class="text-base font-semibold text-gray-900">Detecting Bugs...</p>
+                <p class="text-sm text-gray-500 mt-1">AI is analyzing your transcript for bugs</p>
+              </div>
+
+              <!-- Pending state -->
+              <div v-else-if="bugDetectionStatus === 'pending'" class="flex flex-col items-center justify-center h-64 text-center px-5">
+                <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+                  <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                </div>
+                <p class="text-base font-semibold text-gray-900">Bug Detection Pending</p>
+                <p class="text-sm text-gray-500 mt-1">Bug detection will start after transcription and summary complete</p>
+              </div>
+
+              <!-- Failed state -->
+              <div v-else-if="bugDetectionStatus === 'failed'" class="flex flex-col items-center justify-center h-64 text-center px-5">
+                <div class="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mb-4">
+                  <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                  </svg>
+                </div>
+                <p class="text-base font-semibold text-gray-900">Bug Detection Failed</p>
+                <p class="text-sm text-gray-500 mt-1">{{ bugDetectionError || 'Something went wrong' }}</p>
+              </div>
+
+              <!-- No bugs found -->
+              <div v-else-if="bugDetectionStatus === 'completed' && detectedBugs.length === 0" class="flex flex-col items-center justify-center h-64 text-center px-5">
+                <div class="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mb-4">
+                  <svg class="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                  </svg>
+                </div>
+                <p class="text-base font-semibold text-gray-900">No Bugs Detected</p>
+                <p class="text-sm text-gray-500 mt-1">No issues were found in the video transcript</p>
+              </div>
+
+              <!-- Bugs found -->
+              <div v-else-if="detectedBugs.length > 0" class="p-4 space-y-3">
+                <div class="flex items-center justify-between mb-2">
+                  <p class="text-xs text-gray-500">
+                    Based on the video transcript, <span class="font-semibold text-gray-700">{{ detectedBugs.length }}</span> potential bug(s) detected
+                  </p>
+                </div>
+
+                <!-- Jira project selector -->
+                <div v-if="jiraProjects.length > 0" class="mb-3">
+                  <label class="text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-1 block">Jira Project</label>
+                  <select
+                    v-model="selectedBugProject"
+                    class="w-full px-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500"
+                  >
+                    <option value="">Select a project...</option>
+                    <option v-for="project in jiraProjects" :key="project.id" :value="project.id">
+                      {{ project.name }}
+                    </option>
+                  </select>
+                </div>
+
+                <!-- Bug cards -->
+                <div
+                  v-for="bug in detectedBugs"
+                  :key="bug.id"
+                  class="border border-gray-200 rounded-lg overflow-hidden transition-all hover:border-gray-300"
+                >
+                  <!-- Bug card header -->
+                  <button
+                    @click="expandedBugId = expandedBugId === bug.id ? null : bug.id"
+                    class="w-full px-4 py-3 flex items-center gap-3 text-left hover:bg-gray-50 transition-colors"
+                  >
+                    <!-- Severity dot -->
+                    <span
+                      class="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                      :class="{
+                        'bg-red-500': bug.severity === 'critical',
+                        'bg-orange-500': bug.severity === 'high',
+                        'bg-yellow-500': bug.severity === 'medium',
+                        'bg-blue-500': bug.severity === 'low'
+                      }"
+                    ></span>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-sm font-medium text-gray-900 truncate">{{ bug.title }}</p>
+                      <span
+                        class="text-[10px] font-medium uppercase tracking-wider px-1.5 py-0.5 rounded"
+                        :class="{
+                          'bg-red-100 text-red-700': bug.severity === 'critical',
+                          'bg-orange-100 text-orange-700': bug.severity === 'high',
+                          'bg-yellow-100 text-yellow-700': bug.severity === 'medium',
+                          'bg-blue-100 text-blue-700': bug.severity === 'low'
+                        }"
+                      >
+                        {{ bug.severity }}
+                      </span>
+                    </div>
+                    <svg
+                      class="w-4 h-4 text-gray-400 transition-transform flex-shrink-0"
+                      :class="{ 'rotate-180': expandedBugId === bug.id }"
+                      fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                    >
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                  </button>
+
+                  <!-- Bug card details (expanded) -->
+                  <div v-if="expandedBugId === bug.id" class="px-4 pb-4 border-t border-gray-100 space-y-3">
+                    <!-- Description -->
+                    <div v-if="bug.description" class="pt-3">
+                      <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Description</p>
+                      <p class="text-sm text-gray-700 leading-relaxed">{{ bug.description }}</p>
+                    </div>
+
+                    <!-- Steps to reproduce -->
+                    <div v-if="bug.steps_to_reproduce && bug.steps_to_reproduce.length > 0">
+                      <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Steps to Reproduce</p>
+                      <ol class="list-decimal list-inside text-sm text-gray-700 space-y-1">
+                        <li v-for="(step, i) in bug.steps_to_reproduce" :key="i">{{ step }}</li>
+                      </ol>
+                    </div>
+
+                    <!-- Mentioned at timestamp -->
+                    <div v-if="bug.mentioned_at_seconds != null">
+                      <button
+                        @click="seekToTime(bug.mentioned_at_seconds)"
+                        class="text-xs font-mono bg-orange-50 text-orange-600 px-2 py-1 rounded hover:bg-orange-100 transition-colors"
+                      >
+                        Mentioned at {{ formatTime(bug.mentioned_at_seconds) }}
+                      </button>
+                    </div>
+
+                    <!-- Create in Jira / View in Jira -->
+                    <div class="pt-2">
+                      <a
+                        v-if="bug.jira_url"
+                        :href="bug.jira_url"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="inline-flex items-center gap-2 px-3 py-2 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
+                      >
+                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M11.571 11.513H0a5.218 5.218 0 0 0 5.232 5.215h2.13v2.057A5.215 5.215 0 0 0 12.575 24V12.518a1.005 1.005 0 0 0-1.005-1.005zm5.723-5.756H5.736a5.215 5.215 0 0 0 5.215 5.214h2.129v2.058a5.218 5.218 0 0 0 5.215 5.214V6.758a1.001 1.001 0 0 0-1.001-1.001zM23.013 0H11.455a5.215 5.215 0 0 0 5.215 5.215h2.129v2.057A5.215 5.215 0 0 0 24.013 12.487V1.005A1.005 1.005 0 0 0 23.013 0z"/>
+                        </svg>
+                        {{ bug.jira_key }} - View in Jira
+                      </a>
+                      <button
+                        v-else
+                        @click="createBugInJira(bug)"
+                        :disabled="creatingBugId === bug.id || !selectedBugProject"
+                        class="inline-flex items-center gap-2 px-3 py-2 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+                      >
+                        <svg v-if="creatingBugId === bug.id" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <svg v-else class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M11.571 11.513H0a5.218 5.218 0 0 0 5.232 5.215h2.13v2.057A5.215 5.215 0 0 0 12.575 24V12.518a1.005 1.005 0 0 0-1.005-1.005zm5.723-5.756H5.736a5.215 5.215 0 0 0 5.215 5.214h2.129v2.058a5.218 5.218 0 0 0 5.215 5.214V6.758a1.001 1.001 0 0 0-1.001-1.001zM23.013 0H11.455a5.215 5.215 0 0 0 5.215 5.215h2.129v2.057A5.215 5.215 0 0 0 24.013 12.487V1.005A1.005 1.005 0 0 0 23.013 0z"/>
+                        </svg>
+                        {{ creatingBugId === bug.id ? 'Creating...' : 'Create Bug in Jira' }}
+                      </button>
+                      <p v-if="!selectedBugProject && !bug.jira_url" class="text-[11px] text-gray-400 mt-1">Select a Jira project above first</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
           </div>
 
           <!-- Comment Input -->
@@ -918,13 +1129,19 @@ import { useRoute } from 'vue-router'
 import { useAuth } from '@/stores/auth'
 import { useBranding } from '@/composables/useBranding'
 import videoService from '@/services/videoService'
+import integrationService from '@/services/integrationService'
 import SBDeleteModal from '@/components/Global/SBDeleteModal.vue'
+import VideoShareIntegrations from '@/components/VideoShareIntegrations.vue'
 import Hls from 'hls.js'
+import { marked } from 'marked'
+
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8888'
 
 export default {
   name: 'VideoPlayerView',
   components: {
-    SBDeleteModal
+    SBDeleteModal,
+    VideoShareIntegrations
   },
   setup() {
     const route = useRoute()
@@ -997,6 +1214,17 @@ export default {
     const summaryStatus = ref('pending')
     const summaryError = ref(null)
 
+    // Bug detection state
+    const detectedBugs = ref([])
+    const bugDetectionStatus = ref('pending')
+    const bugDetectionError = ref(null)
+    const expandedBugId = ref(null)
+    const creatingBugId = ref(null)
+    const jiraConnected = ref(false)
+    const jiraProjects = ref([])
+    const selectedBugProject = ref('')
+    const bugProjectsLoaded = ref(false)
+
     // Copy states
     const copiedTranscript = ref(false)
     const copiedSummary = ref(false)
@@ -1005,6 +1233,104 @@ export default {
     const transcriptContainer = ref(null)
     const segmentRefs = ref({})
     const autoScrollEnabled = ref(true)
+
+    // Captions state
+    const captionsEnabled = ref(true)
+    const captionsUrl = computed(() => {
+      if (transcriptionStatus.value !== 'completed') return null
+      if (!transcriptionSegments.value || transcriptionSegments.value.length === 0) return null
+      return true // just indicates captions are available
+    })
+
+    // Build caption cues with word-level timing from segments
+    const captionCues = computed(() => {
+      if (!transcriptionSegments.value || transcriptionSegments.value.length === 0) return []
+      const cues = []
+      const MAX_CUE = 3.0
+
+      for (const seg of transcriptionSegments.value) {
+        const text = (seg.text || '').trim()
+        if (!text) continue
+
+        // Use real word timestamps when available
+        if (seg.words && seg.words.length > 0) {
+          let cueWords = []
+          let cueStart = null
+
+          for (const w of seg.words) {
+            const wText = (w.text || '').trim()
+            if (!wText) continue
+            if (cueStart === null) cueStart = w.start
+
+            cueWords.push({ text: wText, start: w.start, end: w.end })
+            const cueDur = w.end - cueStart
+
+            if (cueDur >= MAX_CUE) {
+              cues.push({ start: cueStart, end: w.end, words: [...cueWords] })
+              cueWords = []
+              cueStart = null
+            }
+          }
+          if (cueWords.length > 0 && cueStart !== null) {
+            const last = cueWords[cueWords.length - 1]
+            cues.push({ start: cueStart, end: last.end, words: [...cueWords] })
+          }
+          continue
+        }
+
+        // Fallback: no word timestamps — split by duration
+        const dur = seg.end - seg.start
+        if (dur <= MAX_CUE) {
+          const splitWords = text.split(/\s+/)
+          const wordDur = dur / splitWords.length
+          cues.push({
+            start: seg.start, end: seg.end,
+            words: splitWords.map((w, i) => ({
+              text: w,
+              start: +(seg.start + i * wordDur).toFixed(2),
+              end: +(seg.start + (i + 1) * wordDur).toFixed(2)
+            }))
+          })
+          continue
+        }
+        const splitWords = text.split(/\s+/)
+        const chunks = Math.ceil(dur / MAX_CUE)
+        const perChunk = Math.max(1, Math.ceil(splitWords.length / chunks))
+        const groups = []
+        for (let i = 0; i < splitWords.length; i += perChunk) {
+          groups.push(splitWords.slice(i, i + perChunk))
+        }
+        const chunkDur = dur / groups.length
+        groups.forEach((g, gi) => {
+          const gStart = +(seg.start + gi * chunkDur).toFixed(2)
+          const gEnd = gi === groups.length - 1 ? seg.end : +(seg.start + (gi + 1) * chunkDur).toFixed(2)
+          const wDur = (gEnd - gStart) / g.length
+          cues.push({
+            start: gStart, end: gEnd,
+            words: g.map((w, wi) => ({
+              text: w,
+              start: +(gStart + wi * wDur).toFixed(2),
+              end: +(gStart + (wi + 1) * wDur).toFixed(2)
+            }))
+          })
+        })
+      }
+      return cues
+    })
+
+    // Find active cue and highlight words by their actual timestamps
+    const activeCaptionCue = computed(() => {
+      const t = currentTime.value
+      const cue = captionCues.value.find(c => t >= c.start && t < c.end)
+      if (!cue) return null
+      return {
+        words: cue.words.map(w => ({ text: w.text, active: t >= w.start }))
+      }
+    })
+
+    const toggleCaptions = () => {
+      captionsEnabled.value = !captionsEnabled.value
+    }
 
     // Enhanced transcript features
     const transcriptSearch = ref('')
@@ -1074,6 +1400,8 @@ export default {
         })
       }
     })
+
+    // captionsUrl watch removed — custom caption overlay used instead
 
     // Filtered segments based on search
     const filteredSegments = computed(() => {
@@ -1190,43 +1518,32 @@ export default {
           zoom_event_count: fetchedVideo.zoom_event_count,
         }
 
-        // Check if this is a Bunny video
-        if (fetchedVideo.storage_type === 'bunny') {
-          isBunnyVideo.value = true
-          bunnyStatus.value = fetchedVideo.bunny_status
-
-          // Fetch Bunny playback data if video is ready or transcoding
-          if (['ready', 'transcoding'].includes(fetchedVideo.bunny_status)) {
-            try {
-              const bunnyData = await videoService.getBunnyPlayback(fetchedVideo.id)
-              bunnyPlaybackData.value = bunnyData
-
-              // Update video with Bunny HLS URL only (keep local thumbnail)
-              if (bunnyData.playback) {
-                video.value.hls_url = bunnyData.playback.hlsUrl
-                video.value.is_hls_ready = true
-                // Note: Keep local thumbnail, don't use Bunny's
-              }
-
-              // Store Bunny-specific data
-              if (bunnyData.video) {
-                bunnyStatus.value = bunnyData.video.status
-                bunnyEncodeProgress.value = bunnyData.video.encode_progress || 0
-                bunnyAvailableResolutions.value = bunnyData.video.available_resolutions || []
-
-                // Update duration if available
-                if (bunnyData.video.duration && bunnyData.video.duration > 0) {
-                  video.value.duration = bunnyData.video.duration
-                  duration.value = bunnyData.video.duration
-                }
-              }
-            } catch (bunnyErr) {
-              console.warn('Failed to fetch Bunny playback, falling back to local file:', bunnyErr)
-              // Fallback to local webm file - keep video.url as is
-            }
-          }
-          // If Bunny video is not ready, fallback to local webm file (video.url is already set)
-        }
+        // Bunny playback disabled - encoding costs too high, using local storage only
+        // if (fetchedVideo.storage_type === 'bunny') {
+        //   isBunnyVideo.value = true
+        //   bunnyStatus.value = fetchedVideo.bunny_status
+        //   if (['ready', 'transcoding'].includes(fetchedVideo.bunny_status)) {
+        //     try {
+        //       const bunnyData = await videoService.getBunnyPlayback(fetchedVideo.id)
+        //       bunnyPlaybackData.value = bunnyData
+        //       if (bunnyData.playback) {
+        //         video.value.hls_url = bunnyData.playback.hlsUrl
+        //         video.value.is_hls_ready = true
+        //       }
+        //       if (bunnyData.video) {
+        //         bunnyStatus.value = bunnyData.video.status
+        //         bunnyEncodeProgress.value = bunnyData.video.encode_progress || 0
+        //         bunnyAvailableResolutions.value = bunnyData.video.available_resolutions || []
+        //         if (bunnyData.video.duration && bunnyData.video.duration > 0) {
+        //           video.value.duration = bunnyData.video.duration
+        //           duration.value = bunnyData.video.duration
+        //         }
+        //       }
+        //     } catch (bunnyErr) {
+        //       console.warn('Failed to fetch Bunny playback, falling back to local file:', bunnyErr)
+        //     }
+        //   }
+        // }
 
         setTimeout(() => initHls(), 100)
 
@@ -1729,6 +2046,11 @@ export default {
           transcriptionSegments.value = data.transcription?.segments || []
           summary.value = data.summary?.summary || null
 
+          // Load bug detection data
+          if (data.bugs) {
+            detectedBugs.value = data.bugs.bugs || []
+          }
+
           // Update status from response
           if (data.status) {
             transcriptionStatus.value = data.status.transcription_status || 'pending'
@@ -1736,10 +2058,12 @@ export default {
             transcriptionError.value = data.status.transcription_error || null
             summaryStatus.value = data.status.summary_status || 'pending'
             summaryError.value = data.status.summary_error || null
+            bugDetectionStatus.value = data.status.bug_detection_status || 'pending'
+            bugDetectionError.value = data.status.bug_detection_error || null
           }
 
           // If still processing, start polling
-          if (transcriptionStatus.value === 'processing' || summaryStatus.value === 'processing') {
+          if (transcriptionStatus.value === 'processing' || summaryStatus.value === 'processing' || bugDetectionStatus.value === 'processing') {
             startTranscriptionPolling()
           }
         }
@@ -1783,6 +2107,8 @@ export default {
             transcriptionError.value = status.transcription_error || null
             summaryStatus.value = status.summary_status || 'pending'
             summaryError.value = status.summary_error || null
+            bugDetectionStatus.value = status.bug_detection_status || 'pending'
+            bugDetectionError.value = status.bug_detection_error || null
 
             // If transcription completed, fetch the full data
             if (status.is_transcription_ready) {
@@ -1795,8 +2121,13 @@ export default {
               }
             }
 
-            // Stop polling if both are done
-            if (!status.is_transcribing && !status.is_summarizing) {
+            // If bug detection just completed, reload data
+            if (status.is_bug_detection_ready && detectedBugs.value.length === 0) {
+              await loadTranscriptionData()
+            }
+
+            // Stop polling if all are done
+            if (!status.is_transcribing && !status.is_summarizing && !status.is_bug_detecting) {
               stopTranscriptionPolling()
             }
           }
@@ -1857,16 +2188,73 @@ export default {
 
     const formattedSummary = computed(() => {
       if (!summary.value) return ''
-      // Convert markdown-style bullet points to HTML
-      return summary.value
-        .replace(/^[-•]\s+/gm, '<li>')
-        .replace(/<li>/g, '</li><li>')
-        .replace(/^<\/li>/, '')
-        .replace(/<li>([^<]+)$/gm, '<li>$1</li>')
-        .replace(/(<li>.*<\/li>)/gs, '<ul class="list-disc pl-4 space-y-1">$1</ul>')
-        .replace(/\n\n/g, '</p><p class="mt-3">')
-        .replace(/\n/g, '<br>')
+      return marked.parse(summary.value, { breaks: true })
     })
+
+    // Bug detection methods
+    const checkJiraConnectivity = async () => {
+      try {
+        const providers = await integrationService.getAvailableProviders()
+        if (providers) {
+          const jira = providers.find(p => p.id === 'jira')
+          jiraConnected.value = jira?.connected === true
+        }
+      } catch (err) {
+        console.error('Failed to check Jira connectivity:', err)
+      }
+    }
+
+    const loadBugTabData = async () => {
+      if (bugProjectsLoaded.value) return
+      bugProjectsLoaded.value = true
+      try {
+        const targets = await integrationService.getTargets('jira')
+        if (targets) {
+          jiraProjects.value = targets
+          if (targets.length > 0 && !selectedBugProject.value) {
+            selectedBugProject.value = targets[0].id
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load Jira projects:', err)
+      }
+    }
+
+    const createBugInJira = async (bug) => {
+      if (!selectedBugProject.value || creatingBugId.value) return
+      creatingBugId.value = bug.id
+
+      try {
+        const result = await integrationService.createBug('jira', video.value.id, {
+          target_id: selectedBugProject.value,
+          bug_id: bug.id,
+          bug_title: bug.title,
+          bug_description: bug.description || '',
+          bug_severity: bug.severity || 'medium',
+          steps_to_reproduce: bug.steps_to_reproduce || []
+        })
+
+        if (result && result.success) {
+          // Update the bug card with the Jira URL
+          const idx = detectedBugs.value.findIndex(b => b.id === bug.id)
+          if (idx !== -1) {
+            detectedBugs.value[idx] = {
+              ...detectedBugs.value[idx],
+              jira_url: result.external_url,
+              jira_key: result.external_url ? result.external_url.split('/').pop() : null
+            }
+          }
+          showToast('Bug created in Jira!')
+        } else {
+          showToast(result?.error || 'Failed to create bug in Jira')
+        }
+      } catch (err) {
+        console.error('Failed to create bug in Jira:', err)
+        showToast('Failed to create bug in Jira')
+      } finally {
+        creatingBugId.value = null
+      }
+    }
 
     const handleKeydown = (e) => {
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) return
@@ -1929,6 +2317,9 @@ export default {
       await loadComments()
       await loadTranscriptionData()
 
+      // Check Jira connectivity (non-blocking)
+      checkJiraConnectivity()
+
       // Record view (non-blocking)
       if (video.value.id) {
         videoService.recordView(video.value.id).catch(() => {})
@@ -1978,6 +2369,12 @@ export default {
       highlightSearch, copySegment, exportTranscript,
       // Summary
       summary, summaryStatus, summaryError, formattedSummary,
+      // Bug detection
+      detectedBugs, bugDetectionStatus, bugDetectionError,
+      expandedBugId, creatingBugId, jiraConnected, jiraProjects, selectedBugProject,
+      loadBugTabData, createBugInJira,
+      // Captions
+      captionsEnabled, captionsUrl, toggleCaptions, activeCaptionCue,
       // Copy
       copiedTranscript, copiedSummary, copyTranscript, copySummary,
       // Bunny
@@ -2016,4 +2413,29 @@ input[type=range]::-webkit-slider-runnable-track {
   cursor: pointer; background: rgba(255,255,255,0.3);
   border-radius: 10px;
 }
+.caption-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  border-radius: 8px;
+  padding: 6px 14px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(229, 231, 235, 0.5);
+  max-width: 80%;
+}
+.caption-word {
+  font-size: 14px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.5;
+  transition: color 0.2s ease;
+}
+.caption-active { color: #111827; }
+.caption-inactive { color: #d1d5db; }
 </style>
+

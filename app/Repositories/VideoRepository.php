@@ -201,6 +201,31 @@ class VideoRepository extends BaseRepository
         ]);
     }
 
+    public function updateBugDetectionStatus(Video $video, string $status, ?string $error = null): bool
+    {
+        $data = ['bug_detection_status' => $status];
+
+        if ($error !== null) {
+            $data['bug_detection_error'] = $error;
+        }
+
+        if ($status === 'completed') {
+            $data['bug_detection_generated_at'] = now();
+        }
+
+        return $video->update($data);
+    }
+
+    public function saveDetectedBugs(Video $video, array $bugs): bool
+    {
+        return $video->update([
+            'detected_bugs' => $bugs,
+            'bug_detection_status' => 'completed',
+            'bug_detection_error' => null,
+            'bug_detection_generated_at' => now(),
+        ]);
+    }
+
     public function findPendingTranscription(): Collection
     {
         return Video::where('transcription_status', 'pending')

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Data\BugDetectionData;
 use App\Data\SummaryData;
 use App\Data\TranscriptionData;
 use App\Http\Integrations\OpenAi\OpenAiConnector;
@@ -160,6 +161,7 @@ class TranscriptionService
             language: $data['language'] ?? 'en',
             duration: $data['duration'] ?? 0,
             segments: $data['segments'] ?? null,
+            words: $data['words'] ?? null,
         );
     }
 
@@ -219,10 +221,100 @@ class TranscriptionService
     }
 
     /**
+     * Detect bugs from a video transcription using OpenAI Chat API.
+     */
+    public function detectBugs(string $transcription, Video $video): BugDetectionData
+    {
+        $model = config('services.openai.chat_model', 'gpt-4o-mini');
+
+        $connector = $this->getConnector()
+            ->withLogContext([
+                'video_id' => $video->id,
+                'operation' => 'bug_detection',
+                'model' => $model,
+            ]);
+
+        if (! $connector->isConfigured()) {
+            throw new \RuntimeException('OpenAI API key not configured');
+        }
+
+        Log::info('Detecting bugs from transcript', [
+            'video_id' => $video->id,
+            'transcription_length' => strlen($transcription),
+            'model' => $model,
+        ]);
+
+        $request = ChatCompletionRequest::forBugDetection($transcription, $model);
+        $response = $connector->send($request);
+
+        if (! $response->successful()) {
+            $error = $response->json('error.message') ?? $response->body();
+            Log::error('Bug detection failed', [
+                'video_id' => $video->id,
+                'status' => $response->status(),
+                'error' => $error,
+            ]);
+            throw new \RuntimeException('Bug detection failed: '.$error);
+        }
+
+        $data = $response->json();
+        $content = $data['choices'][0]['message']['content'] ?? '';
+        $usage = $data['usage'] ?? [];
+
+        // Strip markdown code fences if present
+        $content = preg_replace('/^```(?:json)?\s*/i', '', $content);
+        $content = preg_replace('/\s*```$/', '', $content);
+        $content = trim($content);
+
+        $parsed = json_decode($content, true);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            Log::warning('Bug detection returned invalid JSON, treating as no bugs', [
+                'video_id' => $video->id,
+                'raw_content' => substr($content, 0, 500),
+            ]);
+            $parsed = ['bugs' => []];
+        }
+
+        $bugs = $parsed['bugs'] ?? [];
+
+        // Assign incremental IDs to each bug
+        $bugs = array_values(array_map(function ($bug, $index) {
+            $bug['id'] = 'bug_'.($index + 1);
+
+            return $bug;
+        }, $bugs, array_keys($bugs)));
+
+        Log::info('Bug detection completed', [
+            'video_id' => $video->id,
+            'bugs_found' => count($bugs),
+            'tokens_used' => $usage['total_tokens'] ?? 0,
+        ]);
+
+        return new BugDetectionData(
+            bugs: $bugs,
+            promptTokens: $usage['prompt_tokens'] ?? 0,
+            completionTokens: $usage['completion_tokens'] ?? 0,
+            totalTokens: $usage['total_tokens'] ?? 0,
+        );
+    }
+
+    /**
      * Generate a title for the video based on transcription.
      */
-    public function generateTitle(string $transcription, Video $video): string
+    public function generateTitle(string $transcription, Video $video): ?string
     {
+        // Skip if transcription is too short to derive a meaningful title
+        $wordCount = str_word_count($transcription);
+        if ($wordCount < 10) {
+            Log::info('Transcription too short for title generation, skipping', [
+                'video_id' => $video->id,
+                'word_count' => $wordCount,
+            ]);
+
+            return null;
+        }
+
         $model = config('services.openai.chat_model', 'gpt-4o-mini');
 
         $connector = $this->getConnector()
@@ -239,6 +331,7 @@ class TranscriptionService
         Log::info('Generating title', [
             'video_id' => $video->id,
             'transcription_length' => strlen($transcription),
+            'word_count' => $wordCount,
         ]);
 
         $request = ChatCompletionRequest::forTitle($transcription, $model);
@@ -246,12 +339,12 @@ class TranscriptionService
 
         if (! $response->successful()) {
             $error = $response->json('error.message') ?? $response->body();
-            Log::warning('Title generation failed, using fallback', [
+            Log::warning('Title generation failed, keeping existing title', [
                 'video_id' => $video->id,
                 'error' => $error,
             ]);
 
-            return $video->title; // Keep existing title on failure
+            return null;
         }
 
         $data = $response->json();
@@ -260,13 +353,33 @@ class TranscriptionService
         // Clean up the title
         $title = trim($title, '"\'');
         $title = preg_replace('/[.!?]$/', '', $title);
+        $title = trim($title);
+
+        // Model indicated it couldn't determine a meaningful title
+        if ($title === '' || strtoupper($title) === 'SKIP') {
+            Log::info('Model could not determine meaningful title, skipping', [
+                'video_id' => $video->id,
+            ]);
+
+            return null;
+        }
+
+        // Reject overly short titles (1-2 words are almost never descriptive enough)
+        if (str_word_count($title) < 3) {
+            Log::info('Generated title too short, skipping', [
+                'video_id' => $video->id,
+                'title' => $title,
+            ]);
+
+            return null;
+        }
 
         Log::info('Title generated', [
             'video_id' => $video->id,
             'title' => $title,
         ]);
 
-        return $title ?: $video->title;
+        return $title;
     }
 
     /**

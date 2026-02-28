@@ -121,6 +121,10 @@ class VideoManager
             ]);
         }
 
+        // Auto-transcribe (has built-in rescheduling that waits for conversion)
+        Log::info('Dispatching GenerateTranscriptionJob', ['video_id' => $video->id]);
+        GenerateTranscriptionJob::dispatch($video, generateSummary: true, generateTitle: true);
+
         $user->increment('videos_count');
 
         return $video;
@@ -728,6 +732,13 @@ class VideoManager
             'is_summary_failed' => $video->isSummaryFailed(),
             'summary_message' => $video->getSummaryStatusMessage(),
             'summary_generated_at' => $video->summary_generated_at?->toISOString(),
+            'bug_detection_status' => $video->bug_detection_status,
+            'bug_detection_error' => $video->bug_detection_error,
+            'is_bug_detecting' => $video->isBugDetecting(),
+            'is_bug_detection_ready' => $video->isBugDetectionReady(),
+            'is_bug_detection_failed' => $video->isBugDetectionFailed(),
+            'bug_detection_message' => $video->getBugDetectionStatusMessage(),
+            'bug_detection_generated_at' => $video->bug_detection_generated_at?->toISOString(),
         ];
     }
 
@@ -756,11 +767,24 @@ class VideoManager
         ];
     }
 
+    public function getDetectedBugs(Video $video): ?array
+    {
+        if (! $video->isBugDetectionReady()) {
+            return null;
+        }
+
+        return [
+            'bugs' => $video->detected_bugs ?? [],
+            'generated_at' => $video->bug_detection_generated_at?->toISOString(),
+        ];
+    }
+
     public function getTranscriptionAndSummary(Video $video): array
     {
         return [
             'transcription' => $this->getTranscription($video),
             'summary' => $this->getSummary($video),
+            'bugs' => $this->getDetectedBugs($video),
             'status' => $this->getTranscriptionStatus($video),
         ];
     }

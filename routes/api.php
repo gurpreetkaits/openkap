@@ -1,13 +1,14 @@
 <?php
 
 use App\Http\Controllers\Auth\GoogleAuthController;
-use App\Http\Controllers\BunnyVideoController;
+// use App\Http\Controllers\BunnyVideoController; // Bunny disabled - encoding costs too high
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\ClipForgeController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\FolderController;
 use App\Http\Controllers\HlsController;
+use App\Http\Controllers\IntegrationController;
 use App\Http\Controllers\MarkdownBlogController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PlaylistController;
@@ -24,6 +25,7 @@ use App\Http\Controllers\WorkspaceInvitationController;
 use App\Http\Controllers\WorkspaceMemberController;
 use App\Http\Middleware\CheckSubscriptionLimit;
 use App\Http\Middleware\OptionalSanctumAuthMiddleware;
+use App\Http\Middleware\RequireSubscriptionMiddleware;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -69,6 +71,7 @@ Route::get('/test', function () {
 // Public video sharing - anyone can watch
 Route::get('/share/video/{token}', [VideoController::class, 'viewShared']);
 Route::get('/share/video/{token}/stream', [VideoController::class, 'streamShared']); // Public streaming for shared videos
+Route::get('/share/video/{token}/captions.vtt', [VideoController::class, 'sharedCaptions']); // Public WebVTT captions
 Route::get('/share/video/{token}/comments', [CommentController::class, 'indexByToken']);
 Route::get('/share/video/{token}/commenters', [CommentController::class, 'commentersByToken']);
 Route::post('/share/video/{token}/view', [VideoViewController::class, 'recordSharedView'])
@@ -91,6 +94,9 @@ Route::post('/share/video/{token}/reactions', [ReactionController::class, 'store
 
 // App settings - public (subscription prices, limits, etc.)
 Route::get('/settings', [SettingController::class, 'publicSettings']);
+
+// Integration OAuth callbacks (validated via encrypted state param, no auth middleware)
+Route::get('/integrations/{provider}/callback', [IntegrationController::class, 'callback']);
 
 // Public playlist sharing - anyone can view
 Route::get('/share/playlist/{token}', [PlaylistController::class, 'showShared']);
@@ -273,6 +279,18 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/{id}/toggle-sharing', [ScreenshotController::class, 'toggleSharing']);
     });
 
+    // Integration routes (paid users only)
+    Route::prefix('integrations')->middleware(RequireSubscriptionMiddleware::class)->group(function () {
+        Route::get('/', [IntegrationController::class, 'index']);
+        Route::get('/providers', [IntegrationController::class, 'availableProviders']);
+        Route::get('/{provider}/connect', [IntegrationController::class, 'connect']);
+        Route::delete('/{provider}', [IntegrationController::class, 'disconnect']);
+        Route::get('/{provider}/targets', [IntegrationController::class, 'targets']);
+        Route::post('/{provider}/videos/{videoId}/share', [IntegrationController::class, 'shareVideo']);
+        Route::post('/{provider}/videos/{videoId}/bug', [IntegrationController::class, 'createBug']);
+        Route::get('/videos/{videoId}/history', [IntegrationController::class, 'shareHistory']);
+    });
+
     // Chat routes
     Route::prefix('chat')->middleware('throttle:30,1')->group(function () {
         Route::get('/conversations', [ChatController::class, 'conversations']);
@@ -315,33 +333,32 @@ Route::middleware('auth:sanctum')->prefix('stream')->group(function () {
 });
 
 // ============================================
-// BUNNY STREAM ROUTES (Direct upload to Bunny CDN)
+// BUNNY STREAM ROUTES (Disabled - encoding costs too high)
 // ============================================
-
-// Bunny webhook (no auth - Bunny sends these automatically)
-Route::post('/webhooks/bunny', [\App\Http\Controllers\BunnyWebhookController::class, 'handle']);
-
-// Public routes for shared video playback
-Route::get('/bunny/share/{token}/playback', [BunnyVideoController::class, 'sharedPlayback']);
-
-// Protected routes for video management
-Route::middleware('auth:sanctum')->prefix('bunny/videos')->group(function () {
-    // Create video and get upload credentials (requires subscription check)
-    Route::post('/create', [BunnyVideoController::class, 'create'])
-        ->middleware(CheckSubscriptionLimit::class);
-
-    // Mark upload as complete
-    Route::post('/{id}/complete', [BunnyVideoController::class, 'complete']);
-
-    // Get video processing status
-    Route::get('/{id}/status', [BunnyVideoController::class, 'status']);
-
-    // Get signed playback URLs
-    Route::get('/{id}/playback', [BunnyVideoController::class, 'playback']);
-
-    // Delete video
-    Route::delete('/{id}', [BunnyVideoController::class, 'destroy']);
-});
+// // Bunny webhook (no auth - Bunny sends these automatically)
+// Route::post('/webhooks/bunny', [\App\Http\Controllers\BunnyWebhookController::class, 'handle']);
+//
+// // Public routes for shared video playback
+// Route::get('/bunny/share/{token}/playback', [BunnyVideoController::class, 'sharedPlayback']);
+//
+// // Protected routes for video management
+// Route::middleware('auth:sanctum')->prefix('bunny/videos')->group(function () {
+//     // Create video and get upload credentials (requires subscription check)
+//     Route::post('/create', [BunnyVideoController::class, 'create'])
+//         ->middleware(CheckSubscriptionLimit::class);
+//
+//     // Mark upload as complete
+//     Route::post('/{id}/complete', [BunnyVideoController::class, 'complete']);
+//
+//     // Get video processing status
+//     Route::get('/{id}/status', [BunnyVideoController::class, 'status']);
+//
+//     // Get signed playback URLs
+//     Route::get('/{id}/playback', [BunnyVideoController::class, 'playback']);
+//
+//     // Delete video
+//     Route::delete('/{id}', [BunnyVideoController::class, 'destroy']);
+// });
 
 // ClipForge - Video clip extraction tool (public, per-endpoint rate limits)
 Route::prefix('clipforge')->group(function () {

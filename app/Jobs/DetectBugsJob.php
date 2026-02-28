@@ -11,7 +11,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 
-class GenerateSummaryJob implements ShouldQueue
+class DetectBugsJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -38,14 +38,14 @@ class GenerateSummaryJob implements ShouldQueue
     {
         $video = $this->video;
 
-        Log::info('Starting summary job', [
+        Log::info('Starting bug detection job', [
             'video_id' => $video->id,
             'title' => $video->title,
         ]);
 
         // Verify transcription is available
         if (! $video->isTranscriptionReady()) {
-            Log::warning('Transcription not ready, cannot generate summary', [
+            Log::warning('Transcription not ready, cannot detect bugs', [
                 'video_id' => $video->id,
                 'transcription_status' => $video->transcription_status,
             ]);
@@ -57,14 +57,14 @@ class GenerateSummaryJob implements ShouldQueue
 
         // Skip if transcription is empty
         if (empty(trim($video->transcription))) {
-            Log::warning('Transcription is empty, skipping summary', [
+            Log::warning('Transcription is empty, skipping bug detection', [
                 'video_id' => $video->id,
             ]);
 
             $video->update([
-                'summary_status' => 'completed',
-                'summary' => 'No spoken content detected in this video.',
-                'summary_generated_at' => now(),
+                'bug_detection_status' => 'completed',
+                'detected_bugs' => [],
+                'bug_detection_generated_at' => now(),
             ]);
 
             return;
@@ -72,35 +72,32 @@ class GenerateSummaryJob implements ShouldQueue
 
         // Mark as processing
         $video->update([
-            'summary_status' => 'processing',
+            'bug_detection_status' => 'processing',
         ]);
 
         try {
             // Configure service with video owner context
             $service->forUser($video->user);
 
-            // Generate summary
-            $summaryData = $service->generateSummary($video->transcription, $video);
+            // Detect bugs
+            $bugData = $service->detectBugs($video->transcription, $video);
 
-            // Save summary
+            // Save results
             $video->update([
-                'summary' => $summaryData->summary,
-                'summary_status' => 'completed',
-                'summary_error' => null,
-                'summary_generated_at' => now(),
+                'detected_bugs' => $bugData->bugs,
+                'bug_detection_status' => 'completed',
+                'bug_detection_error' => null,
+                'bug_detection_generated_at' => now(),
             ]);
 
-            Log::info('Summary completed successfully', [
+            Log::info('Bug detection completed successfully', [
                 'video_id' => $video->id,
-                'summary_length' => strlen($summaryData->summary),
-                'tokens_used' => $summaryData->totalTokens,
+                'bugs_found' => count($bugData->bugs),
+                'tokens_used' => $bugData->totalTokens,
             ]);
-
-            // Dispatch bug detection after summary completes
-            DetectBugsJob::dispatch($video)->delay(now()->addSeconds(5));
 
         } catch (\Exception $e) {
-            Log::error('Summary job failed', [
+            Log::error('Bug detection job failed', [
                 'video_id' => $video->id,
                 'error' => $e->getMessage(),
             ]);
@@ -114,14 +111,14 @@ class GenerateSummaryJob implements ShouldQueue
     protected function markAsFailed(Video $video, string $error): void
     {
         $video->update([
-            'summary_status' => 'failed',
-            'summary_error' => substr($error, 0, 1000),
+            'bug_detection_status' => 'failed',
+            'bug_detection_error' => substr($error, 0, 1000),
         ]);
     }
 
     public function failed(?\Throwable $exception): void
     {
-        Log::error('Summary job failed permanently', [
+        Log::error('Bug detection job failed permanently', [
             'video_id' => $this->video->id,
             'error' => $exception?->getMessage(),
         ]);
