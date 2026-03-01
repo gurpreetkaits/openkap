@@ -74,20 +74,35 @@
               <span class="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Video</span>
             </div>
             <div class="flex-1 relative h-8 min-w-0">
-              <!-- Main video block -->
+              <!-- First block -->
               <div
-                class="absolute h-6 rounded bg-gray-200 text-gray-600 flex items-center px-2 text-[10px] font-medium top-1 overflow-hidden"
-                :style="{ left: 0, width: timeline.timeToPixels(duration) + 'px' }"
+                :class="[
+                  'absolute h-6 rounded flex items-center px-2 text-[10px] font-medium top-1 overflow-hidden transition-all duration-200',
+                  mergeVideo ? 'cursor-grab active:cursor-grabbing' : '',
+                  firstBlock.isMain ? 'bg-gray-200 text-gray-600' : 'bg-indigo-200 text-indigo-700',
+                  dragTarget === 'first' ? 'ring-2 ring-orange-400 z-10' : '',
+                ]"
+                :style="{ left: 0, width: timeline.timeToPixels(firstBlock.duration) + 'px' }"
+                @mousedown.stop="mergeVideo ? onVideoBlockDragStart('first', $event) : null"
+                @dragover.prevent="onVideoBlockDragOver('first', $event)"
+                @drop.prevent="onVideoBlockDrop('first')"
               >
-                <span class="truncate">{{ video?.title || 'Video' }}</span>
+                <span class="truncate">{{ firstBlock.title }}</span>
               </div>
-              <!-- Merged video block -->
+              <!-- Second block (merge) -->
               <div
                 v-if="mergeVideo"
-                class="absolute h-6 rounded bg-indigo-200 text-indigo-700 flex items-center px-2 text-[10px] font-medium top-1 overflow-hidden"
-                :style="{ left: timeline.timeToPixels(duration) + 'px', width: timeline.timeToPixels(mergeVideo.duration || 10) + 'px' }"
+                :class="[
+                  'absolute h-6 rounded flex items-center px-2 text-[10px] font-medium top-1 overflow-hidden cursor-grab active:cursor-grabbing transition-all duration-200',
+                  secondBlock.isMain ? 'bg-gray-200 text-gray-600' : 'bg-indigo-200 text-indigo-700',
+                  dragTarget === 'second' ? 'ring-2 ring-orange-400 z-10' : '',
+                ]"
+                :style="{ left: timeline.timeToPixels(firstBlock.duration) + 'px', width: timeline.timeToPixels(secondBlock.duration) + 'px' }"
+                @mousedown.stop="onVideoBlockDragStart('second', $event)"
+                @dragover.prevent="onVideoBlockDragOver('second', $event)"
+                @drop.prevent="onVideoBlockDrop('second')"
               >
-                <span class="truncate">{{ mergeVideo.title }}</span>
+                <span class="truncate">{{ secondBlock.title }}</span>
               </div>
             </div>
           </div>
@@ -150,12 +165,30 @@ const state = useEditorState()
 const {
   isPlaying, currentTime, duration, video, videoReady,
   items, selectItem, togglePlay, formatTime,
-  trimEnabled, trimStart, trimEnd, mergeVideo,
+  trimEnabled, trimStart, trimEnd, mergeVideo, mergePosition,
 } = state
 
 const timeline = useEditorTimeline()
 
 const timelineContainer = ref(null)
+const dragSource = ref(null)
+const dragTarget = ref(null)
+
+// Computed video blocks based on merge position
+const firstBlock = computed(() => {
+  if (mergeVideo.value && mergePosition.value === 'before') {
+    return { title: mergeVideo.value.title, duration: mergeVideo.value.duration || 10, isMain: false }
+  }
+  return { title: video.value?.title || 'Video', duration: duration.value, isMain: true }
+})
+
+const secondBlock = computed(() => {
+  if (!mergeVideo.value) return null
+  if (mergePosition.value === 'before') {
+    return { title: video.value?.title || 'Video', duration: duration.value, isMain: true }
+  }
+  return { title: mergeVideo.value.title, duration: mergeVideo.value.duration || 10, isMain: false }
+})
 
 const displayCurrentTime = computed(() => {
   if (!videoReady.value) return '--:--'
@@ -180,6 +213,61 @@ function handleUpdateItem(updated) {
   if (idx !== -1) {
     items.value[idx] = { ...items.value[idx], ...updated }
   }
+}
+
+// --- Video block drag to reorder ---
+function onVideoBlockDragStart(position, e) {
+  dragSource.value = position
+  dragTarget.value = null
+
+  const startX = e.clientX
+  let hasMoved = false
+
+  function onMove(ev) {
+    const dx = Math.abs(ev.clientX - startX)
+    if (dx > 20 && !hasMoved) {
+      hasMoved = true
+    }
+    if (hasMoved) {
+      // Determine which block we're over
+      const container = timelineContainer.value
+      if (!container) return
+      const trackEl = container.querySelector('.relative.h-8')
+      if (!trackEl) return
+      const rect = trackEl.getBoundingClientRect()
+      const x = ev.clientX - rect.left
+      const firstWidth = timeline.timeToPixels(firstBlock.value.duration)
+      dragTarget.value = x < firstWidth ? 'first' : 'second'
+    }
+  }
+
+  function onUp() {
+    document.removeEventListener('mousemove', onMove)
+    document.removeEventListener('mouseup', onUp)
+    if (hasMoved && dragTarget.value && dragTarget.value !== dragSource.value) {
+      // Swap: toggle merge position
+      mergePosition.value = mergePosition.value === 'after' ? 'before' : 'after'
+    }
+    dragSource.value = null
+    dragTarget.value = null
+  }
+
+  document.addEventListener('mousemove', onMove)
+  document.addEventListener('mouseup', onUp)
+}
+
+function onVideoBlockDragOver(position, e) {
+  if (dragSource.value && dragSource.value !== position) {
+    dragTarget.value = position
+  }
+}
+
+function onVideoBlockDrop(position) {
+  if (dragSource.value && dragSource.value !== position) {
+    mergePosition.value = mergePosition.value === 'after' ? 'before' : 'after'
+  }
+  dragSource.value = null
+  dragTarget.value = null
 }
 
 function onRulerClick(e) {

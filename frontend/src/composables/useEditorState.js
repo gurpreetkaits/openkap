@@ -37,6 +37,7 @@ export function createEditorState() {
   // Merge state
   const mergeVideoId = ref(null)
   const mergeVideo = ref(null)
+  const mergePosition = ref('after') // 'before' | 'after'
 
   // Processing state
   const isApplying = ref(false)
@@ -171,6 +172,7 @@ export function createEditorState() {
     trimEnd,
     mergeVideoId,
     mergeVideo,
+    mergePosition,
     isApplying,
     applyProgress,
     processingMode,

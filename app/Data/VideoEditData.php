@@ -18,5 +18,6 @@ class VideoEditData extends Data
         public ?float $trim_start = null,
         public ?float $trim_end = null,
         public ?int $merge_video_id = null,
+        public string $merge_position = 'after',
     ) {}
 }

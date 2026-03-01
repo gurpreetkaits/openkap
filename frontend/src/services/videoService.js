@@ -893,7 +893,7 @@ class VideoService {
    * @param {Array} overlayConfigs - Array of overlay config objects
    * @param {File[]} overlayFiles - Array of overlay video files
    */
-  async applyEdits(id, blurRegions = [], overlayConfigs = [], overlayFiles = [], textOverlays = [], trimStart = null, trimEnd = null, mergeVideoId = null) {
+  async applyEdits(id, blurRegions = [], overlayConfigs = [], overlayFiles = [], textOverlays = [], trimStart = null, trimEnd = null, mergeVideoId = null, mergePosition = 'after') {
     try {
       const formData = new FormData()
 
@@ -932,6 +932,7 @@ class VideoService {
 
       if (mergeVideoId !== null) {
         formData.append('merge_video_id', mergeVideoId)
+        formData.append('merge_position', mergePosition)
       }
 
       const token = getAuthToken()

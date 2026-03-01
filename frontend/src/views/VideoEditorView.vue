@@ -150,7 +150,7 @@ const {
   loading, error, video, duration, items, overlayFiles,
   isApplying, applyProgress, processingMode, activeTool, showFlow,
   addTextItem, addOverlayFile,
-  trimEnabled, trimStart, trimEnd, mergeVideoId, mergeVideo,
+  trimEnabled, trimStart, trimEnd, mergeVideoId, mergeVideo, mergePosition,
 } = state
 
 const videoPreviewRef = ref(null)
@@ -211,7 +211,8 @@ async function applyEdits() {
       video.value.id, blurRegions, overlayConfigs, overlayFiles.value, textOverlays,
       trimEnabled.value ? trimStart.value : null,
       trimEnabled.value ? trimEnd.value : null,
-      mergeVideoId.value
+      mergeVideoId.value,
+      mergePosition.value
     )
 
     // Check processing mode

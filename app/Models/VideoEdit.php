@@ -21,6 +21,7 @@ class VideoEdit extends Model implements HasMedia
         'trim_start',
         'trim_end',
         'merge_video_id',
+        'merge_position',
         'status',
         'progress',
         'error',

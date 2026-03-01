@@ -923,6 +923,7 @@ class VideoManager
             'trim_start' => $editData->trim_start,
             'trim_end' => $editData->trim_end,
             'merge_video_id' => $editData->merge_video_id,
+            'merge_position' => $editData->merge_position,
             'status' => 'pending',
             'progress' => 0,
         ]);

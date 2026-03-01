@@ -238,21 +238,26 @@ class ApplyVideoEditsJob implements ShouldQueue
 
             // --- Merge ---
             if ($mergeInputIndex !== null) {
+                $mergePosition = $edit->merge_position ?? 'after';
+
                 // Scale merge video to match main dimensions
                 $mergeScaled = 'merge_scaled';
                 $filterComplex[] = "[{$mergeInputIndex}:v]scale={$dimensions['width']}:{$dimensions['height']},setsar=1[{$mergeScaled}]";
 
-                // If no edits were applied, use the current video label directly
                 $editedLabel = $currentVideoLabel;
-
-                // Generate silent audio for merge if needed
                 $mergeAudioLabel = "{$mergeInputIndex}:a";
                 $mainAudioLabel = $currentAudioLabel;
 
-                // Concat edited main + merge
                 $concatV = 'concat_v';
                 $concatA = 'concat_a';
-                $filterComplex[] = "[{$editedLabel}][{$mainAudioLabel}][{$mergeScaled}][{$mergeAudioLabel}]concat=n=2:v=1:a=1[{$concatV}][{$concatA}]";
+
+                if ($mergePosition === 'before') {
+                    // Merge video comes first, then main video
+                    $filterComplex[] = "[{$mergeScaled}][{$mergeAudioLabel}][{$editedLabel}][{$mainAudioLabel}]concat=n=2:v=1:a=1[{$concatV}][{$concatA}]";
+                } else {
+                    // Main video first, then merge video (default)
+                    $filterComplex[] = "[{$editedLabel}][{$mainAudioLabel}][{$mergeScaled}][{$mergeAudioLabel}]concat=n=2:v=1:a=1[{$concatV}][{$concatA}]";
+                }
 
                 $currentVideoLabel = $concatV;
                 $currentAudioLabel = $concatA;
