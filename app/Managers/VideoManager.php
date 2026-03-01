@@ -7,6 +7,7 @@ use App\Jobs\ApplyVideoEditsJob;
 use App\Jobs\ConvertVideoToMp4Job;
 use App\Jobs\GenerateSummaryJob;
 use App\Jobs\GenerateTranscriptionJob;
+use App\Jobs\RemuxWebmJob;
 use App\Models\Reaction;
 use App\Models\User;
 use App\Models\Video;
@@ -104,6 +105,9 @@ class VideoManager
         }
 
         $video->generateThumbnailFromMidpoint();
+
+        // Remux WebM to fix missing Duration and Cues (seek index)
+        RemuxWebmJob::dispatch($video);
 
         try {
             Log::info('Dispatching ConvertVideoToMp4Job', [

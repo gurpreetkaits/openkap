@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Jobs\ConvertVideoToMp4Job;
 use App\Jobs\GenerateThumbnailJob;
 use App\Jobs\GenerateTranscriptionJob;
+use App\Jobs\RemuxWebmJob;
 use App\Jobs\UploadToBunnyJob;
 use App\Models\User;
 use App\Models\Video;
@@ -334,6 +335,11 @@ class StreamVideoController extends Controller
 
         // Dispatch background jobs AFTER response is sent
         dispatch(function () use ($video, $useBunny) {
+            // Remux WebM to fix missing Duration and Cues (seek index)
+            // This makes the raw WebM playable/seekable while conversion/encoding runs
+            Log::info('Dispatching RemuxWebmJob', ['video_id' => $video->id]);
+            RemuxWebmJob::dispatch($video);
+
             // Generate thumbnail
             Log::info('Dispatching GenerateThumbnailJob', ['video_id' => $video->id]);
             GenerateThumbnailJob::dispatch($video);
