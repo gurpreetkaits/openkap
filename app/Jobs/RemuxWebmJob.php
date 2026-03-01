@@ -141,10 +141,20 @@ class RemuxWebmJob implements ShouldQueue
                 ->usingFileName('video_'.$video->id.'.webm')
                 ->toMediaCollection('videos');
 
-            // Update duration if we got one and the video doesn't have it yet
+            // Update duration and mark conversion as completed
+            // (no MP4/HLS conversion — remuxed WebM is served directly)
+            $updateData = [
+                'conversion_status' => 'completed',
+                'conversion_progress' => 100,
+                'converted_at' => now(),
+                'file_size_bytes' => $outputSize,
+            ];
+
             if ($duration && (! $video->duration || $video->duration === 0)) {
-                $video->update(['duration' => round($duration)]);
+                $updateData['duration'] = round($duration);
             }
+
+            $video->update($updateData);
 
             Log::info('RemuxWebmJob: WebM remuxed successfully', [
                 'video_id' => $video->id,

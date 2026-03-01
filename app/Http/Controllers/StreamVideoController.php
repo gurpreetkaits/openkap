@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Jobs\ConvertVideoToMp4Job;
 use App\Jobs\GenerateThumbnailJob;
 use App\Jobs\GenerateTranscriptionJob;
 use App\Jobs\RemuxWebmJob;
@@ -311,7 +310,7 @@ class StreamVideoController extends Controller
         // Dispatch background jobs AFTER response is sent
         dispatch(function () use ($video) {
             // Remux WebM to fix missing Duration and Cues (seek index)
-            // This makes the raw WebM playable/seekable while conversion runs
+            // This makes the WebM playable/seekable in browsers
             Log::info('Dispatching RemuxWebmJob', ['video_id' => $video->id]);
             RemuxWebmJob::dispatch($video);
 
@@ -319,9 +318,8 @@ class StreamVideoController extends Controller
             Log::info('Dispatching GenerateThumbnailJob', ['video_id' => $video->id]);
             GenerateThumbnailJob::dispatch($video);
 
-            // Convert to MP4 locally
-            Log::info('Dispatching ConvertVideoToMp4Job', ['video_id' => $video->id]);
-            ConvertVideoToMp4Job::dispatch($video);
+            // TODO: MP4/HLS conversion skipped for now — serve remuxed WebM directly.
+            // Revisit with Cloudflare Stream or Bunny CDN once we reach 10-15 users.
 
             // Auto-transcribe (has built-in rescheduling that waits for conversion)
             Log::info('Dispatching GenerateTranscriptionJob', ['video_id' => $video->id]);

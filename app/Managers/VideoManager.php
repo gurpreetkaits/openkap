@@ -4,7 +4,6 @@ namespace App\Managers;
 
 use App\Data\VideoEditData;
 use App\Jobs\ApplyVideoEditsJob;
-use App\Jobs\ConvertVideoToMp4Job;
 use App\Jobs\GenerateSummaryJob;
 use App\Jobs\GenerateTranscriptionJob;
 use App\Jobs\RemuxWebmJob;
@@ -109,21 +108,8 @@ class VideoManager
         // Remux WebM to fix missing Duration and Cues (seek index)
         RemuxWebmJob::dispatch($video);
 
-        try {
-            Log::info('Dispatching ConvertVideoToMp4Job', [
-                'video_id' => $video->id,
-                'title' => $video->title,
-                'user_id' => $user->id,
-            ]);
-            ConvertVideoToMp4Job::dispatch($video);
-            Log::info('ConvertVideoToMp4Job dispatched successfully', ['video_id' => $video->id]);
-        } catch (\Exception $e) {
-            Log::error('Failed to dispatch ConvertVideoToMp4Job', [
-                'video_id' => $video->id,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
-        }
+        // TODO: MP4/HLS conversion skipped — serve remuxed WebM directly.
+        // Revisit with Cloudflare Stream or Bunny CDN once we reach 10-15 users.
 
         // Auto-transcribe (has built-in rescheduling that waits for conversion)
         Log::info('Dispatching GenerateTranscriptionJob', ['video_id' => $video->id]);
