@@ -4,6 +4,7 @@ namespace App\Managers;
 
 use App\Data\VideoEditData;
 use App\Jobs\ApplyVideoEditsJob;
+use App\Jobs\ConvertVideoToMp4ForDownloadJob;
 use App\Jobs\GenerateSummaryJob;
 use App\Jobs\GenerateTranscriptionJob;
 use App\Jobs\RemuxWebmJob;
@@ -927,5 +928,95 @@ class VideoManager
             'error' => $edit->error,
             'output_video_id' => $edit->output_video_id,
         ];
+    }
+
+    // ============================================
+    // MP4 DOWNLOAD METHODS
+    // ============================================
+
+    public function requestMp4Download(Video $video): array
+    {
+        $media = $video->getFirstMedia('videos');
+        if (! $media) {
+            throw new \Exception('Video file not found');
+        }
+
+        $maxSyncDuration = 300; // 5 minutes
+
+        if (($video->duration ?? 0) <= $maxSyncDuration) {
+            $outputPath = $this->convertToMp4Sync($video, $media);
+
+            return [
+                'mode' => 'sync',
+                'file_path' => $outputPath,
+                'file_name' => ($video->title ?? 'video').'.mp4',
+            ];
+        }
+
+        ConvertVideoToMp4ForDownloadJob::dispatch($video);
+
+        Log::info('Dispatched async MP4 download conversion', ['video_id' => $video->id]);
+
+        return [
+            'mode' => 'async',
+        ];
+    }
+
+    public function convertToMp4Sync(Video $video, $media): string
+    {
+        $inputPath = $media->getPath();
+
+        if (! file_exists($inputPath)) {
+            throw new \Exception('Video file not found on disk');
+        }
+
+        $outputDir = storage_path('app/mp4-downloads');
+        if (! is_dir($outputDir)) {
+            mkdir($outputDir, 0755, true);
+        }
+
+        $outputPath = $outputDir.'/video_'.$video->id.'_'.time().'.mp4';
+
+        $ffmpegPath = config('media-library.ffmpeg_path');
+
+        $command = sprintf(
+            '%s -y -threads 1 -i %s -vf "scale=min(iw\,1920):min(ih\,1080):force_original_aspect_ratio=decrease,pad=ceil(iw/2)*2:ceil(ih/2)*2" -c:v libx264 -preset fast -crf 22 -maxrate 5M -bufsize 3M -pix_fmt yuv420p -c:a aac -b:a 128k -max_muxing_queue_size 1024 -movflags +faststart %s 2>&1',
+            escapeshellarg($ffmpegPath),
+            escapeshellarg($inputPath),
+            escapeshellarg($outputPath)
+        );
+
+        Log::info('Running sync MP4 conversion for download', [
+            'video_id' => $video->id,
+        ]);
+
+        $output = [];
+        $returnCode = 0;
+        exec($command, $output, $returnCode);
+
+        if ($returnCode !== 0 || ! file_exists($outputPath) || filesize($outputPath) < 1000) {
+            if (file_exists($outputPath)) {
+                @unlink($outputPath);
+            }
+            $outputText = implode("\n", $output);
+            throw new \Exception('MP4 conversion failed: '.substr($outputText, -500));
+        }
+
+        return $outputPath;
+    }
+
+    public function findMp4Download(Video $video): ?string
+    {
+        $pattern = storage_path('app/mp4-downloads/video_'.$video->id.'_*.mp4');
+        $files = glob($pattern);
+
+        if (empty($files)) {
+            return null;
+        }
+
+        // Return the most recent file
+        usort($files, fn ($a, $b) => filemtime($b) - filemtime($a));
+
+        return $files[0];
     }
 }

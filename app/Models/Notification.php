@@ -23,6 +23,8 @@ class Notification extends Model
 
     public const TYPE_FEEDBACK = 'feedback';
 
+    public const TYPE_DOWNLOAD = 'download';
+
     public const TYPES = [
         self::TYPE_VIEWER,
         self::TYPE_COMMENT,
@@ -30,6 +32,7 @@ class Notification extends Model
         self::TYPE_SUCCESS,
         self::TYPE_INFO,
         self::TYPE_FEEDBACK,
+        self::TYPE_DOWNLOAD,
     ];
 
     protected $fillable = [
@@ -39,6 +42,7 @@ class Notification extends Model
         'notifiable_type',
         'notifiable_id',
         'actor_id',
+        'link',
         'read',
         'read_at',
     ];

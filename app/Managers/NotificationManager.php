@@ -186,11 +186,27 @@ class NotificationManager
             'read' => $notification->read,
             'created_at' => $notification->created_at->toISOString(),
             'read_at' => $notification->read_at?->toISOString(),
+            'link' => $notification->link,
             'actor' => $notification->actor ? [
                 'id' => $notification->actor->id,
                 'name' => $notification->actor->name,
                 'avatar_url' => $notification->actor->avatar_url,
             ] : null,
         ];
+    }
+
+    public function createDownloadReadyNotification(Video $video, string $downloadLink): Notification
+    {
+        $message = "Your MP4 download for \"<span class=\"font-medium text-gray-900\">{$video->title}</span>\" is ready";
+
+        return $this->notifications->createNotification([
+            'user_id' => $video->user_id,
+            'type' => Notification::TYPE_DOWNLOAD,
+            'message' => $message,
+            'notifiable_type' => Video::class,
+            'notifiable_id' => $video->id,
+            'actor_id' => null,
+            'link' => $downloadLink,
+        ]);
     }
 }

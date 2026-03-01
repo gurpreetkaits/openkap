@@ -17,3 +17,8 @@ Schedule::command('uploads:process-stale --timeout=300 --cleanup=3600')
 Schedule::command('clipforge:cleanup')
     ->everyTenMinutes()
     ->withoutOverlapping();
+
+// Clean up expired MP4 download files hourly
+Schedule::command('mp4-downloads:cleanup --max-age=24')
+    ->hourly()
+    ->withoutOverlapping();

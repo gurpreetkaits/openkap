@@ -2161,28 +2161,25 @@ export default {
     }
 
     const downloadVideo = async (video) => {
-      if (!video.url) return
-
       try {
-        toast.success('Starting download...')
+        toast.success('Preparing MP4 download...')
 
-        // Fetch the video as a blob
-        const response = await fetch(video.url)
-        const blob = await response.blob()
+        const result = await videoService.requestDownloadMp4(video.id)
+        if (!result) return
 
-        // Create a blob URL and trigger download
-        const blobUrl = window.URL.createObjectURL(blob)
-        const link = document.createElement('a')
-        link.href = blobUrl
-        link.download = `${video.title || 'video'}.webm`
-        document.body.appendChild(link)
-        link.click()
-        document.body.removeChild(link)
-
-        // Clean up the blob URL
-        window.URL.revokeObjectURL(blobUrl)
-
-        toast.success('Download complete!')
+        if (result.mode === 'sync') {
+          const blobUrl = window.URL.createObjectURL(result.blob)
+          const link = document.createElement('a')
+          link.href = blobUrl
+          link.download = `${video.title || 'video'}.mp4`
+          document.body.appendChild(link)
+          link.click()
+          document.body.removeChild(link)
+          window.URL.revokeObjectURL(blobUrl)
+          toast.success('Download complete!')
+        } else {
+          toast.success('Video is being converted to MP4. You\'ll be notified when it\'s ready.')
+        }
       } catch (err) {
         console.error('Failed to download:', err)
         toast.error('Failed to download video. Please try again.')

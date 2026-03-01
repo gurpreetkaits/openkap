@@ -239,6 +239,10 @@ Route::middleware('auth:sanctum')->group(function () {
         // Video editor
         Route::post('/{id}/apply-edits', [VideoController::class, 'applyEdits']);
         Route::get('/{id}/edit-status', [VideoController::class, 'editStatus']);
+
+        // MP4 download
+        Route::post('/{id}/request-download-mp4', [VideoController::class, 'requestDownloadMp4']);
+        Route::get('/{id}/download-mp4', [VideoController::class, 'downloadMp4']);
     });
 
     // Folder routes

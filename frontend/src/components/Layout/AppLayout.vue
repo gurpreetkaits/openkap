@@ -348,6 +348,9 @@
                           <svg v-else-if="notification.type === 'feedback'" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
                           </svg>
+                          <svg v-else-if="notification.type === 'download'" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                          </svg>
                           <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
                           </svg>
@@ -635,6 +638,7 @@ import { useAuth } from '@/stores/auth'
 import { useRecording } from '@/composables/useRecording'
 import { useBranding } from '@/composables/useBranding'
 import notificationService from '@/services/notificationService'
+import videoService from '@/services/videoService'
 
 export default {
   name: 'AppLayout',
@@ -808,6 +812,31 @@ export default {
         }
       }
 
+      // Download notifications: fetch the MP4 file via API and trigger blob download
+      if (notification.type === 'download' && notification.link) {
+        showNotificationsDropdown.value = false
+        try {
+          // Extract video ID from link like "/api/videos/123/download-mp4"
+          const match = notification.link.match(/\/videos\/(\d+)\/download-mp4/)
+          if (match) {
+            const blob = await videoService.downloadMp4(match[1])
+            if (blob) {
+              const blobUrl = window.URL.createObjectURL(blob)
+              const link = document.createElement('a')
+              link.href = blobUrl
+              link.download = 'video.mp4'
+              document.body.appendChild(link)
+              link.click()
+              document.body.removeChild(link)
+              window.URL.revokeObjectURL(blobUrl)
+            }
+          }
+        } catch (error) {
+          console.error('Failed to download MP4:', error)
+        }
+        return
+      }
+
       // Navigate to the related content if there's a link
       if (notification.link) {
         showNotificationsDropdown.value = false
@@ -856,6 +885,8 @@ export default {
           return 'bg-emerald-100 text-emerald-600'
         case 'feedback':
           return 'bg-purple-100 text-purple-600'
+        case 'download':
+          return 'bg-indigo-100 text-indigo-600'
         default:
           return 'bg-gray-100 text-gray-600'
       }

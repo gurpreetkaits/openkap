@@ -53,6 +53,7 @@
               <path v-else-if="notification.type === 'warning'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
               <path v-else-if="notification.type === 'success'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
               <path v-else-if="notification.type === 'feedback'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/>
+              <path v-else-if="notification.type === 'download'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
               <path v-else stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
             </svg>
           </div>
@@ -115,6 +116,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { formatDistanceToNow } from 'date-fns'
 import notificationService from '@/services/notificationService'
+import videoService from '@/services/videoService'
 
 const router = useRouter()
 
@@ -133,6 +135,7 @@ const getIconClass = (type) => ({
   'warning': 'bg-amber-100 text-amber-600',
   'success': 'bg-green-100 text-green-600',
   'feedback': 'bg-green-100 text-green-600',
+  'download': 'bg-indigo-100 text-indigo-600',
   'info': 'bg-gray-100 text-gray-600'
 }[type] || 'bg-gray-100 text-gray-600')
 
@@ -175,11 +178,33 @@ const handleClick = async (notification) => {
     await markAsRead(notification)
   }
 
+  // Download notifications: fetch the MP4 file via API and trigger blob download
+  if (notification.type === 'download' && notification.link) {
+    try {
+      const match = notification.link.match(/\/videos\/(\d+)\/download-mp4/)
+      if (match) {
+        const blob = await videoService.downloadMp4(match[1])
+        if (blob) {
+          const blobUrl = window.URL.createObjectURL(blob)
+          const link = document.createElement('a')
+          link.href = blobUrl
+          link.download = 'video.mp4'
+          document.body.appendChild(link)
+          link.click()
+          document.body.removeChild(link)
+          window.URL.revokeObjectURL(blobUrl)
+        }
+      }
+    } catch (error) {
+      console.error('Failed to download MP4:', error)
+    }
+    return
+  }
+
   // Navigate based on notification type
   if (notification.type === 'feedback') {
     router.push('/feedback')
   }
-  // Add more navigation logic for other types if needed
 }
 
 const markAsRead = async (notification) => {

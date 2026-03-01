@@ -700,4 +700,54 @@ class VideoController extends Controller
 
         return response()->json($this->videoManager->getEditStatus($video));
     }
+
+    // ============================================
+    // MP4 DOWNLOAD ENDPOINTS
+    // ============================================
+
+    public function requestDownloadMp4($id)
+    {
+        $video = $this->videoManager->findVideoOrFail($id);
+
+        if ($video->user_id !== Auth::id()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        try {
+            $result = $this->videoManager->requestMp4Download($video);
+
+            if ($result['mode'] === 'sync') {
+                return response()->download(
+                    $result['file_path'],
+                    $result['file_name']
+                )->deleteFileAfterSend(true);
+            }
+
+            return response()->json([
+                'message' => 'Video is being converted to MP4. You will be notified when it is ready.',
+                'mode' => 'async',
+            ], 202);
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 500);
+        }
+    }
+
+    public function downloadMp4($id)
+    {
+        $video = $this->videoManager->findVideoOrFail($id);
+
+        if ($video->user_id !== Auth::id()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $filePath = $this->videoManager->findMp4Download($video);
+
+        if (! $filePath || ! file_exists($filePath)) {
+            return response()->json(['message' => 'MP4 download not found or expired. Please request a new conversion.'], 404);
+        }
+
+        $fileName = ($video->title ?? 'video').'.mp4';
+
+        return response()->download($filePath, $fileName)->deleteFileAfterSend(true);
+    }
 }

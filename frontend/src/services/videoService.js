@@ -675,6 +675,77 @@ class VideoService {
   }
 
   // ============================================
+  // MP4 DOWNLOAD METHODS
+  // ============================================
+
+  /**
+   * Request MP4 download for a video
+   * Returns { mode: 'sync', blob } for short videos or { mode: 'async' } for long ones
+   */
+  async requestDownloadMp4(id) {
+    try {
+      const token = getAuthToken()
+      const headers = { 'Accept': 'application/json' }
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`
+      }
+
+      const response = await fetch(`${API_BASE_URL}/api/videos/${id}/request-download-mp4`, {
+        method: 'POST',
+        headers
+      })
+
+      if (handleUnauthorized(response)) return null
+
+      if (response.status === 202) {
+        return { mode: 'async' }
+      }
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}))
+        throw new Error(error.message || `Failed to request MP4 download: ${response.statusText}`)
+      }
+
+      const blob = await response.blob()
+      return { mode: 'sync', blob }
+    } catch (error) {
+      console.error('Error requesting MP4 download:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Download a previously converted MP4 file
+   * Returns a blob for the file download
+   */
+  async downloadMp4(id) {
+    try {
+      const token = getAuthToken()
+      const headers = {}
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`
+      }
+
+      const response = await fetch(`${API_BASE_URL}/api/videos/${id}/download-mp4`, {
+        method: 'GET',
+        headers
+      })
+
+      if (handleUnauthorized(response)) return null
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}))
+        throw new Error(error.message || `Failed to download MP4: ${response.statusText}`)
+      }
+
+      return await response.blob()
+    } catch (error) {
+      console.error('Error downloading MP4:', error)
+      throw error
+    }
+  }
+
+  // ============================================
   // ZOOM EFFECT METHODS
   // ============================================
 
