@@ -37,7 +37,12 @@
           v-for="v in filteredVideos"
           :key="v.id"
           @click="selectVideo(v)"
-          class="flex items-center gap-3 p-2 rounded-lg border border-gray-200 hover:border-orange-300 hover:bg-orange-50/50 cursor-pointer transition-all"
+          :class="[
+            'flex items-center gap-3 p-2 rounded-lg border cursor-pointer transition-all',
+            isAlreadyAdded(v.id)
+              ? 'border-orange-300 bg-orange-50/50 opacity-60 cursor-not-allowed'
+              : 'border-gray-200 hover:border-orange-300 hover:bg-orange-50/50',
+          ]"
         >
           <div class="w-16 h-10 bg-gray-200 rounded flex-shrink-0 overflow-hidden">
             <img v-if="v.thumbnail_url" :src="v.thumbnail_url" class="w-full h-full object-cover" />
@@ -46,7 +51,17 @@
             <p class="text-xs font-medium text-gray-900 truncate">{{ v.title }}</p>
             <p class="text-[10px] text-gray-400">{{ formatDuration(v.duration) }}</p>
           </div>
+          <span v-if="isAlreadyAdded(v.id)" class="text-[10px] text-orange-500 font-medium flex-shrink-0">Added</span>
         </div>
+      </div>
+
+      <!-- Selected count + Done -->
+      <div v-if="mergeVideos.length" class="mt-3 flex items-center justify-between pt-3 border-t border-gray-100">
+        <span class="text-xs text-gray-500">{{ mergeVideos.length }} video{{ mergeVideos.length > 1 ? 's' : '' }} selected</span>
+        <button
+          @click="$emit('close')"
+          class="px-4 py-1.5 bg-orange-600 hover:bg-orange-700 text-white text-xs font-medium rounded-lg transition-colors"
+        >Done</button>
       </div>
     </template>
 
@@ -76,7 +91,7 @@ import { useToast } from '@/services/toastService'
 
 const emit = defineEmits(['close', 'select'])
 
-const { video } = useEditorState()
+const { video, mergeVideos } = useEditorState()
 const toast = useToast()
 
 const activeTab = ref('library')
@@ -101,7 +116,12 @@ function formatDuration(seconds) {
   return `${m}:${s.toString().padStart(2, '0')}`
 }
 
+function isAlreadyAdded(id) {
+  return mergeVideos.value.some(v => v.id === id)
+}
+
 function selectVideo(v) {
+  if (isAlreadyAdded(v.id)) return
   emit('select', v)
 }
 

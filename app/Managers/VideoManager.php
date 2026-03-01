@@ -922,8 +922,8 @@ class VideoManager
             'text_overlays' => array_map(fn ($t) => $t->toArray(), $editData->text_overlays),
             'trim_start' => $editData->trim_start,
             'trim_end' => $editData->trim_end,
-            'merge_video_id' => $editData->merge_video_id,
-            'merge_position' => $editData->merge_position,
+            'merge_video_ids' => $editData->merge_video_ids,
+            'main_video_position' => $editData->main_video_position,
             'status' => 'pending',
             'progress' => 0,
         ]);

@@ -34,10 +34,9 @@ export function createEditorState() {
   const trimStart = ref(0)
   const trimEnd = ref(0)
 
-  // Merge state
-  const mergeVideoId = ref(null)
-  const mergeVideo = ref(null)
-  const mergePosition = ref('after') // 'before' | 'after'
+  // Merge state — multiple videos
+  const mergeVideos = ref([]) // array of { id, title, duration, thumbnail_url }
+  const mainVideoIndex = ref(0) // position of main video in concat sequence
 
   // Processing state
   const isApplying = ref(false)
@@ -136,6 +135,37 @@ export function createEditorState() {
     return `${m}:${s.toString().padStart(2, '0')}`
   }
 
+  function addMergeVideo(video) {
+    if (mergeVideos.value.some(v => v.id === video.id)) return
+    mergeVideos.value.push({
+      id: video.id,
+      title: video.title,
+      duration: video.duration || 10,
+      thumbnail_url: video.thumbnail_url || video.thumbnail || null,
+    })
+  }
+
+  function removeMergeVideo(id) {
+    const idx = mergeVideos.value.findIndex(v => v.id === id)
+    if (idx === -1) return
+    mergeVideos.value.splice(idx, 1)
+    // Adjust mainVideoIndex if items before it were removed
+    if (mainVideoIndex.value > mergeVideos.value.length) {
+      mainVideoIndex.value = mergeVideos.value.length
+    }
+  }
+
+  function reorderVideoBlocks(newOrder) {
+    // newOrder is array of block objects, each has { id, isMain }
+    const mainIdx = newOrder.findIndex(b => b.isMain)
+    mainVideoIndex.value = mainIdx >= 0 ? mainIdx : 0
+    // Rebuild mergeVideos in new order (excluding the main video block)
+    const reordered = newOrder.filter(b => !b.isMain).map(b => {
+      return mergeVideos.value.find(v => v.id === b.id)
+    }).filter(Boolean)
+    mergeVideos.value = reordered
+  }
+
   function togglePlay() {
     const el = videoEl.value
     if (!el) return
@@ -170,9 +200,8 @@ export function createEditorState() {
     trimEnabled,
     trimStart,
     trimEnd,
-    mergeVideoId,
-    mergeVideo,
-    mergePosition,
+    mergeVideos,
+    mainVideoIndex,
     isApplying,
     applyProgress,
     processingMode,
@@ -188,6 +217,9 @@ export function createEditorState() {
     addOverlayFile,
     getItemLabel,
     formatTime,
+    addMergeVideo,
+    removeMergeVideo,
+    reorderVideoBlocks,
     togglePlay,
   }
 

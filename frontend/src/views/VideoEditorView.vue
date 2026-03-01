@@ -38,7 +38,7 @@
           <button @click="goBack" class="px-3 py-1.5 text-gray-500 hover:text-gray-700 text-xs font-medium transition-colors">Cancel</button>
           <button
             @click="applyEdits"
-            :disabled="isApplying || (!items.length && !trimEnabled && !mergeVideoId)"
+            :disabled="isApplying || (!items.length && !trimEnabled && !mergeVideos.length)"
             class="px-4 py-1.5 bg-orange-600 hover:bg-orange-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg text-xs font-medium shadow-sm transition-colors flex items-center gap-2"
           >
             <svg v-if="isApplying" class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -150,7 +150,7 @@ const {
   loading, error, video, duration, items, overlayFiles,
   isApplying, applyProgress, processingMode, activeTool, showFlow,
   addTextItem, addOverlayFile,
-  trimEnabled, trimStart, trimEnd, mergeVideoId, mergeVideo, mergePosition,
+  trimEnabled, trimStart, trimEnd, mergeVideos, mainVideoIndex, addMergeVideo,
 } = state
 
 const videoPreviewRef = ref(null)
@@ -177,15 +177,14 @@ onMounted(async () => {
 // --- Merge ---
 
 function handleMergeVideoSelect(selectedVideo) {
-  mergeVideoId.value = selectedVideo.id
-  mergeVideo.value = selectedVideo
-  showAddVideoModal.value = false
+  addMergeVideo(selectedVideo)
+  // Modal stays open so user can add more
 }
 
 // --- Apply Edits ---
 
 async function applyEdits() {
-  if (isApplying.value || (!items.value.length && !trimEnabled.value && !mergeVideoId.value)) return
+  if (isApplying.value || (!items.value.length && !trimEnabled.value && !mergeVideos.value.length)) return
   isApplying.value = true
   applyProgress.value = 0
 
@@ -211,8 +210,8 @@ async function applyEdits() {
       video.value.id, blurRegions, overlayConfigs, overlayFiles.value, textOverlays,
       trimEnabled.value ? trimStart.value : null,
       trimEnabled.value ? trimEnd.value : null,
-      mergeVideoId.value,
-      mergePosition.value
+      mergeVideos.value.map(v => v.id),
+      mainVideoIndex.value
     )
 
     // Check processing mode

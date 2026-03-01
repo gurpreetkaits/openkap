@@ -678,7 +678,8 @@ class VideoController extends Controller
                 text_overlays: $textOverlays,
                 trim_start: $request->input('trim_start') !== null ? (float) $request->input('trim_start') : null,
                 trim_end: $request->input('trim_end') !== null ? (float) $request->input('trim_end') : null,
-                merge_video_id: $request->input('merge_video_id') ? (int) $request->input('merge_video_id') : null,
+                merge_video_ids: $request->input('merge_video_ids', []),
+                main_video_position: (int) $request->input('main_video_position', 0),
             );
 
             $overlayFiles = $request->file('overlay_files', []);

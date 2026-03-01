@@ -17,7 +17,7 @@ class VideoEditData extends Data
         public array $text_overlays = [],
         public ?float $trim_start = null,
         public ?float $trim_end = null,
-        public ?int $merge_video_id = null,
-        public string $merge_position = 'after',
+        public array $merge_video_ids = [],
+        public int $main_video_position = 0,
     ) {}
 }

@@ -47,8 +47,9 @@ class ApplyVideoEditsRequest extends FormRequest
             'trim_start' => 'nullable|numeric|min:0',
             'trim_end' => 'nullable|numeric|gt:trim_start',
 
-            'merge_video_id' => 'nullable|integer|exists:videos,id',
-            'merge_position' => 'nullable|string|in:before,after',
+            'merge_video_ids' => 'nullable|array|max:10',
+            'merge_video_ids.*' => 'integer|exists:videos,id',
+            'main_video_position' => 'nullable|integer|min:0',
         ];
     }
 }

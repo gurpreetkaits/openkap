@@ -22,6 +22,8 @@ class VideoEdit extends Model implements HasMedia
         'trim_end',
         'merge_video_id',
         'merge_position',
+        'merge_video_ids',
+        'main_video_position',
         'status',
         'progress',
         'error',
@@ -33,6 +35,8 @@ class VideoEdit extends Model implements HasMedia
         'text_overlays' => 'array',
         'trim_start' => 'float',
         'trim_end' => 'float',
+        'merge_video_ids' => 'array',
+        'main_video_position' => 'integer',
         'progress' => 'integer',
     ];
 

@@ -38,7 +38,7 @@ class ApplyVideoEditsJob implements ShouldQueue
             'overlay_count' => count($edit->overlay_configs ?? []),
             'text_count' => count($edit->text_overlays ?? []),
             'trim' => $edit->trim_start !== null ? "{$edit->trim_start}-{$edit->trim_end}" : 'none',
-            'merge_video_id' => $edit->merge_video_id,
+            'merge_video_ids' => $edit->merge_video_ids,
         ]);
 
         $media = $video->getFirstMedia('videos');
@@ -98,15 +98,16 @@ class ApplyVideoEditsJob implements ShouldQueue
                 }
             }
 
-            // Add merge video as additional input
-            $mergeInputIndex = null;
-            if ($edit->merge_video_id) {
-                $mergeVideo = Video::find($edit->merge_video_id);
+            // Add merge videos as additional inputs
+            $mergeInputIndices = []; // merge_video_id => ffmpeg input index
+            $mergeVideoIds = $edit->merge_video_ids ?? [];
+            foreach ($mergeVideoIds as $mergeVideoId) {
+                $mergeVideo = Video::find($mergeVideoId);
                 if ($mergeVideo) {
                     $mergeMedia = $mergeVideo->getFirstMedia('videos');
                     if ($mergeMedia && file_exists($mergeMedia->getPath())) {
                         $inputArgs .= ' -i '.escapeshellarg($mergeMedia->getPath());
-                        $mergeInputIndex = $inputIndex;
+                        $mergeInputIndices[$mergeVideoId] = $inputIndex;
                         $inputIndex++;
                     }
                 }
@@ -236,28 +237,47 @@ class ApplyVideoEditsJob implements ShouldQueue
 
             $ffmpegPath = config('media-library.ffmpeg_path');
 
-            // --- Merge ---
-            if ($mergeInputIndex !== null) {
-                $mergePosition = $edit->merge_position ?? 'after';
+            // --- Merge (multi-video) ---
+            if (! empty($mergeInputIndices)) {
+                $mainVideoPosition = $edit->main_video_position ?? 0;
 
-                // Scale merge video to match main dimensions
-                $mergeScaled = 'merge_scaled';
-                $filterComplex[] = "[{$mergeInputIndex}:v]scale={$dimensions['width']}:{$dimensions['height']},setsar=1[{$mergeScaled}]";
+                // Scale each merge video to match main dimensions
+                $mergeScaledLabels = []; // mergeVideoId => { v: label, a: label }
+                $mergeIdx = 0;
+                foreach ($mergeInputIndices as $mvId => $ffmpegIdx) {
+                    $scaledLabel = "merge_scaled_{$mergeIdx}";
+                    $filterComplex[] = "[{$ffmpegIdx}:v]scale={$dimensions['width']}:{$dimensions['height']},setsar=1[{$scaledLabel}]";
+                    $mergeScaledLabels[$mvId] = [
+                        'v' => $scaledLabel,
+                        'a' => "{$ffmpegIdx}:a",
+                    ];
+                    $mergeIdx++;
+                }
 
-                $editedLabel = $currentVideoLabel;
-                $mergeAudioLabel = "{$mergeInputIndex}:a";
-                $mainAudioLabel = $currentAudioLabel;
+                // Build ordered sequence: insert main video at mainVideoPosition among merge videos
+                $orderedStreams = []; // each entry: { v: label, a: label }
+                $mergeOrder = [];
+                foreach ($mergeVideoIds as $mvId) {
+                    if (isset($mergeScaledLabels[$mvId])) {
+                        $mergeOrder[] = $mergeScaledLabels[$mvId];
+                    }
+                }
 
+                // Insert main video at the correct position
+                $mainStream = ['v' => $currentVideoLabel, 'a' => $currentAudioLabel];
+                $insertPos = min($mainVideoPosition, count($mergeOrder));
+                array_splice($mergeOrder, $insertPos, 0, [$mainStream]);
+                $orderedStreams = $mergeOrder;
+
+                // Build concat filter
+                $concatInputs = '';
+                foreach ($orderedStreams as $stream) {
+                    $concatInputs .= "[{$stream['v']}][{$stream['a']}]";
+                }
+                $n = count($orderedStreams);
                 $concatV = 'concat_v';
                 $concatA = 'concat_a';
-
-                if ($mergePosition === 'before') {
-                    // Merge video comes first, then main video
-                    $filterComplex[] = "[{$mergeScaled}][{$mergeAudioLabel}][{$editedLabel}][{$mainAudioLabel}]concat=n=2:v=1:a=1[{$concatV}][{$concatA}]";
-                } else {
-                    // Main video first, then merge video (default)
-                    $filterComplex[] = "[{$editedLabel}][{$mainAudioLabel}][{$mergeScaled}][{$mergeAudioLabel}]concat=n=2:v=1:a=1[{$concatV}][{$concatA}]";
-                }
+                $filterComplex[] = "{$concatInputs}concat=n={$n}:v=1:a=1[{$concatV}][{$concatA}]";
 
                 $currentVideoLabel = $concatV;
                 $currentAudioLabel = $concatA;
@@ -270,7 +290,7 @@ class ApplyVideoEditsJob implements ShouldQueue
             $filterString = implode(';', $filterComplex);
 
             // Determine audio mapping
-            $audioMap = $mergeInputIndex !== null
+            $audioMap = ! empty($mergeInputIndices)
                 ? sprintf('-map "[%s]"', $currentAudioLabel)
                 : '-map 0:a?';
 

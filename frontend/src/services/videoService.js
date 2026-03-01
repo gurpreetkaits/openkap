@@ -893,7 +893,7 @@ class VideoService {
    * @param {Array} overlayConfigs - Array of overlay config objects
    * @param {File[]} overlayFiles - Array of overlay video files
    */
-  async applyEdits(id, blurRegions = [], overlayConfigs = [], overlayFiles = [], textOverlays = [], trimStart = null, trimEnd = null, mergeVideoId = null, mergePosition = 'after') {
+  async applyEdits(id, blurRegions = [], overlayConfigs = [], overlayFiles = [], textOverlays = [], trimStart = null, trimEnd = null, mergeVideoIds = [], mainVideoPosition = 0) {
     try {
       const formData = new FormData()
 
@@ -930,9 +930,11 @@ class VideoService {
         formData.append('trim_end', trimEnd)
       }
 
-      if (mergeVideoId !== null) {
-        formData.append('merge_video_id', mergeVideoId)
-        formData.append('merge_position', mergePosition)
+      if (mergeVideoIds.length) {
+        mergeVideoIds.forEach((vid, i) => {
+          formData.append(`merge_video_ids[${i}]`, vid)
+        })
+        formData.append('main_video_position', mainVideoPosition)
       }
 
       const token = getAuthToken()
