@@ -105,14 +105,16 @@ class ConvertVideoToMp4Job implements ShouldQueue
         try {
             $ffmpegPath = config('media-library.ffmpeg_path');
 
-            // Quality-optimized FFmpeg settings for screen recordings:
-            // -threads 0: Allow FFmpeg to choose optimal thread count
-            // -preset medium: Good balance of quality and speed (was ultrafast)
-            // -crf 20: Better quality (lower = better, 18-23 typical range)
-            // -maxrate 8M: Higher bitrate cap for HD content
-            // -pix_fmt yuv420p: Best compatibility
+            // Cap at 1080p — 4K screen recordings are too heavy for server encoding
+            // and don't benefit from 4K delivery. Scale down if larger, preserve if smaller.
+            // -vf scale: cap width at 1920, height at 1080, maintain aspect ratio
+            // -preset fast: lower memory usage than medium, still good quality
+            // -crf 22: good quality for screen recordings
+            // -threads 1: limit memory usage on small servers
+            // -pix_fmt yuv420p: best compatibility
+            // -movflags +faststart: enable streaming before full download
             $command = sprintf(
-                '%s -y -threads 0 -i %s -c:v libx264 -preset medium -crf 20 -maxrate 8M -bufsize 4M -pix_fmt yuv420p -c:a aac -b:a 128k -max_muxing_queue_size 1024 -movflags +faststart %s 2>&1',
+                '%s -y -threads 1 -i %s -vf "scale=min(iw\,1920):min(ih\,1080):force_original_aspect_ratio=decrease,pad=ceil(iw/2)*2:ceil(ih/2)*2" -c:v libx264 -preset fast -crf 22 -maxrate 5M -bufsize 3M -pix_fmt yuv420p -c:a aac -b:a 128k -max_muxing_queue_size 1024 -movflags +faststart %s 2>&1',
                 escapeshellarg($ffmpegPath),
                 escapeshellarg($inputPath),
                 escapeshellarg($outputPath)
