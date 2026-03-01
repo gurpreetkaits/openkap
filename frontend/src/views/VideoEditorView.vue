@@ -51,16 +51,47 @@
       </nav>
 
       <!-- Main Area -->
-      <div class="flex flex-1 overflow-hidden relative z-10">
-        <!-- Left Panel -->
-        <EditorToolPanel />
+      <div class="flex flex-1 overflow-hidden relative z-10 gap-3 p-3 pt-0">
+        <!-- Left Sidebar: Flow (Transcript) — toggleable with motion -->
+        <div
+          v-if="showFlow"
+          v-motion
+          :initial="{ opacity: 0, x: -280, width: 0 }"
+          :enter="{ opacity: 1, x: 0, width: 280, transition: { type: 'spring', stiffness: 300, damping: 30 } }"
+          :leave="{ opacity: 0, x: -280, width: 0, transition: { type: 'spring', stiffness: 300, damping: 30 } }"
+          class="flex-col min-h-0 rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden hidden lg:flex flex-shrink-0"
+          style="width: 280px;"
+        >
+          <div class="shrink-0 px-3 pt-3 pb-2 flex items-center justify-between border-b border-gray-100">
+            <h2 class="text-xs font-medium text-gray-500 uppercase tracking-wider">Flow</h2>
+            <button @click="showFlow = false" class="h-6 w-6 flex items-center justify-center text-gray-400 hover:text-gray-700 rounded transition-colors" title="Hide transcript">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h8m-8 6h16"/></svg>
+            </button>
+          </div>
+          <div class="flex-1 overflow-y-auto">
+            <EditorTranscriptionPanel />
+          </div>
+        </div>
 
-        <!-- Center -->
-        <div class="flex-1 flex flex-col min-w-0">
+        <!-- Center: Video + Timeline -->
+        <div class="flex-1 flex flex-col min-w-0 min-h-0 relative">
+          <!-- Flow toggle button (shown when Flow panel is hidden) -->
+          <button
+            v-if="!showFlow"
+            v-motion
+            :initial="{ opacity: 0, scale: 0.8 }"
+            :enter="{ opacity: 1, scale: 1, transition: { type: 'spring', stiffness: 400, damping: 25, delay: 150 } }"
+            @click="showFlow = true"
+            class="absolute top-2 left-2 z-10 hidden lg:inline-flex items-center gap-1.5 h-7 px-2.5 text-xs font-medium text-white/80 hover:text-white bg-black/40 hover:bg-black/60 backdrop-blur-sm rounded-lg transition-colors"
+          >
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h8m-8 6h16"/></svg>
+            Flow
+          </button>
+
           <!-- Mobile tools strip -->
-          <div class="lg:hidden flex items-center gap-2 px-3 py-2 bg-white border-b border-gray-100 overflow-x-auto">
+          <div class="lg:hidden flex items-center gap-2 px-3 py-2 bg-white border-b border-gray-100 overflow-x-auto rounded-xl mb-2">
             <div class="flex items-center p-0.5 bg-gray-100 rounded-lg flex-shrink-0">
-              <button v-for="tool in ['blur', 'overlay', 'text', 'transcript']" :key="'m'+tool" @click="activeTool = tool"
+              <button v-for="tool in ['blur', 'overlay', 'text']" :key="'m'+tool" @click="activeTool = tool"
                 :class="activeTool === tool ? 'text-gray-900 bg-white shadow-sm' : 'text-gray-500'"
                 class="px-3 py-1 rounded-md text-xs font-medium transition-all capitalize">{{ tool }}</button>
             </div>
@@ -78,8 +109,8 @@
           <EditorTimeline @addVideo="showAddVideoModal = true" />
         </div>
 
-        <!-- Right Panel: Properties -->
-        <EditorPropertiesPanel />
+        <!-- Right Sidebar: Tools + Properties -->
+        <EditorToolPanel />
       </div>
     </template>
 
@@ -104,7 +135,7 @@ import { createEditorState } from '@/composables/useEditorState'
 
 import EditorVideoPreview from '@/components/Editor/EditorVideoPreview.vue'
 import EditorToolPanel from '@/components/Editor/EditorToolPanel.vue'
-import EditorPropertiesPanel from '@/components/Editor/EditorPropertiesPanel.vue'
+import EditorTranscriptionPanel from '@/components/Editor/EditorTranscriptionPanel.vue'
 import EditorProcessingOverlay from '@/components/Editor/EditorProcessingOverlay.vue'
 import EditorTimeline from '@/components/Editor/EditorTimeline.vue'
 import EditorAddVideoModal from '@/components/Editor/EditorAddVideoModal.vue'
@@ -117,7 +148,7 @@ const toast = useToast()
 const state = createEditorState()
 const {
   loading, error, video, duration, items, overlayFiles,
-  isApplying, applyProgress, processingMode, activeTool,
+  isApplying, applyProgress, processingMode, activeTool, showFlow,
   addTextItem, addOverlayFile,
   trimEnabled, trimStart, trimEnd, mergeVideoId, mergeVideo,
 } = state

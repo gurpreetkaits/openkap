@@ -21,6 +21,7 @@ export function createEditorState() {
   const loading = ref(true)
   const error = ref(null)
   const activeTool = ref('blur')
+  const showFlow = ref(true)
   const items = ref([])
   const selectedItemId = ref(null)
   let nextItemId = 1
@@ -161,6 +162,7 @@ export function createEditorState() {
     loading,
     error,
     activeTool,
+    showFlow,
     items,
     selectedItemId,
     overlayFiles,

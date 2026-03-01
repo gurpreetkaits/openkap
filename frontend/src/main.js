@@ -1,4 +1,5 @@
 import { createApp } from 'vue'
+import { MotionPlugin } from '@vueuse/motion'
 import posthog from 'posthog-js'
 import App from './App.vue'
 import { router } from './router'
@@ -31,4 +32,5 @@ if (posthogKey) {
 
 const app = createApp(App)
 app.use(router)
+app.use(MotionPlugin)
 app.mount('#app')
