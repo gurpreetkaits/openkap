@@ -530,43 +530,37 @@
         <aside v-show="sidebarVisible" class="w-full lg:w-[400px] bg-white border-l border-gray-200 flex flex-col z-40 shadow-[-4px_0_24px_rgba(0,0,0,0.02)]">
 
           <!-- Functional Tabs -->
-          <div class="flex items-center gap-1 px-4 py-3 border-b border-gray-100 sticky top-0 bg-white z-10">
-            <button
-              @click="activeTab = 'comments'"
-              class="px-4 py-2 text-[13px] rounded-lg transition-all flex items-center gap-2"
-              :class="activeTab === 'comments' ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'"
-            >
-              Comments
-              <span v-if="comments.length" class="text-[11px] text-gray-400 font-normal">{{ comments.length }}</span>
-            </button>
+          <div class="grid grid-cols-4 gap-0 px-3 py-2.5 border-b border-gray-100 sticky top-0 bg-white z-10" :class="{ 'grid-cols-3': !jiraConnected }">
             <button
               @click="activeTab = 'transcript'"
-              class="px-4 py-2 text-[13px] rounded-lg transition-all"
+              class="px-2 py-2 text-[12px] rounded-lg transition-all text-center truncate"
               :class="activeTab === 'transcript' ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'"
             >
               Transcript
             </button>
             <button
               @click="activeTab = 'summary'"
-              class="px-4 py-2 text-[13px] rounded-lg transition-all flex items-center gap-1.5"
+              class="px-2 py-2 text-[12px] rounded-lg transition-all text-center truncate"
               :class="activeTab === 'summary' ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'"
             >
-              <svg class="w-3.5 h-3.5 text-amber-500" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/>
-              </svg>
               Summary
+            </button>
+            <button
+              @click="activeTab = 'comments'"
+              class="px-2 py-2 text-[12px] rounded-lg transition-all text-center truncate flex items-center justify-center gap-1"
+              :class="activeTab === 'comments' ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'"
+            >
+              Comments
+              <span v-if="comments.length" class="text-[10px] text-gray-400 font-normal">{{ comments.length }}</span>
             </button>
             <button
               v-if="jiraConnected"
               @click="activeTab = 'bugs'; loadBugTabData()"
-              class="px-4 py-2 text-[13px] rounded-lg transition-all flex items-center gap-1.5"
+              class="px-2 py-2 text-[12px] rounded-lg transition-all text-center truncate flex items-center justify-center gap-1"
               :class="activeTab === 'bugs' ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'"
             >
-              <svg class="w-3.5 h-3.5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-              </svg>
               Bugs
-              <span v-if="detectedBugs.length" class="text-[11px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full font-medium">{{ detectedBugs.length }}</span>
+              <span v-if="detectedBugs.length" class="text-[10px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full font-medium">{{ detectedBugs.length }}</span>
             </button>
           </div>
 
@@ -1238,7 +1232,7 @@ export default {
     const titleInput = ref(null)
 
     const showShareModal = ref(false)
-    const activeTab = ref('comments')
+    const activeTab = ref('transcript')
     const sidebarVisible = ref(localStorage.getItem('sidebar_visible') !== 'false')
 
     const toggleSidebar = () => {

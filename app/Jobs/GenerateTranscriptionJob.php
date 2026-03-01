@@ -40,6 +40,7 @@ class GenerateTranscriptionJob implements ShouldQueue
         public Video $video,
         public bool $generateSummary = true,
         public bool $generateTitle = true,
+        public bool $generateDescription = false,
         public int $rescheduleCount = 0
     ) {}
 
