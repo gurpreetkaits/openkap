@@ -95,9 +95,11 @@ class RemuxWebmJob implements ShouldQueue
                 escapeshellarg($outputPath)
             );
 
+            $inputSize = filesize($inputPath);
+
             Log::info('RemuxWebmJob: Remuxing WebM to fix container metadata', [
                 'video_id' => $video->id,
-                'input_size' => filesize($inputPath),
+                'input_size' => $inputSize,
             ]);
 
             $output = [];
@@ -146,7 +148,7 @@ class RemuxWebmJob implements ShouldQueue
 
             Log::info('RemuxWebmJob: WebM remuxed successfully', [
                 'video_id' => $video->id,
-                'original_size' => filesize($inputPath),
+                'original_size' => $inputSize,
                 'remuxed_size' => $outputSize,
                 'duration' => $duration,
             ]);
