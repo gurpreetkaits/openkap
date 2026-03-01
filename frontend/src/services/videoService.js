@@ -963,12 +963,17 @@ class VideoService {
   /**
    * Update transcription text for a video
    */
-  async updateTranscription(id, text) {
+  async updateTranscription(id, text, segments = null) {
     try {
+      const body = { text }
+      if (segments) {
+        body.segments = segments
+      }
+
       const response = await fetch(`${API_BASE_URL}/api/videos/${id}/transcription`, {
         method: 'PUT',
         headers: getAuthHeaders(),
-        body: JSON.stringify({ text })
+        body: JSON.stringify(body)
       })
 
       if (handleUnauthorized(response)) return null

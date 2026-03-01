@@ -884,12 +884,26 @@ class VideoManager
     // TRANSCRIPTION METHODS (EDITOR)
     // ============================================
 
-    public function updateTranscription(Video $video, string $text): Video
+    public function updateTranscription(Video $video, string $text, ?array $segments = null): Video
     {
-        $this->videos->updateVideo($video, [
+        $data = [
             'transcription' => $text,
-            'transcription_segments' => null,
-        ]);
+        ];
+
+        if ($segments !== null) {
+            // Preserve segment structure with updated text
+            $data['transcription_segments'] = array_map(fn ($s) => [
+                'start' => round((float) ($s['start'] ?? 0), 2),
+                'end' => round((float) ($s['end'] ?? 0), 2),
+                'text' => trim($s['text'] ?? ''),
+                'words' => $s['words'] ?? null,
+            ], $segments);
+        } else {
+            // No segments provided, clear stale segments
+            $data['transcription_segments'] = null;
+        }
+
+        $this->videos->updateVideo($video, $data);
 
         return $video->fresh();
     }

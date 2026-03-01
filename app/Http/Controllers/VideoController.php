@@ -712,9 +712,17 @@ class VideoController extends Controller
 
         $request->validate([
             'text' => 'required|string|max:50000',
+            'segments' => 'nullable|array',
+            'segments.*.start' => 'required|numeric|min:0',
+            'segments.*.end' => 'required|numeric|min:0',
+            'segments.*.text' => 'required|string',
         ]);
 
-        $updated = $this->videoManager->updateTranscription($video, $request->input('text'));
+        $updated = $this->videoManager->updateTranscription(
+            $video,
+            $request->input('text'),
+            $request->input('segments')
+        );
 
         return response()->json([
             'message' => 'Transcription updated',
