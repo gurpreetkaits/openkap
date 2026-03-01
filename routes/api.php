@@ -236,6 +236,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/{id}/zoom-events', [VideoController::class, 'updateZoomEvents']);
         Route::get('/{id}/zoom-status', [VideoController::class, 'getZoomStatus']);
 
+        // Transcription editing
+        Route::put('/{id}/transcription', [VideoController::class, 'updateTranscription']);
+
         // Video editor
         Route::post('/{id}/apply-edits', [VideoController::class, 'applyEdits']);
         Route::get('/{id}/edit-status', [VideoController::class, 'editStatus']);

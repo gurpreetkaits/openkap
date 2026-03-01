@@ -893,7 +893,7 @@ class VideoService {
    * @param {Array} overlayConfigs - Array of overlay config objects
    * @param {File[]} overlayFiles - Array of overlay video files
    */
-  async applyEdits(id, blurRegions = [], overlayConfigs = [], overlayFiles = [], textOverlays = []) {
+  async applyEdits(id, blurRegions = [], overlayConfigs = [], overlayFiles = [], textOverlays = [], trimStart = null, trimEnd = null, mergeVideoId = null) {
     try {
       const formData = new FormData()
 
@@ -925,6 +925,15 @@ class VideoService {
         formData.append('overlay_files[]', file)
       })
 
+      if (trimStart !== null && trimEnd !== null) {
+        formData.append('trim_start', trimStart)
+        formData.append('trim_end', trimEnd)
+      }
+
+      if (mergeVideoId !== null) {
+        formData.append('merge_video_id', mergeVideoId)
+      }
+
       const token = getAuthToken()
       const headers = { 'Accept': 'application/json' }
       if (token) {
@@ -947,6 +956,31 @@ class VideoService {
       return await response.json()
     } catch (error) {
       console.error('Error applying edits:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Update transcription text for a video
+   */
+  async updateTranscription(id, text) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/videos/${id}/transcription`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ text })
+      })
+
+      if (handleUnauthorized(response)) return null
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.message || `Failed to update transcription: ${response.statusText}`)
+      }
+
+      return await response.json()
+    } catch (error) {
+      console.error('Error updating transcription:', error)
       throw error
     }
   }

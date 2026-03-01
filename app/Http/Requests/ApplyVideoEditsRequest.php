@@ -43,6 +43,11 @@ class ApplyVideoEditsRequest extends FormRequest
             'text_overlays.*.background_color' => 'nullable|string|max:20',
             'text_overlays.*.start_time' => 'nullable|numeric|min:0',
             'text_overlays.*.end_time' => 'nullable|numeric|min:0',
+
+            'trim_start' => 'nullable|numeric|min:0',
+            'trim_end' => 'nullable|numeric|gt:trim_start',
+
+            'merge_video_id' => 'nullable|integer|exists:videos,id',
         ];
     }
 }

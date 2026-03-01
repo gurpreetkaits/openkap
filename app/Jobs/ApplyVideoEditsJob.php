@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Managers\NotificationManager;
 use App\Models\Video;
 use App\Models\VideoEdit;
 use Illuminate\Bus\Queueable;
@@ -36,6 +37,8 @@ class ApplyVideoEditsJob implements ShouldQueue
             'blur_count' => count($edit->blur_regions ?? []),
             'overlay_count' => count($edit->overlay_configs ?? []),
             'text_count' => count($edit->text_overlays ?? []),
+            'trim' => $edit->trim_start !== null ? "{$edit->trim_start}-{$edit->trim_end}" : 'none',
+            'merge_video_id' => $edit->merge_video_id,
         ]);
 
         $media = $video->getFirstMedia('videos');
@@ -77,7 +80,7 @@ class ApplyVideoEditsJob implements ShouldQueue
             $textOverlays = $edit->text_overlays ?? [];
             $overlayMedia = $edit->getMedia('overlays');
 
-            $filterParts = [];
+            $filterComplex = [];
             $inputArgs = sprintf('-i %s', escapeshellarg($inputPath));
             $inputIndex = 1;
 
@@ -95,14 +98,50 @@ class ApplyVideoEditsJob implements ShouldQueue
                 }
             }
 
+            // Add merge video as additional input
+            $mergeInputIndex = null;
+            if ($edit->merge_video_id) {
+                $mergeVideo = Video::find($edit->merge_video_id);
+                if ($mergeVideo) {
+                    $mergeMedia = $mergeVideo->getFirstMedia('videos');
+                    if ($mergeMedia && file_exists($mergeMedia->getPath())) {
+                        $inputArgs .= ' -i '.escapeshellarg($mergeMedia->getPath());
+                        $mergeInputIndex = $inputIndex;
+                        $inputIndex++;
+                    }
+                }
+            }
+
             $edit->update(['progress' => 30]);
 
             // Build filter_complex
-            $currentLabel = '0:v';
-            $filterComplex = [];
+            $currentVideoLabel = '0:v';
+            $currentAudioLabel = '0:a';
             $stepIndex = 0;
 
-            // Process blur regions
+            // --- Trim ---
+            if ($edit->trim_start !== null && $edit->trim_end !== null) {
+                $trimmedVideo = 'trimmed_v';
+                $trimmedAudio = 'trimmed_a';
+
+                $filterComplex[] = sprintf(
+                    '[0:v]trim=start=%.2f:end=%.2f,setpts=PTS-STARTPTS[%s]',
+                    $edit->trim_start,
+                    $edit->trim_end,
+                    $trimmedVideo
+                );
+                $filterComplex[] = sprintf(
+                    '[0:a]atrim=start=%.2f:end=%.2f,asetpts=PTS-STARTPTS[%s]',
+                    $edit->trim_start,
+                    $edit->trim_end,
+                    $trimmedAudio
+                );
+
+                $currentVideoLabel = $trimmedVideo;
+                $currentAudioLabel = $trimmedAudio;
+            }
+
+            // --- Blur regions ---
             foreach ($blurRegions as $i => $region) {
                 $blurX = round($dimensions['width'] * ($region['x'] / 100));
                 $blurY = round($dimensions['height'] * ($region['y'] / 100));
@@ -117,7 +156,7 @@ class ApplyVideoEditsJob implements ShouldQueue
                 $blurred = "blurred_{$stepIndex}";
                 $outLabel = "step_{$stepIndex}";
 
-                $filterComplex[] = "[{$currentLabel}]split=2[{$splitA}][{$splitB}]";
+                $filterComplex[] = "[{$currentVideoLabel}]split=2[{$splitA}][{$splitB}]";
                 $filterComplex[] = "[{$splitB}]crop={$blurW}:{$blurH}:{$blurX}:{$blurY},boxblur=20:20[{$blurred}]";
 
                 $enableStr = '';
@@ -128,11 +167,11 @@ class ApplyVideoEditsJob implements ShouldQueue
                 }
 
                 $filterComplex[] = "[{$splitA}][{$blurred}]overlay={$blurX}:{$blurY}{$enableStr}[{$outLabel}]";
-                $currentLabel = $outLabel;
+                $currentVideoLabel = $outLabel;
                 $stepIndex++;
             }
 
-            // Process overlays
+            // --- Overlays ---
             foreach ($overlayConfigs as $config) {
                 $fileIndex = $config['file_index'] ?? 0;
                 if (! isset($overlayInputMap[$fileIndex])) {
@@ -160,12 +199,12 @@ class ApplyVideoEditsJob implements ShouldQueue
                     $enableStr = sprintf(":enable='between(t,%.2f,%.2f)'", $startTime, $endTime);
                 }
 
-                $filterComplex[] = "[{$currentLabel}][{$scaledLabel}]overlay={$targetX}:{$targetY}{$enableStr}[{$outLabel}]";
-                $currentLabel = $outLabel;
+                $filterComplex[] = "[{$currentVideoLabel}][{$scaledLabel}]overlay={$targetX}:{$targetY}{$enableStr}[{$outLabel}]";
+                $currentVideoLabel = $outLabel;
                 $stepIndex++;
             }
 
-            // Process text overlays
+            // --- Text overlays ---
             foreach ($textOverlays as $textOverlay) {
                 $text = $this->escapeFFmpegText($textOverlay['text'] ?? 'Text');
                 $textX = round($dimensions['width'] * (($textOverlay['x'] ?? 0) / 100));
@@ -188,8 +227,8 @@ class ApplyVideoEditsJob implements ShouldQueue
                     $drawtext .= sprintf(":enable='between(t,%.2f,%.2f)'", $startTime, $endTime);
                 }
 
-                $filterComplex[] = "[{$currentLabel}]{$drawtext}[{$outLabel}]";
-                $currentLabel = $outLabel;
+                $filterComplex[] = "[{$currentVideoLabel}]{$drawtext}[{$outLabel}]";
+                $currentVideoLabel = $outLabel;
                 $stepIndex++;
             }
 
@@ -197,18 +236,46 @@ class ApplyVideoEditsJob implements ShouldQueue
 
             $ffmpegPath = config('media-library.ffmpeg_path');
 
+            // --- Merge ---
+            if ($mergeInputIndex !== null) {
+                // Scale merge video to match main dimensions
+                $mergeScaled = 'merge_scaled';
+                $filterComplex[] = "[{$mergeInputIndex}:v]scale={$dimensions['width']}:{$dimensions['height']},setsar=1[{$mergeScaled}]";
+
+                // If no edits were applied, use the current video label directly
+                $editedLabel = $currentVideoLabel;
+
+                // Generate silent audio for merge if needed
+                $mergeAudioLabel = "{$mergeInputIndex}:a";
+                $mainAudioLabel = $currentAudioLabel;
+
+                // Concat edited main + merge
+                $concatV = 'concat_v';
+                $concatA = 'concat_a';
+                $filterComplex[] = "[{$editedLabel}][{$mainAudioLabel}][{$mergeScaled}][{$mergeAudioLabel}]concat=n=2:v=1:a=1[{$concatV}][{$concatA}]";
+
+                $currentVideoLabel = $concatV;
+                $currentAudioLabel = $concatA;
+            }
+
             if (empty($filterComplex)) {
                 throw new \Exception('No edits to apply');
             }
 
             $filterString = implode(';', $filterComplex);
 
+            // Determine audio mapping
+            $audioMap = $mergeInputIndex !== null
+                ? sprintf('-map "[%s]"', $currentAudioLabel)
+                : '-map 0:a?';
+
             $command = sprintf(
-                '%s -y %s -filter_complex %s -map "[%s]" -map 0:a? -c:v libx264 -preset medium -crf 23 -c:a copy %s 2>&1',
+                '%s -y %s -filter_complex %s -map "[%s]" %s -c:v libx264 -preset medium -crf 23 -c:a aac %s 2>&1',
                 escapeshellarg($ffmpegPath),
                 $inputArgs,
                 escapeshellarg($filterString),
-                $currentLabel,
+                $currentVideoLabel,
+                $audioMap,
                 escapeshellarg($outputPath)
             );
 
@@ -298,6 +365,14 @@ class ApplyVideoEditsJob implements ShouldQueue
             // Clean up temp file
             if (file_exists($outputPath)) {
                 @unlink($outputPath);
+            }
+
+            // Send notification for async edits
+            try {
+                $notificationManager = app(NotificationManager::class);
+                $notificationManager->createEditCompleteNotification($newVideo, $video);
+            } catch (\Exception $e) {
+                Log::warning('Failed to send edit complete notification', ['error' => $e->getMessage()]);
             }
 
             // Dispatch HLS conversion for the new video

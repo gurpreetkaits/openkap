@@ -18,6 +18,9 @@ class VideoEdit extends Model implements HasMedia
         'blur_regions',
         'overlay_configs',
         'text_overlays',
+        'trim_start',
+        'trim_end',
+        'merge_video_id',
         'status',
         'progress',
         'error',
@@ -27,6 +30,8 @@ class VideoEdit extends Model implements HasMedia
         'blur_regions' => 'array',
         'overlay_configs' => 'array',
         'text_overlays' => 'array',
+        'trim_start' => 'float',
+        'trim_end' => 'float',
         'progress' => 'integer',
     ];
 
@@ -38,6 +43,11 @@ class VideoEdit extends Model implements HasMedia
     public function outputVideo()
     {
         return $this->belongsTo(Video::class, 'output_video_id');
+    }
+
+    public function mergeVideo()
+    {
+        return $this->belongsTo(Video::class, 'merge_video_id');
     }
 
     public function user()

@@ -676,15 +676,16 @@ class VideoController extends Controller
                 blur_regions: $blurRegions,
                 overlay_configs: $overlayConfigs,
                 text_overlays: $textOverlays,
+                trim_start: $request->input('trim_start') !== null ? (float) $request->input('trim_start') : null,
+                trim_end: $request->input('trim_end') !== null ? (float) $request->input('trim_end') : null,
+                merge_video_id: $request->input('merge_video_id') ? (int) $request->input('merge_video_id') : null,
             );
 
             $overlayFiles = $request->file('overlay_files', []);
 
-            $this->videoManager->applyEdits($video, Auth::user(), $editData, $overlayFiles);
+            $result = $this->videoManager->applyEdits($video, Auth::user(), $editData, $overlayFiles);
 
-            return response()->json([
-                'message' => 'Video edits are being applied. This may take a few minutes.',
-            ]);
+            return response()->json($result);
         } catch (\Exception $e) {
             return response()->json(['message' => $e->getMessage()], 500);
         }
@@ -699,6 +700,26 @@ class VideoController extends Controller
         }
 
         return response()->json($this->videoManager->getEditStatus($video));
+    }
+
+    public function updateTranscription(Request $request, $id)
+    {
+        $video = $this->videoManager->findVideoOrFail($id);
+
+        if ($video->user_id !== Auth::id()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $request->validate([
+            'text' => 'required|string|max:50000',
+        ]);
+
+        $updated = $this->videoManager->updateTranscription($video, $request->input('text'));
+
+        return response()->json([
+            'message' => 'Transcription updated',
+            'video' => $updated,
+        ]);
     }
 
     // ============================================

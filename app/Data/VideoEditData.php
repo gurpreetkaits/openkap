@@ -15,5 +15,8 @@ class VideoEditData extends Data
         public array $blur_regions = [],
         public array $overlay_configs = [],
         public array $text_overlays = [],
+        public ?float $trim_start = null,
+        public ?float $trim_end = null,
+        public ?int $merge_video_id = null,
     ) {}
 }

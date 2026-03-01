@@ -881,10 +881,24 @@ class VideoManager
     }
 
     // ============================================
+    // TRANSCRIPTION METHODS (EDITOR)
+    // ============================================
+
+    public function updateTranscription(Video $video, string $text): Video
+    {
+        $this->videos->updateVideo($video, [
+            'transcription' => $text,
+            'transcription_segments' => null,
+        ]);
+
+        return $video->fresh();
+    }
+
+    // ============================================
     // VIDEO EDITOR METHODS
     // ============================================
 
-    public function applyEdits(Video $video, User $user, VideoEditData $editData, array $overlayFiles = []): void
+    public function applyEdits(Video $video, User $user, VideoEditData $editData, array $overlayFiles = []): array
     {
         $videoEdit = $this->videoEdits->createEdit([
             'video_id' => $video->id,
@@ -892,6 +906,9 @@ class VideoManager
             'blur_regions' => array_map(fn ($r) => $r->toArray(), $editData->blur_regions),
             'overlay_configs' => array_map(fn ($o) => $o->toArray(), $editData->overlay_configs),
             'text_overlays' => array_map(fn ($t) => $t->toArray(), $editData->text_overlays),
+            'trim_start' => $editData->trim_start,
+            'trim_end' => $editData->trim_end,
+            'merge_video_id' => $editData->merge_video_id,
             'status' => 'pending',
             'progress' => 0,
         ]);
@@ -900,15 +917,38 @@ class VideoManager
             $videoEdit->addMedia($file)->toMediaCollection('overlays');
         }
 
+        $maxSyncDuration = 180; // 3 minutes
+
+        if (($video->duration ?? 0) <= $maxSyncDuration) {
+            // Sync processing for short videos
+            set_time_limit(300);
+            $job = new ApplyVideoEditsJob($videoEdit);
+            $job->handle();
+
+            $videoEdit->refresh();
+
+            return [
+                'message' => 'Video edits applied successfully.',
+                'mode' => 'sync',
+                'output_video_id' => $videoEdit->output_video_id,
+            ];
+        }
+
+        // Async processing for long videos
         ApplyVideoEditsJob::dispatch($videoEdit)->delay(now()->addSeconds(2));
 
-        Log::info('Video edit job dispatched', [
+        Log::info('Video edit job dispatched (async)', [
             'video_id' => $video->id,
             'edit_id' => $videoEdit->id,
             'blur_count' => count($editData->blur_regions),
             'overlay_count' => count($editData->overlay_configs),
             'text_count' => count($editData->text_overlays),
         ]);
+
+        return [
+            'message' => 'Video edits are being applied. You will be notified when ready.',
+            'mode' => 'async',
+        ];
     }
 
     public function getEditStatus(Video $video): array

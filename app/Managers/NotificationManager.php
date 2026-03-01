@@ -195,6 +195,21 @@ class NotificationManager
         ];
     }
 
+    public function createEditCompleteNotification(Video $newVideo, Video $sourceVideo): Notification
+    {
+        $message = "Your edits on \"<span class=\"font-medium text-gray-900\">{$sourceVideo->title}</span>\" are complete! New video: \"{$newVideo->title}\"";
+
+        return $this->notifications->createNotification([
+            'user_id' => $newVideo->user_id,
+            'type' => Notification::TYPE_EDIT_COMPLETE,
+            'message' => $message,
+            'notifiable_type' => Video::class,
+            'notifiable_id' => $newVideo->id,
+            'actor_id' => null,
+            'link' => "/video/{$newVideo->id}",
+        ]);
+    }
+
     public function createDownloadReadyNotification(Video $video, string $downloadLink): Notification
     {
         $message = "Your MP4 download for \"<span class=\"font-medium text-gray-900\">{$video->title}</span>\" is ready";

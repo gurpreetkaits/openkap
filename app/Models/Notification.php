@@ -25,6 +25,8 @@ class Notification extends Model
 
     public const TYPE_DOWNLOAD = 'download';
 
+    public const TYPE_EDIT_COMPLETE = 'edit_complete';
+
     public const TYPES = [
         self::TYPE_VIEWER,
         self::TYPE_COMMENT,
@@ -33,6 +35,7 @@ class Notification extends Model
         self::TYPE_INFO,
         self::TYPE_FEEDBACK,
         self::TYPE_DOWNLOAD,
+        self::TYPE_EDIT_COMPLETE,
     ];
 
     protected $fillable = [
