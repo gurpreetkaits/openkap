@@ -17,6 +17,7 @@ use App\Repositories\VideoRepository;
 use App\Repositories\VideoZoomSettingRepository;
 use App\Repositories\WorkspaceRepository;
 use App\Services\BunnyStreamService;
+use App\Services\CaptionService;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Log;
 
@@ -28,7 +29,8 @@ class VideoManager
         protected BunnyStreamService $bunnyService,
         protected UserSettingRepository $userSettings,
         protected WorkspaceRepository $workspaces,
-        protected VideoEditRepository $videoEdits
+        protected VideoEditRepository $videoEdits,
+        protected CaptionService $captionService
     ) {}
 
     public function getUserVideos(int $userId): array
@@ -977,14 +979,7 @@ class VideoManager
 
         $outputPath = $outputDir.'/video_'.$video->id.'_'.time().'.mp4';
 
-        $ffmpegPath = config('media-library.ffmpeg_path');
-
-        $command = sprintf(
-            '%s -y -threads 1 -i %s -vf "scale=min(iw\,1920):min(ih\,1080):force_original_aspect_ratio=decrease,pad=ceil(iw/2)*2:ceil(ih/2)*2" -c:v libx264 -preset fast -crf 22 -maxrate 5M -bufsize 3M -pix_fmt yuv420p -c:a aac -b:a 128k -max_muxing_queue_size 1024 -movflags +faststart %s 2>&1',
-            escapeshellarg($ffmpegPath),
-            escapeshellarg($inputPath),
-            escapeshellarg($outputPath)
-        );
+        $command = $this->buildMp4DownloadCommand($video, $inputPath, $outputPath);
 
         Log::info('Running sync MP4 conversion for download', [
             'video_id' => $video->id,
@@ -993,6 +988,9 @@ class VideoManager
         $output = [];
         $returnCode = 0;
         exec($command, $output, $returnCode);
+
+        // Clean up temp SRT file
+        $this->cleanupTempSrt($video->id);
 
         if ($returnCode !== 0 || ! file_exists($outputPath) || filesize($outputPath) < 1000) {
             if (file_exists($outputPath)) {
@@ -1003,6 +1001,51 @@ class VideoManager
         }
 
         return $outputPath;
+    }
+
+    public function buildMp4DownloadCommand(Video $video, string $inputPath, string $outputPath): string
+    {
+        $ffmpegPath = config('media-library.ffmpeg_path');
+        $srtPath = $this->generateTempSrt($video);
+
+        if ($srtPath) {
+            return sprintf(
+                '%s -y -threads 1 -i %s -i %s -vf "scale=min(iw\,1920):min(ih\,1080):force_original_aspect_ratio=decrease,pad=ceil(iw/2)*2:ceil(ih/2)*2" -c:v libx264 -preset fast -crf 22 -maxrate 5M -bufsize 3M -pix_fmt yuv420p -c:a aac -b:a 128k -c:s mov_text -metadata:s:s:0 language=eng -max_muxing_queue_size 1024 -movflags +faststart %s 2>&1',
+                escapeshellarg($ffmpegPath),
+                escapeshellarg($inputPath),
+                escapeshellarg($srtPath),
+                escapeshellarg($outputPath)
+            );
+        }
+
+        return sprintf(
+            '%s -y -threads 1 -i %s -vf "scale=min(iw\,1920):min(ih\,1080):force_original_aspect_ratio=decrease,pad=ceil(iw/2)*2:ceil(ih/2)*2" -c:v libx264 -preset fast -crf 22 -maxrate 5M -bufsize 3M -pix_fmt yuv420p -c:a aac -b:a 128k -max_muxing_queue_size 1024 -movflags +faststart %s 2>&1',
+            escapeshellarg($ffmpegPath),
+            escapeshellarg($inputPath),
+            escapeshellarg($outputPath)
+        );
+    }
+
+    protected function generateTempSrt(Video $video): ?string
+    {
+        $srt = $this->captionService->generateSrt($video);
+
+        if (! $srt) {
+            return null;
+        }
+
+        $srtPath = storage_path("app/temp_captions_{$video->id}.srt");
+        file_put_contents($srtPath, $srt);
+
+        return $srtPath;
+    }
+
+    public function cleanupTempSrt(int $videoId): void
+    {
+        $srtPath = storage_path("app/temp_captions_{$videoId}.srt");
+        if (file_exists($srtPath)) {
+            @unlink($srtPath);
+        }
     }
 
     public function findMp4Download(Video $video): ?string

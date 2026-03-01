@@ -140,6 +140,44 @@ class CaptionService
         return $cues;
     }
 
+    public function generateSrt(Video $video): ?string
+    {
+        if (! $video->isTranscriptionReady()) {
+            return null;
+        }
+
+        $segments = $video->transcription_segments;
+
+        if (empty($segments)) {
+            return null;
+        }
+
+        $cues = $this->buildCues($segments);
+
+        $srt = '';
+
+        foreach ($cues as $index => $cue) {
+            $start = $this->formatSrtTimestamp($cue['start']);
+            $end = $this->formatSrtTimestamp($cue['end']);
+
+            $srt .= ($index + 1)."\n";
+            $srt .= "{$start} --> {$end}\n";
+            $srt .= "{$cue['text']}\n\n";
+        }
+
+        return $srt;
+    }
+
+    public function formatSrtTimestamp(float $seconds): string
+    {
+        $hours = floor($seconds / 3600);
+        $minutes = floor(($seconds % 3600) / 60);
+        $secs = floor($seconds % 60);
+        $milliseconds = round(($seconds - floor($seconds)) * 1000);
+
+        return sprintf('%02d:%02d:%02d,%03d', $hours, $minutes, $secs, $milliseconds);
+    }
+
     public function formatVttTimestamp(float $seconds): string
     {
         $hours = floor($seconds / 3600);

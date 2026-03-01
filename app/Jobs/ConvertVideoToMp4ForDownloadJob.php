@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Managers\NotificationManager;
+use App\Managers\VideoManager;
 use App\Models\Video;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -23,7 +24,7 @@ class ConvertVideoToMp4ForDownloadJob implements ShouldQueue
         protected Video $video
     ) {}
 
-    public function handle(NotificationManager $notificationManager): void
+    public function handle(NotificationManager $notificationManager, VideoManager $videoManager): void
     {
         $video = $this->video;
 
@@ -51,23 +52,18 @@ class ConvertVideoToMp4ForDownloadJob implements ShouldQueue
         $outputPath = $outputDir.'/video_'.$video->id.'_'.time().'.mp4';
 
         try {
-            $ffmpegPath = config('media-library.ffmpeg_path');
-
-            $command = sprintf(
-                '%s -y -threads 1 -i %s -vf "scale=min(iw\,1920):min(ih\,1080):force_original_aspect_ratio=decrease,pad=ceil(iw/2)*2:ceil(ih/2)*2" -c:v libx264 -preset fast -crf 22 -maxrate 5M -bufsize 3M -pix_fmt yuv420p -c:a aac -b:a 128k -max_muxing_queue_size 1024 -movflags +faststart %s 2>&1',
-                escapeshellarg($ffmpegPath),
-                escapeshellarg($inputPath),
-                escapeshellarg($outputPath)
-            );
+            $command = $videoManager->buildMp4DownloadCommand($video, $inputPath, $outputPath);
 
             Log::info('Running FFmpeg MP4 download conversion', [
                 'video_id' => $video->id,
-                'command' => $command,
             ]);
 
             $output = [];
             $returnCode = 0;
             exec($command, $output, $returnCode);
+
+            // Clean up temp SRT file
+            $videoManager->cleanupTempSrt($video->id);
 
             if ($returnCode !== 0) {
                 $outputText = implode("\n", $output);
