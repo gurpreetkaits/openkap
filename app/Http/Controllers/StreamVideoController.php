@@ -6,12 +6,10 @@ use App\Jobs\ConvertVideoToMp4Job;
 use App\Jobs\GenerateThumbnailJob;
 use App\Jobs\GenerateTranscriptionJob;
 use App\Jobs\RemuxWebmJob;
-use App\Jobs\UploadToBunnyJob;
 use App\Models\User;
 use App\Models\Video;
 use App\Models\VideoZoomSetting;
 use App\Repositories\UserSettingRepository;
-use App\Services\BunnyStreamService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -20,7 +18,6 @@ use Illuminate\Support\Str;
 class StreamVideoController extends Controller
 {
     public function __construct(
-        protected BunnyStreamService $bunnyService,
         protected UserSettingRepository $userSettings
     ) {}
 
@@ -72,13 +69,6 @@ class StreamVideoController extends Controller
         touch("{$sessionDir}/video.webm");
 
         // Store session metadata
-        // Only use Bunny if configured AND user has active subscription
-        // Free users get local storage only (no encoding cost)
-        $bunnyEncodingEnabled = $this->userSettings->get($user, 'bunny_encoding_enabled');
-        $shouldUseBunny = $this->bunnyService->isConfigured()
-            && $user->shouldEncodeVideos()
-            && $bunnyEncodingEnabled;
-
         $metadata = [
             'user_id' => Auth::id(),
             'title' => $request->title,
@@ -88,16 +78,13 @@ class StreamVideoController extends Controller
             'next_expected_chunk' => 0,
             'total_size' => 0,
             'pending_chunks' => [],
-            'use_bunny' => $shouldUseBunny, // Only use Bunny for paid users
         ];
 
         file_put_contents("{$sessionDir}/metadata.json", json_encode($metadata));
 
         return response()->json([
             'session_id' => $sessionId,
-            'storage_type' => 'local', // Always local during recording
-            'will_use_bunny' => $shouldUseBunny,
-            'is_free_account' => ! $user->hasActiveSubscription(),
+            'storage_type' => 'local',
             'message' => 'Upload session started',
         ]);
     }
@@ -249,33 +236,22 @@ class StreamVideoController extends Controller
             }
         }
 
-        // Determine storage type based on Bunny availability AND user subscription
-        // Free users cannot use Bunny encoding (to save costs)
+        // All videos are stored and converted locally
         $user = User::find($userId);
-        $bunnyEncodingEnabled = $user ? $this->userSettings->get($user, 'bunny_encoding_enabled') : true;
-        $useBunny = ($metadata['use_bunny'] ?? false)
-            && $this->bunnyService->isConfigured()
-            && ($user ? $user->shouldEncodeVideos() : false)
-            && $bunnyEncodingEnabled;
 
         // Create Video record
         $title = $request->title ?? $metadata['title'];
         $workspace = $user->ownedWorkspaces()->first();
-        $videoData = [
+
+        $video = Video::create([
             'user_id' => $userId,
             'workspace_id' => $workspace?->id,
             'title' => $title,
             'description' => null,
             'duration' => $request->duration ?? 0,
             'is_public' => true,
-            'storage_type' => $useBunny ? 'bunny' : 'local',
-        ];
-
-        if ($useBunny) {
-            $videoData['bunny_status'] = 'pending';
-        }
-
-        $video = Video::create($videoData);
+            'storage_type' => 'local',
+        ]);
 
         // Get user for settings check
         $user = User::find($userId);
@@ -328,15 +304,14 @@ class StreamVideoController extends Controller
                 'share_token' => $video->share_token,
                 'is_public' => $video->is_public,
                 'storage_type' => $video->storage_type,
-                'bunny_status' => $video->bunny_status,
                 'created_at' => $video->created_at->toISOString(),
             ],
         ], 201);
 
         // Dispatch background jobs AFTER response is sent
-        dispatch(function () use ($video, $useBunny) {
+        dispatch(function () use ($video) {
             // Remux WebM to fix missing Duration and Cues (seek index)
-            // This makes the raw WebM playable/seekable while conversion/encoding runs
+            // This makes the raw WebM playable/seekable while conversion runs
             Log::info('Dispatching RemuxWebmJob', ['video_id' => $video->id]);
             RemuxWebmJob::dispatch($video);
 
@@ -344,15 +319,9 @@ class StreamVideoController extends Controller
             Log::info('Dispatching GenerateThumbnailJob', ['video_id' => $video->id]);
             GenerateThumbnailJob::dispatch($video);
 
-            if ($useBunny) {
-                // Upload to Bunny in background (HLS will be ready from Bunny)
-                Log::info('Dispatching UploadToBunnyJob', ['video_id' => $video->id]);
-                UploadToBunnyJob::dispatch($video);
-            } else {
-                // Convert locally
-                Log::info('Dispatching ConvertVideoToMp4Job', ['video_id' => $video->id]);
-                ConvertVideoToMp4Job::dispatch($video);
-            }
+            // Convert to MP4 locally
+            Log::info('Dispatching ConvertVideoToMp4Job', ['video_id' => $video->id]);
+            ConvertVideoToMp4Job::dispatch($video);
 
             // Auto-transcribe (has built-in rescheduling that waits for conversion)
             Log::info('Dispatching GenerateTranscriptionJob', ['video_id' => $video->id]);
