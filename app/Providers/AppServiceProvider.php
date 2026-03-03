@@ -46,13 +46,13 @@ class AppServiceProvider extends ServiceProvider
             $user = $event->billable;
             $subscription = $event->subscription;
 
-            $user->update([
+            $user->forceFill([
                 'subscription_status' => $subscription->status->value,
                 'polar_subscription_id' => $subscription->polar_id,
                 'polar_product_id' => $subscription->product_id,
                 'subscription_started_at' => now(),
                 'subscription_expires_at' => $subscription->current_period_end,
-            ]);
+            ])->save();
 
             Log::channel('daily')->info('User subscription status updated', [
                 'user_id' => $user->id,
@@ -70,10 +70,10 @@ class AppServiceProvider extends ServiceProvider
             $user = $event->billable;
             $subscription = $event->subscription;
 
-            $user->update([
+            $user->forceFill([
                 'subscription_status' => 'active',
                 'subscription_expires_at' => $subscription->current_period_end,
-            ]);
+            ])->save();
         });
 
         // Sync User model when subscription is canceled
@@ -86,11 +86,11 @@ class AppServiceProvider extends ServiceProvider
             $user = $event->billable;
             $subscription = $event->subscription;
 
-            $user->update([
+            $user->forceFill([
                 'subscription_status' => 'canceled',
                 'subscription_canceled_at' => now(),
                 'subscription_expires_at' => $subscription->ends_at ?? $subscription->current_period_end,
-            ]);
+            ])->save();
         });
 
         // Sync User model when subscription is revoked (ended)
@@ -102,10 +102,10 @@ class AppServiceProvider extends ServiceProvider
 
             $user = $event->billable;
 
-            $user->update([
+            $user->forceFill([
                 'subscription_status' => 'expired',
                 'subscription_expires_at' => now(),
-            ]);
+            ])->save();
         });
     }
 }

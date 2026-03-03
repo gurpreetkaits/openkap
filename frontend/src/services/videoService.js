@@ -337,14 +337,14 @@ class VideoService {
       if (handleUnauthorized(response)) return null
 
       if (!response.ok) {
-        console.warn('Failed to record view:', response.statusText)
+        // Failed to record view
         return null
       }
 
       const data = await response.json()
       return data
     } catch (error) {
-      console.warn('Error recording view:', error)
+      // Error recording view
       return null
     }
   }
@@ -360,14 +360,14 @@ class VideoService {
       })
 
       if (!response.ok) {
-        console.warn('Failed to record shared view:', response.statusText)
+        // Failed to record shared view
         return null
       }
 
       const data = await response.json()
       return data
     } catch (error) {
-      console.warn('Error recording shared view:', error)
+      // Error recording shared view
       return null
     }
   }

@@ -99,7 +99,7 @@ class StreamVideoController extends Controller
         }
 
         $request->validate([
-            'chunk' => 'required|file',
+            'chunk' => 'required|file|max:10240|mimetypes:video/webm,application/octet-stream',
             'chunk_index' => 'required|integer|min:0',
         ]);
 

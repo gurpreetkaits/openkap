@@ -302,7 +302,6 @@ export default {
 
     // Upload a chunk
     const uploadChunk = async (chunk, index) => {
-      console.log('up ch')
       if (!sessionId.value) return
 
       isUploading.value = true
@@ -362,12 +361,6 @@ export default {
         zoom_events: zoomSettings.zoom_events
       }
 
-      // Debug logging - check if events are being sent
-      console.log('=== Complete Upload Debug ===')
-      console.log('Zoom settings:', zoomSettings)
-      console.log('Events count:', zoomSettings.zoom_events?.events?.length ?? 0)
-      console.log('Request body:', JSON.stringify(requestBody, null, 2))
-
       const response = await fetch(buildApiUrl(`/api/stream/${sessionId.value}/complete`), {
         method: 'POST',
         headers: {
@@ -392,9 +385,7 @@ export default {
 
       for (let attempt = 1; attempt <= maxRetries; attempt++) {
         try {
-          console.log(`Attempting to complete upload (attempt ${attempt}/${maxRetries})...`)
           const video = await completeUpload()
-          console.log('Upload completed successfully')
           return video
         } catch (error) {
           console.error(`Upload completion attempt ${attempt} failed:`, error)
@@ -408,7 +399,6 @@ export default {
           // Wait before retrying (exponential backoff: 1s, 2s, 4s)
           if (attempt < maxRetries) {
             const delay = Math.pow(2, attempt - 1) * 1000
-            console.log(`Retrying in ${delay}ms...`)
             await new Promise(resolve => setTimeout(resolve, delay))
           }
         }
@@ -420,7 +410,6 @@ export default {
 
     const startRecording = async () => {
       try {
-        console.log('yo')
         // Check subscription status first
         let subscription = null
         try {
@@ -459,7 +448,7 @@ export default {
         const videoTrack = displayStream.getVideoTracks()[0]
         if (videoTrack) {
           const settings = videoTrack.getSettings()
-          console.log(`Recording at: ${settings.width}x${settings.height} @ ${settings.frameRate}fps`)
+          // Recording resolution captured
         }
 
         // Get microphone audio if enabled
@@ -475,7 +464,7 @@ export default {
               video: false
             })
           } catch (audioErr) {
-            console.warn('Could not get microphone access:', audioErr)
+            // Could not get microphone access
           }
         }
 
@@ -545,7 +534,7 @@ export default {
 
         // Fallback to VP8 if VP9 not supported
         if (!MediaRecorder.isTypeSupported(options.mimeType)) {
-          console.log('VP9 not supported, trying VP8...')
+          // VP9 not supported, trying VP8
           options = {
             mimeType: 'video/webm;codecs=vp8',
             videoBitsPerSecond: videoBitsPerSecond
@@ -554,11 +543,10 @@ export default {
 
         // Fallback to default if neither VP9 nor VP8 supported
         if (!MediaRecorder.isTypeSupported(options.mimeType)) {
-          console.log('VP8 not supported, using default codec...')
+          // VP8 not supported, using default codec
           options = { videoBitsPerSecond: videoBitsPerSecond }
         }
 
-        console.log('Using MediaRecorder with:', options)
         mediaRecorder = new MediaRecorder(stream, options)
 
         mediaRecorder.ondataavailable = async (event) => {

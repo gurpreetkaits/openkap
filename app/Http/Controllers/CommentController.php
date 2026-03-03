@@ -40,11 +40,13 @@ class CommentController extends Controller
             'parent_id' => 'nullable|integer|exists:comments,id',
         ]);
 
-        // Allow any authenticated user to comment on any video
-        // (authorization is only for viewing access, not commenting)
         $video = \App\Models\Video::find($videoId);
         if (! $video) {
             return response()->json(['message' => 'Video not found'], 404);
+        }
+
+        if (! $video->canBeAccessedBy(Auth::user())) {
+            return response()->json(['message' => 'Unauthorized'], 403);
         }
 
         $comment = $this->commentManager->createComment(

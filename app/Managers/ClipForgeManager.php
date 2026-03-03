@@ -47,7 +47,9 @@ class ClipForgeManager
         $this->clipForgeService->cleanupStaleFiles();
 
         $sessionId = Str::uuid()->toString();
-        $extension = $file->getClientOriginalExtension() ?: 'mp4';
+        $rawExtension = $file->getClientOriginalExtension() ?: 'mp4';
+        $allowedExtensions = ['mp4', 'webm', 'mov', 'avi', 'mkv'];
+        $extension = in_array(strtolower($rawExtension), $allowedExtensions) ? strtolower($rawExtension) : 'mp4';
         $filename = $sessionId.'.'.$extension;
 
         $file->move($this->clipForgeService->getTmpDir(), $filename);

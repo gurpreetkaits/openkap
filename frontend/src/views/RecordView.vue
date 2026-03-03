@@ -284,7 +284,7 @@ export default {
         const videoTrack = displayStream.getVideoTracks()[0]
         if (videoTrack) {
           const settings = videoTrack.getSettings()
-          console.log(`Recording at: ${settings.width}x${settings.height} @ ${settings.frameRate}fps`)
+          // Recording resolution captured
         }
 
         // Get microphone audio if user enabled it
@@ -299,13 +299,10 @@ export default {
               },
               video: false
             })
-            console.log('Microphone access granted')
           } catch (audioErr) {
-            console.warn('Could not get microphone access:', audioErr)
+            // Could not get microphone access
             toast.warning('Microphone access denied. Recording screen only.')
           }
-        } else {
-          console.log('Microphone not enabled by user')
         }
 
         // Mix audio tracks using Web Audio API
@@ -317,14 +314,12 @@ export default {
         if (systemAudioTracks.length > 0) {
           const systemSource = audioContext.createMediaStreamSource(new MediaStream(systemAudioTracks))
           systemSource.connect(audioDestination)
-          console.log('Added system audio')
         }
 
         // Add microphone audio if available
         if (audioStream) {
           const micSource = audioContext.createMediaStreamSource(audioStream)
           micSource.connect(audioDestination)
-          console.log('Added microphone audio')
         }
 
         // Combine video and mixed audio
@@ -367,8 +362,6 @@ export default {
           videoBitsPerSecond = 8000000 // 8 Mbps for 720p and below
         }
 
-        console.log(`Video resolution: ${width}x${height}, using bitrate: ${videoBitsPerSecond / 1000000} Mbps`)
-
         // Try different codecs for better seeking support
         // VP9 offers better compression at high resolutions
         let options = {
@@ -378,7 +371,7 @@ export default {
 
         // Fallback to VP8 if VP9 not supported
         if (!MediaRecorder.isTypeSupported(options.mimeType)) {
-          console.log('VP9 not supported, trying VP8...')
+          // VP9 not supported, trying VP8
           options = {
             mimeType: 'video/webm;codecs=vp8',
             videoBitsPerSecond: videoBitsPerSecond
@@ -387,11 +380,10 @@ export default {
 
         // Fallback to default if neither VP9 nor VP8 supported
         if (!MediaRecorder.isTypeSupported(options.mimeType)) {
-          console.log('VP8 not supported, using default codec...')
+          // VP8 not supported, using default codec
           options = { videoBitsPerSecond: videoBitsPerSecond }
         }
 
-        console.log('Using MediaRecorder with:', options)
         mediaRecorder = new MediaRecorder(stream, options)
         
         mediaRecorder.ondataavailable = (event) => {
@@ -515,8 +507,6 @@ export default {
         formData.append('is_public', '1')
 
         const apiUrl = buildApiUrl('/api/videos')
-        console.log('Uploading video to:', apiUrl)
-
         // Upload to backend
         const response = await fetch(apiUrl, {
           method: 'POST',
@@ -526,9 +516,6 @@ export default {
             'Authorization': `Bearer ${auth.token.value}`
           }
         })
-
-        console.log('Response status:', response.status)
-        console.log('Response content type:', response.headers.get('content-type'))
 
         // Handle 401 - redirect to login
         if (response.status === 401) {
@@ -575,7 +562,6 @@ export default {
         }
 
         const data = await response.json()
-        console.log('Video auto-saved successfully:', data)
 
         // Store the share URL and video ID
         shareUrl.value = data.video.share_url
@@ -659,14 +645,13 @@ export default {
       const autostart = urlParams.get('autostart')
 
       if (autostart === 'true') {
-        console.log('Auto-start recording triggered from extension')
+        // Auto-start recording triggered from extension
 
         // Clear the URL parameter
         window.history.replaceState({}, '', '/record')
 
         // Small delay to ensure UI is ready, then start recording
         setTimeout(() => {
-          console.log('Calling startRecording()...')
           startRecording()
         }, 800)
       }
@@ -674,7 +659,7 @@ export default {
       // Listen for auto-start message from extension content script
       window.addEventListener('message', (event) => {
         if (event.data?.type === 'SCREENSENSE_AUTO_START') {
-          console.log('Auto-start message received from extension')
+          // Auto-start message received from extension
           if (event.data.options) {
             recordingOptions.value.microphone = event.data.options.microphone !== false
           }

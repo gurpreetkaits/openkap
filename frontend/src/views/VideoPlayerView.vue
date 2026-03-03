@@ -1173,6 +1173,7 @@ import SBDeleteModal from '@/components/Global/SBDeleteModal.vue'
 import VideoShareIntegrations from '@/components/VideoShareIntegrations.vue'
 import Hls from 'hls.js'
 import { marked } from 'marked'
+import { sanitizeHtml } from '@/utils/sanitize'
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8888'
 
@@ -1465,10 +1466,11 @@ export default {
 
     // Highlight search matches in text
     const highlightSearch = (text) => {
-      if (!transcriptSearch.value.trim()) return text
+      if (!transcriptSearch.value.trim()) return sanitizeHtml(text)
+      const escaped = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
       const search = transcriptSearch.value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
       const regex = new RegExp(`(${search})`, 'gi')
-      return text.replace(regex, '<mark class="bg-yellow-200 text-yellow-900 rounded px-0.5">$1</mark>')
+      return escaped.replace(regex, '<mark class="bg-yellow-200 text-yellow-900 rounded px-0.5">$1</mark>')
     }
 
     // Copy individual segment
@@ -1623,7 +1625,7 @@ export default {
             xhr.onreadystatechange = function () {
               if (xhr.readyState === 4) {
                 if (xhr.status === 404 || xhr.status === 403) {
-                  console.warn('HLS manifest missing/forbidden, falling back to MP4')
+                  // HLS manifest missing/forbidden, falling back to MP4
                   hls.destroy()
                   videoElement.src = video.value.url
                 }
@@ -1678,7 +1680,7 @@ export default {
       } else if (hlsUrl && videoElement.canPlayType('application/vnd.apple.mpegurl')) {
         videoElement.src = hlsUrl
         videoElement.onerror = () => {
-          console.warn('Native HLS failed, falling back to MP4')
+          // Native HLS failed, falling back to MP4
           videoElement.src = video.value.url
         }
       } else {
@@ -2227,7 +2229,7 @@ export default {
 
     const formattedSummary = computed(() => {
       if (!summary.value) return ''
-      return marked.parse(summary.value, { breaks: true })
+      return sanitizeHtml(marked.parse(summary.value, { breaks: true }))
     })
 
     // Bug detection methods

@@ -414,6 +414,7 @@
     <!-- Article Body -->
     <article class="article-body">
         <div class="prose">
+            {{-- Blog content is from admin-controlled markdown files, sanitized during parsing --}}
             {!! $blog->content !!}
         </div>
 

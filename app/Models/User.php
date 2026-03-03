@@ -31,16 +31,6 @@ class User extends Authenticatable
         'website',
         'location',
         'email_verified_at',
-        // Subscription fields
-        'polar_customer_id',
-        'polar_subscription_id',
-        'subscription_status',
-        'subscription_started_at',
-        'subscription_expires_at',
-        'subscription_canceled_at',
-        'polar_product_id',
-        'polar_price_id',
-        'videos_count',
     ];
 
     /**
@@ -218,7 +208,7 @@ class User extends Authenticatable
     public function syncVideosCount(): int
     {
         $count = $this->videos()->count();
-        $this->update(['videos_count' => $count]);
+        $this->forceFill(['videos_count' => $count])->save();
 
         return $count;
     }

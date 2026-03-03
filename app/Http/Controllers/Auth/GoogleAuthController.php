@@ -58,12 +58,16 @@ class GoogleAuthController extends Controller
             // Redirect to frontend with token
             $frontendUrl = config('services.frontend.url');
 
-            return redirect("$frontendUrl/auth/callback?token=$token&user=".urlencode(json_encode([
+            $userData = urlencode(json_encode([
                 'id' => $user->id,
                 'name' => $user->name,
                 'email' => $user->email,
                 'avatar' => $user->avatar_url ?? $user->avatar,
-            ])));
+            ]));
+
+            // Use URL fragment (#) instead of query string (?) to prevent token leaking
+            // via server logs, Referer headers, and proxy caches
+            return redirect("$frontendUrl/auth/callback#token=$token&user=$userData");
 
         } catch (\Exception $e) {
             \Log::error('Google OAuth Error: '.$e->getMessage());

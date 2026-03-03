@@ -714,6 +714,7 @@ import { useBranding } from '@/composables/useBranding'
 import videoService from '@/services/videoService'
 import Hls from 'hls.js'
 import { marked } from 'marked'
+import { sanitizeHtml } from '@/utils/sanitize'
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8888'
 
@@ -1049,7 +1050,7 @@ export default {
 
     const formattedSummary = computed(() => {
       if (!summary.value) return ''
-      return marked.parse(summary.value, { breaks: true })
+      return sanitizeHtml(marked.parse(summary.value, { breaks: true }))
     })
 
     const initHls = () => {
@@ -1082,7 +1083,7 @@ export default {
               if (xhr.readyState === 4) {
                 if (xhr.status === 404 || xhr.status === 403) {
                   // Manifest missing or forbidden, fallback to raw
-                  console.warn('HLS manifest missing/forbidden, falling back to MP4')
+                  // HLS manifest missing/forbidden, falling back to MP4
                   hls.destroy()
                   videoElement.src = video.value.url
                 }
@@ -1140,7 +1141,7 @@ export default {
         // Native HLS support (Safari)
         videoElement.src = hlsUrl
         videoElement.onerror = () => {
-          console.warn('Native HLS failed, falling back to MP4')
+          // Native HLS failed, falling back to MP4
           videoElement.src = video.value.url
         }
       } else {

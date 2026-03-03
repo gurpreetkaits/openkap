@@ -58,7 +58,7 @@ class NotificationManager
             return null;
         }
 
-        $message = "<span class=\"font-medium text-gray-900\">{$viewer->name}</span> viewed your video \"{$video->title}\"";
+        $message = '<span class="font-medium text-gray-900">'.e($viewer->name).'</span> viewed your video "'.e($video->title).'"';
 
         return $this->notifications->createNotification([
             'user_id' => $video->user_id,
@@ -76,7 +76,7 @@ class NotificationManager
             return null;
         }
 
-        $message = "<span class=\"font-medium text-gray-900\">{$commenter->name}</span> commented on \"{$video->title}\"";
+        $message = '<span class="font-medium text-gray-900">'.e($commenter->name).'</span> commented on "'.e($video->title).'"';
 
         return $this->notifications->createNotification([
             'user_id' => $video->user_id,
@@ -90,7 +90,7 @@ class NotificationManager
 
     public function createQuotaWarningNotification(User $user, int $percentUsed): Notification
     {
-        $message = "You've used <span class=\"font-medium text-gray-900\">{$percentUsed}%</span> of your monthly recording quota";
+        $message = "You've used <span class=\"font-medium text-gray-900\">".e($percentUsed).'%</span> of your monthly recording quota';
 
         return $this->notifications->createNotification([
             'user_id' => $user->id,
@@ -104,7 +104,7 @@ class NotificationManager
 
     public function createVideoProcessedNotification(Video $video): Notification
     {
-        $message = "Your video \"{$video->title}\" has been <span class=\"font-medium text-gray-900\">processed</span> and is ready to share";
+        $message = 'Your video "'.e($video->title).'" has been <span class="font-medium text-gray-900">processed</span> and is ready to share';
 
         return $this->notifications->createNotification([
             'user_id' => $video->user_id,
@@ -130,7 +130,7 @@ class NotificationManager
 
     public function createFeedbackReplyNotification(Feedback $feedback): Notification
     {
-        $message = "Your feedback \"<span class=\"font-medium text-gray-900\">{$feedback->title}</span>\" has received a reply";
+        $message = 'Your feedback "<span class="font-medium text-gray-900">'.e($feedback->title).'</span>" has received a reply';
 
         return $this->notifications->createNotification([
             'user_id' => $feedback->user_id,
@@ -145,7 +145,7 @@ class NotificationManager
     public function createMentionNotification(\App\Models\Comment $comment, User $mentionedUser, string $authorName): Notification
     {
         $video = $comment->video;
-        $message = "<span class=\"font-medium text-gray-900\">{$authorName}</span> mentioned you in a comment on \"{$video->title}\"";
+        $message = '<span class="font-medium text-gray-900">'.e($authorName).'</span> mentioned you in a comment on "'.e($video->title).'"';
 
         return $this->notifications->createNotification([
             'user_id' => $mentionedUser->id,
@@ -160,7 +160,7 @@ class NotificationManager
     public function createReplyNotification(\App\Models\Comment $comment, User $parentAuthor, string $authorName): Notification
     {
         $video = $comment->video;
-        $message = "<span class=\"font-medium text-gray-900\">{$authorName}</span> replied to your comment on \"{$video->title}\"";
+        $message = '<span class="font-medium text-gray-900">'.e($authorName).'</span> replied to your comment on "'.e($video->title).'"';
 
         return $this->notifications->createNotification([
             'user_id' => $parentAuthor->id,
@@ -197,7 +197,7 @@ class NotificationManager
 
     public function createEditCompleteNotification(Video $newVideo, Video $sourceVideo): Notification
     {
-        $message = "Your edits on \"<span class=\"font-medium text-gray-900\">{$sourceVideo->title}</span>\" are complete! New video: \"{$newVideo->title}\"";
+        $message = 'Your edits on "<span class="font-medium text-gray-900">'.e($sourceVideo->title).'</span>" are complete! New video: "'.e($newVideo->title).'"';
 
         return $this->notifications->createNotification([
             'user_id' => $newVideo->user_id,
@@ -212,7 +212,7 @@ class NotificationManager
 
     public function createDownloadReadyNotification(Video $video, string $downloadLink): Notification
     {
-        $message = "Your MP4 download for \"<span class=\"font-medium text-gray-900\">{$video->title}</span>\" is ready";
+        $message = 'Your MP4 download for "<span class="font-medium text-gray-900">'.e($video->title).'</span>" is ready';
 
         return $this->notifications->createNotification([
             'user_id' => $video->user_id,

@@ -185,6 +185,7 @@
 <script>
 import { ref, computed, watch, nextTick } from 'vue'
 import { useChatbot } from '@/composables/useChatbot'
+import { sanitizeHtml } from '@/utils/sanitize'
 
 export default {
   name: 'ChatbotWidget',
@@ -240,7 +241,7 @@ export default {
         .replace(/^\d+\. (.+)$/gm, '<li class="ml-4 list-decimal">$1</li>')
         // Line breaks
         .replace(/\n/g, '<br>')
-      return html
+      return sanitizeHtml(html)
     }
 
     const formatTime = (dateString) => {

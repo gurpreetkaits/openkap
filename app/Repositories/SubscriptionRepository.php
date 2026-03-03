@@ -39,6 +39,6 @@ class SubscriptionRepository
 
     public function clearCustomerId(User $user): bool
     {
-        return $user->update(['polar_customer_id' => null]);
+        return $user->forceFill(['polar_customer_id' => null])->save();
     }
 }

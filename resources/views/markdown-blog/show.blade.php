@@ -324,6 +324,7 @@
         <h1 class="article-title">{{ $blog->title }}</h1>
 
         <div class="prose">
+            {{-- Blog content is from admin-controlled markdown files, sanitized during parsing --}}
             {!! $blog->content !!}
         </div>
 

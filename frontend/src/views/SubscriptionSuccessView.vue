@@ -21,7 +21,6 @@ async function handleCheckoutSuccess() {
   const checkoutId = route.query.checkout_id
 
   if (!checkoutId) {
-    console.warn('No checkout_id in URL, skipping checkout success call')
     // Redirect immediately if no checkout ID
     router.push('/subscription?success=true')
     return
@@ -42,8 +41,7 @@ async function handleCheckoutSuccess() {
     })
 
     if (response.ok) {
-      const data = await response.json()
-      console.log('Subscription created successfully:', data)
+      await response.json()
     } else {
       console.error('Failed to process checkout success')
     }

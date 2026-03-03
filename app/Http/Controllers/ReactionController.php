@@ -16,6 +16,10 @@ class ReactionController extends Controller
     {
         $video = Video::findOrFail($videoId);
 
+        if (! $video->is_public && Auth::check() && ! $video->canBeAccessedBy(Auth::user())) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
         $counts = $video->reactions()
             ->selectRaw('type, COUNT(*) as count')
             ->groupBy('type')
@@ -43,6 +47,10 @@ class ReactionController extends Controller
     public function store(Request $request, $videoId)
     {
         $video = Video::findOrFail($videoId);
+
+        if (! $video->is_public && Auth::check() && ! $video->canBeAccessedBy(Auth::user())) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
 
         $validated = $request->validate([
             'type' => 'required|string|in:'.implode(',', array_keys(Reaction::TYPES)),

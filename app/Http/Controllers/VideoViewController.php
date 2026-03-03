@@ -27,6 +27,10 @@ class VideoViewController extends Controller
 
         $video = $this->videoRepository->findOrFail($id);
 
+        if (! $video->is_public && (! Auth::check() || $video->user_id !== Auth::id())) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
         $result = $this->viewManager->recordView(
             $video,
             Auth::check() ? Auth::id() : null,
@@ -47,6 +51,10 @@ class VideoViewController extends Controller
     public function getStats($id): JsonResponse
     {
         $video = $this->videoRepository->findOrFail($id);
+
+        if ($video->user_id !== Auth::id()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
 
         $stats = $this->viewManager->getVideoStats($video);
 

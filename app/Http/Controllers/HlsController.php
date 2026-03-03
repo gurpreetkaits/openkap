@@ -156,7 +156,7 @@ class HlsController extends Controller
         }, 200, [
             'Content-Type' => $mimeType,
             'Content-Length' => $fileSize,
-            'Access-Control-Allow-Origin' => '*',
+            'Access-Control-Allow-Origin' => config('app.url', '*'),
             'Access-Control-Allow-Methods' => 'GET, OPTIONS',
             'Access-Control-Allow-Headers' => 'Content-Type, Range',
             'Cache-Control' => $mimeType === 'video/mp2t' ? 'public, max-age=31536000' : 'no-cache',

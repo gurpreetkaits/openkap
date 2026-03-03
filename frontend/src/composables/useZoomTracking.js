@@ -75,7 +75,6 @@ export function useZoomTracking() {
     }
 
     events.value.push(event)
-    console.log('[ZoomTracking] Click event captured:', event)
   }
 
   /**
@@ -157,7 +156,6 @@ export function useZoomTracking() {
     document.addEventListener('mousemove', handleMouseMove, true)
     document.addEventListener('click', handleClick, true)
     document.addEventListener('keydown', handleKeydown, true)
-    console.log('[ZoomTracking] Started tracking events, resolution:', resolution)
   }
 
   /**
@@ -173,10 +171,6 @@ export function useZoomTracking() {
     document.removeEventListener('click', handleClick, true)
     document.removeEventListener('keydown', handleKeydown, true)
 
-    const clickCount = events.value.filter(e => e.type === 'click').length
-    const moveCount = events.value.filter(e => e.type === 'move').length
-    const keyboardCount = events.value.filter(e => e.type === 'keyboard').length
-    console.log(`[ZoomTracking] Stopped tracking. Events: ${clickCount} clicks, ${moveCount} moves, ${keyboardCount} keyboard`)
   }
 
   /**

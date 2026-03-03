@@ -228,9 +228,6 @@ export function useRecording() {
             }
         }
 
-        if (uploadQueue.value.length > 0) {
-            console.warn(`Failed to upload ${uploadQueue.value.length} chunks after ${maxRetries} retries`);
-        }
     };
 
     // Complete upload - returns instantly, Bunny upload happens in background
@@ -250,11 +247,6 @@ export function useRecording() {
             zoom_duration_ms: zoomSettings.zoom_duration_ms,
             zoom_events: zoomSettings.zoom_events
         };
-
-        console.log('Completing upload with zoom events:', {
-            eventsCount: zoomSettings.zoom_events?.events?.length || 0,
-            zoomEnabled: zoomSettings.zoom_enabled
-        });
 
         const response = await fetch(`${API_BASE_URL}/api/stream/${sessionId.value}/complete`, {
             method: 'POST',
@@ -280,9 +272,7 @@ export function useRecording() {
 
         for (let attempt = 1; attempt <= maxRetries; attempt++) {
             try {
-                console.log(`Attempting to complete upload (attempt ${attempt}/${maxRetries})...`);
                 const video = await completeUpload();
-                console.log('Upload completed successfully');
                 return video;
             } catch (error) {
                 console.error(`Upload completion attempt ${attempt} failed:`, error);
@@ -296,7 +286,6 @@ export function useRecording() {
                 // Wait before retrying (exponential backoff: 1s, 2s, 4s)
                 if (attempt < maxRetries) {
                     const delay = Math.pow(2, attempt - 1) * 1000;
-                    console.log(`Retrying in ${delay}ms...`);
                     await new Promise(resolve => setTimeout(resolve, delay));
                 }
             }

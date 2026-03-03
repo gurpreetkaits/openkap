@@ -38,6 +38,9 @@ class FeedbackController extends Controller
             'description' => 'required|string|max:5000',
         ]);
 
+        // Strip HTML tags to prevent stored XSS - description is user input
+        $validated['description'] = strip_tags($validated['description']);
+
         $feedback = $this->feedbackManager->submitFeedback(
             $user,
             $validated['title'],

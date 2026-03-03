@@ -43,10 +43,19 @@ function goToHome() {
 }
 
 onMounted(() => {
-  const params = new URLSearchParams(window.location.search)
+  // Parse from URL fragment (#) first (secure), fallback to query string (?) for backwards compat
+  const hash = window.location.hash?.substring(1)
+  const params = hash
+    ? new URLSearchParams(hash)
+    : new URLSearchParams(window.location.search)
   const token = params.get('token')
   const userJson = params.get('user')
   const errorParam = params.get('error')
+
+  // Clear the hash from URL to prevent token exposure in browser history
+  if (hash && token) {
+    window.history.replaceState(null, '', window.location.pathname)
+  }
 
   if (errorParam) {
     error.value = true

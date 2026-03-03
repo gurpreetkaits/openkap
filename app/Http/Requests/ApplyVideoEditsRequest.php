@@ -39,8 +39,8 @@ class ApplyVideoEditsRequest extends FormRequest
             'text_overlays.*.x' => 'required|numeric|min:0|max:100',
             'text_overlays.*.y' => 'required|numeric|min:0|max:100',
             'text_overlays.*.font_size' => 'required|integer|min:12|max:120',
-            'text_overlays.*.font_color' => 'required|string|max:20',
-            'text_overlays.*.background_color' => 'nullable|string|max:20',
+            'text_overlays.*.font_color' => ['required', 'string', 'max:20', 'regex:/^[a-zA-Z0-9#@.()]+$/'],
+            'text_overlays.*.background_color' => ['nullable', 'string', 'max:20', 'regex:/^[a-zA-Z0-9#@.()]+$/'],
             'text_overlays.*.start_time' => 'nullable|numeric|min:0',
             'text_overlays.*.end_time' => 'nullable|numeric|min:0',
 

@@ -141,10 +141,10 @@ class SubscriptionManager
         $subscription->cancel();
 
         // Update user status manually since we're still using the old user fields
-        $user->update([
+        $user->forceFill([
             'subscription_status' => 'canceled',
             'subscription_canceled_at' => now(),
-        ]);
+        ])->save();
 
         return [
             'message' => 'Subscription canceled successfully',

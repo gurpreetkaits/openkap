@@ -6,6 +6,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\URL;
 use Symfony\Component\Routing\Exception\RouteNotFoundException;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -21,6 +22,19 @@ return Application::configure(basePath: dirname(__DIR__))
             'api/*',
             'polar/*',
         ]);
+
+        // Trust proxies for correct IP detection behind load balancers/reverse proxies
+        $middleware->trustProxies(at: '*');
+
+        // Global API rate limiting: 120 requests per minute per IP
+        $middleware->api(prepend: [
+            \Illuminate\Routing\Middleware\ThrottleRequests::class.':120,1',
+        ]);
+
+        // Force HTTPS in production
+        if (app()->environment('production')) {
+            URL::forceScheme('https');
+        }
 
         // Add security headers (X-Frame-Options, CSP, etc.) to prevent clickjacking
         $middleware->append(AddSecurityHeadersMiddleware::class);

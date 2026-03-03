@@ -418,7 +418,7 @@ class VideoController extends Controller
 
         return response($vtt, 200, [
             'Content-Type' => 'text/vtt; charset=utf-8',
-            'Access-Control-Allow-Origin' => '*',
+            'Access-Control-Allow-Origin' => config('app.url', '*'),
             'Cache-Control' => 'public, max-age=300',
         ]);
     }

@@ -284,16 +284,20 @@ class ClipForgeService
     {
         $palettePath = $this->tmpDir.'/'.Str::uuid()->toString().'_palette.png';
 
+        // Sanitize float params to prevent shell injection
+        $safeStart = sprintf('%.4f', (float) $start);
+        $safeDuration = sprintf('%.4f', (float) $duration);
+
         // For GIF we need two passes - use a shell command
         // First: generate palette, then: use palette to create GIF
         $filters = 'fps=12,scale=480:-1:flags=lanczos';
 
         return [
             'bash', '-c',
-            "{$this->ffmpegPath} -y -ss {$start} -i ".escapeshellarg($input).
-            " -t {$duration} -vf \"{$filters},palettegen\" ".escapeshellarg($palettePath).
-            " && {$this->ffmpegPath} -y -ss {$start} -i ".escapeshellarg($input).
-            " -t {$duration} -i ".escapeshellarg($palettePath).
+            "{$this->ffmpegPath} -y -ss {$safeStart} -i ".escapeshellarg($input).
+            " -t {$safeDuration} -vf \"{$filters},palettegen\" ".escapeshellarg($palettePath).
+            " && {$this->ffmpegPath} -y -ss {$safeStart} -i ".escapeshellarg($input).
+            " -t {$safeDuration} -i ".escapeshellarg($palettePath).
             " -lavfi \"{$filters} [x]; [x][1:v] paletteuse\" ".escapeshellarg($output).
             ' && rm -f '.escapeshellarg($palettePath),
         ];

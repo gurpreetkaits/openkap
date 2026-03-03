@@ -177,7 +177,7 @@ class SettingsController extends Controller
         }
 
         $request->validate([
-            'logo' => 'required|image|mimes:png,jpg,jpeg,svg,webp|max:2048',
+            'logo' => 'required|image|mimes:png,jpg,jpeg,webp|max:2048',
         ]);
 
         // Delete old logo if it exists

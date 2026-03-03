@@ -74,7 +74,7 @@ Route::get('/share/video/{token}/captions.vtt', [VideoController::class, 'shared
 Route::get('/share/video/{token}/comments', [CommentController::class, 'indexByToken']);
 Route::get('/share/video/{token}/commenters', [CommentController::class, 'commentersByToken']);
 Route::post('/share/video/{token}/view', [VideoViewController::class, 'recordSharedView'])
-    ->middleware(OptionalSanctumAuthMiddleware::class);
+    ->middleware([OptionalSanctumAuthMiddleware::class, 'throttle:30,1']);
 
 // HLS streaming with CORS support (for cross-origin playback)
 Route::get('/share/video/{token}/hls/master.m3u8', [HlsController::class, 'masterPlaylist']);
@@ -89,7 +89,8 @@ Route::prefix('blogs')->group(function () {
     Route::get('/{slug}', [MarkdownBlogController::class, 'apiShow']);
 });
 Route::get('/share/video/{token}/reactions', [ReactionController::class, 'indexByToken']);
-Route::post('/share/video/{token}/reactions', [ReactionController::class, 'storeByToken']); // Reactions don't require auth
+Route::post('/share/video/{token}/reactions', [ReactionController::class, 'storeByToken'])
+    ->middleware('throttle:30,1');
 
 // App settings - public (subscription prices, limits, etc.)
 Route::get('/settings', [SettingController::class, 'publicSettings']);
@@ -308,7 +309,7 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 // Legacy recording routes (deprecated - use /videos instead)
-Route::prefix('recordings')->group(function () {
+Route::prefix('recordings')->middleware('auth:sanctum')->group(function () {
     Route::get('/', function () {
         return response()->json([
             'recordings' => [],
@@ -319,7 +320,6 @@ Route::prefix('recordings')->group(function () {
     Route::post('/', function (Request $request) {
         return response()->json([
             'message' => 'Use /api/videos endpoint instead',
-            'id' => uniqid(),
         ]);
     });
 });

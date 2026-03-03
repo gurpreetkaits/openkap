@@ -11,6 +11,7 @@
     "@polar-sh/checkout": "^0.1.14",
     "@vueuse/motion": "^3.0.3",
     "canvas-confetti": "^1.9.4",
+    "dompurify": "^3.3.1",
     "hls.js": "^1.6.15",
     "marked": "^17.0.3",
     "posthog-js": "^1.313.0",

@@ -321,7 +321,7 @@
                     </div>
                     <span class="text-xs font-medium text-gray-600">Your feedback</span>
                   </div>
-                  <div class="text-sm text-gray-700 prose prose-sm max-w-none" v-html="selectedFeedback.description"></div>
+                  <div class="text-sm text-gray-700 prose prose-sm max-w-none whitespace-pre-wrap">{{ selectedFeedback.description }}</div>
                 </div>
 
                 <!-- Admin Reply -->
@@ -583,7 +583,7 @@ const formatDate = (str) => new Date(str).toLocaleDateString('en-US', { month: '
 
 // Handle description input from contenteditable
 const onDescriptionInput = (e) => {
-  form.value.description = e.target.innerHTML
+  form.value.description = e.target.innerText
 }
 
 // Handle paste - convert images to base64

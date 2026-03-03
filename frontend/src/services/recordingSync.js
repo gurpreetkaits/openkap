@@ -72,7 +72,6 @@ class RecordingSyncService {
   }
 
   handleExtensionState(detail) {
-    console.log('Received extension state:', detail);
     this.updateState({
       isRecording: detail.isRecording,
       isPaused: detail.isPaused,

@@ -211,8 +211,8 @@ class ApplyVideoEditsJob implements ShouldQueue
                 $textX = round($dimensions['width'] * (($textOverlay['x'] ?? 0) / 100));
                 $textY = round($dimensions['height'] * (($textOverlay['y'] ?? 0) / 100));
                 $fontSize = (int) ($textOverlay['font_size'] ?? 32);
-                $fontColor = $textOverlay['font_color'] ?? 'white';
-                $bgColor = $textOverlay['background_color'] ?? null;
+                $fontColor = preg_replace('/[^a-zA-Z0-9#@.()]/', '', $textOverlay['font_color'] ?? 'white');
+                $bgColor = isset($textOverlay['background_color']) ? preg_replace('/[^a-zA-Z0-9#@.()]/', '', $textOverlay['background_color']) : null;
 
                 $outLabel = "step_{$stepIndex}";
 
