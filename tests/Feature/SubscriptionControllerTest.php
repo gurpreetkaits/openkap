@@ -88,12 +88,12 @@ class SubscriptionControllerTest extends TestCase
 
     public function test_it_shows_active_subscription_user_has_unlimited_quota()
     {
-        $this->user->update([
+        $this->user->forceFill([
             'subscription_status' => 'active',
             'subscription_started_at' => now(),
             'subscription_expires_at' => now()->addMonth(),
             'videos_count' => 50,
-        ]);
+        ])->save();
 
         $response = $this->actingAs($this->user)
             ->getJson('/api/subscription/status');
