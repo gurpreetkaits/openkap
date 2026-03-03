@@ -123,9 +123,19 @@ class ProcessStaleUploadSessionsCommand extends Command
         ]);
 
         // Add video to media library (already assembled)
+        // Explicitly set MIME type — assembled .webm files are often misdetected as text/plain
         $video->addMedia($videoPath)
             ->usingFileName("video_{$video->id}.webm")
+            ->withCustomProperties(['mime_type' => 'video/webm'])
+            ->setCustomHeaders(['ContentType' => 'video/webm'])
             ->toMediaCollection('videos');
+
+        // Force-update the media record's mime_type since Spatie may have detected it wrong
+        $addedMedia = $video->getFirstMedia('videos');
+        if ($addedMedia && $addedMedia->mime_type !== 'video/webm') {
+            $addedMedia->mime_type = 'video/webm';
+            $addedMedia->save();
+        }
 
         // Log recovery
         Log::info('Auto-completing stale upload session', [

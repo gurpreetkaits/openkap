@@ -9,7 +9,9 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
+use Symfony\Component\Process\Process;
 
 class ConvertVideoToMp4Job implements ShouldQueue
 {
@@ -18,7 +20,7 @@ class ConvertVideoToMp4Job implements ShouldQueue
     /**
      * The number of times the job may be attempted.
      */
-    public int $tries = 3;
+    public int $tries = 1;
 
     /**
      * The maximum number of seconds the job can run.
@@ -46,6 +48,30 @@ class ConvertVideoToMp4Job implements ShouldQueue
         $video = $this->video;
         $video->refresh();
 
+        // Concurrency lock: only 1 ffmpeg conversion at a time on small servers
+        $lock = Cache::lock('ffmpeg-conversion', $this->timeout);
+
+        if (! $lock->get()) {
+            Log::warning('Another ffmpeg conversion is running, releasing back to queue', [
+                'video_id' => $video->id,
+            ]);
+            $this->release(60); // Retry after 60 seconds
+
+            return;
+        }
+
+        try {
+            $this->runConversion($video);
+        } finally {
+            $lock->release();
+        }
+    }
+
+    /**
+     * Run the actual video conversion.
+     */
+    private function runConversion(Video $video): void
+    {
         Log::info('Starting video conversion', [
             'video_id' => $video->id,
             'title' => $video->title,
@@ -105,43 +131,39 @@ class ConvertVideoToMp4Job implements ShouldQueue
         try {
             $ffmpegPath = config('media-library.ffmpeg_path');
 
-            // Cap at 1080p — 4K screen recordings are too heavy for server encoding
-            // and don't benefit from 4K delivery. Scale down if larger, preserve if smaller.
-            // -vf scale: cap width at 1920, height at 1080, maintain aspect ratio
-            // -preset fast: lower memory usage than medium, still good quality
-            // -crf 22: good quality for screen recordings
-            // -threads 1: limit memory usage on small servers
-            // -pix_fmt yuv420p: best compatibility
-            // -movflags +faststart: enable streaming before full download
-            $command = sprintf(
-                '%s -y -threads 1 -i %s -vf "scale=min(iw\,1920):min(ih\,1080):force_original_aspect_ratio=decrease,pad=ceil(iw/2)*2:ceil(ih/2)*2" -c:v libx264 -preset fast -crf 22 -maxrate 5M -bufsize 3M -pix_fmt yuv420p -c:a aac -b:a 128k -max_muxing_queue_size 1024 -movflags +faststart %s 2>&1',
-                escapeshellarg($ffmpegPath),
-                escapeshellarg($inputPath),
-                escapeshellarg($outputPath)
-            );
-
             Log::info('Running FFmpeg conversion', [
                 'video_id' => $video->id,
-                'command' => $command,
+                'input' => $inputPath,
             ]);
 
             // Execute conversion with progress tracking
             $video->update(['conversion_progress' => 20]);
 
-            $output = [];
-            $returnCode = 0;
-            exec($command, $output, $returnCode);
-
-            $outputText = implode("\n", $output);
-
-            Log::info('FFmpeg output', [
-                'video_id' => $video->id,
-                'return_code' => $returnCode,
-                'output_length' => strlen($outputText),
+            // Use Symfony Process so child ffmpeg gets killed on queue worker timeout
+            $process = new Process([
+                $ffmpegPath,
+                '-y',
+                '-threads', '1',
+                '-i', $inputPath,
+                '-vf', 'scale=min(iw\,1920):min(ih\,1080):force_original_aspect_ratio=decrease,pad=ceil(iw/2)*2:ceil(ih/2)*2',
+                '-c:v', 'libx264',
+                '-preset', 'fast',
+                '-crf', '22',
+                '-maxrate', '5M',
+                '-bufsize', '3M',
+                '-pix_fmt', 'yuv420p',
+                '-c:a', 'aac',
+                '-b:a', '128k',
+                '-max_muxing_queue_size', '1024',
+                '-movflags', '+faststart',
+                $outputPath,
             ]);
+            $process->setTimeout($this->timeout);
+            $process->run();
 
-            if ($returnCode !== 0) {
-                throw new \Exception("FFmpeg failed with code $returnCode: ".substr($outputText, -500));
+            if (! $process->isSuccessful()) {
+                $errorOutput = $process->getErrorOutput();
+                throw new \Exception('FFmpeg failed (exit '.$process->getExitCode().'): '.substr($errorOutput, -500));
             }
 
             if (! file_exists($outputPath)) {
@@ -153,19 +175,21 @@ class ConvertVideoToMp4Job implements ShouldQueue
                 throw new \Exception("Output file is too small: $outputSize bytes");
             }
 
-            // Extract actual duration using ffprobe
+            // Extract actual duration using ffprobe via Process
             $ffprobePath = config('media-library.ffprobe_path');
 
-            $probeCommand = sprintf(
-                '%s -v quiet -select_streams v:0 -show_entries stream=duration -of json %s',
-                escapeshellarg($ffprobePath),
-                escapeshellarg($outputPath)
-            );
+            $probeProcess = new Process([
+                $ffprobePath,
+                '-v', 'quiet',
+                '-select_streams', 'v:0',
+                '-show_entries', 'stream=duration',
+                '-of', 'json',
+                $outputPath,
+            ]);
+            $probeProcess->setTimeout(30);
+            $probeProcess->run();
 
-            $probeOutput = [];
-            exec($probeCommand, $probeOutput);
-            $probeData = json_decode(implode('', $probeOutput), true);
-
+            $probeData = json_decode($probeProcess->getOutput(), true);
             $duration = isset($probeData['streams'][0]['duration'])
                 ? (float) $probeData['streams'][0]['duration']
                 : $video->duration;
