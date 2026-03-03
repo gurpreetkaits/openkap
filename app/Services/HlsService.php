@@ -207,9 +207,9 @@ class HlsService
         array $settings
     ): string {
         return sprintf(
-            '%s -y -i %s '.
+            '%s -y -threads 2 -i %s '.
             '-vf "scale=%d:%d:force_original_aspect_ratio=decrease,pad=%d:%d:(ow-iw)/2:(oh-ih)/2" '.
-            '-c:v libx264 -preset fast -crf 22 '.
+            '-c:v libx264 -preset slow -crf 23 -threads 2 '.
             '-b:v %s -maxrate %s -bufsize %s '.
             '-c:a aac -b:a %s -ac 2 '.
             '-hls_time 6 -hls_list_size 0 -hls_segment_type mpegts '.
