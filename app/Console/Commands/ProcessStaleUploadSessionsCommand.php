@@ -7,6 +7,7 @@ use App\Jobs\GenerateThumbnailJob;
 use App\Models\User;
 use App\Models\Video;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class ProcessStaleUploadSessionsCommand extends Command
@@ -110,32 +111,35 @@ class ProcessStaleUploadSessionsCommand extends Command
             throw new \Exception('Video file is empty');
         }
 
-        // Create Video record
+        // Create Video record and attach media in a transaction
+        // so a failed media attach doesn't leave an orphaned Video row
         $userId = $metadata['user_id'];
         $title = $metadata['title'] ?? 'Auto-recovered Recording';
 
-        $video = Video::create([
-            'user_id' => $userId,
-            'title' => $title,
-            'description' => null,
-            'duration' => null, // Will be updated by conversion job
-            'is_public' => true,
-        ]);
+        $video = DB::transaction(function () use ($videoPath, $userId, $title) {
+            $video = Video::create([
+                'user_id' => $userId,
+                'title' => $title,
+                'description' => null,
+                'duration' => null,
+                'is_public' => true,
+            ]);
 
-        // Add video to media library (already assembled)
-        // Explicitly set MIME type — assembled .webm files are often misdetected as text/plain
-        $video->addMedia($videoPath)
-            ->usingFileName("video_{$video->id}.webm")
-            ->withCustomProperties(['mime_type' => 'video/webm'])
-            ->setCustomHeaders(['ContentType' => 'video/webm'])
-            ->toMediaCollection('videos');
+            $video->addMedia($videoPath)
+                ->preservingOriginal()
+                ->usingFileName("video_{$video->id}.webm")
+                ->withCustomProperties(['mime_type' => 'video/webm'])
+                ->toMediaCollection('videos');
 
-        // Force-update the media record's mime_type since Spatie may have detected it wrong
-        $addedMedia = $video->getFirstMedia('videos');
-        if ($addedMedia && $addedMedia->mime_type !== 'video/webm') {
-            $addedMedia->mime_type = 'video/webm';
-            $addedMedia->save();
-        }
+            // Force-update the media record's mime_type since Spatie may have detected it wrong
+            $addedMedia = $video->getFirstMedia('videos');
+            if ($addedMedia && $addedMedia->mime_type !== 'video/webm') {
+                $addedMedia->mime_type = 'video/webm';
+                $addedMedia->save();
+            }
+
+            return $video;
+        });
 
         // Log recovery
         Log::info('Auto-completing stale upload session', [
