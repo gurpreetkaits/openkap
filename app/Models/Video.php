@@ -18,6 +18,7 @@ class Video extends Model implements HasMedia
         'duration',
         'has_audio',
         'user_id',
+        'user_ip',
         'folder_id',
         'workspace_id',
         'file_size_bytes',
