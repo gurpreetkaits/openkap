@@ -116,12 +116,17 @@ class Setting extends Model
     // Convenience methods for common settings
     public static function getFreeVideoLimit(): int
     {
-        return (int) self::getValue('free_video_limit', 5);
+        return (int) self::getValue('free_video_limit', 2);
     }
 
     public static function getFreeRecordingDurationLimit(): int
     {
         return (int) self::getValue('free_recording_duration_limit', 300);
+    }
+
+    public static function getMinRecordingDurationLimit(): int
+    {
+        return (int) self::getValue('min_recording_duration_limit', 30);
     }
 
     public static function getMonthlyPrice(): int

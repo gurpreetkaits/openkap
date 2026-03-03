@@ -80,6 +80,28 @@ class VideoController extends Controller
             'is_public' => 'nullable|boolean',
         ]);
 
+        // Duration enforcement for free users
+        $user = Auth::user();
+        $duration = $request->duration ?: null;
+        if ($duration !== null && ! $user->hasActiveSubscription()) {
+            $minDuration = $user->getMinRecordingSeconds();
+            $maxDuration = $user->getMaxRecordingSeconds();
+
+            if ($duration < $minDuration) {
+                return response()->json([
+                    'error' => 'duration_too_short',
+                    'message' => "Recording must be at least {$minDuration} seconds.",
+                ], 422);
+            }
+
+            if ($duration > $maxDuration) {
+                return response()->json([
+                    'error' => 'duration_too_long',
+                    'message' => 'Recording cannot exceed '.($maxDuration / 60).' minutes on the free plan.',
+                ], 422);
+            }
+        }
+
         $video = $this->videoManager->createVideo(
             Auth::user(),
             $request->only(['title', 'description', 'duration', 'is_public']),

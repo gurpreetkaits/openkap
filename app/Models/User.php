@@ -396,6 +396,18 @@ class User extends Authenticatable
     }
 
     /**
+     * Get min recording duration in seconds based on subscription
+     */
+    public function getMinRecordingSeconds(): int
+    {
+        if ($this->hasActiveSubscription()) {
+            return 1;
+        }
+
+        return Setting::getMinRecordingDurationLimit();
+    }
+
+    /**
      * Get max recording duration in seconds based on context
      */
     public function getMaxRecordingSeconds(?Workspace $workspace = null): int

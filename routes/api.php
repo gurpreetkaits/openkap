@@ -328,14 +328,18 @@ Route::prefix('recordings')->middleware('auth:sanctum')->group(function () {
 // STREAMING UPLOAD ROUTES (Chunked upload during recording)
 // ============================================
 Route::middleware('auth:sanctum')->prefix('stream')->group(function () {
-    // Starting a new upload requires subscription limit check
+    // Starting a new upload requires subscription limit check + rate limit
     Route::post('/start', [\App\Http\Controllers\StreamVideoController::class, 'startUpload'])
-        ->middleware(CheckSubscriptionLimit::class);
+        ->middleware([CheckSubscriptionLimit::class, 'throttle:5,1']);
 
-    Route::post('/{sessionId}/chunk', [\App\Http\Controllers\StreamVideoController::class, 'uploadChunk']);
-    Route::post('/{sessionId}/complete', [\App\Http\Controllers\StreamVideoController::class, 'completeUpload']);
-    Route::post('/{sessionId}/cancel', [\App\Http\Controllers\StreamVideoController::class, 'cancelUpload']);
-    Route::get('/{sessionId}/status', [\App\Http\Controllers\StreamVideoController::class, 'getStatus']);
+    Route::post('/{sessionId}/chunk', [\App\Http\Controllers\StreamVideoController::class, 'uploadChunk'])
+        ->middleware('throttle:60,1');
+    Route::post('/{sessionId}/complete', [\App\Http\Controllers\StreamVideoController::class, 'completeUpload'])
+        ->middleware([CheckSubscriptionLimit::class, 'throttle:5,1']);
+    Route::post('/{sessionId}/cancel', [\App\Http\Controllers\StreamVideoController::class, 'cancelUpload'])
+        ->middleware('throttle:5,1');
+    Route::get('/{sessionId}/status', [\App\Http\Controllers\StreamVideoController::class, 'getStatus'])
+        ->middleware('throttle:30,1');
 });
 
 // ============================================

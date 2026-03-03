@@ -223,6 +223,42 @@ class StreamVideoController extends Controller
             return response()->json(['message' => 'No video data received'], 400);
         }
 
+        // Defense in depth: re-check subscription limit at completion time
+        $user = User::find($userId);
+        if (! $user || ! $user->canRecordVideo()) {
+            $this->cleanupSession($sessionId);
+
+            return response()->json([
+                'error' => 'video_limit_reached',
+                'message' => 'You have reached your video limit. Upgrade to Pro to continue recording.',
+            ], 403);
+        }
+
+        // Duration enforcement for free users
+        $duration = $request->duration ?: null;
+        if ($duration !== null && ! $user->hasActiveSubscription()) {
+            $minDuration = $user->getMinRecordingSeconds();
+            $maxDuration = $user->getMaxRecordingSeconds();
+
+            if ($duration < $minDuration) {
+                $this->cleanupSession($sessionId);
+
+                return response()->json([
+                    'error' => 'duration_too_short',
+                    'message' => "Recording must be at least {$minDuration} seconds.",
+                ], 422);
+            }
+
+            if ($duration > $maxDuration) {
+                $this->cleanupSession($sessionId);
+
+                return response()->json([
+                    'error' => 'duration_too_long',
+                    'message' => 'Recording cannot exceed '.($maxDuration / 60).' minutes on the free plan.',
+                ], 422);
+            }
+        }
+
         // Append any remaining pending chunks
         if (! empty($metadata['pending_chunks'])) {
             ksort($metadata['pending_chunks']);
@@ -247,7 +283,7 @@ class StreamVideoController extends Controller
             'workspace_id' => $workspace?->id,
             'title' => $title,
             'description' => null,
-            'duration' => $request->duration ?? null,
+            'duration' => $request->duration ?: null,
             'is_public' => true,
             'storage_type' => 'local',
         ]);

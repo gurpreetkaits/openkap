@@ -63,6 +63,9 @@ class GoogleAuthController extends Controller
                 'name' => $user->name,
                 'email' => $user->email,
                 'avatar' => $user->avatar_url ?? $user->avatar,
+                'plan_type' => $user->getPlanType(),
+                'max_recording_seconds' => $user->getMaxRecordingSeconds(),
+                'min_recording_seconds' => $user->getMinRecordingSeconds(),
             ]));
 
             // Use URL fragment (#) instead of query string (?) to prevent token leaking
@@ -107,6 +110,12 @@ class GoogleAuthController extends Controller
                 'website' => $user->website,
                 'location' => $user->location,
                 'created_at' => $user->created_at->toISOString(),
+                'plan_type' => $user->getPlanType(),
+                'max_recording_seconds' => $user->getMaxRecordingSeconds(),
+                'min_recording_seconds' => $user->getMinRecordingSeconds(),
+                'can_record' => $user->canRecordVideo(),
+                'videos_count' => $user->getVideosCount(),
+                'max_videos' => $user->getMaxVideos(),
             ],
         ]);
     }

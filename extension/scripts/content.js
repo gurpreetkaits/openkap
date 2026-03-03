@@ -24,6 +24,9 @@
   // Mark DOM so the page can detect extension (crosses isolation boundary)
   document.documentElement.setAttribute('data-screensense-extension', 'true');
 
+  // Expose extension ID so the page can use chrome.runtime.sendMessage directly
+  document.documentElement.setAttribute('data-screensense-extension-id', chrome.runtime.id);
+
   // Dispatch event to notify website that extension is installed
   window.dispatchEvent(new CustomEvent('screensense:extension:ready', {
     detail: { version: '1.0.0' }
@@ -164,6 +167,71 @@ async function getAuthToken() {
       resolve(null);
     }
   });
+}
+
+// Helper to get stored user data (includes plan info)
+async function getAuthUser() {
+  const localUser = localStorage.getItem('auth_user');
+  if (localUser) {
+    try { return JSON.parse(localUser); } catch (e) {}
+  }
+  if (!isExtensionContextValid()) return null;
+  return new Promise((resolve) => {
+    try {
+      chrome.storage.local.get(['auth_user'], (result) => {
+        resolve(result.auth_user || null);
+      });
+    } catch (e) {
+      resolve(null);
+    }
+  });
+}
+
+// Show a toast notification
+function showToast(message, type = 'info') {
+  const colors = {
+    info: '#3b82f6',
+    error: '#ef4444',
+    warning: '#f59e0b',
+    success: '#10b981'
+  };
+  const toast = document.createElement('div');
+  toast.style.cssText = `
+    position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+    background: ${colors[type] || colors.info}; color: white;
+    padding: 12px 24px; border-radius: 8px; z-index: 9999999;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 14px; font-weight: 500; box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: opacity 0.3s ease;
+  `;
+  toast.textContent = message;
+  document.body.appendChild(toast);
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    setTimeout(() => toast.remove(), 300);
+  }, 4000);
+}
+
+// Max duration auto-stop timer
+let maxDurationTimer = null;
+let maxDurationRemainingMs = null;
+
+function startMaxDurationTimer(maxSeconds) {
+  clearMaxDurationTimer();
+  if (!maxSeconds || maxSeconds <= 0) return;
+  maxDurationRemainingMs = maxSeconds * 1000;
+  maxDurationTimer = setTimeout(() => {
+    showToast('Maximum recording duration reached. Stopping automatically.', 'warning');
+    stopRecording();
+  }, maxDurationRemainingMs);
+}
+
+function clearMaxDurationTimer() {
+  if (maxDurationTimer) {
+    clearTimeout(maxDurationTimer);
+    maxDurationTimer = null;
+  }
+  maxDurationRemainingMs = null;
 }
 
 // Notify website of extension recording state
@@ -524,6 +592,13 @@ async function initRecording(options) {
     mediaRecorder.start(100); // Capture data every 100ms
     console.log('Recording started');
 
+    // Start max duration auto-stop timer for free users
+    getAuthUser().then(user => {
+      if (user && user.max_recording_seconds) {
+        startMaxDurationTimer(user.max_recording_seconds);
+      }
+    });
+
     // Show the control bar
     console.log('Creating control bar...');
     createControlBar();
@@ -837,6 +912,16 @@ function startControlBarTimer() {
     clearInterval(controlBarTimer);
   }
 
+  // Get user data for countdown display
+  let maxRecordingSec = null;
+  let userIsFree = false;
+  getAuthUser().then(user => {
+    if (user) {
+      maxRecordingSec = user.max_recording_seconds || null;
+      userIsFree = !user.plan_type || user.plan_type === 'free';
+    }
+  });
+
   const updateTimer = () => {
     if (!recordingStartTime) return;
 
@@ -845,7 +930,20 @@ function startControlBarTimer() {
       const elapsed = Math.floor((Date.now() - recordingStartTime) / 1000);
       const minutes = Math.floor(elapsed / 60);
       const seconds = elapsed % 60;
-      timerEl.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+      let display = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+      // Show countdown for free users when less than 60s remaining
+      if (userIsFree && maxRecordingSec) {
+        const remaining = maxRecordingSec - elapsed;
+        if (remaining <= 60 && remaining > 0) {
+          display += ` (${remaining}s left)`;
+          timerEl.style.color = '#ef4444';
+        } else if (remaining > 60) {
+          timerEl.style.color = '';
+        }
+      }
+
+      timerEl.textContent = display;
     }
   };
 
@@ -1305,6 +1403,18 @@ function pauseRecording() {
   if (mediaRecorder && mediaRecorder.state === 'recording') {
     mediaRecorder.pause();
     updateControlBarPauseState(true);
+    // Pause max duration timer — calculate remaining time
+    if (maxDurationTimer && maxDurationRemainingMs != null) {
+      const elapsed = recordingStartTime ? Date.now() - recordingStartTime : 0;
+      clearTimeout(maxDurationTimer);
+      maxDurationTimer = null;
+      // Store how much time was left (approx)
+      getAuthUser().then(user => {
+        if (user && user.max_recording_seconds) {
+          maxDurationRemainingMs = Math.max(0, user.max_recording_seconds * 1000 - elapsed);
+        }
+      });
+    }
     console.log('Recording paused');
   }
 }
@@ -1313,15 +1423,37 @@ function resumeRecording() {
   if (mediaRecorder && mediaRecorder.state === 'paused') {
     mediaRecorder.resume();
     updateControlBarPauseState(false);
+    // Resume max duration timer with remaining time
+    if (maxDurationRemainingMs != null && maxDurationRemainingMs > 0) {
+      maxDurationTimer = setTimeout(() => {
+        showToast('Maximum recording duration reached. Stopping automatically.', 'warning');
+        stopRecording();
+      }, maxDurationRemainingMs);
+    }
     console.log('Recording resumed');
   }
 }
 
 async function stopRecording() {
+  clearMaxDurationTimer();
   return new Promise((resolve) => {
     if (mediaRecorder && mediaRecorder.state !== 'inactive') {
       mediaRecorder.onstop = async () => {
         console.log('Recording stopped');
+
+        // Check min duration for free users
+        const durationSec = recordingStartTime ? Math.round((Date.now() - recordingStartTime) / 1000) : 0;
+        const user = await getAuthUser();
+        const minDuration = user?.min_recording_seconds || 0;
+        const isPaidUser = user?.plan_type && user.plan_type !== 'free';
+
+        if (!isPaidUser && minDuration > 0 && durationSec < minDuration) {
+          showToast(`Recording too short. Minimum is ${minDuration} seconds for free accounts.`, 'error');
+          recordedChunks = [];
+          cleanup();
+          resolve();
+          return;
+        }
 
         // Auto-upload to backend
         if (recordedChunks.length > 0) {
@@ -1399,8 +1531,9 @@ async function uploadToBackend(blob) {
     throw new Error('Not authenticated');
   }
 
-  // Calculate duration from recording time
-  const duration = recordingStartTime ? Math.floor((Date.now() - recordingStartTime) / 1000) : 0;
+  // Calculate duration from recording time — never send 0
+  const rawDuration = recordingStartTime ? Math.round((Date.now() - recordingStartTime) / 1000) : 0;
+  const duration = rawDuration > 0 ? rawDuration : null;
 
   // Generate default title
   const timestamp = new Date().toLocaleString();
@@ -1410,7 +1543,9 @@ async function uploadToBackend(blob) {
   const formData = new FormData();
   formData.append('video', blob, `recording-${Date.now()}.webm`);
   formData.append('title', title);
-  formData.append('duration', duration.toString());
+  if (duration) {
+    formData.append('duration', duration.toString());
+  }
   formData.append('is_public', '1');
 
   console.log('Uploading video to backend...', { title, duration });
@@ -1556,6 +1691,9 @@ function showUploadNotification(shareUrl) {
 }
 
 function cleanup() {
+  // Clear max duration timer
+  clearMaxDurationTimer();
+
   // Remove the control bar
   removeControlBar();
 

@@ -27,6 +27,30 @@ function initFromStorage() {
   }
 }
 
+// Get extension ID from DOM attribute set by content script
+function getExtensionId() {
+  return document.documentElement.getAttribute('data-screensense-extension-id')
+}
+
+// Send message to extension — prefer direct chrome.runtime.sendMessage, fall back to origin-restricted postMessage
+function sendToExtension(message) {
+  const extensionId = getExtensionId()
+  if (extensionId && window.chrome?.runtime?.sendMessage) {
+    try {
+      chrome.runtime.sendMessage(extensionId, message)
+      return
+    } catch (e) {
+      // Extension might not be available, fall back
+    }
+  }
+  // Fallback: origin-restricted postMessage (NOT '*')
+  try {
+    window.postMessage(message, window.location.origin)
+  } catch (e) {
+    // Could not notify extension
+  }
+}
+
 // Clear authentication
 function clearAuth() {
   state.token = null
@@ -35,11 +59,7 @@ function clearAuth() {
   localStorage.removeItem('auth_user')
 
   // Notify extension to clear auth storage
-  try {
-    window.postMessage({ type: 'SCREENSENSE_AUTH_LOGOUT' }, '*')
-  } catch (e) {
-    // Could not notify extension of logout
-  }
+  sendToExtension({ action: 'logout', type: 'SCREENSENSE_AUTH_LOGOUT' })
 }
 
 // Set authentication
@@ -50,13 +70,7 @@ function setAuth(token, user) {
   localStorage.setItem('auth_user', JSON.stringify(user))
 
   // Sync to extension storage if available
-  if (window.chrome?.runtime?.sendMessage) {
-    try {
-      window.postMessage({ type: 'SCREENSENSE_AUTH_UPDATE', token, user }, '*')
-    } catch (e) {
-      // Could not sync auth to extension
-    }
-  }
+  sendToExtension({ action: 'login', data: { token, user }, type: 'SCREENSENSE_AUTH_UPDATE', token, user })
 }
 
 // Logout function

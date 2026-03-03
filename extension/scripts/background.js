@@ -346,6 +346,26 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   }
 });
 
+// Handle external messages (from website via chrome.runtime.sendMessage)
+chrome.runtime.onMessageExternal.addListener((message, sender, sendResponse) => {
+  if (message.action === 'login' && message.data) {
+    const { token, user } = message.data;
+    chrome.storage.local.set({ auth_token: token, auth_user: user }, () => {
+      console.log('Auth synced from website (external message)');
+      sendResponse({ success: true });
+    });
+    return true;
+  }
+  if (message.action === 'logout') {
+    chrome.storage.local.remove(['auth_token', 'auth_user'], () => {
+      console.log('Auth cleared from website (external message)');
+      sendResponse({ success: true });
+    });
+    return true;
+  }
+  sendResponse({ success: false, error: 'Unknown action' });
+});
+
 // Handle extension icon click - open record page directly
 chrome.action.onClicked.addListener(async (tab) => {
   console.log('Extension icon clicked, opening record page');

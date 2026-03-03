@@ -118,7 +118,7 @@ class ProcessStaleUploadSessionsCommand extends Command
             'user_id' => $userId,
             'title' => $title,
             'description' => null,
-            'duration' => 0, // Will be updated by conversion job
+            'duration' => null, // Will be updated by conversion job
             'is_public' => true,
         ]);
 
