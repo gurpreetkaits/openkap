@@ -188,7 +188,7 @@ class StreamVideoController extends Controller
         }
 
         $request->validate([
-            'duration' => 'nullable|integer',
+            'duration' => 'nullable|integer|min:1',
             'title' => 'nullable|string|max:255',
             'zoom_enabled' => 'nullable|boolean',
             'zoom_level' => 'nullable|numeric|min:1.2|max:4',
@@ -247,7 +247,7 @@ class StreamVideoController extends Controller
             'workspace_id' => $workspace?->id,
             'title' => $title,
             'description' => null,
-            'duration' => $request->duration ?? 0,
+            'duration' => $request->duration ?? null,
             'is_public' => true,
             'storage_type' => 'local',
         ]);
