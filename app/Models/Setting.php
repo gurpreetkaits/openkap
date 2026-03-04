@@ -126,7 +126,7 @@ class Setting extends Model
 
     public static function getMinRecordingDurationLimit(): int
     {
-        return (int) self::getValue('min_recording_duration_limit', 30);
+        return (int) self::getValue('min_recording_duration_limit', 1);
     }
 
     public static function getMonthlyPrice(): int
