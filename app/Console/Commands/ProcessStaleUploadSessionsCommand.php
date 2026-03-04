@@ -121,7 +121,7 @@ class ProcessStaleUploadSessionsCommand extends Command
                 'user_id' => $userId,
                 'title' => $title,
                 'description' => null,
-                'duration' => null,
+                'duration' => 0,
                 'is_public' => true,
             ]);
 

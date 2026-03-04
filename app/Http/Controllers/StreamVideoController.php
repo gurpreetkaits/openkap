@@ -283,7 +283,7 @@ class StreamVideoController extends Controller
             'workspace_id' => $workspace?->id,
             'title' => $title,
             'description' => null,
-            'duration' => $request->duration ?: null,
+            'duration' => (int) ($request->duration ?: 0),
             'is_public' => true,
             'storage_type' => 'local',
         ]);
