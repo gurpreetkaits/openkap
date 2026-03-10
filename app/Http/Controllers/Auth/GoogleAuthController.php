@@ -66,6 +66,7 @@ class GoogleAuthController extends Controller
                 'plan_type' => $user->getPlanType(),
                 'max_recording_seconds' => $user->getMaxRecordingSeconds(),
                 'min_recording_seconds' => $user->getMinRecordingSeconds(),
+                'is_admin' => $user->isAdmin(),
             ]));
 
             // Use URL fragment (#) instead of query string (?) to prevent token leaking
@@ -116,6 +117,7 @@ class GoogleAuthController extends Controller
                 'can_record' => $user->canRecordVideo(),
                 'videos_count' => $user->getVideosCount(),
                 'max_videos' => $user->getMaxVideos(),
+                'is_admin' => $user->isAdmin(),
             ],
         ]);
     }

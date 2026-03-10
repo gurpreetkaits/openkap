@@ -1,7 +1,8 @@
 <?php
 
-use App\Http\Controllers\Auth\GoogleAuthController;
+use App\Http\Controllers\AdminDashboardController;
 // use App\Http\Controllers\BunnyVideoController; // Bunny disabled - encoding costs too high
+use App\Http\Controllers\Auth\GoogleAuthController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\ClipForgeController;
 use App\Http\Controllers\CommentController;
@@ -23,6 +24,7 @@ use App\Http\Controllers\VideoViewController;
 use App\Http\Controllers\WorkspaceController;
 use App\Http\Controllers\WorkspaceInvitationController;
 use App\Http\Controllers\WorkspaceMemberController;
+use App\Http\Middleware\AdminMiddleware;
 use App\Http\Middleware\CheckSubscriptionLimit;
 use App\Http\Middleware\OptionalSanctumAuthMiddleware;
 use Illuminate\Http\Request;
@@ -307,6 +309,15 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/send', [ChatController::class, 'send']);
     });
 });
+
+// ============================================
+// ADMIN ROUTES (Admin access required)
+// ============================================
+Route::middleware(['auth:sanctum', AdminMiddleware::class])
+    ->prefix('admin')
+    ->group(function () {
+        Route::get('/dashboard', [AdminDashboardController::class, 'index']);
+    });
 
 // Legacy recording routes (deprecated - use /videos instead)
 Route::prefix('recordings')->middleware('auth:sanctum')->group(function () {

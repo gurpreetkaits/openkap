@@ -27,6 +27,20 @@
         </button>
 
         <nav class="space-y-0.5">
+          <!-- Admin Dashboard -->
+          <router-link
+            v-if="isAdmin"
+            to="/admin/dashboard"
+            class="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all group"
+            :class="isActive('/admin/dashboard') ? 'text-gray-900 bg-gray-50' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'"
+          >
+            <svg class="w-4 h-4 transition-colors" :class="isActive('/admin/dashboard') ? 'text-orange-600' : 'text-gray-400 group-hover:text-gray-600'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+            </svg>
+            Dashboard
+            <span class="ml-auto text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-orange-100 text-orange-700">Admin</span>
+          </router-link>
+
           <router-link
             to="/videos"
             class="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all group"
@@ -428,6 +442,21 @@
         <!-- Mobile Navigation -->
         <div class="flex-1 overflow-y-auto px-3 py-4">
           <nav class="space-y-0.5">
+            <!-- Admin Dashboard (Mobile) -->
+            <router-link
+              v-if="isAdmin"
+              to="/admin/dashboard"
+              @click="sidebarOpen = false"
+              class="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all group"
+              :class="isActive('/admin/dashboard') ? 'text-gray-900 bg-gray-50' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'"
+            >
+              <svg class="w-4 h-4 transition-colors" :class="isActive('/admin/dashboard') ? 'text-orange-600' : 'text-gray-400 group-hover:text-gray-600'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+              </svg>
+              Dashboard
+              <span class="ml-auto text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-orange-100 text-orange-700">Admin</span>
+            </router-link>
+
             <router-link
               to="/videos"
               @click="sidebarOpen = false"
@@ -711,6 +740,7 @@ export default {
     }))
 
     const isAuthenticated = computed(() => auth.isAuthenticated.value)
+    const isAdmin = computed(() => auth.isAdmin.value)
 
     const isActive = (path) => {
       return route.path === path
@@ -726,7 +756,8 @@ export default {
         '/subscription': 'Plans & Billing',
         '/integrations': 'Integrations',
         '/feedback': 'Feedback',
-        '/settings': 'Settings'
+        '/settings': 'Settings',
+        '/admin/dashboard': 'Admin Dashboard'
       }
       if (route.path.startsWith('/workspace/')) {
         return 'Workspace'
@@ -957,6 +988,7 @@ export default {
       subscription,
       subscriptionUsagePercent,
       isAuthenticated,
+      isAdmin,
       isActive,
       currentPageName,
       unreadCount,

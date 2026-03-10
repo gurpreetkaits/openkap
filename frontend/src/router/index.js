@@ -86,6 +86,12 @@ const routes = [
         name: "PlaylistDetail",
         component: () => import("../views/PlaylistDetailView.vue"),
       },
+      {
+        path: "admin/dashboard",
+        name: "AdminDashboard",
+        component: () => import("../views/AdminDashboardView.vue"),
+        meta: { requiresAdmin: true }
+      },
     ]
   },
   {
@@ -162,6 +168,20 @@ router.beforeEach((to, from, next) => {
         name: 'Login',
         query: { redirect: to.fullPath }
       })
+      return
+    }
+  }
+
+  // Route requires admin
+  if (to.matched.some(record => record.meta.requiresAdmin)) {
+    const savedUser = localStorage.getItem('auth_user')
+    let isAdmin = false
+    try {
+      const user = JSON.parse(savedUser)
+      isAdmin = !!user?.is_admin
+    } catch (e) {}
+    if (!isAdmin) {
+      next({ name: 'Videos' })
       return
     }
   }

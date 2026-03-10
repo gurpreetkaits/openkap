@@ -188,6 +188,8 @@ export function useAuth() {
     return state.subscription.is_active
   })
 
+  const isAdmin = computed(() => !!state.user?.is_admin)
+
   return {
     // State
     user,
@@ -195,6 +197,9 @@ export function useAuth() {
     isAuthenticated,
     loading,
     subscription,
+
+    // Admin
+    isAdmin,
 
     // Subscription computed
     canRecordVideo,

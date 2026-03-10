@@ -31,6 +31,7 @@ class User extends Authenticatable
         'website',
         'location',
         'email_verified_at',
+        'is_admin',
     ];
 
     /**
@@ -58,12 +59,21 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_admin' => 'boolean',
             // Subscription timestamp casts
             'subscription_started_at' => 'datetime',
             'subscription_expires_at' => 'datetime',
             'subscription_canceled_at' => 'datetime',
             'videos_count' => 'integer',
         ];
+    }
+
+    /**
+     * Check if user is an admin
+     */
+    public function isAdmin(): bool
+    {
+        return (bool) $this->is_admin;
     }
 
     /**
