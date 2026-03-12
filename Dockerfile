@@ -1,57 +1,59 @@
-FROM php:8.3-fpm
+FROM php:8.3-fpm-alpine
 
-# Arguments
 ARG USER_ID=1000
 ARG GROUP_ID=1000
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    git \
-    curl \
-    libpng-dev \
-    libonig-dev \
-    libxml2-dev \
-    libzip-dev \
-    libpq-dev \
-    zip \
-    unzip \
-    ffmpeg \
-    supervisor \
-    && rm -rf /var/lib/apt/lists/*
+# System deps + PHP extension build deps in ONE layer for maximum cache reuse
+# ffmpeg is needed for video processing in both web and queue contexts
+RUN apk add --no-cache \
+        ffmpeg \
+        libpng \
+        libzip \
+        oniguruma \
+        libxml2 \
+        icu-libs \
+    && apk add --no-cache --virtual .build-deps \
+        libpng-dev \
+        libzip-dev \
+        oniguruma-dev \
+        libxml2-dev \
+        icu-dev \
+        $PHPIZE_DEPS \
+    && docker-php-ext-install -j$(nproc) \
+        pdo_mysql \
+        mbstring \
+        exif \
+        pcntl \
+        bcmath \
+        gd \
+        zip \
+        opcache \
+        intl \
+    && pecl install redis \
+    && docker-php-ext-enable redis \
+    && apk del .build-deps \
+    && rm -rf /tmp/pear /var/cache/apk/*
 
-# Install PHP extensions
-RUN docker-php-ext-install pdo pdo_mysql mbstring exif pcntl bcmath gd zip opcache
+# Composer binary only
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Install Redis extension
-RUN pecl install redis && docker-php-ext-enable redis
+# Non-root user
+RUN addgroup -g ${GROUP_ID} appgroup \
+    && adduser -u ${USER_ID} -G appgroup -D appuser \
+    && mkdir -p /var/log/php \
+    && chown appuser:appgroup /var/log/php
 
-# Configure OpCache for development (disable caching to avoid needing restarts)
-RUN echo "opcache.enable=1" >> /usr/local/etc/php/conf.d/opcache.ini && \
-    echo "opcache.validate_timestamps=1" >> /usr/local/etc/php/conf.d/opcache.ini && \
-    echo "opcache.revalidate_freq=0" >> /usr/local/etc/php/conf.d/opcache.ini
-
-# Get Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
-
-# Create system user
-RUN groupadd -g ${GROUP_ID} appgroup && \
-    useradd -u ${USER_ID} -g appgroup -m appuser
-
-# Set working directory
 WORKDIR /var/www/html
 
-# Copy application files
-COPY --chown=appuser:appgroup . .
-
-# Install dependencies
-RUN composer install --no-dev --optimize-autoloader --no-interaction
-
-# Set permissions
-RUN chown -R appuser:appgroup /var/www/html \
+# In dev, code is bind-mounted so we skip COPY and composer install.
+# Just ensure storage/bootstrap dirs exist with correct permissions.
+RUN mkdir -p storage/framework/{cache,sessions,views} \
+    && mkdir -p storage/logs \
+    && mkdir -p bootstrap/cache \
+    && chown -R appuser:appgroup storage bootstrap/cache \
     && chmod -R 775 storage bootstrap/cache
 
 USER appuser
 
 EXPOSE 9000
-
 CMD ["php-fpm"]

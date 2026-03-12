@@ -1,5 +1,5 @@
 services:
-  # PHP Application
+  # PHP-FPM Application
   app:
     build:
       context: .
@@ -7,6 +7,7 @@ services:
       args:
         USER_ID: ${USER_ID:-1000}
         GROUP_ID: ${GROUP_ID:-1000}
+    image: screensense-app
     container_name: screensense-app
     restart: unless-stopped
     working_dir: /var/www/html
@@ -14,15 +15,28 @@ services:
       FFMPEG_BINARIES: /usr/bin/ffmpeg
       FFPROBE_BINARIES: /usr/bin/ffprobe
     volumes:
-      - .:/var/www/html
+      - .:/var/www/html:cached
       - ./docker/php/local.ini:/usr/local/etc/php/conf.d/local.ini
+      - ./docker/php/www.conf:/usr/local/etc/php-fpm.d/zz-www.conf
+    tmpfs:
+      - /tmp:size=64m
     networks:
       - screensense
     depends_on:
-      - db
-      - redis
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "php-fpm -t 2>/dev/null || exit 1"]
+      interval: 15s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    mem_limit: 384m
+    cpus: 0.75
 
-  # Nginx Web Server
+  # Nginx
   nginx:
     image: nginx:alpine
     container_name: screensense-nginx
@@ -30,14 +44,20 @@ services:
     ports:
       - "${APP_PORT:-8888}:80"
     volumes:
-      - .:/var/www/html
+      - .:/var/www/html:cached
       - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    tmpfs:
+      - /var/cache/nginx:size=16m
+      - /tmp:size=16m
     networks:
       - screensense
     depends_on:
-      - app
+      app:
+        condition: service_healthy
+    mem_limit: 48m
+    cpus: 0.25
 
-  # MariaDB Database
+  # MariaDB
   db:
     image: mariadb:10.11
     container_name: screensense-db
@@ -49,62 +69,88 @@ services:
       MYSQL_USER: ${DB_USERNAME:-screensense}
     volumes:
       - dbdata:/var/lib/mysql
+      - ./docker/mariadb/my.cnf:/etc/mysql/conf.d/custom.cnf
     ports:
       - "${DOCKER_DB_PORT:-13306}:3306"
     networks:
       - screensense
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    mem_limit: 192m
+    cpus: 0.5
 
-  # Redis Cache
+  # Redis
   redis:
     image: redis:alpine
     container_name: screensense-redis
     restart: unless-stopped
+    command: redis-server /usr/local/etc/redis/redis.conf
+    volumes:
+      - ./docker/redis/redis.conf:/usr/local/etc/redis/redis.conf
     ports:
       - "${DOCKER_REDIS_PORT:-16379}:6379"
     networks:
       - screensense
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 3s
+    mem_limit: 64m
+    cpus: 0.15
 
-  # Queue Worker
+  # Queue Worker (reuses app image -- zero extra build time)
   queue:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: screensense-app
     container_name: screensense-queue
     restart: unless-stopped
     working_dir: /var/www/html
     environment:
       FFMPEG_BINARIES: /usr/bin/ffmpeg
       FFPROBE_BINARIES: /usr/bin/ffprobe
-    command: php artisan queue:work --queue=default --tries=3 --timeout=1800
+    command: php artisan queue:work --queue=default --tries=3 --timeout=1800 --memory=256 --sleep=3
     volumes:
-      - .:/var/www/html
+      - .:/var/www/html:cached
+    tmpfs:
+      - /tmp:size=128m
     networks:
       - screensense
     depends_on:
-      - app
-      - db
-      - redis
+      app:
+        condition: service_started
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    mem_limit: 320m
+    cpus: 0.75
 
-  # Frontend (Node.js for development)
+  # Frontend dev server
   frontend:
     image: node:18-alpine
     container_name: screensense-frontend
+    restart: unless-stopped
     working_dir: /app
     ports:
       - "${FRONTEND_PORT:-3333}:5173"
     environment:
-      # Browser-side: needs localhost URL that browser can reach
-      - VITE_BACKEND_URL=http://localhost:8888
-      # Server-side proxy: needs Docker network URL
+      - VITE_BACKEND_URL=http://localhost:${APP_PORT:-8888}
       - VITE_PROXY_TARGET=http://nginx
     volumes:
-      - ./frontend:/app
+      - ./frontend:/app:cached
       - frontend_node_modules:/app/node_modules
     command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
     networks:
       - screensense
     depends_on:
       - nginx
+    mem_limit: 384m
+    cpus: 0.75
 
 networks:
   screensense:
