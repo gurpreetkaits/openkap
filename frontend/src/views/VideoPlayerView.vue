@@ -615,21 +615,21 @@
                 </div>
             </div>
 
-            <!-- Reaction Bar - Vertical, Bottom Center of Video -->
+            <!-- Reaction Bar - Horizontal, Bottom Center of Video -->
             <div class="mt-4 flex justify-center z-30 relative">
-              <div class="flex flex-col items-center gap-1.5 bg-white border border-gray-200/60 rounded-xl shadow-sm p-1.5">
+              <div class="flex items-center gap-1 bg-white border border-gray-200/60 rounded-full shadow-sm px-2 py-1.5">
                 <button
                   v-for="emoji in reactions"
                   :key="emoji.icon"
                   @click="addReaction(emoji.icon)"
-                  class="w-9 h-9 rounded-lg hover:bg-gray-100 flex items-center justify-center text-lg transition-transform hover:scale-110 active:scale-95"
+                  class="w-9 h-9 rounded-full hover:bg-gray-100 flex items-center justify-center text-lg transition-transform hover:scale-110 active:scale-95"
                   :class="emoji.selected ? 'bg-orange-100' : ''"
                   :title="emoji.icon"
                 >
                   {{ emoji.icon }}
                 </button>
-                <div class="h-px w-6 bg-gray-100 my-0.5"></div>
-                <button @click="copyShareLink" class="w-9 h-9 rounded-lg hover:bg-gray-50 hover:text-orange-600 flex items-center justify-center text-gray-400 transition-colors" title="Copy Link">
+                <div class="w-px h-5 bg-gray-200 mx-0.5"></div>
+                <button @click="copyShareLink" class="w-9 h-9 rounded-full hover:bg-gray-50 hover:text-orange-600 flex items-center justify-center text-gray-400 transition-colors" title="Copy Link">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
                   </svg>
@@ -639,20 +639,20 @@
           </div>
         </div>
 
-        <!-- Sidebar Toggle Button -->
-        <button
-          @click="toggleSidebar"
-          class="hidden lg:flex fixed top-1/2 -translate-y-1/2 z-50 items-center justify-center w-6 h-12 bg-white border border-gray-200 rounded-l-lg shadow-sm hover:bg-gray-50 transition-all"
-          :class="sidebarVisible ? 'right-[400px]' : 'right-0'"
-          :title="sidebarVisible ? 'Hide sidebar' : 'Show sidebar'"
-        >
-          <svg class="w-3.5 h-3.5 text-gray-500 transition-transform" :class="sidebarVisible ? '' : 'rotate-180'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-          </svg>
-        </button>
-
         <!-- Sidebar -->
-        <aside v-show="sidebarVisible" class="w-full lg:w-[400px] bg-white border-l border-gray-200 flex flex-col z-40 shadow-[-4px_0_24px_rgba(0,0,0,0.02)]">
+        <aside class="relative flex flex-col z-40 bg-white border-l border-gray-200 transition-all duration-300 ease-in-out" :class="sidebarVisible ? 'w-full lg:w-[400px]' : 'w-0 lg:w-10'">
+          <!-- Sidebar Toggle Button -->
+          <button
+            @click="toggleSidebar"
+            class="hidden lg:flex absolute -left-3 top-1/2 -translate-y-1/2 z-50 items-center justify-center w-6 h-12 bg-white border border-gray-200 rounded-l-lg shadow-sm hover:bg-gray-50 transition-all"
+            :title="sidebarVisible ? 'Collapse sidebar' : 'Expand sidebar'"
+          >
+            <svg class="w-3.5 h-3.5 text-gray-500 transition-transform" :class="sidebarVisible ? '' : 'rotate-180'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>
+          </button>
+
+          <template v-if="sidebarVisible">
 
           <!-- Functional Tabs -->
           <div class="grid grid-cols-4 gap-0 px-4 py-3 border-b border-gray-100 sticky top-0 bg-white z-10" :class="{ 'grid-cols-3': !jiraConnected }">
@@ -1256,6 +1256,7 @@
               </div>
             </div>
           </div>
+          </template>
         </aside>
 
       </main>
