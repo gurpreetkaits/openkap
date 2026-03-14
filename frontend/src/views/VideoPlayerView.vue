@@ -51,8 +51,8 @@
       <nav class="h-14 border-b border-gray-200/60 bg-white/80 backdrop-blur-md flex items-center justify-between px-4 lg:px-6 z-50 fixed top-0 w-full">
         <div class="flex items-center gap-3">
           <router-link to="/videos" class="flex items-center gap-2 hover:opacity-80 transition-opacity">
-            <img :src="branding.logoUrl.value || '/logo.png'" alt="ScreenSense" class="w-8 h-8 rounded-lg shadow-sm" />
-            <span class="text-sm font-semibold text-gray-900">ScreenSense</span>
+            <img :src="branding.logoUrl.value || '/logo.png'" alt="OpenKap" class="w-8 h-8 rounded-lg shadow-sm" />
+            <span class="text-sm font-semibold text-gray-900">OpenKap</span>
           </router-link>
           <!-- Zoom Status Badge -->
           <div v-if="video.zoom_enabled" class="ml-2">

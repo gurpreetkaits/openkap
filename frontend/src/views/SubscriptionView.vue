@@ -9,7 +9,7 @@
           </svg>
         </div>
         <div>
-          <h3 class="text-sm font-semibold">Welcome to ScreenSense Pro!</h3>
+          <h3 class="text-sm font-semibold">Welcome to OpenKap Pro!</h3>
           <p class="text-xs text-gray-500">Your subscription is now active. Enjoy unlimited recordings!</p>
         </div>
         <button @click="showSuccessAlert = false" class="ml-3 p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-md transition-colors">

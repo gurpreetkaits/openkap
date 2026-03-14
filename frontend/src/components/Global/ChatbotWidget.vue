@@ -31,7 +31,7 @@
               </svg>
             </button>
             <h3 class="text-sm font-semibold truncate">
-              {{ currentConversation ? currentConversation.title : 'ScreenSense Assistant' }}
+              {{ currentConversation ? currentConversation.title : 'OpenKap Assistant' }}
             </h3>
           </div>
           <div class="flex items-center gap-1">
@@ -116,7 +116,7 @@
               </svg>
             </div>
             <p class="text-sm font-medium text-gray-900 mb-1">How can I help?</p>
-            <p class="text-xs text-gray-400">Ask me anything about ScreenSense</p>
+            <p class="text-xs text-gray-400">Ask me anything about OpenKap</p>
           </div>
 
           <!-- Loading messages -->

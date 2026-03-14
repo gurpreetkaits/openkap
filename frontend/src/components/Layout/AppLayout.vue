@@ -5,8 +5,8 @@
       <!-- Logo -->
       <div class="h-14 flex items-center px-5 border-b border-gray-100/50 flex-shrink-0">
         <router-link to="/videos" class="flex items-center gap-2.5 group cursor-pointer">
-          <img :src="branding.logoUrl.value || '/logo.png'" alt="ScreenSense" class="w-7 h-7 rounded-lg shadow-sm group-hover:shadow-md transition-all duration-300" />
-          <span class="text-gray-900 font-semibold tracking-tight text-[15px]">ScreenSense</span>
+          <img :src="branding.logoUrl.value || '/logo.png'" alt="OpenKap" class="w-7 h-7 rounded-lg shadow-sm group-hover:shadow-md transition-all duration-300" />
+          <span class="text-gray-900 font-semibold tracking-tight text-[15px]">OpenKap</span>
           <span v-if="isAuthenticated" class="text-[10px] font-semibold px-1.5 py-0.5 rounded-full" :class="subscription?.is_active ? 'bg-orange-100 text-orange-700' : 'bg-gray-100 text-gray-600'">
             {{ subscription?.is_active ? 'Pro' : 'Free' }}
           </span>
@@ -238,8 +238,8 @@
 
         <!-- Mobile Logo -->
         <router-link to="/videos" class="lg:hidden flex items-center gap-2.5">
-          <img :src="branding.logoUrl.value || '/logo.png'" alt="ScreenSense" class="w-7 h-7 rounded-lg" />
-          <span class="text-gray-900 font-semibold tracking-tight text-[15px]">ScreenSense</span>
+          <img :src="branding.logoUrl.value || '/logo.png'" alt="OpenKap" class="w-7 h-7 rounded-lg" />
+          <span class="text-gray-900 font-semibold tracking-tight text-[15px]">OpenKap</span>
         </router-link>
 
         <!-- Global Search & Actions -->
@@ -425,8 +425,8 @@
         <!-- Mobile Sidebar Logo -->
         <div class="h-14 flex items-center justify-between px-5 border-b border-gray-100/50">
           <router-link to="/videos" class="flex items-center gap-2.5" @click="sidebarOpen = false">
-            <img :src="branding.logoUrl.value || '/logo.png'" alt="ScreenSense" class="w-7 h-7 rounded-lg" />
-            <span class="text-gray-900 font-semibold tracking-tight text-[15px]">ScreenSense</span>
+            <img :src="branding.logoUrl.value || '/logo.png'" alt="OpenKap" class="w-7 h-7 rounded-lg" />
+            <span class="text-gray-900 font-semibold tracking-tight text-[15px]">OpenKap</span>
           </router-link>
 
           <button
@@ -612,9 +612,9 @@
               </svg>
             </button>
             <div class="w-16 h-16 bg-white rounded-2xl shadow-lg flex items-center justify-center mx-auto mb-4">
-              <img :src="branding.logoUrl.value || '/logo.png'" alt="ScreenSense" class="w-10 h-10 rounded-lg" />
+              <img :src="branding.logoUrl.value || '/logo.png'" alt="OpenKap" class="w-10 h-10 rounded-lg" />
             </div>
-            <h3 class="text-white text-lg font-bold">ScreenSense Extension</h3>
+            <h3 class="text-white text-lg font-bold">OpenKap Extension</h3>
             <p class="text-white/80 text-sm mt-1">Required for screen recording</p>
           </div>
 

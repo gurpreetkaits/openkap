@@ -68,8 +68,8 @@
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-3">
               <a href="/" class="flex items-center gap-2">
-                <img :src="branding.logoUrl.value || '/logo.png'" alt="ScreenSense" class="w-8 h-8 rounded-lg" />
-                <span class="text-gray-900 font-semibold text-lg hidden sm:inline">ScreenSense</span>
+                <img :src="branding.logoUrl.value || '/logo.png'" alt="OpenKap" class="w-8 h-8 rounded-lg" />
+                <span class="text-gray-900 font-semibold text-lg hidden sm:inline">OpenKap</span>
               </a>
             </div>
             <a
@@ -179,8 +179,8 @@
         <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div class="flex items-center gap-2">
-              <img :src="branding.logoUrl.value || '/logo.png'" alt="ScreenSense" class="w-6 h-6 rounded-lg" />
-              <span class="text-gray-600 text-sm">ScreenSense - Screen Recording Made Simple</span>
+              <img :src="branding.logoUrl.value || '/logo.png'" alt="OpenKap" class="w-6 h-6 rounded-lg" />
+              <span class="text-gray-600 text-sm">OpenKap - Screen Recording Made Simple</span>
             </div>
             <a
               href="/login"

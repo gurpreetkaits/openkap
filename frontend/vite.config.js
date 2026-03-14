@@ -33,8 +33,8 @@ export default defineConfig(({ mode }) => {
         registerType: 'autoUpdate',
         includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
         manifest: {
-          name: 'ScreenSense - Screen Recorder',
-          short_name: 'ScreenSense',
+          name: 'OpenKap - Screen Recorder',
+          short_name: 'OpenKap',
           description: 'Record and share your screen easily',
           theme_color: '#f97316',
           icons: [

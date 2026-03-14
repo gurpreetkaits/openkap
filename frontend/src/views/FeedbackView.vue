@@ -4,7 +4,7 @@
     <div class="flex items-center justify-between mb-5">
       <div>
         <h1 class="text-xl font-semibold text-gray-900">Feedback</h1>
-        <p class="text-sm text-gray-500 mt-0.5">Help us improve ScreenSense</p>
+        <p class="text-sm text-gray-500 mt-0.5">Help us improve OpenKap</p>
       </div>
       <button
         @click="openNewModal"
@@ -332,7 +332,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/>
                       </svg>
                     </div>
-                    <span class="text-xs font-medium text-green-700">Reply from ScreenSense</span>
+                    <span class="text-xs font-medium text-green-700">Reply from OpenKap</span>
                     <span v-if="selectedFeedback.replied_at" class="text-xs text-green-600 ml-auto">
                       {{ formatDate(selectedFeedback.replied_at) }}
                     </span>

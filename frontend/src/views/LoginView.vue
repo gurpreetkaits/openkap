@@ -3,9 +3,9 @@
     <div class="max-w-md w-full space-y-8">
       <!-- Logo and Title -->
       <div class="text-center">
-        <img src="/logo.png" alt="ScreenSense" class="mx-auto w-16 h-16 rounded-2xl shadow-lg" />
+        <img src="/logo.png" alt="OpenKap" class="mx-auto w-16 h-16 rounded-2xl shadow-lg" />
         <h2 class="mt-6 text-2xl font-bold text-gray-900">
-          Welcome to ScreenSense
+          Welcome to OpenKap
         </h2>
         <p class="mt-2 text-base text-gray-500">The fastest way to record and share your screen</p>
       </div>

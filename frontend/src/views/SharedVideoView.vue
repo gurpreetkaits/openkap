@@ -30,8 +30,8 @@
       <nav class="h-14 border-b border-gray-200/60 bg-white/80 backdrop-blur-md flex items-center justify-between px-4 lg:px-6 z-50 fixed top-0 w-full">
         <div class="flex items-center gap-3">
           <a href="/" class="flex items-center gap-2 hover:opacity-80 transition-opacity">
-            <img :src="branding.logoUrl.value || '/logo.png'" alt="ScreenSense" class="w-8 h-8 rounded-lg shadow-sm" />
-            <span class="text-sm font-semibold text-gray-900">ScreenSense</span>
+            <img :src="branding.logoUrl.value || '/logo.png'" alt="OpenKap" class="w-8 h-8 rounded-lg shadow-sm" />
+            <span class="text-sm font-semibold text-gray-900">OpenKap</span>
           </a>
         </div>
 
@@ -688,9 +688,9 @@
     <div v-if="!isAuthenticated && !loading" class="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-t border-gray-200 shadow-[0_-4px_24px_rgba(0,0,0,0.08)]">
       <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
         <div class="flex items-center gap-3 min-w-0">
-          <img src="/logo.png" alt="ScreenSense" class="w-7 h-7 rounded-lg shadow-sm flex-shrink-0" />
+          <img src="/logo.png" alt="OpenKap" class="w-7 h-7 rounded-lg shadow-sm flex-shrink-0" />
           <p class="text-sm text-gray-700 truncate">
-            <span class="font-semibold text-gray-900">Made with ScreenSense</span>
+            <span class="font-semibold text-gray-900">Made with OpenKap</span>
             <span class="hidden sm:inline"> — Record and share screen recordings for free</span>
           </p>
         </div>
