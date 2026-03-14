@@ -213,7 +213,7 @@
     <!-- Main Content Area -->
     <main class="flex-1 flex flex-col h-full overflow-hidden relative bg-[#F9FAFB]">
       <!-- Top Bar / Header -->
-      <header class="h-14 flex items-center justify-between px-4 lg:px-6 border-b border-gray-200 bg-white/80 backdrop-blur-md sticky top-0 z-20 flex-shrink-0">
+      <header v-if="!isFullWidthRoute" class="h-14 flex items-center justify-between px-4 lg:px-6 border-b border-gray-200 bg-white/80 backdrop-blur-md sticky top-0 z-20 flex-shrink-0">
         <!-- Mobile Menu Button -->
         <button
           @click="sidebarOpen = true"
@@ -399,8 +399,8 @@
       </header>
 
       <!-- Page Content -->
-      <div class="flex-1 overflow-y-auto overflow-x-hidden scroll-smooth bg-white">
-        <div class="p-6 lg:p-8">
+      <div class="flex-1 overflow-hidden scroll-smooth" :class="isFullWidthRoute ? 'bg-[#FAFAFA]' : 'overflow-y-auto overflow-x-hidden bg-white'">
+        <div :class="isFullWidthRoute ? 'h-full' : 'p-6 lg:p-8'">
           <router-view />
         </div>
       </div>
@@ -739,6 +739,10 @@ export default {
       return route.path === path
     }
 
+    const isFullWidthRoute = computed(() => {
+      return route.path.startsWith('/video/')
+    })
+
     // Current page name for header
     const currentPageName = computed(() => {
       const pathMap = {
@@ -983,6 +987,7 @@ export default {
       isAuthenticated,
       isAdmin,
       isActive,
+      isFullWidthRoute,
       currentPageName,
       unreadCount,
       handleNewRecording,

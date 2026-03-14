@@ -1,91 +1,5 @@
 <template>
-  <div class="bg-[#FAFAFA] text-slate-900 h-screen flex overflow-hidden selection:bg-orange-100 selection:text-orange-700">
-
-    <!-- Collapsed Sidebar for authenticated users -->
-    <aside
-      v-if="isAuthenticated && !loading && !error"
-      class="hidden lg:flex flex-col flex-shrink-0 h-full bg-white border-r border-gray-200 z-40 transition-all duration-200"
-      :class="appSidebarExpanded ? 'w-[200px]' : 'w-[48px]'"
-    >
-      <!-- Logo -->
-      <div class="h-11 flex items-center justify-center border-b border-gray-100/50 flex-shrink-0" :class="appSidebarExpanded ? 'px-3.5' : 'px-0'">
-        <router-link v-if="appSidebarExpanded" to="/videos" class="flex items-center gap-2 group cursor-pointer">
-          <img :src="branding.logoUrl.value || '/logo.png'" alt="OpenKap" class="w-6 h-6 rounded-md shadow-sm" />
-          <span class="text-gray-900 font-semibold tracking-tight text-xs">OpenKap</span>
-        </router-link>
-        <button v-else @click="appSidebarExpanded = true" class="p-1.5 rounded-md hover:bg-gray-100 transition-colors" title="Expand sidebar">
-          <img :src="branding.logoUrl.value || '/logo.png'" alt="OpenKap" class="w-6 h-6 rounded-md" />
-        </button>
-      </div>
-
-      <!-- Navigation -->
-      <div class="flex-1 overflow-y-auto" :class="appSidebarExpanded ? 'px-2 py-2.5' : 'px-1 py-2.5'">
-        <nav class="space-y-0.5">
-          <router-link
-            to="/videos"
-            class="flex items-center rounded-md transition-all group"
-            :class="[
-              appSidebarExpanded ? 'gap-2 px-2 py-1.5 text-xs font-medium' : 'justify-center p-2',
-              'text-gray-500 hover:text-gray-900 hover:bg-gray-50'
-            ]"
-            :title="appSidebarExpanded ? '' : 'Library'"
-          >
-            <svg class="w-3.5 h-3.5 text-gray-400 group-hover:text-gray-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
-            </svg>
-            <span v-if="appSidebarExpanded">Library</span>
-          </router-link>
-
-          <router-link
-            to="/playlists"
-            class="flex items-center rounded-md transition-all group"
-            :class="[
-              appSidebarExpanded ? 'gap-2 px-2 py-1.5 text-xs font-medium' : 'justify-center p-2',
-              'text-gray-500 hover:text-gray-900 hover:bg-gray-50'
-            ]"
-            :title="appSidebarExpanded ? '' : 'Playlists'"
-          >
-            <svg class="w-3.5 h-3.5 text-gray-400 group-hover:text-gray-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
-            </svg>
-            <span v-if="appSidebarExpanded">Playlists</span>
-          </router-link>
-
-          <router-link
-            to="/settings"
-            class="flex items-center rounded-md transition-all group"
-            :class="[
-              appSidebarExpanded ? 'gap-2 px-2 py-1.5 text-xs font-medium' : 'justify-center p-2',
-              'text-gray-500 hover:text-gray-900 hover:bg-gray-50'
-            ]"
-            :title="appSidebarExpanded ? '' : 'Settings'"
-          >
-            <svg class="w-3.5 h-3.5 text-gray-400 group-hover:text-gray-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-            </svg>
-            <span v-if="appSidebarExpanded">Settings</span>
-          </router-link>
-        </nav>
-      </div>
-
-      <!-- Collapse/Expand toggle -->
-      <div class="p-2 border-t border-gray-100 flex-shrink-0">
-        <button
-          @click="appSidebarExpanded = !appSidebarExpanded"
-          class="w-full flex items-center justify-center p-1.5 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
-          :title="appSidebarExpanded ? 'Collapse sidebar' : 'Expand sidebar'"
-        >
-          <svg class="w-3.5 h-3.5 transition-transform" :class="appSidebarExpanded ? '' : 'rotate-180'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/>
-          </svg>
-          <span v-if="appSidebarExpanded" class="ml-1.5 text-[10px] font-medium">Collapse</span>
-        </button>
-      </div>
-    </aside>
-
-    <!-- Main Content Area -->
-    <div class="flex-1 flex flex-col overflow-hidden">
+  <div class="bg-[#FAFAFA] text-slate-900 h-full flex flex-col overflow-hidden selection:bg-orange-100 selection:text-orange-700">
 
     <!-- Subtle Background Grid -->
     <div class="fixed inset-0 z-0 pointer-events-none" style="background-image: radial-gradient(#e5e7eb 1px, transparent 1px); background-size: 32px 32px; opacity: 0.4;"></div>
@@ -117,7 +31,7 @@
     </div>
 
     <!-- Error State -->
-    <div v-else-if="error" class="flex items-center justify-center min-h-screen">
+    <div v-else-if="error" class="flex-1 flex items-center justify-center">
       <div class="text-center">
         <div class="w-20 h-20 mx-auto mb-6 bg-red-100 rounded-full flex items-center justify-center">
           <svg class="w-10 h-10 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -134,7 +48,7 @@
     <!-- Main Content -->
     <template v-else>
       <!-- Navigation -->
-      <nav class="h-11 border-b border-gray-200/60 bg-white/90 backdrop-blur-md flex items-center justify-between px-4 z-50 sticky top-0 flex-shrink-0">
+      <nav class="h-14 border-b border-gray-200/60 bg-white/90 backdrop-blur-md flex items-center justify-between px-5 z-50 sticky top-0 flex-shrink-0">
         <div class="flex items-center gap-2">
           <!-- Zoom Status Badge -->
           <div v-if="video.zoom_enabled">
@@ -172,14 +86,14 @@
           </div>
         </div>
 
-        <div class="flex items-center gap-1.5">
+        <div class="flex items-center gap-2">
           <!-- Editor Button (paid users only) -->
           <router-link
             v-if="auth.hasActiveSubscription.value"
             :to="`/video/${video.id}/edit`"
-            class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-2 py-1 rounded-md text-[11px] font-medium transition-all flex items-center gap-1.5"
+            class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5"
           >
-            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
             </svg>
             Edit
@@ -187,8 +101,8 @@
 
           <!-- Share Dropdown -->
           <div class="relative" ref="shareDropdownRef">
-            <button @click="showShareDropdown = !showShareDropdown" class="bg-orange-600 hover:bg-orange-700 text-white px-2 py-1 rounded-md text-[11px] font-medium transition-all flex items-center gap-1.5">
-              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <button @click="showShareDropdown = !showShareDropdown" class="bg-orange-600 hover:bg-orange-700 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
               </svg>
               Share
@@ -196,15 +110,15 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
               </svg>
             </button>
-            <div v-show="showShareDropdown" class="absolute right-0 top-full mt-1 w-44 bg-white rounded-lg shadow-xl border border-gray-200 py-1 z-50">
-              <button @click="copyShareLink; showShareDropdown = false" class="w-full px-3 py-1.5 text-left text-[11px] text-gray-700 hover:bg-gray-50 flex items-center gap-2">
-                <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div v-show="showShareDropdown" class="absolute right-0 top-full mt-1.5 w-48 bg-white rounded-lg shadow-xl border border-gray-200 py-1.5 z-50">
+              <button @click="copyShareLink; showShareDropdown = false" class="w-full px-4 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2.5">
+                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
                 </svg>
                 Copy link
               </button>
-              <button @click="copyEmbedCode; showShareDropdown = false" class="w-full px-3 py-1.5 text-left text-[11px] text-gray-700 hover:bg-gray-50 flex items-center gap-2">
-                <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <button @click="copyEmbedCode; showShareDropdown = false" class="w-full px-4 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2.5">
+                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
                 </svg>
                 Copy embed code
@@ -214,54 +128,54 @@
 
           <!-- Options Menu (three-dot) -->
           <div class="relative" ref="optionsMenuRef">
-            <button @click="showOptionsMenu = !showOptionsMenu" class="p-1.5 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors">
-              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+            <button @click="showOptionsMenu = !showOptionsMenu" class="p-2 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                 <circle cx="12" cy="5" r="1.5"/>
                 <circle cx="12" cy="12" r="1.5"/>
                 <circle cx="12" cy="19" r="1.5"/>
               </svg>
             </button>
-            <div v-show="showOptionsMenu" class="absolute right-0 top-full mt-1 w-48 bg-white rounded-lg shadow-xl border border-gray-200 py-1 z-50">
-              <button @click="handleDownload; showOptionsMenu = false" class="w-full px-3 py-1.5 text-left text-[11px] text-gray-700 hover:bg-gray-50 flex items-center gap-2">
-                <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div v-show="showOptionsMenu" class="absolute right-0 top-full mt-1.5 w-52 bg-white rounded-lg shadow-xl border border-gray-200 py-1.5 z-50">
+              <button @click="handleDownload; showOptionsMenu = false" class="w-full px-4 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2.5">
+                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
                 </svg>
                 Download
               </button>
-              <button @click="handleDuplicate; showOptionsMenu = false" class="w-full px-3 py-1.5 text-left text-[11px] text-gray-700 hover:bg-gray-50 flex items-center gap-2">
-                <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <button @click="handleDuplicate; showOptionsMenu = false" class="w-full px-4 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2.5">
+                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
                 </svg>
                 Duplicate
               </button>
-              <button @click="startEditingTitle; showOptionsMenu = false" class="w-full px-3 py-1.5 text-left text-[11px] text-gray-700 hover:bg-gray-50 flex items-center gap-2">
-                <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <button @click="startEditingTitle; showOptionsMenu = false" class="w-full px-4 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2.5">
+                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
                 </svg>
                 Rename
               </button>
-              <button @click="handleDownloadCaptions; showOptionsMenu = false" class="w-full px-3 py-1.5 text-left text-[11px] text-gray-700 hover:bg-gray-50 flex items-center gap-2">
-                <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <button @click="handleDownloadCaptions; showOptionsMenu = false" class="w-full px-4 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2.5">
+                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <rect x="2" y="4" width="20" height="16" rx="2" stroke-width="2"/>
                   <text x="12" y="15" text-anchor="middle" fill="currentColor" stroke="none" font-size="8" font-weight="bold">CC</text>
                 </svg>
                 Download Captions
               </button>
-              <div class="my-1 border-t border-gray-100"></div>
-              <button @click="showPrivateConfirm = true; showOptionsMenu = false" class="w-full px-3 py-1.5 text-left text-[11px] text-gray-700 hover:bg-gray-50 flex items-center gap-2">
-                <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div class="my-1.5 border-t border-gray-100"></div>
+              <button @click="showPrivateConfirm = true; showOptionsMenu = false" class="w-full px-4 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2.5">
+                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
                 </svg>
                 Make it private
               </button>
-              <button @click="showArchiveConfirm = true; showOptionsMenu = false" class="w-full px-3 py-1.5 text-left text-[11px] text-gray-700 hover:bg-gray-50 flex items-center gap-2">
-                <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <button @click="showArchiveConfirm = true; showOptionsMenu = false" class="w-full px-4 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2.5">
+                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>
                 </svg>
                 Archive
               </button>
-              <button @click="showDeleteConfirm = true; showOptionsMenu = false" class="w-full px-3 py-1.5 text-left text-[11px] text-red-600 hover:bg-red-50 flex items-center gap-2">
-                <svg class="w-3.5 h-3.5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <button @click="showDeleteConfirm = true; showOptionsMenu = false" class="w-full px-4 py-2 text-left text-xs text-red-600 hover:bg-red-50 flex items-center gap-2.5">
+                <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                 </svg>
                 Delete
@@ -269,7 +183,7 @@
             </div>
           </div>
 
-          <router-link to="/profile" class="w-7 h-7 rounded-full bg-gray-100 border border-gray-200 ml-1 overflow-hidden flex-shrink-0">
+          <router-link to="/profile" class="w-8 h-8 rounded-full bg-gray-100 border border-gray-200 ml-1.5 overflow-hidden flex-shrink-0">
             <img v-if="currentUser?.avatar" :src="currentUser.avatar" alt="Profile" class="w-full h-full object-cover opacity-90 hover:opacity-100 transition-opacity">
             <div v-else class="w-full h-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white text-[10px] font-semibold">
               {{ userInitial }}
@@ -380,7 +294,7 @@
       <main class="flex-1 flex flex-col lg:flex-row h-full z-10 relative overflow-hidden">
 
         <!-- Center Stage: Video Player -->
-        <div class="flex-1 flex flex-col items-center justify-center p-3 lg:p-8 relative bg-[#FAFAFA]/50 overflow-hidden">
+        <div class="flex-1 flex flex-col items-center justify-center p-4 lg:p-8 relative bg-[#FAFAFA]/50 overflow-hidden overflow-y-auto">
 
           <div class="w-full max-w-[min(calc((100vh-280px)*16/9),100%)] flex flex-col">
 
@@ -701,24 +615,22 @@
                 </div>
             </div>
 
-            <!-- Action Bar Below Video - Vertical Card + Copy Link -->
-            <div class="mt-4 flex items-start gap-3 z-30 relative">
-              <!-- Vertical Reaction Card -->
-              <div class="flex flex-col gap-1.5 bg-white border border-gray-200/60 rounded-xl shadow-sm p-1.5">
+            <!-- Reaction Bar - Vertical, Bottom Center of Video -->
+            <div class="mt-4 flex justify-center z-30 relative">
+              <div class="flex flex-col items-center gap-1.5 bg-white border border-gray-200/60 rounded-xl shadow-sm p-1.5">
                 <button
                   v-for="emoji in reactions"
                   :key="emoji.icon"
                   @click="addReaction(emoji.icon)"
-                  class="w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center text-base transition-transform hover:-translate-y-0.5 active:scale-95"
+                  class="w-9 h-9 rounded-lg hover:bg-gray-100 flex items-center justify-center text-lg transition-transform hover:scale-110 active:scale-95"
                   :class="emoji.selected ? 'bg-orange-100' : ''"
                   :title="emoji.icon"
                 >
                   {{ emoji.icon }}
                 </button>
-                <div class="h-px bg-gray-100 mx-1"></div>
-                <!-- Copy Link -->
-                <button @click="copyShareLink" class="w-8 h-8 rounded-lg hover:bg-gray-50 hover:text-orange-600 flex items-center justify-center text-gray-400 transition-colors group/copy relative" title="Copy Link">
-                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="h-px w-6 bg-gray-100 my-0.5"></div>
+                <button @click="copyShareLink" class="w-9 h-9 rounded-lg hover:bg-gray-50 hover:text-orange-600 flex items-center justify-center text-gray-400 transition-colors" title="Copy Link">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
                   </svg>
                 </button>
@@ -743,24 +655,24 @@
         <aside v-show="sidebarVisible" class="w-full lg:w-[400px] bg-white border-l border-gray-200 flex flex-col z-40 shadow-[-4px_0_24px_rgba(0,0,0,0.02)]">
 
           <!-- Functional Tabs -->
-          <div class="grid grid-cols-4 gap-0 px-3 py-2.5 border-b border-gray-100 sticky top-0 bg-white z-10" :class="{ 'grid-cols-3': !jiraConnected }">
+          <div class="grid grid-cols-4 gap-0 px-4 py-3 border-b border-gray-100 sticky top-0 bg-white z-10" :class="{ 'grid-cols-3': !jiraConnected }">
             <button
               @click="activeTab = 'transcript'"
-              class="px-2 py-2 text-[12px] rounded-lg transition-all text-center truncate"
+              class="px-3 py-2 text-xs rounded-lg transition-all text-center truncate"
               :class="activeTab === 'transcript' ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'"
             >
               Transcript
             </button>
             <button
               @click="activeTab = 'summary'"
-              class="px-2 py-2 text-[12px] rounded-lg transition-all text-center truncate"
+              class="px-3 py-2 text-xs rounded-lg transition-all text-center truncate"
               :class="activeTab === 'summary' ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'"
             >
               Summary
             </button>
             <button
               @click="activeTab = 'comments'"
-              class="px-2 py-2 text-[12px] rounded-lg transition-all text-center truncate flex items-center justify-center gap-1"
+              class="px-3 py-2 text-xs rounded-lg transition-all text-center truncate flex items-center justify-center gap-1"
               :class="activeTab === 'comments' ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'"
             >
               Comments
@@ -769,7 +681,7 @@
             <button
               v-if="jiraConnected"
               @click="activeTab = 'bugs'; loadBugTabData()"
-              class="px-2 py-2 text-[12px] rounded-lg transition-all text-center truncate flex items-center justify-center gap-1"
+              class="px-3 py-2 text-xs rounded-lg transition-all text-center truncate flex items-center justify-center gap-1"
               :class="activeTab === 'bugs' ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'"
             >
               Bugs
@@ -1372,7 +1284,6 @@
       </div>
     </transition>
 
-    </div><!-- end Main Content Area -->
   </div>
 </template>
 
@@ -1380,7 +1291,6 @@
 import { ref, onMounted, onUnmounted, computed, watch, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuth } from '@/stores/auth'
-import { useBranding } from '@/composables/useBranding'
 import videoService from '@/services/videoService'
 import integrationService from '@/services/integrationService'
 import SBDeleteModal from '@/components/Global/SBDeleteModal.vue'
@@ -1400,7 +1310,6 @@ export default {
   setup() {
     const route = useRoute()
     const auth = useAuth()
-    const branding = useBranding()
     const isAuthenticated = computed(() => auth.isAuthenticated.value)
     const currentUser = computed(() => auth.user.value)
     const userInitial = computed(() => (currentUser.value?.name || 'U').charAt(0).toUpperCase())
@@ -1454,7 +1363,6 @@ export default {
     const showArchiveConfirm = ref(false)
     const showDeleteConfirm = ref(false)
     const showPrivateConfirm = ref(false)
-    const appSidebarExpanded = ref(false)
     const shareDropdownRef = ref(null)
     const optionsMenuRef = ref(null)
     const activeTab = ref('transcript')
@@ -2629,10 +2537,6 @@ export default {
     }
 
     onMounted(async () => {
-      // Load user branding and subscription (this page is outside AppLayout)
-      branding.loadBranding()
-      auth.fetchSubscription()
-
       await fetchVideo()
       await loadComments()
       await loadTranscriptionData()
@@ -2661,7 +2565,6 @@ export default {
     })
 
     return {
-      branding,
       isAuthenticated, currentUser, userInitial,
       video, loading, error, videoRef, progressBar, speedMenuRef, playerContainer,
       isPlaying, isBuffering, videoLoading, isMuted, isFullscreen, volume, currentTime, duration,
@@ -2679,8 +2582,7 @@ export default {
       isEditingTitle, editedTitle, isSavingTitle, titleInput,
       startEditingTitle, saveTitle, cancelEditingTitle,
       showShareModal, activeTab, sidebarVisible, toggleSidebar,
-      // Sidebar & dropdowns
-      appSidebarExpanded,
+      // Dropdowns
       showShareDropdown, showOptionsMenu, shareDropdownRef, optionsMenuRef,
       showArchiveConfirm, showDeleteConfirm, showPrivateConfirm,
       // Action handlers
