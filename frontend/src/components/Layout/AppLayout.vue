@@ -5,7 +5,7 @@
       <!-- Logo -->
       <div class="h-11 flex items-center px-3.5 border-b border-gray-100/50 flex-shrink-0">
         <router-link to="/videos" class="flex items-center gap-2 group cursor-pointer">
-          <img :src="branding.logoUrl.value || '/logo.png'" alt="OpenKap" class="w-5.5 h-5.5 rounded-md shadow-sm group-hover:shadow-md transition-all duration-300" />
+          <img :src="branding.logoUrl.value || '/logo.png'" alt="OpenKap" class="w-6 h-6 rounded-md shadow-sm group-hover:shadow-md transition-all duration-300" />
           <span class="text-gray-900 font-semibold tracking-tight text-xs">OpenKap</span>
           <span v-if="isAuthenticated" class="text-[9px] font-semibold px-1 py-0.5 rounded-full" :class="subscription?.is_active ? 'bg-orange-100 text-orange-700' : 'bg-gray-100 text-gray-600'">
             {{ subscription?.is_active ? 'Pro' : 'Free' }}
