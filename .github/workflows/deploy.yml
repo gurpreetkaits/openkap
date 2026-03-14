@@ -85,6 +85,16 @@ jobs:
               exit 1
             fi
 
+            # Check if we have permission to change permissions
+            if ! sudo -n true 2>/dev/null; then
+              echo "Error: No sudo permission"
+              exit 1
+            fi
+
+            # Set ownership to deploy user before git reset (storage may be owned by www-data)
+            sudo chown -R $(whoami):$(id -gn) ${{ secrets.DEPLOY_PATH }} || { echo "Error: Cannot set directory ownership"; exit 1; }
+            sudo chmod -R 775 ${{ secrets.DEPLOY_PATH }} || { echo "Error: Cannot set directory permissions"; exit 1; }
+
             # Fetch latest and force reset to match remote (handles force pushes)
             git fetch origin master || { echo "Error: git fetch failed"; exit 1; }
             git reset --hard origin/master || { echo "Error: git reset failed"; exit 1; }
@@ -100,16 +110,6 @@ jobs:
               touch database/database.sqlite || { echo "Error: Cannot create database file"; exit 1; }
               chmod 664 database/database.sqlite || { echo "Error: Cannot set database permissions"; exit 1; }
             fi
-
-            # Check if we have permission to change permissions
-            if ! sudo -n true 2>/dev/null; then
-              echo "Error: No sudo permission"
-              exit 1
-            fi
-
-            # Set correct ownership and permissions
-            sudo chown -R $(whoami):$(id -gn) ${{ secrets.DEPLOY_PATH }} || { echo "Error: Cannot set directory ownership"; exit 1; }
-            sudo chmod -R 775 ${{ secrets.DEPLOY_PATH }} || { echo "Error: Cannot set directory permissions"; exit 1; }
 
             # Install PHP dependencies
             composer install --no-dev --optimize-autoloader || { echo "Error: composer install failed"; exit 1; }
