@@ -20,7 +20,7 @@ function handleUnauthorized(response) {
   if (response.status === 401) {
     localStorage.removeItem('auth_token')
     localStorage.removeItem('auth_user')
-    window.location.href = '/login'
+    window.location.href = import.meta.env.BASE_URL + 'login'
     return true
   }
   return false

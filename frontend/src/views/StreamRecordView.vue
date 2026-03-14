@@ -280,7 +280,7 @@ export default {
       if (response.status === 401) {
         auth.clearAuth()
         localStorage.setItem('auth_redirect', '/record')
-        window.location.href = '/login'
+        window.location.href = import.meta.env.BASE_URL + 'login'
         return null
       }
 
@@ -585,7 +585,7 @@ export default {
             uploadProgress.value = 100
 
             // Redirect to video page
-            window.location.href = `/video/${video.id}`
+            window.location.href = import.meta.env.BASE_URL + `video/${video.id}`
           } catch (err) {
             console.error('Failed to complete upload after retries:', err)
             isFinishing.value = false
@@ -595,7 +595,7 @@ export default {
 
             // Redirect to videos page after 3 seconds
             setTimeout(() => {
-              window.location.href = '/videos'
+              window.location.href = import.meta.env.BASE_URL + 'videos'
             }, 3000)
           }
         }

@@ -107,7 +107,8 @@ jobs:
               exit 1
             fi
 
-            # Set correct permissions
+            # Set correct ownership and permissions
+            sudo chown -R $(whoami):$(id -gn) ${{ secrets.DEPLOY_PATH }} || { echo "Error: Cannot set directory ownership"; exit 1; }
             sudo chmod -R 775 ${{ secrets.DEPLOY_PATH }} || { echo "Error: Cannot set directory permissions"; exit 1; }
 
             # Install PHP dependencies

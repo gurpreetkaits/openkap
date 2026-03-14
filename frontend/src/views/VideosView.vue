@@ -2169,7 +2169,7 @@ export default {
     }
 
     const openVideo = (id) => {
-      window.location.href = `/video/${id}`
+      window.location.href = import.meta.env.BASE_URL + `video/${id}`
     }
 
     // Handle video click - select if in selection mode, otherwise open video

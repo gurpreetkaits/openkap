@@ -521,7 +521,7 @@ export default {
         if (response.status === 401) {
           auth.clearAuth()
           localStorage.setItem('auth_redirect', '/record')
-          window.location.href = '/login'
+          window.location.href = import.meta.env.BASE_URL + 'login'
           return
         }
 
@@ -568,7 +568,7 @@ export default {
         uploadedVideoId.value = data.video.id
 
         // Redirect to video watch page immediately (no toast)
-        window.location.href = `/video/${data.video.id}`
+        window.location.href = import.meta.env.BASE_URL + `video/${data.video.id}`
 
       } catch (error) {
         console.error('Error auto-saving video:', error)
@@ -602,7 +602,7 @@ export default {
           if (response.status === 401) {
             auth.clearAuth()
             localStorage.setItem('auth_redirect', '/record')
-            window.location.href = '/login'
+            window.location.href = import.meta.env.BASE_URL + 'login'
             return
           }
 
@@ -613,7 +613,7 @@ export default {
 
         toast.success(`Video "${videoTitle.value}" saved successfully!`)
         // Use full page reload instead of router navigation
-        window.location.href = '/videos'
+        window.location.href = import.meta.env.BASE_URL + 'videos'
       } catch (error) {
         console.error('Error updating video:', error)
         toast.error('Failed to update video. Please try again.')
@@ -648,7 +648,7 @@ export default {
         // Auto-start recording triggered from extension
 
         // Clear the URL parameter
-        window.history.replaceState({}, '', '/record')
+        window.history.replaceState({}, '', import.meta.env.BASE_URL + 'record')
 
         // Small delay to ensure UI is ready, then start recording
         setTimeout(() => {

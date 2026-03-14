@@ -1964,7 +1964,7 @@ export default {
       try {
         await videoService.deleteVideo(video.value.id)
         showDeleteModal.value = false
-        window.location.href = '/videos'
+        window.location.href = import.meta.env.BASE_URL + 'videos'
       } catch (err) {
         showToast('Failed to delete')
       } finally {
@@ -1973,7 +1973,7 @@ export default {
     }
 
     const goBack = () => {
-      window.location.href = '/videos'
+      window.location.href = import.meta.env.BASE_URL + 'videos'
     }
 
     const startEditingTitle = () => {

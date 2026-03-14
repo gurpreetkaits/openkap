@@ -28,7 +28,7 @@ function handleUnauthorized(response) {
     // Store current path for redirect after login
     localStorage.setItem('auth_redirect', window.location.pathname)
     // Redirect to login
-    window.location.href = '/login'
+    window.location.href = import.meta.env.BASE_URL + 'login'
     return true
   }
   return false

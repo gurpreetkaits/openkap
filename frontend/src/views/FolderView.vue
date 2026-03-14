@@ -281,7 +281,7 @@ export default {
     }
 
     const openVideo = (id) => {
-      window.location.href = `/video/${id}`
+      window.location.href = import.meta.env.BASE_URL + `video/${id}`
     }
 
     const removeFromFolder = async (video) => {

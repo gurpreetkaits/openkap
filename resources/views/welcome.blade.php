@@ -425,7 +425,7 @@
             </div>
 
             <p class="text-center text-neutral-500 text-sm mt-10">
-                Need more seats or custom features? <a href="mailto:contact@gurpreetkait.in" class="text-white font-medium hover:text-orange-400 transition-colors underline decoration-neutral-600 hover:decoration-orange-500/30">Talk to us</a>
+                Need more seats or custom features? <a href="mailto:contact@openkap.com" class="text-white font-medium hover:text-orange-400 transition-colors underline decoration-neutral-600 hover:decoration-orange-500/30">Talk to us</a>
             </p>
         </div>
     </section>

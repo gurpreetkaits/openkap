@@ -29,7 +29,7 @@ class BulkEmailNotification extends Notification implements ShouldQueue
             ->withSymfonyMessage(function ($message) {
                 $message->getHeaders()->addTextHeader(
                     'List-Unsubscribe',
-                    '<mailto:unsubscribe@screensense.in>'
+                    '<mailto:unsubscribe@openkap.com>'
                 );
             })
             ->view($this->view, array_merge($this->data, [

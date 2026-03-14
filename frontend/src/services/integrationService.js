@@ -22,7 +22,7 @@ function handleUnauthorized(response) {
     localStorage.removeItem('auth_token')
     localStorage.removeItem('auth_user')
     localStorage.setItem('auth_redirect', window.location.pathname)
-    window.location.href = '/login'
+    window.location.href = import.meta.env.BASE_URL + 'login'
     return true
   }
   return false
