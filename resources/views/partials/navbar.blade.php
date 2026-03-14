@@ -4,9 +4,9 @@
 <nav class="fixed top-0 w-full z-50 border-b {{ $light ? 'border-gray-200/60 bg-white/80' : 'border-white/5 bg-brand-950/80' }} backdrop-blur-xl transition-all duration-300">
     <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
         <a href="/" class="flex items-center gap-2 group cursor-pointer">
-            <img src="/logo.png" alt="ScreenSense" class="size-8 rounded-lg {{ $light ? 'shadow-md shadow-orange-200/60' : 'shadow-[0_0_15px_-3px_rgba(249,115,22,0.4)] group-hover:shadow-[0_0_25px_-5px_rgba(249,115,22,0.6)]' }} transition-all duration-300">
+            <img src="/logo.png" alt="OpenKap" class="size-8 rounded-lg {{ $light ? 'shadow-md shadow-gray-300/60' : 'shadow-[0_0_15px_-3px_rgba(255,255,255,0.2)] group-hover:shadow-[0_0_25px_-5px_rgba(255,255,255,0.3)]' }} transition-all duration-300">
             <div class="flex flex-col">
-                <span class="text-lg font-medium tracking-tight leading-tight {{ $light ? 'text-gray-900' : 'text-white' }}">ScreenSense</span>
+                <span class="text-lg font-medium tracking-tight leading-tight {{ $light ? 'text-gray-900' : 'text-white' }}">OpenKap</span>
                 <span class="text-[9px] font-medium tracking-wide {{ $light ? 'text-gray-400' : 'text-neutral-500' }}">Loom alternative for individuals</span>
             </div>
         </a>

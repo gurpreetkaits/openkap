@@ -1,6 +1,6 @@
 @props([
     'twitterUrl' => null,
-    'githubUrl' => 'https://github.com/gurpreetkaits/screensense',
+    'githubUrl' => 'https://github.com/gurpreetkaits/openkap',
     'websiteUrl' => null,
     'unsubscribeUrl' => null,
     'preferencesUrl' => null,
@@ -47,7 +47,7 @@
             <tr>
                 <td align="center" style="padding-top: 16px;">
                     <p style="margin: 0; font-size: 11px; color: #a1a1aa;">
-                        &copy; {{ date('Y') }} ScreenSense. All rights reserved.
+                        &copy; {{ date('Y') }} OpenKap. All rights reserved.
                     </p>
                 </td>
             </tr>

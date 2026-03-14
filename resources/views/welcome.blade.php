@@ -1,10 +1,10 @@
 @extends('layouts.app')
 
-@section('title', 'ScreenSense - Affordable Loom Alternative for Individuals and Small Teams')
-@section('meta_description', 'ScreenSense is async video messaging for remote teams. Record your screen, share a link, and communicate without scheduling meetings. Free to start.')
+@section('title', 'OpenKap - Affordable Loom Alternative for Individuals and Small Teams')
+@section('meta_description', 'OpenKap is async video messaging for remote teams. Record your screen, share a link, and communicate without scheduling meetings. Free to start.')
 @section('meta_keywords', 'screen recording software, loom alternative, async video, screen recorder, video messaging, remote team communication, screen capture, video sharing')
 
-@section('og_title', 'ScreenSense - Affordable Loom Alternative for Individuals and Small Teams')
+@section('og_title', 'OpenKap - Affordable Loom Alternative for Individuals and Small Teams')
 @section('og_description', 'Record your screen, share a link, skip the meeting. Free screen recording software for teams.')
 
 
@@ -45,7 +45,7 @@
 {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
-    "name": "ScreenSense",
+    "name": "OpenKap",
     "applicationCategory": "MultimediaApplication",
     "operatingSystem": "Web Browser",
     "offers": {
@@ -126,7 +126,7 @@
                             preload="metadata"
                             class="w-full h-auto block"
                         >
-                            <source src="{{ asset('app-preview-screensense.mp4') }}" type="video/mp4">
+                            <source src="{{ asset('app-preview-openkap.mp4') }}" type="video/mp4">
                             Your browser does not support the video tag.
                         </video>
                     </div>
@@ -141,11 +141,11 @@
         <div class="max-w-5xl mx-auto px-6">
             {{-- Launch Badges --}}
             <div class="flex flex-wrap justify-center items-center gap-5 mb-10">
-                <a href="https://www.producthunt.com/products/screensense-2?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-screensense-2" target="_blank" rel="noopener noreferrer" class="hover:opacity-80 transition-opacity">
-                    <img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1058090&theme=dark&t=1767617780370" alt="ScreenSense on Product Hunt" width="250" height="54" loading="lazy">
+                <a href="https://www.producthunt.com/products/openkap-2?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-openkap-2" target="_blank" rel="noopener noreferrer" class="hover:opacity-80 transition-opacity">
+                    <img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1058090&theme=dark&t=1767617780370" alt="OpenKap on Product Hunt" width="250" height="54" loading="lazy">
                 </a>
-                <a href="https://peerlist.io/gurpreet/project/screensense--open-source-screen-recording" target="_blank" rel="noopener noreferrer" class="hover:opacity-80 transition-opacity">
-                    <img src="https://peerlist.io/api/v1/projects/embed/PRJH9OBGM78Q7867EC6ADDNQGK799G?showUpvote=false&theme=dark" alt="ScreenSense on Peerlist" style="width: auto; height: 54px;" loading="lazy">
+                <a href="https://peerlist.io/gurpreet/project/openkap--open-source-screen-recording" target="_blank" rel="noopener noreferrer" class="hover:opacity-80 transition-opacity">
+                    <img src="https://peerlist.io/api/v1/projects/embed/PRJH9OBGM78Q7867EC6ADDNQGK799G?showUpvote=false&theme=dark" alt="OpenKap on Peerlist" style="width: auto; height: 54px;" loading="lazy">
                 </a>
             </div>
 
@@ -215,7 +215,7 @@
                         </div>
                     </div>
                     <div class="rounded-2xl overflow-hidden border border-white/10 bg-white/[0.03] shadow-lg shadow-black/30">
-                        <img src="/demo/how-to-record-screen.gif" alt="How to record your screen with ScreenSense" class="w-full h-auto">
+                        <img src="/demo/how-to-record-screen.gif" alt="How to record your screen with OpenKap" class="w-full h-auto">
                     </div>
                 </div>
 
@@ -546,7 +546,7 @@
             <div class="space-y-3" id="faq-accordion">
                 <div class="faq-item border border-white/10 rounded-xl overflow-hidden bg-white/[0.03] hover:border-white/20 transition-colors">
                     <button onclick="toggleFaq(this)" class="w-full flex items-center justify-between p-5 text-left">
-                        <span class="text-base font-semibold text-white pr-4">Is ScreenSense really free?</span>
+                        <span class="text-base font-semibold text-white pr-4">Is OpenKap really free?</span>
                         <i data-lucide="plus" class="size-5 text-neutral-500 shrink-0 faq-icon transition-transform duration-200"></i>
                     </button>
                     <div class="faq-content hidden px-5 pb-5 -mt-1">

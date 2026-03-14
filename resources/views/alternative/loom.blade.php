@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
-@section('title', 'ScreenSense vs Loom - Best Loom Alternative | ScreenSense')
-@section('meta_description', 'Compare ScreenSense to Loom. See why teams are switching to ScreenSense for simpler pricing, no watermarks, and instant sharing.')
+@section('title', 'OpenKap vs Loom - Best Loom Alternative | OpenKap')
+@section('meta_description', 'Compare OpenKap to Loom. See why teams are switching to OpenKap for simpler pricing, no watermarks, and instant sharing.')
 
 @push('styles')
 <style>
@@ -98,7 +98,7 @@
     }
 
     .brand-highlight {
-        color: #ea580c;
+        color: #d4d4d8;
         font-weight: 600;
     }
 
@@ -204,7 +204,7 @@
             <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-brand-500/20 bg-brand-500/5 text-brand-400 text-xs font-medium mb-6">
                 Comparison
             </div>
-            <h1>ScreenSense vs Loom</h1>
+            <h1>OpenKap vs Loom</h1>
             <p>The screen recorder built for simplicity. No bloat, no surprise paywalls, just record and share.</p>
         </div>
     </div>
@@ -219,27 +219,27 @@
         <div class="pain-points">
             <div class="pain-point">
                 <h4>Pricing creep</h4>
-                <p>Loom's pricing has increased significantly. Features that were free now require paid plans. ScreenSense keeps pricing simple and transparent.</p>
+                <p>Loom's pricing has increased significantly. Features that were free now require paid plans. OpenKap keeps pricing simple and transparent.</p>
             </div>
             <div class="pain-point">
                 <h4>Feature bloat</h4>
-                <p>AI summaries, engagement analytics, viewer insights... sometimes you just want to record and share. ScreenSense focuses on what matters.</p>
+                <p>AI summaries, engagement analytics, viewer insights... sometimes you just want to record and share. OpenKap focuses on what matters.</p>
             </div>
             <div class="pain-point">
                 <h4>Watermarks on free</h4>
-                <p>Loom's free tier adds watermarks and branding. ScreenSense gives you clean, professional recordings even on the free plan.</p>
+                <p>Loom's free tier adds watermarks and branding. OpenKap gives you clean, professional recordings even on the free plan.</p>
             </div>
         </div>
 
         <!-- Comparison Table -->
         <h2 class="section-title">Feature Comparison</h2>
-        <p class="section-description">See how ScreenSense stacks up against Loom for core screen recording needs.</p>
+        <p class="section-description">See how OpenKap stacks up against Loom for core screen recording needs.</p>
 
         <table class="comparison-table">
             <thead>
                 <tr>
                     <th>Feature</th>
-                    <th>ScreenSense</th>
+                    <th>OpenKap</th>
                     <th>Loom</th>
                 </tr>
             </thead>
@@ -314,7 +314,7 @@
 
         <!-- CTA -->
         <div class="cta-section">
-            <h2>Ready to try ScreenSense?</h2>
+            <h2>Ready to try OpenKap?</h2>
             <p>Start with 10 free recordings. No credit card required.</p>
             <a href="{{ config('app.frontend_url', config('app.url')) }}/login" class="cta-button">
                 Get Started Free

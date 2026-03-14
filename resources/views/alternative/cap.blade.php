@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
-@section('title', 'ScreenSense vs Cap.so - Screen Recording Comparison | ScreenSense')
-@section('meta_description', 'Compare ScreenSense to Cap.so. Both are modern Loom alternatives. See which screen recorder fits your workflow better.')
+@section('title', 'OpenKap vs Cap.so - Screen Recording Comparison | OpenKap')
+@section('meta_description', 'Compare OpenKap to Cap.so. Both are modern Loom alternatives. See which screen recorder fits your workflow better.')
 
 @push('styles')
 <style>
@@ -220,7 +220,7 @@
             <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-brand-500/20 bg-brand-500/5 text-brand-400 text-xs font-medium mb-6">
                 Comparison
             </div>
-            <h1>ScreenSense vs Cap.so</h1>
+            <h1>OpenKap vs Cap.so</h1>
             <p>Two modern alternatives to Loom. See which screen recorder fits your needs.</p>
         </div>
     </div>
@@ -230,7 +230,7 @@
 
         <!-- Intro -->
         <h2 class="section-title">Both are great Loom alternatives</h2>
-        <p class="section-description">Cap.so and ScreenSense are both built as simpler alternatives to Loom. Here's how they differ:</p>
+        <p class="section-description">Cap.so and OpenKap are both built as simpler alternatives to Loom. Here's how they differ:</p>
 
         <div class="intro-section">
             <div class="intro-card">
@@ -238,25 +238,25 @@
                 <p>Open-source screen recorder with a focus on privacy and local-first recording. Uses Tauri for a lightweight desktop app. Great for developers who want full control.</p>
             </div>
             <div class="intro-card">
-                <h4>ScreenSense</h4>
+                <h4>OpenKap</h4>
                 <p>Browser-first screen recorder with instant cloud sharing. Focus on simplicity and speed. Record from Chrome, get a link immediately. No desktop app needed.</p>
             </div>
         </div>
 
         <div class="summary-box">
             <h3>Quick Summary</h3>
-            <p>Choose <strong>Cap.so</strong> if you want open-source, local-first recording with a desktop app. Choose <strong>ScreenSense</strong> if you want instant browser-based recording with cloud sharing and no installation.</p>
+            <p>Choose <strong>Cap.so</strong> if you want open-source, local-first recording with a desktop app. Choose <strong>OpenKap</strong> if you want instant browser-based recording with cloud sharing and no installation.</p>
         </div>
 
         <!-- Comparison Table -->
         <h2 class="section-title">Feature Comparison</h2>
-        <p class="section-description">A detailed look at how ScreenSense and Cap.so compare.</p>
+        <p class="section-description">A detailed look at how OpenKap and Cap.so compare.</p>
 
         <table class="comparison-table">
             <thead>
                 <tr>
                     <th>Feature</th>
-                    <th>ScreenSense</th>
+                    <th>OpenKap</th>
                     <th>Cap.so</th>
                 </tr>
             </thead>
@@ -341,7 +341,7 @@
 
         <!-- CTA -->
         <div class="cta-section">
-            <h2>Try ScreenSense today</h2>
+            <h2>Try OpenKap today</h2>
             <p>Record your first video in seconds. No download required.</p>
             <a href="{{ config('app.frontend_url', config('app.url')) }}/login" class="cta-button">
                 Get Started Free

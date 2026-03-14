@@ -8,7 +8,7 @@
     <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 520px; margin: 0 auto;">
         <tr>
             <td>
-                <h1 style="margin: 0 0 32px; font-size: 16px; font-weight: 600; color: #000; letter-spacing: -0.5px;">screensense.in</h1>
+                <h1 style="margin: 0 0 32px; font-size: 16px; font-weight: 600; color: #000; letter-spacing: -0.5px;">openkap.com</h1>
                 
                 <p style="margin: 0 0 20px;">
                     The <strong>Chrome extension</strong> is live.
@@ -24,12 +24,12 @@
                     > done.
                 </p>
                 
-                <a href="https://chromewebstore.google.com/detail/screensense/nnchnlkilgfemhpcohmgdpcmkjedjkfm" style="display: inline-block; background: #000; color: #fff; text-decoration: none; padding: 10px 20px; font-size: 13px; font-family: inherit;">
+                <a href="https://chromewebstore.google.com/detail/openkap/nnchnlkilgfemhpcohmgdpcmkjedjkfm" style="display: inline-block; background: #000; color: #fff; text-decoration: none; padding: 10px 20px; font-size: 13px; font-family: inherit;">
                     install extension →
                 </a>
                 
                 <p style="margin: 40px 0 0; font-size: 12px; color: #999;">
-                    — screensense
+                    — openkap
                 </p>
             </td>
         </tr>

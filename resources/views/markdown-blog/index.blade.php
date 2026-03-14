@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', isset($category) ? "{$category} | Blog | ScreenSense" : 'Blog | ScreenSense')
+@section('title', isset($category) ? "{$category} | Blog | OpenKap" : 'Blog | OpenKap')
 @section('meta_description', 'Tips, guides, and insights about screen recording and async communication.')
 
 @push('styles')

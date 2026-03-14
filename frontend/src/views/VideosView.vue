@@ -480,49 +480,14 @@
             </div>
           </div>
 
-          <!-- Hover Overlay with Play Button and Action Icons (visible on touch via tap, visible on hover for desktop) -->
+          <!-- Hover Overlay with Play Button -->
           <div
             class="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 lg:opacity-0 lg:group-hover:opacity-100"
           >
-            <!-- Play Button (clickable area covers most of the overlay) -->
             <div class="w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-xl transform group-hover:scale-100 scale-90 transition-transform duration-200 pointer-events-none">
               <svg class="w-6 h-6 text-gray-900 ml-1" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.841z"/>
               </svg>
-            </div>
-
-            <!-- Action Icons (bottom right) -->
-            <div class="absolute bottom-2 left-2 flex items-center gap-1" @click.stop>
-              <!-- Share -->
-              <button
-                @click.stop="shareVideo(video)"
-                class="p-2 bg-white/90 hover:bg-white rounded-lg shadow-md transition-all duration-150 hover:scale-105"
-                title="Copy share link"
-              >
-                <svg class="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
-                </svg>
-              </button>
-              <!-- Download -->
-              <button
-                @click.stop="downloadVideo(video)"
-                class="p-2 bg-white/90 hover:bg-white rounded-lg shadow-md transition-all duration-150 hover:scale-105"
-                title="Download"
-              >
-                <svg class="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-                </svg>
-              </button>
-              <!-- Delete -->
-              <button
-                @click.stop="deleteVideo(video)"
-                class="p-2 bg-white/90 hover:bg-red-50 rounded-lg shadow-md transition-all duration-150 hover:scale-105"
-                title="Delete"
-              >
-                <svg class="w-4 h-4 text-gray-700 hover:text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                </svg>
-              </button>
             </div>
           </div>
 
@@ -551,77 +516,95 @@
             >
               {{ video.title }}
             </h3>
-            <!-- Menu Button -->
-            <div class="relative flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity z-20" @click.stop>
+            <!-- Hover Actions: Copy Link + Dropdown -->
+            <div class="flex items-center gap-0.5 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity z-20" @click.stop>
+              <!-- Copy Link -->
               <button
-                @click.stop="toggleVideoMenu(video.id)"
-                class="p-1.5 -m-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+                @click.stop="shareVideo(video)"
+                class="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+                title="Copy link"
               >
-                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"/>
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
                 </svg>
               </button>
-              <Transition name="dropdown">
-                <div
-                  v-show="activeVideoMenu === video.id"
-                  class="absolute right-0 mt-1 w-36 bg-white rounded-lg shadow-xl ring-1 ring-black/5 py-1 z-[100]"
+              <!-- Dropdown Menu -->
+              <div class="relative">
+                <button
+                  @click.stop="toggleVideoMenu(video.id)"
+                  class="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
                 >
-                  <button
-                    @click="shareVideo(video); activeVideoMenu = null"
-                    class="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2.5"
+                  <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"/>
+                  </svg>
+                </button>
+                <Transition name="dropdown">
+                  <div
+                    v-show="activeVideoMenu === video.id"
+                    class="absolute right-0 mt-1 w-40 bg-white rounded-lg shadow-xl ring-1 ring-black/5 py-1 z-[100]"
                   >
-                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
-                    </svg>
-                    Copy link
-                  </button>
-                  <button
-                    @click="downloadVideo(video); activeVideoMenu = null"
-                    class="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2.5"
-                  >
-                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-                    </svg>
-                    Download
-                  </button>
-                  <button
-                    @click="toggleFavorite(video); activeVideoMenu = null"
-                    class="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2.5"
-                  >
-                    <svg class="w-4 h-4 text-gray-400" :fill="video.is_favourite ? 'currentColor' : 'none'" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
-                    </svg>
-                    {{ video.is_favourite ? 'Unfavourite' : 'Favourite' }}
-                  </button>
-                  <button
-                    v-if="folders.length > 0"
-                    @click="openMoveToFolderModal(video); activeVideoMenu = null"
-                    class="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2.5"
-                  >
-                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
-                    </svg>
-                    Move to folder
-                  </button>
-                  <div class="h-px bg-gray-100 my-1"></div>
-                  <button
-                    @click="deleteVideo(video); activeVideoMenu = null"
-                    class="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 transition-colors flex items-center gap-2.5"
-                  >
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                    </svg>
-                    Delete
-                  </button>
-                </div>
-              </Transition>
+                    <button
+                      @click="shareVideo(video); activeVideoMenu = null"
+                      class="w-full px-3 py-1.5 text-left text-[13px] text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2"
+                    >
+                      <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
+                      </svg>
+                      Share
+                    </button>
+                    <button
+                      @click="openRenameVideoModal(video); activeVideoMenu = null"
+                      class="w-full px-3 py-1.5 text-left text-[13px] text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2"
+                    >
+                      <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                      </svg>
+                      Rename
+                    </button>
+                    <button
+                      @click="openMoveToFolderModal(video); activeVideoMenu = null"
+                      class="w-full px-3 py-1.5 text-left text-[13px] text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2"
+                    >
+                      <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
+                      </svg>
+                      Move
+                    </button>
+                    <button
+                      @click="archiveVideo(video); activeVideoMenu = null"
+                      class="w-full px-3 py-1.5 text-left text-[13px] text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2"
+                    >
+                      <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>
+                      </svg>
+                      Archive
+                    </button>
+                    <div class="h-px bg-gray-100 my-1"></div>
+                    <button
+                      @click="deleteVideo(video); activeVideoMenu = null"
+                      class="w-full px-3 py-1.5 text-left text-[13px] text-red-600 hover:bg-red-50 transition-colors flex items-center gap-2"
+                    >
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                      </svg>
+                      Delete
+                    </button>
+                  </div>
+                </Transition>
+              </div>
             </div>
           </div>
           <!-- Meta Info -->
           <div class="flex items-center gap-1.5 mt-2 text-xs text-gray-500">
             <span>{{ formatDate(video.createdAt) }}</span>
-            <span class="text-gray-300">•</span>
-            <span>{{ video.views_count || 0 }} views</span>
+            <span class="text-gray-300">·</span>
+            <span class="flex items-center gap-1">
+              <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+              </svg>
+              {{ video.views_count || 0 }}
+            </span>
           </div>
         </div>
       </div>
@@ -698,69 +681,83 @@
           </div>
           <div class="flex items-center gap-2 mt-1.5 text-xs text-gray-500">
             <span>{{ formatDate(video.createdAt) }}</span>
-            <span class="text-gray-300">•</span>
-            <span>{{ video.views_count || 0 }} views</span>
+            <span class="text-gray-300">·</span>
+            <span class="flex items-center gap-1">
+              <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+              </svg>
+              {{ video.views_count || 0 }}
+            </span>
           </div>
         </div>
 
         <!-- Actions -->
         <div class="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-150" @click.stop>
+          <!-- Copy Link -->
           <button @click="shareVideo(video)" class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors" title="Copy link">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
             </svg>
           </button>
-          <button @click="downloadVideo(video)" class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors" title="Download">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-            </svg>
-          </button>
-          <button @click="deleteVideo(video)" class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Delete">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-            </svg>
-          </button>
-          <!-- More Options -->
+          <!-- More Options Dropdown -->
           <div class="relative z-20">
             <button
               @click.stop="toggleVideoMenu(video.id)"
               class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
               title="More options"
             >
-              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+              <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"/>
               </svg>
             </button>
             <Transition name="dropdown">
               <div
                 v-show="activeVideoMenu === video.id"
-                class="absolute right-0 mt-1 w-36 bg-white rounded-lg shadow-xl ring-1 ring-black/5 py-1 z-[100]"
+                class="absolute right-0 mt-1 w-40 bg-white rounded-lg shadow-xl ring-1 ring-black/5 py-1 z-[100]"
               >
                 <button
-                  @click="toggleFavorite(video); activeVideoMenu = null"
-                  class="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2.5"
+                  @click="shareVideo(video); activeVideoMenu = null"
+                  class="w-full px-3 py-1.5 text-left text-[13px] text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2"
                 >
-                  <svg class="w-4 h-4 text-gray-400" :fill="video.is_favourite ? 'currentColor' : 'none'" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
+                  <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
                   </svg>
-                  {{ video.is_favourite ? 'Unfavourite' : 'Favourite' }}
+                  Share
                 </button>
                 <button
-                  v-if="folders.length > 0"
-                  @click="openMoveToFolderModal(video); activeVideoMenu = null"
-                  class="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2.5"
+                  @click="openRenameVideoModal(video); activeVideoMenu = null"
+                  class="w-full px-3 py-1.5 text-left text-[13px] text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2"
                 >
-                  <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                  </svg>
+                  Rename
+                </button>
+                <button
+                  @click="openMoveToFolderModal(video); activeVideoMenu = null"
+                  class="w-full px-3 py-1.5 text-left text-[13px] text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2"
+                >
+                  <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
                   </svg>
-                  Move to folder
+                  Move
+                </button>
+                <button
+                  @click="archiveVideo(video); activeVideoMenu = null"
+                  class="w-full px-3 py-1.5 text-left text-[13px] text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2"
+                >
+                  <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>
+                  </svg>
+                  Archive
                 </button>
                 <div class="h-px bg-gray-100 my-1"></div>
                 <button
                   @click="deleteVideo(video); activeVideoMenu = null"
-                  class="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 transition-colors flex items-center gap-2.5"
+                  class="w-full px-3 py-1.5 text-left text-[13px] text-red-600 hover:bg-red-50 transition-colors flex items-center gap-2"
                 >
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                   </svg>
                   Delete
@@ -1187,6 +1184,58 @@
       </Transition>
     </Teleport>
 
+    <!-- Rename Video Modal -->
+    <Teleport to="body">
+      <Transition name="modal">
+        <div
+          v-if="showRenameVideoModal"
+          class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm"
+          @click.self="closeRenameVideoModal"
+        >
+          <Transition name="modal-content" appear>
+            <div class="bg-white rounded-xl shadow-xl max-w-sm w-full overflow-hidden">
+              <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+                <h2 class="text-lg font-semibold text-gray-900">Rename Video</h2>
+                <button
+                  @click="closeRenameVideoModal"
+                  class="p-1.5 -mr-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+                >
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                  </svg>
+                </button>
+              </div>
+              <div class="px-6 py-4">
+                <input
+                  v-model="renameVideoTitle"
+                  type="text"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  placeholder="Video title"
+                  @keydown.enter="confirmRenameVideo"
+                />
+                <p v-if="renameVideoError" class="mt-2 text-sm text-red-600">{{ renameVideoError }}</p>
+              </div>
+              <div class="flex justify-end gap-2 px-6 py-4 bg-gray-50 border-t border-gray-100">
+                <button
+                  @click="closeRenameVideoModal"
+                  class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  @click="confirmRenameVideo"
+                  :disabled="renamingVideo"
+                  class="px-4 py-2 text-sm font-medium text-white bg-orange-500 rounded-lg hover:bg-orange-600 transition-colors disabled:opacity-50"
+                >
+                  {{ renamingVideo ? 'Saving...' : 'Save' }}
+                </button>
+              </div>
+            </div>
+          </Transition>
+        </div>
+      </Transition>
+    </Teleport>
+
     <!-- Edit Folder Modal -->
     <Teleport to="body">
       <Transition name="modal">
@@ -1300,29 +1349,28 @@
           <!-- Video Context Menu -->
           <template v-else-if="contextMenu.type === 'video'">
             <button
-              @click="contextMenuAction('favourite')"
+              @click="contextMenuAction('share')"
               class="w-full px-3 py-1.5 text-left text-[13px] text-gray-700 hover:bg-gray-50 transition-colors"
             >
-              {{ contextMenu.target?.is_favourite ? 'Unfavourite' : 'Favourite' }}
+              Share
             </button>
             <button
-              v-if="folders.length > 0"
+              @click="contextMenuAction('rename')"
+              class="w-full px-3 py-1.5 text-left text-[13px] text-gray-700 hover:bg-gray-50 transition-colors"
+            >
+              Rename
+            </button>
+            <button
               @click="contextMenuAction('move')"
               class="w-full px-3 py-1.5 text-left text-[13px] text-gray-700 hover:bg-gray-50 transition-colors"
             >
               Move
             </button>
             <button
-              @click="contextMenuAction('share')"
+              @click="contextMenuAction('archive')"
               class="w-full px-3 py-1.5 text-left text-[13px] text-gray-700 hover:bg-gray-50 transition-colors"
             >
-              Copy Link
-            </button>
-            <button
-              @click="contextMenuAction('download')"
-              class="w-full px-3 py-1.5 text-left text-[13px] text-gray-700 hover:bg-gray-50 transition-colors"
-            >
-              Download
+              Archive
             </button>
             <button
               @click="contextMenuAction('delete')"
@@ -1918,14 +1966,14 @@ export default {
           openDeleteFolderModal(target)
         }
       } else if (type === 'video') {
-        if (action === 'favourite') {
-          toggleFavorite(target)
+        if (action === 'share') {
+          shareVideo(target)
+        } else if (action === 'rename') {
+          openRenameVideoModal(target)
         } else if (action === 'move') {
           openMoveToFolderModal(target)
-        } else if (action === 'share') {
-          shareVideo(target)
-        } else if (action === 'download') {
-          downloadVideo(target)
+        } else if (action === 'archive') {
+          archiveVideo(target)
         } else if (action === 'delete') {
           deleteVideo(target)
         }
@@ -2142,6 +2190,58 @@ export default {
           console.error('Failed to copy:', err)
           toast.error('Failed to copy link. Please try again.')
         }
+      }
+    }
+
+    // Rename video
+    const showRenameVideoModal = ref(false)
+    const videoToRename = ref(null)
+    const renameVideoTitle = ref('')
+    const renameVideoError = ref('')
+    const renamingVideo = ref(false)
+
+    const openRenameVideoModal = (video) => {
+      videoToRename.value = video
+      renameVideoTitle.value = video.title
+      renameVideoError.value = ''
+      showRenameVideoModal.value = true
+    }
+
+    const closeRenameVideoModal = () => {
+      showRenameVideoModal.value = false
+      videoToRename.value = null
+      renameVideoTitle.value = ''
+      renameVideoError.value = ''
+    }
+
+    const confirmRenameVideo = async () => {
+      if (!renameVideoTitle.value.trim()) {
+        renameVideoError.value = 'Title cannot be empty'
+        return
+      }
+      renamingVideo.value = true
+      try {
+        await videoService.updateVideo(videoToRename.value.id, { title: renameVideoTitle.value.trim() })
+        const video = videos.value.find(v => v.id === videoToRename.value.id)
+        if (video) video.title = renameVideoTitle.value.trim()
+        toast.success('Video renamed successfully!')
+        closeRenameVideoModal()
+      } catch (err) {
+        renameVideoError.value = err.message || 'Failed to rename video'
+      } finally {
+        renamingVideo.value = false
+      }
+    }
+
+    // Archive video
+    const archiveVideo = async (video) => {
+      try {
+        await videoService.updateVideo(video.id, { is_archived: true })
+        videos.value = videos.value.filter(v => v.id !== video.id)
+        toast.success('Video archived!')
+      } catch (err) {
+        console.error('Failed to archive:', err)
+        toast.error('Failed to archive video. Please try again.')
       }
     }
 
@@ -2636,6 +2736,16 @@ export default {
       embedVideo,
       downloadVideo,
       deleteVideo,
+      // Rename video
+      showRenameVideoModal,
+      renameVideoTitle,
+      renameVideoError,
+      renamingVideo,
+      openRenameVideoModal,
+      closeRenameVideoModal,
+      confirmRenameVideo,
+      // Archive video
+      archiveVideo,
       confirmDeleteVideo,
       toggleFavorite,
       formatDuration,

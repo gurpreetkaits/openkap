@@ -55,8 +55,8 @@
                                 <tr>
                                     <td>
                                         <a href="{{ config('app.url') }}" style="text-decoration: none;">
-                                            <img src="{{ url('/logo.png') }}" alt="ScreenSense" width="32" height="32" style="width: 32px; height: 32px; border-radius: 8px; vertical-align: middle; margin-right: 10px;">
-                                            <span style="font-size: 14px; font-weight: 600; color: #18181b; vertical-align: middle;">ScreenSense</span>
+                                            <img src="{{ url('/logo.png') }}" alt="OpenKap" width="32" height="32" style="width: 32px; height: 32px; border-radius: 8px; vertical-align: middle; margin-right: 10px;">
+                                            <span style="font-size: 14px; font-weight: 600; color: #18181b; vertical-align: middle;">OpenKap</span>
                                         </a>
                                     </td>
                                 </tr>
@@ -78,7 +78,7 @@
                             </table>
 
                             <!-- Headline -->
-                            <h1 style="margin: 0 0 12px 0; font-size: 28px; font-weight: 600; color: #ea580c; line-height: 1.2;">
+                            <h1 style="margin: 0 0 12px 0; font-size: 28px; font-weight: 600; color: #18181b; line-height: 1.2;">
                                 {!! nl2br(e($headline)) !!}
                                 @if($subheadline)
                                 <br><span style="color: #18181b;">{!! nl2br(e($subheadline)) !!}</span>
@@ -169,7 +169,7 @@
                         <td style="padding: 24px 32px;">
                             <p style="margin: 0; font-size: 14px; color: #71717a; line-height: 1.5;">
                                 Best,<br>
-                                <span style="color: #18181b; font-weight: 500;">The ScreenSense Team</span>
+                                <span style="color: #18181b; font-weight: 500;">The OpenKap Team</span>
                             </p>
                         </td>
                     </tr>

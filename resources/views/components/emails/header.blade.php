@@ -1,6 +1,6 @@
 @props([
     'logoUrl' => null,
-    'appName' => 'ScreenSense',
+    'appName' => 'OpenKap',
 ])
 <!-- Header -->
 <tr>

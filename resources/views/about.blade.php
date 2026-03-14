@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
-@section('title', 'About Us | ScreenSense')
-@section('meta_description', 'Learn about ScreenSense - Simple, powerful screen recording for everyone. Open source, privacy-focused, and built for teams and individuals.')
+@section('title', 'About Us | OpenKap')
+@section('meta_description', 'Learn about OpenKap - Simple, powerful screen recording for everyone. Open source, privacy-focused, and built for teams and individuals.')
 
 @push('styles')
 <style>
@@ -185,7 +185,7 @@
     <!-- Hero -->
     <div class="page-hero">
         <div class="container">
-            <h1>About ScreenSense</h1>
+            <h1>About OpenKap</h1>
             <p>Simple, powerful screen recording for everyone.</p>
         </div>
     </div>
@@ -194,9 +194,9 @@
     <div class="content-section">
         <div class="highlight-box">
             <p>
-                <strong>ScreenSense</strong> is an open-source screen recording and instant sharing platform designed to make
+                <strong>OpenKap</strong> is an open-source screen recording and instant sharing platform designed to make
                 capturing and sharing your screen as simple as possible. Whether you're creating tutorials, bug reports,
-                or sharing quick updates with your team, ScreenSense has you covered.
+                or sharing quick updates with your team, OpenKap has you covered.
             </p>
         </div>
 
@@ -206,7 +206,7 @@
             are bloated with features you don't need, require complex setups, or lock you into expensive subscriptions.
         </p>
         <p>
-            ScreenSense was built to solve this problem. We've created a streamlined platform that focuses on what matters:
+            OpenKap was built to solve this problem. We've created a streamlined platform that focuses on what matters:
             quick recording, instant sharing, and a great user experience.
         </p>
 
@@ -233,7 +233,7 @@
         <h2>Built for Teams & Individuals</h2>
         <p>
             Whether you're a solo developer documenting bugs, a designer sharing UI feedback, a teacher creating tutorials,
-            or a team collaborating on projects, ScreenSense adapts to your workflow.
+            or a team collaborating on projects, OpenKap adapts to your workflow.
         </p>
 
         <h2>Key Features</h2>
@@ -250,16 +250,16 @@
 
         <h2>Open Source</h2>
         <p>
-            ScreenSense is proudly open source. We believe in transparency and community-driven development. You can
+            OpenKap is proudly open source. We believe in transparency and community-driven development. You can
             view our code, contribute features, report issues, and even self-host your own instance.
         </p>
         <p>
-            Find us on GitHub: <a href="https://github.com/gurpreetkaits/screensense" target="_blank" rel="noopener noreferrer">github.com/gurpreetkaits/screensense</a>
+            Find us on GitHub: <a href="https://github.com/gurpreetkaits/openkap" target="_blank" rel="noopener noreferrer">github.com/gurpreetkaits/openkap</a>
         </p>
 
         <h2>The Technology</h2>
         <p>
-            ScreenSense is built with modern, reliable technologies:
+            OpenKap is built with modern, reliable technologies:
         </p>
         <ul>
             <li><strong>Backend:</strong> Laravel (PHP) for robust server-side processing</li>

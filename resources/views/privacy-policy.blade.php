@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
-@section('title', 'Privacy Policy | ScreenSense')
-@section('meta_description', 'Privacy policy for ScreenSense. Learn how we handle your data, protect your privacy, and what permissions our Chrome extension uses.')
+@section('title', 'Privacy Policy | OpenKap')
+@section('meta_description', 'Privacy policy for OpenKap. Learn how we handle your data, protect your privacy, and what permissions our Chrome extension uses.')
 
 @push('styles')
 <style>
@@ -146,20 +146,20 @@
     <div class="content-section">
         <div class="important-box">
             <p>
-                <strong>ScreenSense is committed to protecting your privacy.</strong> This privacy policy explains how our
+                <strong>OpenKap is committed to protecting your privacy.</strong> This privacy policy explains how our
                 Chrome extension and web application handle your data.
             </p>
         </div>
 
         <h2>Overview</h2>
         <p>
-            ScreenSense is a screen recording and video sharing platform. This policy describes what information we collect,
+            OpenKap is a screen recording and video sharing platform. This policy describes what information we collect,
             how we use it, and your rights regarding your data.
         </p>
 
         <h2>Data Collection</h2>
         <p>
-            <strong>ScreenSense does NOT collect, store, or transmit any personal data to external servers without your knowledge.</strong>
+            <strong>OpenKap does NOT collect, store, or transmit any personal data to external servers without your knowledge.</strong>
         </p>
 
         <h2>Chrome Extension</h2>
@@ -173,7 +173,7 @@
         </ul>
 
         <h2>Web Application</h2>
-        <p>When using the ScreenSense web application:</p>
+        <p>When using the OpenKap web application:</p>
         <ul>
             <li><strong>Account Information:</strong> If you create an account, we store your name, email, and profile information</li>
             <li><strong>Video Storage:</strong> Videos you upload are stored on our servers and are private by default</li>
@@ -199,7 +199,7 @@
 
         <h2>Third-Party Services</h2>
         <p>
-            ScreenSense integrates with the following third-party services:
+            OpenKap integrates with the following third-party services:
         </p>
         <ul>
             <li><strong>Google OAuth:</strong> For secure authentication when signing in</li>
@@ -243,7 +243,7 @@
 
         <h2>Children's Privacy</h2>
         <p>
-            ScreenSense is not intended for use by children under the age of 13. We do not knowingly collect
+            OpenKap is not intended for use by children under the age of 13. We do not knowingly collect
             personal information from children under 13. If we discover we have collected information from a child
             under 13, we will delete it promptly.
         </p>
@@ -251,7 +251,7 @@
         <h2>Changes to This Policy</h2>
         <p>
             We may update this privacy policy from time to time. We will notify users of any significant changes
-            by updating the "Last updated" date at the top of this page. Continued use of ScreenSense after
+            by updating the "Last updated" date at the top of this page. Continued use of OpenKap after
             changes constitutes acceptance of the updated policy.
         </p>
 
@@ -262,7 +262,7 @@
             </p>
             <p>
                 <strong>Email:</strong> <a href="mailto:gurpreetkait.codes@gmail.com">gurpreetkait.codes@gmail.com</a><br>
-                <strong>GitHub:</strong> <a href="https://github.com/gurpreetkaits/screensense" target="_blank" rel="noopener noreferrer">github.com/gurpreetkaits/screensense</a>
+                <strong>GitHub:</strong> <a href="https://github.com/gurpreetkaits/openkap" target="_blank" rel="noopener noreferrer">github.com/gurpreetkaits/openkap</a>
             </p>
         </div>
     </div>

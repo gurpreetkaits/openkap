@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $video->title }} - ScreenSense</title>
+    <title>{{ $video->title }} - OpenKap</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -37,12 +37,12 @@
         <div class="bg-white border-b border-gray-200 px-4 py-2 flex items-center justify-between flex-shrink-0">
             <div class="flex items-center gap-3">
                 <a href="{{ $video->getFrontendShareUrl() }}" target="_blank" class="flex items-center gap-2 hover:opacity-80 transition-opacity">
-                    <div class="w-7 h-7 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center">
+                    <div class="w-7 h-7 bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg flex items-center justify-center">
                         <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
                             <path d="M4 4h4v4H4V4zm6 0h4v4h-4V4zm6 0h4v4h-4V4zM4 10h4v4H4v-4zm6 0h4v4h-4v-4zm6 0h4v4h-4v-4zM4 16h4v4H4v-4zm6 0h4v4h-4v-4zm6 0h4v4h-4v-4z"/>
                         </svg>
                     </div>
-                    <span class="font-semibold text-gray-900 text-sm">ScreenSense</span>
+                    <span class="font-semibold text-gray-900 text-sm">OpenKap</span>
                 </a>
                 <div class="w-px h-5 bg-gray-200"></div>
                 <span class="text-gray-700 text-sm font-medium truncate max-w-[200px] md:max-w-[400px]">{{ $video->title }}</span>
@@ -132,9 +132,9 @@
             <a
                 href="{{ $video->getFrontendShareUrl() }}"
                 target="_blank"
-                class="text-xs text-gray-500 hover:text-orange-600 transition-colors"
+                class="text-xs text-gray-500 hover:text-gray-900 transition-colors"
             >
-                Powered by ScreenSense
+                Powered by OpenKap
             </a>
         </div>
     </div>

@@ -35,7 +35,7 @@
 </head>
 <body style="margin: 0; padding: 0; background-color: #e4e4e7; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
     <div style="display: none; max-height: 0; overflow: hidden; mso-hide: all;">
-        ScreenSense now integrates with Jira &mdash; detect bugs from recordings and create issues in one click.
+        OpenKap now integrates with Jira &mdash; detect bugs from recordings and create issues in one click.
     </div>
 
     <!-- Email wrapper -->
@@ -52,9 +52,9 @@
                             <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin: 0 auto;">
                                 <tr>
                                     <td style="text-align: center;">
-                                        <img src="{{ url('/logo.png') }}" alt="ScreenSense" width="44" height="44" style="width: 44px; height: 44px; border-radius: 12px; margin-bottom: 8px;">
+                                        <img src="{{ url('/logo.png') }}" alt="OpenKap" width="44" height="44" style="width: 44px; height: 44px; border-radius: 12px; margin-bottom: 8px;">
                                         <br>
-                                        <span style="font-size: 15px; font-weight: 600; color: #ffffff; letter-spacing: 0.03em;">ScreenSense</span>
+                                        <span style="font-size: 15px; font-weight: 600; color: #ffffff; letter-spacing: 0.03em;">OpenKap</span>
                                     </td>
                                 </tr>
                             </table>
@@ -126,20 +126,20 @@
                             <!-- Badge -->
                             <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin-bottom: 16px;">
                                 <tr>
-                                    <td style="background-color: #fff7ed; border: 1px solid #fed7aa; border-radius: 9999px; padding: 5px 14px;">
-                                        <span style="font-size: 11px; font-weight: 700; color: #ea580c; text-transform: uppercase; letter-spacing: 0.06em;">New Integration</span>
+                                    <td style="background-color: #f4f4f5; border: 1px solid #e4e4e7; border-radius: 9999px; padding: 5px 14px;">
+                                        <span style="font-size: 11px; font-weight: 700; color: #18181b; text-transform: uppercase; letter-spacing: 0.06em;">New Integration</span>
                                     </td>
                                 </tr>
                             </table>
 
                             <!-- Headline -->
                             <h1 style="margin: 0 0 14px 0; font-size: 28px; font-weight: 700; color: #18181b; line-height: 1.2; letter-spacing: -0.02em;">
-                                Introducing <span style="color: #ea580c;">Jira Integration</span>
+                                Introducing <span style="color: #18181b;">Jira Integration</span>
                             </h1>
 
                             <!-- Description -->
                             <p style="margin: 0 0 36px 0; font-size: 16px; color: #71717a; line-height: 1.7;">
-                                ScreenSense now analyzes your recordings, detects bugs from the transcript, and lets you push them straight to Jira &mdash; no copy-pasting, no context switching.
+                                OpenKap now analyzes your recordings, detects bugs from the transcript, and lets you push them straight to Jira &mdash; no copy-pasting, no context switching.
                             </p>
                         </td>
                     </tr>
@@ -230,14 +230,14 @@
                                         <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
                                             <tr>
                                                 <td>
-                                                    <img src="{{ url('/logo.png') }}" alt="ScreenSense" width="24" height="24" style="width: 24px; height: 24px; border-radius: 6px; vertical-align: middle; margin-right: 8px;">
-                                                    <span style="font-size: 13px; font-weight: 600; color: #3f3f46; vertical-align: middle;">ScreenSense</span>
+                                                    <img src="{{ url('/logo.png') }}" alt="OpenKap" width="24" height="24" style="width: 24px; height: 24px; border-radius: 6px; vertical-align: middle; margin-right: 8px;">
+                                                    <span style="font-size: 13px; font-weight: 600; color: #3f3f46; vertical-align: middle;">OpenKap</span>
                                                 </td>
                                             </tr>
                                             <tr>
                                                 <td style="padding-top: 12px;">
                                                     <p style="margin: 0; font-size: 12px; color: #a1a1aa; line-height: 1.6;">
-                                                        You're receiving this because you have an account on ScreenSense.
+                                                        You're receiving this because you have an account on OpenKap.
                                                         <br>
                                                         <a href="{{ $frontendUrl }}/settings" style="color: #71717a; text-decoration: underline;">Manage preferences</a>
                                                         &nbsp;&middot;&nbsp;

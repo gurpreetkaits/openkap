@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Blog | ScreenSense - Screen Recording Tips & Guides')
+@section('title', 'Blog | OpenKap - Screen Recording Tips & Guides')
 @section('meta_description', 'Tips, guides, and insights about screen recording and async communication. Learn how to create better screen recordings for free.')
 
 @push('styles')
@@ -285,7 +285,7 @@
     <!-- CTA -->
     <section class="cta-section">
         <h2>Ready to start recording?</h2>
-        <p>Join thousands of users creating screen recordings with ScreenSense.</p>
+        <p>Join thousands of users creating screen recordings with OpenKap.</p>
         <a href="{{ config('app.frontend_url', config('app.url')) }}/login" class="cta-button">Get Started Free</a>
     </section>
 @endsection

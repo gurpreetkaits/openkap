@@ -1,7 +1,7 @@
 <x-mail::message>
 # New Feedback Received
 
-A user has submitted feedback on ScreenSense.
+A user has submitted feedback on OpenKap.
 
 **From:** {{ $user->name }} ({{ $user->email }})
 

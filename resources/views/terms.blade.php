@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
-@section('title', 'Terms and Conditions | ScreenSense')
-@section('meta_description', 'Terms and conditions for using ScreenSense. Read our usage policy, subscription terms, and legal agreements.')
+@section('title', 'Terms and Conditions | OpenKap')
+@section('meta_description', 'Terms and conditions for using OpenKap. Read our usage policy, subscription terms, and legal agreements.')
 
 @push('styles')
 <style>
@@ -128,7 +128,7 @@
     <div class="content-section">
         <div class="important-box">
             <p>
-                <strong>Please read these terms carefully before using ScreenSense.</strong> By accessing or using our service,
+                <strong>Please read these terms carefully before using OpenKap.</strong> By accessing or using our service,
                 you agree to be bound by these terms. If you do not agree with any part of these terms, you may not use our service.
             </p>
         </div>
@@ -141,7 +141,7 @@
 
         <h2>2. Description of Service</h2>
         <p>
-            ScreenSense is a screen recording and video sharing platform that provides:
+            OpenKap is a screen recording and video sharing platform that provides:
         </p>
         <ul>
             <li>Web-based screen recording capabilities</li>
@@ -158,13 +158,13 @@
 
         <h3>3.1 Account Creation</h3>
         <p>
-            To use certain features of ScreenSense, you must create an account using Google OAuth authentication. You are responsible
+            To use certain features of OpenKap, you must create an account using Google OAuth authentication. You are responsible
             for maintaining the confidentiality of your account and for all activities that occur under your account.
         </p>
 
         <h3>3.2 Account Eligibility</h3>
         <p>
-            You must be at least 13 years old to use ScreenSense. By creating an account, you represent that you meet this age requirement
+            You must be at least 13 years old to use OpenKap. By creating an account, you represent that you meet this age requirement
             and that all information you provide is accurate and complete.
         </p>
 
@@ -177,7 +177,7 @@
         <h2>4. Acceptable Use Policy</h2>
 
         <h3>4.1 Permitted Uses</h3>
-        <p>You may use ScreenSense for lawful purposes including:</p>
+        <p>You may use OpenKap for lawful purposes including:</p>
         <ul>
             <li>Creating educational tutorials and demonstrations</li>
             <li>Recording bug reports and technical issues</li>
@@ -186,7 +186,7 @@
         </ul>
 
         <h3>4.2 Prohibited Uses</h3>
-        <p>You agree NOT to use ScreenSense to:</p>
+        <p>You agree NOT to use OpenKap to:</p>
         <ul>
             <li>Upload, share, or record content that infringes on intellectual property rights</li>
             <li>Share illegal, harmful, threatening, abusive, or offensive content</li>
@@ -233,7 +233,7 @@
 
         <h3>6.1 Your Content</h3>
         <p>
-            You retain all ownership rights to videos and content you create and upload to ScreenSense. By uploading content,
+            You retain all ownership rights to videos and content you create and upload to OpenKap. By uploading content,
             you grant us a limited license to store, process, and display your content as necessary to provide our service.
         </p>
 
@@ -258,7 +258,7 @@
 
         <h3>7.1 Shareable Links</h3>
         <p>
-            When you share a video, ScreenSense generates a unique 64-character cryptographic token. Anyone with this link can
+            When you share a video, OpenKap generates a unique 64-character cryptographic token. Anyone with this link can
             access the video if it's not expired or set to private.
         </p>
 
@@ -295,13 +295,13 @@
 
         <h2>9. Intellectual Property</h2>
         <p>
-            The ScreenSense platform, including our logo, design, code, and features, is protected by copyright and other
-            intellectual property laws. ScreenSense is open source under the terms of its license agreement.
+            The OpenKap platform, including our logo, design, code, and features, is protected by copyright and other
+            intellectual property laws. OpenKap is open source under the terms of its license agreement.
         </p>
 
         <h2>10. Third-Party Services</h2>
         <p>
-            ScreenSense integrates with third-party services including:
+            OpenKap integrates with third-party services including:
         </p>
         <ul>
             <li><strong>Google OAuth:</strong> For authentication</li>
@@ -316,7 +316,7 @@
 
         <h3>11.1 Service Availability</h3>
         <p>
-            ScreenSense is provided "as is" and "as available." We do not guarantee uninterrupted, error-free, or secure service.
+            OpenKap is provided "as is" and "as available." We do not guarantee uninterrupted, error-free, or secure service.
             We may suspend service for maintenance or updates without notice.
         </p>
 
@@ -328,20 +328,20 @@
 
         <h3>11.3 Limitation of Liability</h3>
         <p>
-            To the maximum extent permitted by law, ScreenSense and its operators shall not be liable for any indirect, incidental,
+            To the maximum extent permitted by law, OpenKap and its operators shall not be liable for any indirect, incidental,
             special, consequential, or punitive damages, including loss of profits, data, or other intangibles, even if we have
             been advised of the possibility of such damages.
         </p>
 
         <h2>12. Indemnification</h2>
         <p>
-            You agree to indemnify and hold harmless ScreenSense and its operators from any claims, damages, losses, or expenses
+            You agree to indemnify and hold harmless OpenKap and its operators from any claims, damages, losses, or expenses
             (including legal fees) arising from your use of the service, your content, or your violation of these terms.
         </p>
 
         <h2>13. Copyright and DMCA</h2>
         <p>
-            We respect intellectual property rights. If you believe content on ScreenSense infringes your copyright, please
+            We respect intellectual property rights. If you believe content on OpenKap infringes your copyright, please
             contact us at <a href="mailto:gurpreetkait.codes@gmail.com">gurpreetkait.codes@gmail.com</a> with:
         </p>
         <ul>
@@ -355,7 +355,7 @@
         <h2>14. Modifications to Terms</h2>
         <p>
             We reserve the right to modify these terms at any time. We will notify users of material changes by updating the
-            "Last updated" date at the top of this page. Continued use of ScreenSense after changes constitutes acceptance
+            "Last updated" date at the top of this page. Continued use of OpenKap after changes constitutes acceptance
             of the modified terms.
         </p>
 
@@ -377,7 +377,7 @@
         </p>
         <p>
             <strong>Email:</strong> <a href="mailto:gurpreetkait.codes@gmail.com">gurpreetkait.codes@gmail.com</a><br>
-            <strong>GitHub:</strong> <a href="https://github.com/gurpreetkaits/screensense" target="_blank" rel="noopener noreferrer">github.com/gurpreetkaits/screensense</a>
+            <strong>GitHub:</strong> <a href="https://github.com/gurpreetkaits/openkap" target="_blank" rel="noopener noreferrer">github.com/gurpreetkaits/openkap</a>
         </p>
     </div>
 @endsection

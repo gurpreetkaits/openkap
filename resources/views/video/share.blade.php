@@ -14,7 +14,7 @@
     // Frontend URL for JS redirect (where users actually watch videos)
     $frontendUrl = $video->getFrontendShareUrl();
 
-    $description = $video->description ?: 'Watch this screen recording on ScreenSense';
+    $description = $video->description ?: 'Watch this screen recording on OpenKap';
     $duration = $video->duration ?? 0;
 @endphp
 <!DOCTYPE html>
@@ -22,7 +22,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $video->title }} - ScreenSense</title>
+    <title>{{ $video->title }} - OpenKap</title>
     <meta name="description" content="{{ $description }}">
 
     <!-- Open Graph / Facebook / LinkedIn / Discord / Slack -->
@@ -30,7 +30,7 @@
     <meta property="og:description" content="{{ $description }}">
     <meta property="og:type" content="video.other">
     <meta property="og:url" content="{{ $shareUrl }}">
-    <meta property="og:site_name" content="ScreenSense">
+    <meta property="og:site_name" content="OpenKap">
 
     <!-- OG Image (fallback for platforms that don't support video embeds) -->
     @if($thumbnailUrl)
@@ -62,7 +62,7 @@
     <meta name="twitter:player:height" content="720">
 
     <!-- Additional meta for iMessage / Apple -->
-    <meta name="apple-mobile-web-app-title" content="ScreenSense">
+    <meta name="apple-mobile-web-app-title" content="OpenKap">
     @if($thumbnailUrl)
     <link rel="image_src" href="{{ $thumbnailUrl }}">
     @endif
@@ -83,7 +83,7 @@
     <!-- Fallback content shown briefly before redirect, or if JS disabled -->
     <div class="max-w-5xl mx-auto px-4 py-8">
         <div class="text-center text-white">
-            <div class="animate-spin rounded-full h-12 w-12 border-4 border-orange-500 border-t-transparent mx-auto mb-4"></div>
+            <div class="animate-spin rounded-full h-12 w-12 border-4 border-gray-900 border-t-transparent mx-auto mb-4"></div>
             <p class="text-gray-400">Redirecting to video player...</p>
             <p class="text-gray-500 text-sm mt-2">
                 If you are not redirected, <a href="{{ $frontendUrl }}" class="text-orange-500 hover:text-orange-400">click here</a>

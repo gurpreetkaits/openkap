@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
-@section('title', 'Contact Us | ScreenSense')
-@section('meta_description', 'Get in touch with ScreenSense. We\'re here to help with questions, feedback, bug reports, and support.')
+@section('title', 'Contact Us | OpenKap')
+@section('meta_description', 'Get in touch with OpenKap. We\'re here to help with questions, feedback, bug reports, and support.')
 
 @push('styles')
 <style>
@@ -192,7 +192,7 @@
     <div class="content-section">
         <h2>Get in Touch</h2>
         <p>
-            Have a question about ScreenSense? Need help with your account? Found a bug? We're here to help!
+            Have a question about OpenKap? Need help with your account? Found a bug? We're here to help!
         </p>
 
         <div class="contact-grid">
@@ -206,21 +206,21 @@
             <div class="contact-card">
                 <h3><span class="icon">🐛</span>Bug Reports & Feature Requests</h3>
                 <p>Found a bug or have an idea for a new feature?</p>
-                <p><a href="https://github.com/gurpreetkaits/screensense/issues" target="_blank" rel="noopener noreferrer">Open an issue on GitHub</a></p>
+                <p><a href="https://github.com/gurpreetkaits/openkap/issues" target="_blank" rel="noopener noreferrer">Open an issue on GitHub</a></p>
                 <p class="note">This helps us track and prioritize improvements</p>
             </div>
 
             <div class="contact-card">
                 <h3><span class="icon">💬</span>Community & Discussions</h3>
                 <p>Join the conversation and connect with other users:</p>
-                <p><a href="https://github.com/gurpreetkaits/screensense/discussions" target="_blank" rel="noopener noreferrer">GitHub Discussions</a></p>
+                <p><a href="https://github.com/gurpreetkaits/openkap/discussions" target="_blank" rel="noopener noreferrer">GitHub Discussions</a></p>
                 <p class="note">Ask questions, share tips, and help others</p>
             </div>
 
             <div class="contact-card">
                 <h3><span class="icon">⭐</span>Follow Development</h3>
                 <p>Stay updated on new features and releases:</p>
-                <p><a href="https://github.com/gurpreetkaits/screensense" target="_blank" rel="noopener noreferrer">Star us on GitHub</a></p>
+                <p><a href="https://github.com/gurpreetkaits/openkap" target="_blank" rel="noopener noreferrer">Star us on GitHub</a></p>
                 <p class="note">Get notified about updates and new releases</p>
             </div>
         </div>
@@ -238,7 +238,7 @@
             <div class="faq-item">
                 <div class="faq-question">I forgot my password. How do I reset it?</div>
                 <div class="faq-answer">
-                    We use Google OAuth for authentication. Simply sign in with the same Google account you used to create your ScreenSense account.
+                    We use Google OAuth for authentication. Simply sign in with the same Google account you used to create your OpenKap account.
                 </div>
             </div>
 
@@ -258,7 +258,7 @@
             </div>
 
             <div class="faq-item">
-                <div class="faq-question">Can I use ScreenSense for commercial purposes?</div>
+                <div class="faq-question">Can I use OpenKap for commercial purposes?</div>
                 <div class="faq-answer">
                     Yes! Both our free and Pro plans can be used for personal or commercial purposes. Check our <a href="/terms">Terms and Conditions</a> for details.
                 </div>

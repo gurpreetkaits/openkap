@@ -1,5 +1,5 @@
 @props([
-    'title' => 'ScreenSense Update',
+    'title' => 'OpenKap Update',
     'previewText' => '',
 ])
 <!DOCTYPE html>
@@ -69,7 +69,7 @@
                         <td style="padding: 24px 32px 32px 32px;">
                             <p style="margin: 0; font-size: 14px; color: #71717a; line-height: 1.5;">
                                 Best,<br>
-                                <span style="color: #18181b; font-weight: 500;">The ScreenSense Team</span>
+                                <span style="color: #18181b; font-weight: 500;">The OpenKap Team</span>
                             </p>
                         </td>
                     </tr>

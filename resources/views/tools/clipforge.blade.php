@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'ClipForge - Extract Video Clips from YouTube & Local Files | ScreenSense')
+@section('title', 'ClipForge - Extract Video Clips from YouTube & Local Files | OpenKap')
 @section('meta_description', 'Free online tool to extract clips from YouTube videos or local files. Download as MP4, WebM, GIF, or MP3. No signup required.')
 @section('meta_keywords', 'video clip extractor, youtube clip maker, video trimmer, youtube to gif, youtube to mp3, video cutter online, extract video clip')
 @section('og_title', 'ClipForge - Free Video Clip Extractor')

@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', $blog->metaTitle ?? $blog->title . ' | ScreenSense')
+@section('title', $blog->metaTitle ?? $blog->title . ' | OpenKap')
 @section('meta_description', $blog->metaDescription ?? $blog->excerpt)
 @section('og_title', $blog->title)
 @section('og_description', $blog->excerpt)

@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
-@section('title', 'Changelog | ScreenSense')
-@section('meta_description', 'See what\'s new in ScreenSense. Track our latest updates, features, and improvements.')
+@section('title', 'Changelog | OpenKap')
+@section('meta_description', 'See what\'s new in OpenKap. Track our latest updates, features, and improvements.')
 
 @push('styles')
 <style>
@@ -52,7 +52,7 @@
         font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 0.1em;
-        color: #ea580c;
+        color: #d4d4d8;
         margin-bottom: 0.5rem;
     }
 
