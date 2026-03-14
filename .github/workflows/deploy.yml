@@ -138,6 +138,10 @@ jobs:
               exit 1
             fi
 
+            # Ensure Apache (www-data) can write to storage and cache
+            sudo chown -R www-data:www-data ${{ secrets.DEPLOY_PATH }}/storage ${{ secrets.DEPLOY_PATH }}/bootstrap/cache
+            sudo chmod -R 775 ${{ secrets.DEPLOY_PATH }}/storage ${{ secrets.DEPLOY_PATH }}/bootstrap/cache
+
             # Restart Apache service
             sudo systemctl restart apache2 || { echo "Error: Apache restart failed"; exit 1; }
 
