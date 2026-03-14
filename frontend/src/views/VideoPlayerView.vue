@@ -1,11 +1,97 @@
 <template>
-  <div class="bg-[#FAFAFA] text-slate-900 h-screen flex flex-col overflow-hidden selection:bg-orange-100 selection:text-orange-700">
+  <div class="bg-[#FAFAFA] text-slate-900 h-screen flex overflow-hidden selection:bg-orange-100 selection:text-orange-700">
+
+    <!-- Collapsed Sidebar for authenticated users -->
+    <aside
+      v-if="isAuthenticated && !loading && !error"
+      class="hidden lg:flex flex-col flex-shrink-0 h-full bg-white border-r border-gray-200 z-40 transition-all duration-200"
+      :class="appSidebarExpanded ? 'w-[200px]' : 'w-[48px]'"
+    >
+      <!-- Logo -->
+      <div class="h-11 flex items-center justify-center border-b border-gray-100/50 flex-shrink-0" :class="appSidebarExpanded ? 'px-3.5' : 'px-0'">
+        <router-link v-if="appSidebarExpanded" to="/videos" class="flex items-center gap-2 group cursor-pointer">
+          <img :src="branding.logoUrl.value || '/logo.png'" alt="OpenKap" class="w-6 h-6 rounded-md shadow-sm" />
+          <span class="text-gray-900 font-semibold tracking-tight text-xs">OpenKap</span>
+        </router-link>
+        <button v-else @click="appSidebarExpanded = true" class="p-1.5 rounded-md hover:bg-gray-100 transition-colors" title="Expand sidebar">
+          <img :src="branding.logoUrl.value || '/logo.png'" alt="OpenKap" class="w-6 h-6 rounded-md" />
+        </button>
+      </div>
+
+      <!-- Navigation -->
+      <div class="flex-1 overflow-y-auto" :class="appSidebarExpanded ? 'px-2 py-2.5' : 'px-1 py-2.5'">
+        <nav class="space-y-0.5">
+          <router-link
+            to="/videos"
+            class="flex items-center rounded-md transition-all group"
+            :class="[
+              appSidebarExpanded ? 'gap-2 px-2 py-1.5 text-xs font-medium' : 'justify-center p-2',
+              'text-gray-500 hover:text-gray-900 hover:bg-gray-50'
+            ]"
+            :title="appSidebarExpanded ? '' : 'Library'"
+          >
+            <svg class="w-3.5 h-3.5 text-gray-400 group-hover:text-gray-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
+            </svg>
+            <span v-if="appSidebarExpanded">Library</span>
+          </router-link>
+
+          <router-link
+            to="/playlists"
+            class="flex items-center rounded-md transition-all group"
+            :class="[
+              appSidebarExpanded ? 'gap-2 px-2 py-1.5 text-xs font-medium' : 'justify-center p-2',
+              'text-gray-500 hover:text-gray-900 hover:bg-gray-50'
+            ]"
+            :title="appSidebarExpanded ? '' : 'Playlists'"
+          >
+            <svg class="w-3.5 h-3.5 text-gray-400 group-hover:text-gray-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+            </svg>
+            <span v-if="appSidebarExpanded">Playlists</span>
+          </router-link>
+
+          <router-link
+            to="/settings"
+            class="flex items-center rounded-md transition-all group"
+            :class="[
+              appSidebarExpanded ? 'gap-2 px-2 py-1.5 text-xs font-medium' : 'justify-center p-2',
+              'text-gray-500 hover:text-gray-900 hover:bg-gray-50'
+            ]"
+            :title="appSidebarExpanded ? '' : 'Settings'"
+          >
+            <svg class="w-3.5 h-3.5 text-gray-400 group-hover:text-gray-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+            <span v-if="appSidebarExpanded">Settings</span>
+          </router-link>
+        </nav>
+      </div>
+
+      <!-- Collapse/Expand toggle -->
+      <div class="p-2 border-t border-gray-100 flex-shrink-0">
+        <button
+          @click="appSidebarExpanded = !appSidebarExpanded"
+          class="w-full flex items-center justify-center p-1.5 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+          :title="appSidebarExpanded ? 'Collapse sidebar' : 'Expand sidebar'"
+        >
+          <svg class="w-3.5 h-3.5 transition-transform" :class="appSidebarExpanded ? '' : 'rotate-180'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/>
+          </svg>
+          <span v-if="appSidebarExpanded" class="ml-1.5 text-[10px] font-medium">Collapse</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <div class="flex-1 flex flex-col overflow-hidden">
 
     <!-- Subtle Background Grid -->
     <div class="fixed inset-0 z-0 pointer-events-none" style="background-image: radial-gradient(#e5e7eb 1px, transparent 1px); background-size: 32px 32px; opacity: 0.4;"></div>
 
     <!-- Loading State (Skeleton) -->
-    <div v-if="loading" class="flex flex-col lg:flex-row h-full pt-14 animate-pulse">
+    <div v-if="loading" class="flex flex-col lg:flex-row h-full animate-pulse">
       <div class="flex-1 p-4 lg:p-8 flex flex-col items-center">
         <div class="w-full max-w-4xl">
           <div class="h-7 w-2/3 bg-gray-200 rounded-lg mb-3"></div>
@@ -48,19 +134,15 @@
     <!-- Main Content -->
     <template v-else>
       <!-- Navigation -->
-      <nav class="h-14 border-b border-gray-200/60 bg-white/80 backdrop-blur-md flex items-center justify-between px-4 lg:px-6 z-50 fixed top-0 w-full">
-        <div class="flex items-center gap-3">
-          <router-link to="/videos" class="flex items-center gap-2 hover:opacity-80 transition-opacity">
-            <img :src="branding.logoUrl.value || '/logo.png'" alt="OpenKap" class="w-8 h-8 rounded-lg shadow-sm" />
-            <span class="text-sm font-semibold text-gray-900">OpenKap</span>
-          </router-link>
+      <nav class="h-11 border-b border-gray-200/60 bg-white/90 backdrop-blur-md flex items-center justify-between px-4 z-50 sticky top-0 flex-shrink-0">
+        <div class="flex items-center gap-2">
           <!-- Zoom Status Badge -->
-          <div v-if="video.zoom_enabled" class="ml-2">
+          <div v-if="video.zoom_enabled">
             <span
               v-if="video.zoom_status === 'processing'"
-              class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-700"
+              class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-orange-100 text-orange-700"
             >
-              <svg class="w-3 h-3 mr-1 animate-spin" fill="none" viewBox="0 0 24 24">
+              <svg class="w-2.5 h-2.5 mr-0.5 animate-spin" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
               </svg>
@@ -68,61 +150,171 @@
             </span>
             <span
               v-else-if="video.is_zoom_ready"
-              class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700"
+              class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-green-100 text-green-700"
             >
-              <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-2.5 h-2.5 mr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/>
               </svg>
-              Zoom ({{ video.zoom_event_count }} events)
+              Zoom ({{ video.zoom_event_count }})
             </span>
             <span
               v-else-if="video.zoom_status === 'failed'"
-              class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700"
+              class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-red-100 text-red-700"
             >
-              <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-              </svg>
               Zoom Failed
             </span>
             <span
               v-else-if="video.zoom_status === 'pending' && video.zoom_event_count > 0"
-              class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600"
+              class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-gray-100 text-gray-600"
             >
-              <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-              </svg>
               Zoom Pending
             </span>
           </div>
         </div>
 
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-1.5">
           <!-- Editor Button (paid users only) -->
           <router-link
             v-if="auth.hasActiveSubscription.value"
             :to="`/video/${video.id}/edit`"
-            class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-2"
+            class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-2 py-1 rounded-md text-[11px] font-medium transition-all flex items-center gap-1.5"
           >
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
             </svg>
             Edit
           </router-link>
-          <button @click="showShareModal = true" class="bg-orange-600 hover:bg-orange-700 text-white px-3 py-1.5 rounded-lg text-xs font-medium shadow-md shadow-orange-200 transition-all flex items-center gap-2 group">
-            Share Video
-            <div class="w-px h-3 bg-white/20"></div>
-            <svg class="w-3 h-3 text-white/70 group-hover:translate-y-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-            </svg>
-          </button>
-          <div class="w-8 h-8 rounded-full bg-gray-100 border border-gray-200 ml-2 overflow-hidden">
-            <img v-if="currentUser?.avatar" :src="currentUser.avatar" alt="Profile" class="w-full h-full object-cover opacity-90 hover:opacity-100 transition-opacity">
-            <div v-else class="w-full h-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white text-xs font-semibold">
-              {{ userInitial }}
+
+          <!-- Share Dropdown -->
+          <div class="relative" ref="shareDropdownRef">
+            <button @click="showShareDropdown = !showShareDropdown" class="bg-orange-600 hover:bg-orange-700 text-white px-2 py-1 rounded-md text-[11px] font-medium transition-all flex items-center gap-1.5">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
+              </svg>
+              Share
+              <svg class="w-2.5 h-2.5 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </button>
+            <div v-show="showShareDropdown" class="absolute right-0 top-full mt-1 w-44 bg-white rounded-lg shadow-xl border border-gray-200 py-1 z-50">
+              <button @click="copyShareLink; showShareDropdown = false" class="w-full px-3 py-1.5 text-left text-[11px] text-gray-700 hover:bg-gray-50 flex items-center gap-2">
+                <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+                </svg>
+                Copy link
+              </button>
+              <button @click="copyEmbedCode; showShareDropdown = false" class="w-full px-3 py-1.5 text-left text-[11px] text-gray-700 hover:bg-gray-50 flex items-center gap-2">
+                <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
+                </svg>
+                Copy embed code
+              </button>
             </div>
           </div>
+
+          <!-- Options Menu (three-dot) -->
+          <div class="relative" ref="optionsMenuRef">
+            <button @click="showOptionsMenu = !showOptionsMenu" class="p-1.5 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors">
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                <circle cx="12" cy="5" r="1.5"/>
+                <circle cx="12" cy="12" r="1.5"/>
+                <circle cx="12" cy="19" r="1.5"/>
+              </svg>
+            </button>
+            <div v-show="showOptionsMenu" class="absolute right-0 top-full mt-1 w-48 bg-white rounded-lg shadow-xl border border-gray-200 py-1 z-50">
+              <button @click="handleDownload; showOptionsMenu = false" class="w-full px-3 py-1.5 text-left text-[11px] text-gray-700 hover:bg-gray-50 flex items-center gap-2">
+                <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                </svg>
+                Download
+              </button>
+              <button @click="handleDuplicate; showOptionsMenu = false" class="w-full px-3 py-1.5 text-left text-[11px] text-gray-700 hover:bg-gray-50 flex items-center gap-2">
+                <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                </svg>
+                Duplicate
+              </button>
+              <button @click="startEditingTitle; showOptionsMenu = false" class="w-full px-3 py-1.5 text-left text-[11px] text-gray-700 hover:bg-gray-50 flex items-center gap-2">
+                <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                </svg>
+                Rename
+              </button>
+              <button @click="handleDownloadCaptions; showOptionsMenu = false" class="w-full px-3 py-1.5 text-left text-[11px] text-gray-700 hover:bg-gray-50 flex items-center gap-2">
+                <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <rect x="2" y="4" width="20" height="16" rx="2" stroke-width="2"/>
+                  <text x="12" y="15" text-anchor="middle" fill="currentColor" stroke="none" font-size="8" font-weight="bold">CC</text>
+                </svg>
+                Download Captions
+              </button>
+              <div class="my-1 border-t border-gray-100"></div>
+              <button @click="showPrivateConfirm = true; showOptionsMenu = false" class="w-full px-3 py-1.5 text-left text-[11px] text-gray-700 hover:bg-gray-50 flex items-center gap-2">
+                <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                </svg>
+                Make it private
+              </button>
+              <button @click="showArchiveConfirm = true; showOptionsMenu = false" class="w-full px-3 py-1.5 text-left text-[11px] text-gray-700 hover:bg-gray-50 flex items-center gap-2">
+                <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>
+                </svg>
+                Archive
+              </button>
+              <button @click="showDeleteConfirm = true; showOptionsMenu = false" class="w-full px-3 py-1.5 text-left text-[11px] text-red-600 hover:bg-red-50 flex items-center gap-2">
+                <svg class="w-3.5 h-3.5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+                Delete
+              </button>
+            </div>
+          </div>
+
+          <router-link to="/profile" class="w-7 h-7 rounded-full bg-gray-100 border border-gray-200 ml-1 overflow-hidden flex-shrink-0">
+            <img v-if="currentUser?.avatar" :src="currentUser.avatar" alt="Profile" class="w-full h-full object-cover opacity-90 hover:opacity-100 transition-opacity">
+            <div v-else class="w-full h-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white text-[10px] font-semibold">
+              {{ userInitial }}
+            </div>
+          </router-link>
         </div>
       </nav>
+
+      <!-- Confirmation Dialogs -->
+      <!-- Archive Confirm -->
+      <div v-if="showArchiveConfirm" class="fixed inset-0 z-[70] flex items-center justify-center">
+        <div class="absolute inset-0 bg-gray-900/20 backdrop-blur-sm" @click="showArchiveConfirm = false"></div>
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-sm relative z-10 p-5">
+          <h3 class="text-sm font-semibold text-gray-900 mb-2">Archive Video</h3>
+          <p class="text-xs text-gray-500 mb-4">Are you sure you want to archive this video? It will be moved to your archive.</p>
+          <div class="flex justify-end gap-2">
+            <button @click="showArchiveConfirm = false" class="px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-100 rounded-md transition-colors">Cancel</button>
+            <button @click="handleArchive; showArchiveConfirm = false" class="px-3 py-1.5 text-xs font-medium text-white bg-orange-600 hover:bg-orange-700 rounded-md transition-colors">Archive</button>
+          </div>
+        </div>
+      </div>
+      <!-- Private Confirm -->
+      <div v-if="showPrivateConfirm" class="fixed inset-0 z-[70] flex items-center justify-center">
+        <div class="absolute inset-0 bg-gray-900/20 backdrop-blur-sm" @click="showPrivateConfirm = false"></div>
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-sm relative z-10 p-5">
+          <h3 class="text-sm font-semibold text-gray-900 mb-2">Make Private</h3>
+          <p class="text-xs text-gray-500 mb-4">Are you sure you want to make this video private? The share link will stop working.</p>
+          <div class="flex justify-end gap-2">
+            <button @click="showPrivateConfirm = false" class="px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-100 rounded-md transition-colors">Cancel</button>
+            <button @click="handleMakePrivate; showPrivateConfirm = false" class="px-3 py-1.5 text-xs font-medium text-white bg-orange-600 hover:bg-orange-700 rounded-md transition-colors">Make Private</button>
+          </div>
+        </div>
+      </div>
+      <!-- Delete Confirm -->
+      <div v-if="showDeleteConfirm" class="fixed inset-0 z-[70] flex items-center justify-center">
+        <div class="absolute inset-0 bg-gray-900/20 backdrop-blur-sm" @click="showDeleteConfirm = false"></div>
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-sm relative z-10 p-5">
+          <h3 class="text-sm font-semibold text-gray-900 mb-2">Delete Video</h3>
+          <p class="text-xs text-gray-500 mb-4">Are you sure you want to delete this video? This cannot be undone.</p>
+          <div class="flex justify-end gap-2">
+            <button @click="showDeleteConfirm = false" class="px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-100 rounded-md transition-colors">Cancel</button>
+            <button @click="confirmDeleteVideo; showDeleteConfirm = false" class="px-3 py-1.5 text-xs font-medium text-white bg-red-600 hover:bg-red-700 rounded-md transition-colors">Delete</button>
+          </div>
+        </div>
+      </div>
 
       <!-- Share Modal -->
       <div v-if="showShareModal" class="fixed inset-0 z-[60] flex items-center justify-center">
@@ -185,7 +377,7 @@
 
 
       <!-- Main Layout -->
-      <main class="flex-1 flex flex-col lg:flex-row h-full pt-14 z-10 relative">
+      <main class="flex-1 flex flex-col lg:flex-row h-full z-10 relative overflow-hidden">
 
         <!-- Center Stage: Video Player -->
         <div class="flex-1 flex flex-col items-center justify-center p-3 lg:p-8 relative bg-[#FAFAFA]/50 overflow-hidden">
@@ -300,15 +492,54 @@
               <transition name="fade">
                 <div
                   v-if="!isPlaying && !isBuffering && showBigPlayButton"
-                  class="absolute inset-0 bg-black/40 flex items-center justify-center cursor-pointer"
+                  class="absolute inset-0 bg-black/40 flex flex-col items-center justify-center"
                   @click="togglePlay"
                 >
-                  <button class="group/btn relative flex items-center justify-center w-24 h-24 bg-white/5 backdrop-blur-sm rounded-full border border-white/10 hover:scale-105 hover:bg-orange-600 hover:border-orange-500 transition-all duration-300 shadow-2xl">
+                  <button class="group/btn relative flex items-center justify-center w-24 h-24 bg-white/5 backdrop-blur-sm rounded-full border border-white/10 hover:scale-105 hover:bg-orange-600 hover:border-orange-500 transition-all duration-300 shadow-2xl cursor-pointer">
                     <svg class="w-10 h-10 text-white fill-white ml-1" viewBox="0 0 24 24">
                       <path d="M8 5v14l11-7z"/>
                     </svg>
                     <div class="absolute inset-0 rounded-full border border-white/10 animate-ping opacity-20 group-hover/btn:opacity-0"></div>
                   </button>
+                  <!-- Pre-play controls -->
+                  <div class="flex items-center gap-3 mt-4" @click.stop>
+                    <span class="text-white/80 text-xs font-mono bg-black/50 backdrop-blur-sm px-2.5 py-1.5 rounded-lg">
+                      {{ formatTime(duration) }}
+                    </span>
+                    <div class="relative">
+                      <button
+                        @click.stop="showPrePlaySpeedMenu = !showPrePlaySpeedMenu"
+                        class="text-white/80 text-xs font-bold bg-black/50 backdrop-blur-sm px-2.5 py-1.5 rounded-lg hover:bg-white/20 transition-colors cursor-pointer"
+                      >
+                        {{ playbackSpeed }}x
+                      </button>
+                      <div
+                        v-show="showPrePlaySpeedMenu"
+                        class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 py-2 bg-gray-900 rounded-xl shadow-2xl border border-white/20 min-w-[80px] z-50"
+                      >
+                        <button
+                          v-for="speed in speedOptions"
+                          :key="speed"
+                          @click.stop="setPlaybackSpeed(speed); showPrePlaySpeedMenu = false"
+                          class="w-full px-3 py-2 text-left text-xs hover:bg-white/10 transition-colors cursor-pointer"
+                          :class="playbackSpeed === speed ? 'text-orange-400' : 'text-white'"
+                        >
+                          {{ speed }}x
+                        </button>
+                      </div>
+                    </div>
+                    <button
+                      @click.stop="toggleMute"
+                      class="text-white/80 bg-black/50 backdrop-blur-sm p-1.5 rounded-lg hover:bg-white/20 transition-colors cursor-pointer"
+                    >
+                      <svg v-if="isMuted || volume === 0" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>
+                      </svg>
+                      <svg v-else class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+                      </svg>
+                    </button>
+                  </div>
                 </div>
               </transition>
 
@@ -470,46 +701,28 @@
                 </div>
             </div>
 
-            <!-- Action Bar Below Video -->
-            <div class="mt-6 flex items-center justify-center gap-3 z-30 relative flex-wrap">
-
-              <!-- Reactions -->
-              <button
-                v-for="emoji in reactions"
-                :key="emoji.icon"
-                @click="addReaction(emoji.icon)"
-                class="w-9 h-9 rounded-full hover:bg-gray-100 flex items-center justify-center text-lg transition-transform hover:-translate-y-0.5 active:scale-95 bg-white border border-gray-200/60 shadow-sm"
-                :class="emoji.selected ? 'bg-orange-100 border-orange-300' : ''"
-                :title="emoji.icon"
-              >
-                {{ emoji.icon }}
-              </button>
-
-              <div class="w-px h-6 bg-gray-200"></div>
-
-              <!-- Copy Link -->
-              <button @click="copyShareLink" class="w-9 h-9 rounded-full hover:bg-gray-50 hover:text-orange-600 flex items-center justify-center text-gray-500 transition-colors group/copy relative bg-white border border-gray-200/60 shadow-sm">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
-                </svg>
-                <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 text-[11px] font-medium text-white bg-gray-900 rounded opacity-0 group-hover/copy:opacity-100 transition-all pointer-events-none whitespace-nowrap z-50 shadow-md">Copy Link</span>
-              </button>
-
-              <!-- Download -->
-              <button @click="downloadVideo" class="w-9 h-9 rounded-full hover:bg-gray-50 hover:text-orange-600 flex items-center justify-center text-gray-500 transition-colors group/download relative bg-white border border-gray-200/60 shadow-sm">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-                </svg>
-                <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 text-[11px] font-medium text-white bg-gray-900 rounded opacity-0 group-hover/download:opacity-100 transition-all pointer-events-none whitespace-nowrap z-50 shadow-md">Download</span>
-              </button>
-
-              <!-- Delete -->
-              <button @click="deleteVideo" class="w-9 h-9 rounded-full hover:bg-red-50 hover:text-red-600 flex items-center justify-center text-gray-500 transition-colors group/delete relative bg-white border border-gray-200/60 shadow-sm">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                </svg>
-                <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 text-[11px] font-medium text-white bg-gray-900 rounded opacity-0 group-hover/delete:opacity-100 transition-all pointer-events-none whitespace-nowrap z-50 shadow-md">Delete</span>
-              </button>
+            <!-- Action Bar Below Video - Vertical Card + Copy Link -->
+            <div class="mt-4 flex items-start gap-3 z-30 relative">
+              <!-- Vertical Reaction Card -->
+              <div class="flex flex-col gap-1.5 bg-white border border-gray-200/60 rounded-xl shadow-sm p-1.5">
+                <button
+                  v-for="emoji in reactions"
+                  :key="emoji.icon"
+                  @click="addReaction(emoji.icon)"
+                  class="w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center text-base transition-transform hover:-translate-y-0.5 active:scale-95"
+                  :class="emoji.selected ? 'bg-orange-100' : ''"
+                  :title="emoji.icon"
+                >
+                  {{ emoji.icon }}
+                </button>
+                <div class="h-px bg-gray-100 mx-1"></div>
+                <!-- Copy Link -->
+                <button @click="copyShareLink" class="w-8 h-8 rounded-lg hover:bg-gray-50 hover:text-orange-600 flex items-center justify-center text-gray-400 transition-colors group/copy relative" title="Copy Link">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+                  </svg>
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -1136,7 +1349,7 @@
       </main>
     </template>
 
-    <!-- Delete Video Modal -->
+    <!-- Delete Video Modal (legacy - kept for compatibility) -->
     <SBDeleteModal
       v-model="showDeleteModal"
       title="Delete Video"
@@ -1159,6 +1372,7 @@
       </div>
     </transition>
 
+    </div><!-- end Main Content Area -->
   </div>
 </template>
 
@@ -1187,6 +1401,7 @@ export default {
     const route = useRoute()
     const auth = useAuth()
     const branding = useBranding()
+    const isAuthenticated = computed(() => auth.isAuthenticated.value)
     const currentUser = computed(() => auth.user.value)
     const userInitial = computed(() => (currentUser.value?.name || 'U').charAt(0).toUpperCase())
 
@@ -1215,6 +1430,7 @@ export default {
     const showSpeedMenu = ref(false)
     const speedOptions = [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2]
     const showBigPlayButton = ref(true)
+    const showPrePlaySpeedMenu = ref(false)
     const copied = ref(false)
     const copiedEmbed = ref(false)
     const toast = ref(null)
@@ -1233,6 +1449,14 @@ export default {
     const titleInput = ref(null)
 
     const showShareModal = ref(false)
+    const showShareDropdown = ref(false)
+    const showOptionsMenu = ref(false)
+    const showArchiveConfirm = ref(false)
+    const showDeleteConfirm = ref(false)
+    const showPrivateConfirm = ref(false)
+    const appSidebarExpanded = ref(false)
+    const shareDropdownRef = ref(null)
+    const optionsMenuRef = ref(null)
     const activeTab = ref('transcript')
     const sidebarVisible = ref(localStorage.getItem('sidebar_visible') !== 'false')
 
@@ -2028,6 +2252,53 @@ export default {
       }
     }
 
+    // Action handlers for options menu
+    const handleDownload = async () => {
+      await downloadVideo()
+    }
+
+    const handleDuplicate = async () => {
+      try {
+        showToast('Duplicating video...')
+        const result = await videoService.updateVideo(video.value.id, { duplicate: true })
+        if (result) {
+          showToast('Video duplicated!')
+        }
+      } catch (err) {
+        console.error('Failed to duplicate:', err)
+        showToast('Failed to duplicate video')
+      }
+    }
+
+    const handleDownloadCaptions = () => {
+      if (transcriptionSegments.value && transcriptionSegments.value.length > 0) {
+        exportTranscript('srt')
+      } else {
+        showToast('No captions available')
+      }
+    }
+
+    const handleMakePrivate = async () => {
+      try {
+        await videoService.updateVideo(video.value.id, { is_private: true })
+        showToast('Video is now private')
+      } catch (err) {
+        console.error('Failed to make private:', err)
+        showToast('Failed to update privacy')
+      }
+    }
+
+    const handleArchive = async () => {
+      try {
+        await videoService.updateVideo(video.value.id, { archived: true })
+        showToast('Video archived')
+        window.location.href = import.meta.env.BASE_URL + 'videos'
+      } catch (err) {
+        console.error('Failed to archive:', err)
+        showToast('Failed to archive video')
+      }
+    }
+
     const loadComments = async () => {
       if (!video.value.id) return
       isLoadingComments.value = true
@@ -2343,6 +2614,14 @@ export default {
       if (showExportMenu.value && !e.target.closest('.export-menu-container')) {
         showExportMenu.value = false
       }
+      // Close share dropdown
+      if (shareDropdownRef.value && !shareDropdownRef.value.contains(e.target)) {
+        showShareDropdown.value = false
+      }
+      // Close options menu
+      if (optionsMenuRef.value && !optionsMenuRef.value.contains(e.target)) {
+        showOptionsMenu.value = false
+      }
     }
 
     const handleFullscreenChange = () => {
@@ -2383,11 +2662,11 @@ export default {
 
     return {
       branding,
-      currentUser, userInitial,
+      isAuthenticated, currentUser, userInitial,
       video, loading, error, videoRef, progressBar, speedMenuRef, playerContainer,
       isPlaying, isBuffering, videoLoading, isMuted, isFullscreen, volume, currentTime, duration,
       bufferedPercent, progressPercent, playbackSpeed, controlsVisible, hoverTime,
-      hoverPercent, showSpeedMenu, showBigPlayButton, copied, toast, newComment, comments, reactions,
+      hoverPercent, showSpeedMenu, showBigPlayButton, showPrePlaySpeedMenu, copied, toast, newComment, comments, reactions,
       isLoadingComments, isSavingComment, copiedEmbed, copyEmbedCode,
       speedOptions, toggleSpeedMenu,
       availableQualities, currentQuality, showQualityMenu, qualityMenuRef,
@@ -2400,6 +2679,12 @@ export default {
       isEditingTitle, editedTitle, isSavingTitle, titleInput,
       startEditingTitle, saveTitle, cancelEditingTitle,
       showShareModal, activeTab, sidebarVisible, toggleSidebar,
+      // Sidebar & dropdowns
+      appSidebarExpanded,
+      showShareDropdown, showOptionsMenu, shareDropdownRef, optionsMenuRef,
+      showArchiveConfirm, showDeleteConfirm, showPrivateConfirm,
+      // Action handlers
+      handleDownload, handleDuplicate, handleDownloadCaptions, handleMakePrivate, handleArchive,
       // Transcription
       transcription, transcriptionSegments, transcriptionStatus, transcriptionProgress, transcriptionError,
       isRequestingTranscription, requestTranscription, seekToTime,

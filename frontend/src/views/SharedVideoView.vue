@@ -113,7 +113,7 @@
     <!-- Main Content -->
     <template v-else>
       <!-- Navigation -->
-      <nav class="h-11 border-b border-gray-200/60 bg-white/90 backdrop-blur-md flex items-center justify-between px-4 z-50 sticky top-0 w-full flex-shrink-0">
+      <nav class="h-11 border-b border-gray-200/60 bg-white/90 backdrop-blur-md flex items-center justify-between px-4 z-50 sticky top-0 flex-shrink-0">
         <div class="flex items-center gap-2">
           <a href="/" class="flex items-center gap-1.5 hover:opacity-80 transition-opacity">
             <img :src="branding.logoUrl.value || '/logo.png'" alt="OpenKap" class="w-6 h-6 rounded-md" />
@@ -121,21 +121,127 @@
           </a>
         </div>
 
-        <div class="flex items-center gap-2">
-          <button @click="copyShareLink" class="text-gray-500 hover:text-gray-700 px-2 py-1 rounded-md text-[11px] font-medium hover:bg-gray-100 transition-colors flex items-center gap-1.5">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
-            </svg>
-            {{ copied ? 'Copied!' : 'Copy link' }}
-          </button>
-          <button @click="showShareModal = true" class="bg-orange-600 hover:bg-orange-700 text-white px-2.5 py-1 rounded-md text-[11px] font-medium transition-all flex items-center gap-1.5">
-            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
-            </svg>
-            Share
-          </button>
+        <div class="flex items-center gap-1.5">
+          <!-- Share Dropdown -->
+          <div class="relative" ref="shareDropdownRef">
+            <button @click="showShareDropdown = !showShareDropdown" class="bg-orange-600 hover:bg-orange-700 text-white px-2 py-1 rounded-md text-[11px] font-medium transition-all flex items-center gap-1.5">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
+              </svg>
+              Share
+              <svg class="w-2.5 h-2.5 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </button>
+            <div v-show="showShareDropdown" class="absolute right-0 top-full mt-1 w-44 bg-white rounded-lg shadow-xl border border-gray-200 py-1 z-50">
+              <button @click="copyShareLink; showShareDropdown = false" class="w-full px-3 py-1.5 text-left text-[11px] text-gray-700 hover:bg-gray-50 flex items-center gap-2">
+                <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+                </svg>
+                Copy link
+              </button>
+              <button v-if="isOwner" @click="copyEmbedCode; showShareDropdown = false" class="w-full px-3 py-1.5 text-left text-[11px] text-gray-700 hover:bg-gray-50 flex items-center gap-2">
+                <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
+                </svg>
+                Copy embed code
+              </button>
+            </div>
+          </div>
+
+          <!-- Options Menu (three-dot) -->
+          <div class="relative" ref="optionsMenuRef">
+            <button @click="showOptionsMenu = !showOptionsMenu" class="p-1.5 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors">
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                <circle cx="12" cy="5" r="1.5"/>
+                <circle cx="12" cy="12" r="1.5"/>
+                <circle cx="12" cy="19" r="1.5"/>
+              </svg>
+            </button>
+            <div v-show="showOptionsMenu" class="absolute right-0 top-full mt-1 w-48 bg-white rounded-lg shadow-xl border border-gray-200 py-1 z-50">
+              <button @click="handleSharedDownload; showOptionsMenu = false" class="w-full px-3 py-1.5 text-left text-[11px] text-gray-700 hover:bg-gray-50 flex items-center gap-2">
+                <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                </svg>
+                Download
+              </button>
+              <template v-if="isOwner">
+                <button @click="handleSharedDuplicate; showOptionsMenu = false" class="w-full px-3 py-1.5 text-left text-[11px] text-gray-700 hover:bg-gray-50 flex items-center gap-2">
+                  <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                  </svg>
+                  Duplicate
+                </button>
+                <button @click="handleSharedRename; showOptionsMenu = false" class="w-full px-3 py-1.5 text-left text-[11px] text-gray-700 hover:bg-gray-50 flex items-center gap-2">
+                  <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                  </svg>
+                  Rename
+                </button>
+                <div class="my-1 border-t border-gray-100"></div>
+                <button @click="showPrivateConfirm = true; showOptionsMenu = false" class="w-full px-3 py-1.5 text-left text-[11px] text-gray-700 hover:bg-gray-50 flex items-center gap-2">
+                  <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                  </svg>
+                  Make it private
+                </button>
+                <button @click="showArchiveConfirm = true; showOptionsMenu = false" class="w-full px-3 py-1.5 text-left text-[11px] text-gray-700 hover:bg-gray-50 flex items-center gap-2">
+                  <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>
+                  </svg>
+                  Archive
+                </button>
+                <button @click="showDeleteConfirm = true; showOptionsMenu = false" class="w-full px-3 py-1.5 text-left text-[11px] text-red-600 hover:bg-red-50 flex items-center gap-2">
+                  <svg class="w-3.5 h-3.5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                  </svg>
+                  Delete
+                </button>
+              </template>
+            </div>
+          </div>
         </div>
       </nav>
+
+      <!-- Confirmation Dialogs (owner only) -->
+      <template v-if="isOwner">
+        <!-- Archive Confirm -->
+        <div v-if="showArchiveConfirm" class="fixed inset-0 z-[70] flex items-center justify-center">
+          <div class="absolute inset-0 bg-gray-900/20 backdrop-blur-sm" @click="showArchiveConfirm = false"></div>
+          <div class="bg-white rounded-lg shadow-xl w-full max-w-sm relative z-10 p-5">
+            <h3 class="text-sm font-semibold text-gray-900 mb-2">Archive Video</h3>
+            <p class="text-xs text-gray-500 mb-4">Are you sure you want to archive this video?</p>
+            <div class="flex justify-end gap-2">
+              <button @click="showArchiveConfirm = false" class="px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-100 rounded-md transition-colors">Cancel</button>
+              <button @click="handleSharedArchive; showArchiveConfirm = false" class="px-3 py-1.5 text-xs font-medium text-white bg-orange-600 hover:bg-orange-700 rounded-md transition-colors">Archive</button>
+            </div>
+          </div>
+        </div>
+        <!-- Private Confirm -->
+        <div v-if="showPrivateConfirm" class="fixed inset-0 z-[70] flex items-center justify-center">
+          <div class="absolute inset-0 bg-gray-900/20 backdrop-blur-sm" @click="showPrivateConfirm = false"></div>
+          <div class="bg-white rounded-lg shadow-xl w-full max-w-sm relative z-10 p-5">
+            <h3 class="text-sm font-semibold text-gray-900 mb-2">Make Private</h3>
+            <p class="text-xs text-gray-500 mb-4">Are you sure? The share link will stop working.</p>
+            <div class="flex justify-end gap-2">
+              <button @click="showPrivateConfirm = false" class="px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-100 rounded-md transition-colors">Cancel</button>
+              <button @click="handleSharedMakePrivate; showPrivateConfirm = false" class="px-3 py-1.5 text-xs font-medium text-white bg-orange-600 hover:bg-orange-700 rounded-md transition-colors">Make Private</button>
+            </div>
+          </div>
+        </div>
+        <!-- Delete Confirm -->
+        <div v-if="showDeleteConfirm" class="fixed inset-0 z-[70] flex items-center justify-center">
+          <div class="absolute inset-0 bg-gray-900/20 backdrop-blur-sm" @click="showDeleteConfirm = false"></div>
+          <div class="bg-white rounded-lg shadow-xl w-full max-w-sm relative z-10 p-5">
+            <h3 class="text-sm font-semibold text-gray-900 mb-2">Delete Video</h3>
+            <p class="text-xs text-gray-500 mb-4">Are you sure? This cannot be undone.</p>
+            <div class="flex justify-end gap-2">
+              <button @click="showDeleteConfirm = false" class="px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-100 rounded-md transition-colors">Cancel</button>
+              <button @click="handleSharedDelete; showDeleteConfirm = false" class="px-3 py-1.5 text-xs font-medium text-white bg-red-600 hover:bg-red-700 rounded-md transition-colors">Delete</button>
+            </div>
+          </div>
+        </div>
+      </template>
 
       <!-- Share Modal -->
       <div v-if="showShareModal" class="fixed inset-0 z-[60] flex items-center justify-center">
@@ -289,15 +395,54 @@
               <transition name="fade">
                 <div
                   v-if="!isPlaying && !isBuffering && showBigPlayButton"
-                  class="absolute inset-0 bg-black/40 flex items-center justify-center cursor-pointer"
+                  class="absolute inset-0 bg-black/40 flex flex-col items-center justify-center"
                   @click="togglePlay"
                 >
-                  <button class="group/btn relative flex items-center justify-center w-24 h-24 bg-white/5 backdrop-blur-sm rounded-full border border-white/10 hover:scale-105 hover:bg-orange-600 hover:border-orange-500 transition-all duration-300 shadow-2xl">
+                  <button class="group/btn relative flex items-center justify-center w-24 h-24 bg-white/5 backdrop-blur-sm rounded-full border border-white/10 hover:scale-105 hover:bg-orange-600 hover:border-orange-500 transition-all duration-300 shadow-2xl cursor-pointer">
                     <svg class="w-10 h-10 text-white fill-white ml-1" viewBox="0 0 24 24">
                       <path d="M8 5v14l11-7z"/>
                     </svg>
                     <div class="absolute inset-0 rounded-full border border-white/10 animate-ping opacity-20 group-hover/btn:opacity-0"></div>
                   </button>
+                  <!-- Pre-play controls -->
+                  <div class="flex items-center gap-3 mt-4" @click.stop>
+                    <span class="text-white/80 text-xs font-mono bg-black/50 backdrop-blur-sm px-2.5 py-1.5 rounded-lg">
+                      {{ formatTime(duration) }}
+                    </span>
+                    <div class="relative">
+                      <button
+                        @click.stop="showPrePlaySpeedMenu = !showPrePlaySpeedMenu"
+                        class="text-white/80 text-xs font-bold bg-black/50 backdrop-blur-sm px-2.5 py-1.5 rounded-lg hover:bg-white/20 transition-colors cursor-pointer"
+                      >
+                        {{ playbackSpeed }}x
+                      </button>
+                      <div
+                        v-show="showPrePlaySpeedMenu"
+                        class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 py-2 bg-gray-900 rounded-xl shadow-2xl border border-white/20 min-w-[80px] z-50"
+                      >
+                        <button
+                          v-for="speed in speedOptions"
+                          :key="speed"
+                          @click.stop="setPlaybackSpeed(speed); showPrePlaySpeedMenu = false"
+                          class="w-full px-3 py-2 text-left text-xs hover:bg-white/10 transition-colors cursor-pointer"
+                          :class="playbackSpeed === speed ? 'text-orange-400' : 'text-white'"
+                        >
+                          {{ speed }}x
+                        </button>
+                      </div>
+                    </div>
+                    <button
+                      @click.stop="toggleMute"
+                      class="text-white/80 bg-black/50 backdrop-blur-sm p-1.5 rounded-lg hover:bg-white/20 transition-colors cursor-pointer"
+                    >
+                      <svg v-if="isMuted || volume === 0" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>
+                      </svg>
+                      <svg v-else class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+                      </svg>
+                    </button>
+                  </div>
                 </div>
               </transition>
 
@@ -827,6 +972,7 @@ export default {
     const hoverPercent = ref(0)
     const showSpeedMenu = ref(false)
     const showBigPlayButton = ref(true)
+    const showPrePlaySpeedMenu = ref(false)
     const copied = ref(false)
     const copiedEmbed = ref(false)
     const toast = ref(null)
@@ -835,6 +981,17 @@ export default {
     const isSavingComment = ref(false)
 
     const showShareModal = ref(false)
+    const showShareDropdown = ref(false)
+    const showOptionsMenu = ref(false)
+    const showArchiveConfirm = ref(false)
+    const showDeleteConfirm = ref(false)
+    const showPrivateConfirm = ref(false)
+    const shareDropdownRef = ref(null)
+    const optionsMenuRef = ref(null)
+
+    // Ownership check for restricting actions
+    const isOwner = computed(() => currentUser.value?.id && video.value?.user_id && currentUser.value.id === video.value.user_id)
+
     const activeTab = ref('transcript')
     const sidebarVisible = ref(localStorage.getItem('sidebar_visible') !== 'false')
     const appSidebarExpanded = ref(false)
@@ -1476,6 +1633,87 @@ export default {
       } catch (err) {}
     }
 
+    // Owner action handlers for shared view
+    const handleSharedDownload = async () => {
+      if (!video.value.url) return
+      try {
+        showToast('Starting download...')
+        const response = await fetch(video.value.url)
+        const blob = await response.blob()
+        const blobUrl = window.URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = blobUrl
+        link.download = `${video.value.title || 'video'}.mp4`
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        window.URL.revokeObjectURL(blobUrl)
+        showToast('Download complete!')
+      } catch (err) {
+        console.error('Failed to download:', err)
+        showToast('Failed to download video')
+      }
+    }
+
+    const handleSharedDuplicate = async () => {
+      if (!isOwner.value) return
+      try {
+        showToast('Duplicating video...')
+        await videoService.updateVideo(video.value.id, { duplicate: true })
+        showToast('Video duplicated!')
+      } catch (err) {
+        console.error('Failed to duplicate:', err)
+        showToast('Failed to duplicate video')
+      }
+    }
+
+    const handleSharedRename = () => {
+      if (!isOwner.value) return
+      const newTitle = prompt('Enter new title:', video.value.title)
+      if (newTitle && newTitle.trim()) {
+        videoService.updateVideo(video.value.id, { title: newTitle.trim() })
+          .then(() => {
+            video.value.title = newTitle.trim()
+            showToast('Title updated!')
+          })
+          .catch(() => showToast('Failed to update title'))
+      }
+    }
+
+    const handleSharedMakePrivate = async () => {
+      if (!isOwner.value) return
+      try {
+        await videoService.updateVideo(video.value.id, { is_private: true })
+        showToast('Video is now private')
+      } catch (err) {
+        console.error('Failed to make private:', err)
+        showToast('Failed to update privacy')
+      }
+    }
+
+    const handleSharedArchive = async () => {
+      if (!isOwner.value) return
+      try {
+        await videoService.updateVideo(video.value.id, { archived: true })
+        showToast('Video archived')
+      } catch (err) {
+        console.error('Failed to archive:', err)
+        showToast('Failed to archive video')
+      }
+    }
+
+    const handleSharedDelete = async () => {
+      if (!isOwner.value) return
+      try {
+        await videoService.deleteVideo(video.value.id)
+        showToast('Video deleted')
+        window.location.href = '/'
+      } catch (err) {
+        console.error('Failed to delete:', err)
+        showToast('Failed to delete video')
+      }
+    }
+
     const toggleReaction = async (type) => {
       try {
         const response = await fetch(`${API_BASE_URL}/api/share/video/${token.value}/reactions`, {
@@ -1607,6 +1845,14 @@ export default {
       if (qualityMenuRef.value && !qualityMenuRef.value.contains(e.target)) {
         showQualityMenu.value = false
       }
+      // Close share dropdown
+      if (shareDropdownRef.value && !shareDropdownRef.value.contains(e.target)) {
+        showShareDropdown.value = false
+      }
+      // Close options menu
+      if (optionsMenuRef.value && !optionsMenuRef.value.contains(e.target)) {
+        showOptionsMenu.value = false
+      }
     }
 
     const handleFullscreenChange = () => {
@@ -1641,10 +1887,17 @@ export default {
       videoRef, progressBar, speedMenuRef, playerContainer, qualityMenuRef,
       isPlaying, isBuffering, videoLoading, isMuted, isFullscreen, volume, currentTime, duration,
       bufferedPercent, progressPercent, playbackSpeed, speedOptions, controlsVisible,
-      hoverTime, hoverPercent, showSpeedMenu, showBigPlayButton,
+      hoverTime, hoverPercent, showSpeedMenu, showBigPlayButton, showPrePlaySpeedMenu,
       copied, copiedEmbed, toast, shareUrl,
       newComment, isSavingComment, isAuthenticated, currentUser, userInitial,
       showShareModal, activeTab, sidebarVisible, toggleSidebar, appSidebarExpanded,
+      // Dropdowns & confirmations
+      showShareDropdown, showOptionsMenu, shareDropdownRef, optionsMenuRef,
+      showArchiveConfirm, showDeleteConfirm, showPrivateConfirm,
+      isOwner,
+      // Owner action handlers
+      handleSharedDownload, handleSharedDuplicate, handleSharedRename,
+      handleSharedMakePrivate, handleSharedArchive, handleSharedDelete,
       // Transcription (read-only for shared view)
       transcription, transcriptionSegments, summary, formattedSummary, seekToTime,
       // Captions
