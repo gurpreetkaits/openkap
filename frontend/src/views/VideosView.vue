@@ -1539,7 +1539,7 @@ export default {
 
     // Pagination
     const currentPage = ref(1)
-    const itemsPerPage = 20
+    const itemsPerPage = 24
 
     // Filtered and sorted videos
     const filteredVideos = computed(() => {
