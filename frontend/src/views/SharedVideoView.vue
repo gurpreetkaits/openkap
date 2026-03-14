@@ -88,7 +88,7 @@
     <div class="flex-1 flex flex-col overflow-hidden">
 
     <!-- Subtle Background Grid -->
-    <div class="fixed inset-0 z-0 pointer-events-none" style="background-image: radial-gradient(#e5e7eb 1px, transparent 1px); background-size: 32px 32px; opacity: 0.4;"></div>
+    <div class="fixed inset-0 z-0 pointer-events-none" style="background-image: radial-gradient(#e5e7eb 1px, transparent 1px); background-size: 32px 32px; opacity: 0.25;"></div>
 
     <!-- Loading State -->
     <div v-if="loading" class="flex items-center justify-center min-h-screen">
@@ -113,21 +113,26 @@
     <!-- Main Content -->
     <template v-else>
       <!-- Navigation -->
-      <nav class="h-14 border-b border-gray-200/60 bg-white/80 backdrop-blur-md flex items-center justify-between px-4 lg:px-6 z-50 sticky top-0 w-full">
-        <div class="flex items-center gap-3">
-          <a href="/" class="flex items-center gap-2 hover:opacity-80 transition-opacity">
-            <img :src="branding.logoUrl.value || '/logo.png'" alt="OpenKap" class="w-8 h-8 rounded-lg shadow-sm" />
-            <span class="text-sm font-semibold text-gray-900">OpenKap</span>
+      <nav class="h-11 border-b border-gray-200/60 bg-white/90 backdrop-blur-md flex items-center justify-between px-4 z-50 sticky top-0 w-full flex-shrink-0">
+        <div class="flex items-center gap-2">
+          <a href="/" class="flex items-center gap-1.5 hover:opacity-80 transition-opacity">
+            <img :src="branding.logoUrl.value || '/logo.png'" alt="OpenKap" class="w-6 h-6 rounded-md" />
+            <span class="text-xs font-semibold text-gray-900">OpenKap</span>
           </a>
         </div>
 
         <div class="flex items-center gap-2">
-          <button @click="showShareModal = true" class="bg-orange-600 hover:bg-orange-700 text-white px-3 py-1.5 rounded-lg text-xs font-medium shadow-md shadow-orange-200 transition-all flex items-center gap-2 group">
-            Share Video
-            <div class="w-px h-3 bg-white/20"></div>
-            <svg class="w-3 h-3 text-white/70 group-hover:translate-y-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+          <button @click="copyShareLink" class="text-gray-500 hover:text-gray-700 px-2 py-1 rounded-md text-[11px] font-medium hover:bg-gray-100 transition-colors flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
             </svg>
+            {{ copied ? 'Copied!' : 'Copy link' }}
+          </button>
+          <button @click="showShareModal = true" class="bg-orange-600 hover:bg-orange-700 text-white px-2.5 py-1 rounded-md text-[11px] font-medium transition-all flex items-center gap-1.5">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
+            </svg>
+            Share
           </button>
         </div>
       </nav>
@@ -135,9 +140,9 @@
       <!-- Share Modal -->
       <div v-if="showShareModal" class="fixed inset-0 z-[60] flex items-center justify-center">
         <div class="absolute inset-0 bg-gray-900/20 backdrop-blur-sm transition-opacity" @click="showShareModal = false"></div>
-        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md relative z-10 border border-gray-100 overflow-hidden transform transition-all duration-200">
-          <div class="p-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
-            <h3 class="text-sm font-semibold text-gray-900">Share Recording</h3>
+        <div class="bg-white rounded-lg shadow-2xl w-full max-w-sm relative z-10 border border-gray-100 overflow-hidden transform transition-all duration-200">
+          <div class="px-4 py-2.5 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+            <h3 class="text-xs font-semibold text-gray-900">Share Recording</h3>
             <button @click="showShareModal = false" class="text-gray-400 hover:text-gray-600">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -189,52 +194,42 @@
       </div>
 
       <!-- Main Layout -->
-      <main class="flex-1 flex flex-col lg:flex-row h-full z-10 relative">
+      <main class="flex-1 flex flex-col lg:flex-row h-full z-10 relative overflow-hidden">
 
         <!-- Center Stage: Video Player -->
-        <div class="flex-1 flex flex-col items-center justify-center p-3 lg:p-8 relative bg-[#FAFAFA]/50 overflow-hidden">
+        <div class="flex-1 flex flex-col items-center p-2 lg:p-4 relative bg-[#FAFAFA]/50 overflow-y-auto">
 
-          <div class="w-full max-w-[min(calc((100vh-280px)*16/9),100%)] flex flex-col">
+          <div class="w-full max-w-[min(calc((100vh-200px)*16/9),100%)] flex flex-col">
 
-            <!-- Video Title Above Container -->
-            <div class="w-full mb-4">
-              <h1 class="text-2xl font-bold text-gray-900 tracking-tight leading-tight mb-2">
+            <!-- Video Title & Meta -->
+            <div class="w-full mb-2">
+              <h1 class="text-base font-semibold text-gray-900 tracking-tight leading-snug">
                 {{ video.title }}
               </h1>
-              <!-- Creator Identity -->
-              <div v-if="video.user_name" class="flex items-center gap-2 mb-2">
-                <img v-if="video.user_avatar" :src="video.user_avatar" :alt="video.user_name" class="w-6 h-6 rounded-full object-cover ring-1 ring-gray-200" />
-                <div v-else class="w-6 h-6 rounded-full bg-gradient-to-br from-orange-100 to-amber-100 flex items-center justify-center text-orange-600 text-xs font-bold ring-1 ring-orange-200/50">
-                  {{ (video.user_name || 'U').charAt(0).toUpperCase() }}
-                </div>
-                <span class="text-sm font-medium text-gray-700">{{ video.user_name }}</span>
-              </div>
-              <div class="flex items-center gap-3 text-sm text-gray-500">
-                <span class="flex items-center gap-1.5">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                  </svg>
-                  {{ formatTimeAgo(video.created_at) }}
-                </span>
-                <span class="w-1 h-1 rounded-full bg-gray-300"></span>
-                <span class="flex items-center gap-1.5">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                  </svg>
-                  {{ video.views_count || 0 }} views
-                </span>
+              <div class="flex items-center gap-2 mt-1">
+                <!-- Creator Identity -->
+                <template v-if="video.user_name">
+                  <img v-if="video.user_avatar" :src="video.user_avatar" :alt="video.user_name" class="w-5 h-5 rounded-full object-cover ring-1 ring-gray-200" />
+                  <div v-else class="w-5 h-5 rounded-full bg-gradient-to-br from-orange-100 to-amber-100 flex items-center justify-center text-orange-600 text-[10px] font-bold ring-1 ring-orange-200/50">
+                    {{ (video.user_name || 'U').charAt(0).toUpperCase() }}
+                  </div>
+                  <span class="text-xs font-medium text-gray-600">{{ video.user_name }}</span>
+                  <span class="w-0.5 h-0.5 rounded-full bg-gray-300"></span>
+                </template>
+                <span class="text-[11px] text-gray-400">{{ formatTimeAgo(video.created_at) }}</span>
+                <span class="w-0.5 h-0.5 rounded-full bg-gray-300"></span>
+                <span class="text-[11px] text-gray-400">{{ video.views_count || 0 }} views</span>
               </div>
             </div>
 
             <!-- Video Container - Responsive with 16:9 aspect ratio -->
             <div
-              class="relative w-full bg-black rounded-xl shadow-2xl ring-1 ring-black/10 overflow-hidden z-20"
+              class="relative w-full bg-black rounded-lg shadow-lg ring-1 ring-black/10 overflow-hidden z-20"
               :class="isFullscreen ? 'rounded-none !aspect-auto h-full' : ''"
               :style="{
                 aspectRatio: isFullscreen ? 'auto' : '16 / 9',
-                maxHeight: isFullscreen ? 'none' : 'calc(100vh - 280px)',
-                maxWidth: isFullscreen ? 'none' : 'calc((100vh - 280px) * 16 / 9)',
+                maxHeight: isFullscreen ? 'none' : 'calc(100vh - 180px)',
+                maxWidth: isFullscreen ? 'none' : 'calc((100vh - 180px) * 16 / 9)',
                 ...(video.thumbnail && !isFullscreen ? { backgroundImage: `url(${video.thumbnail})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {})
               }"
               ref="playerContainer"
@@ -472,37 +467,28 @@
             </div>
 
             <!-- Action Bar Below Video -->
-            <div class="mt-6 flex items-center justify-center gap-3 z-30 relative flex-wrap">
+            <div class="mt-3 flex items-center justify-center gap-2 z-30 relative flex-wrap">
 
               <!-- Reactions -->
               <button
                 v-for="(data, type) in reactions"
                 :key="type"
                 @click="toggleReaction(type)"
-                class="w-9 h-9 rounded-full hover:bg-gray-100 flex items-center justify-center text-lg transition-transform hover:-translate-y-0.5 active:scale-95 relative bg-white border border-gray-200/60 shadow-sm"
+                class="w-7 h-7 rounded-full hover:bg-gray-100 flex items-center justify-center text-sm transition-transform hover:-translate-y-0.5 active:scale-95 relative bg-white border border-gray-200/60"
                 :class="userReactions.includes(type) ? 'bg-orange-100 border-orange-300' : ''"
                 :title="type"
               >
                 {{ data.emoji }}
-                <span v-if="data.count > 0" class="absolute -top-1 -right-1 bg-orange-600 text-white text-[10px] font-bold rounded-full min-w-[16px] h-4 flex items-center justify-center px-1">{{ data.count }}</span>
+                <span v-if="data.count > 0" class="absolute -top-1 -right-1 bg-orange-600 text-white text-[9px] font-bold rounded-full min-w-[14px] h-3.5 flex items-center justify-center px-0.5">{{ data.count }}</span>
               </button>
 
-              <div class="w-px h-6 bg-gray-200"></div>
-
-              <!-- Copy Link -->
-              <button @click="copyShareLink" class="w-9 h-9 rounded-full hover:bg-gray-50 hover:text-orange-600 flex items-center justify-center text-gray-500 transition-colors group/copy relative bg-white border border-gray-200/60 shadow-sm">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
-                </svg>
-                <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 text-[11px] font-medium text-white bg-gray-900 rounded opacity-0 group-hover/copy:opacity-100 transition-all pointer-events-none whitespace-nowrap z-50 shadow-md">Copy Link</span>
-              </button>
+              <div class="w-px h-4 bg-gray-200"></div>
 
               <!-- Embed -->
-              <button @click="copyEmbedCode" class="w-9 h-9 rounded-full hover:bg-gray-50 hover:text-orange-600 flex items-center justify-center text-gray-500 transition-colors group/embed relative bg-white border border-gray-200/60 shadow-sm">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <button @click="copyEmbedCode" class="w-7 h-7 rounded-full hover:bg-gray-50 hover:text-orange-600 flex items-center justify-center text-gray-400 transition-colors group/embed relative bg-white border border-gray-200/60" title="Embed">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
                 </svg>
-                <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 text-[11px] font-medium text-white bg-gray-900 rounded opacity-0 group-hover/embed:opacity-100 transition-all pointer-events-none whitespace-nowrap z-50 shadow-md">Embed</span>
               </button>
             </div>
           </div>
@@ -511,41 +497,41 @@
         <!-- Sidebar Toggle Button -->
         <button
           @click="toggleSidebar"
-          class="hidden lg:flex fixed top-1/2 -translate-y-1/2 z-50 items-center justify-center w-6 h-12 bg-white border border-gray-200 rounded-l-lg shadow-sm hover:bg-gray-50 transition-all"
-          :class="sidebarVisible ? 'right-[400px]' : 'right-0'"
+          class="hidden lg:flex fixed top-1/2 -translate-y-1/2 z-50 items-center justify-center w-5 h-10 bg-white border border-gray-200 rounded-l-md shadow-sm hover:bg-gray-50 transition-all"
+          :class="sidebarVisible ? 'right-[340px]' : 'right-0'"
           :title="sidebarVisible ? 'Hide sidebar' : 'Show sidebar'"
         >
-          <svg class="w-3.5 h-3.5 text-gray-500 transition-transform" :class="sidebarVisible ? '' : 'rotate-180'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-3 h-3 text-gray-400 transition-transform" :class="sidebarVisible ? '' : 'rotate-180'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
           </svg>
         </button>
 
         <!-- Sidebar -->
-        <aside v-show="sidebarVisible" class="w-full lg:w-[400px] bg-white border-l border-gray-200 flex flex-col z-40 shadow-[-4px_0_24px_rgba(0,0,0,0.02)]">
+        <aside v-show="sidebarVisible" class="w-full lg:w-[340px] bg-white border-l border-gray-200 flex flex-col z-40">
 
           <!-- Functional Tabs -->
-          <div class="grid grid-cols-3 gap-0 px-3 py-2.5 border-b border-gray-100 sticky top-0 bg-white z-10">
+          <div class="grid grid-cols-3 gap-0 px-2 py-1.5 border-b border-gray-100 sticky top-0 bg-white z-10 flex-shrink-0">
             <button
               @click="activeTab = 'transcript'"
-              class="px-2 py-2 text-[12px] rounded-lg transition-all text-center truncate"
+              class="px-1.5 py-1.5 text-[11px] rounded-md transition-all text-center truncate"
               :class="activeTab === 'transcript' ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'"
             >
               Transcript
             </button>
             <button
               @click="activeTab = 'summary'"
-              class="px-2 py-2 text-[12px] rounded-lg transition-all text-center truncate"
+              class="px-1.5 py-1.5 text-[11px] rounded-md transition-all text-center truncate"
               :class="activeTab === 'summary' ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'"
             >
               Summary
             </button>
             <button
               @click="activeTab = 'comments'"
-              class="px-2 py-2 text-[12px] rounded-lg transition-all text-center truncate flex items-center justify-center gap-1"
+              class="px-1.5 py-1.5 text-[11px] rounded-md transition-all text-center truncate flex items-center justify-center gap-1"
               :class="activeTab === 'comments' ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'"
             >
               Comments
-              <span v-if="comments.length" class="text-[10px] text-gray-400 font-normal">{{ comments.length }}</span>
+              <span v-if="comments.length" class="text-[9px] text-gray-400 font-normal">{{ comments.length }}</span>
             </button>
           </div>
 
@@ -554,42 +540,41 @@
 
             <!-- TAB: COMMENTS -->
             <div v-show="activeTab === 'comments'" class="flex flex-col min-h-full">
-              <div v-if="comments.length === 0" class="flex flex-col items-center justify-center h-64 text-center px-5">
-                <svg class="w-16 h-16 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div v-if="comments.length === 0" class="flex flex-col items-center justify-center h-48 text-center px-4">
+                <svg class="w-10 h-10 text-gray-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
                 </svg>
-                <p class="text-base font-semibold text-gray-900">No comments yet</p>
-                <p class="text-sm text-gray-500 mt-1">Be the first to share your thoughts!</p>
+                <p class="text-sm font-medium text-gray-900">No comments yet</p>
+                <p class="text-xs text-gray-500 mt-0.5">Be the first to share your thoughts</p>
               </div>
 
               <div v-else>
                 <div
                   v-for="comment in comments"
                   :key="comment.id"
-                  class="group p-5 hover:bg-gray-50/80 transition-colors border-b border-gray-50 flex gap-3 items-start relative"
+                  class="group px-3 py-2.5 hover:bg-gray-50/80 transition-colors border-b border-gray-50 flex gap-2.5 items-start"
                 >
-                  <div class="absolute left-0 top-0 bottom-0 w-0.5 bg-orange-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                  <div class="relative">
-                    <img v-if="comment.author_avatar" :src="comment.author_avatar" class="w-8 h-8 rounded-full object-cover border border-gray-100 shadow-sm">
-                    <div v-else class="w-8 h-8 rounded-full bg-gradient-to-br from-orange-100 to-amber-100 flex items-center justify-center border border-orange-200/50 text-orange-600 text-xs font-bold shadow-sm">
+                  <div class="relative flex-shrink-0">
+                    <img v-if="comment.author_avatar" :src="comment.author_avatar" class="w-6 h-6 rounded-full object-cover border border-gray-100">
+                    <div v-else class="w-6 h-6 rounded-full bg-gradient-to-br from-orange-100 to-amber-100 flex items-center justify-center border border-orange-200/50 text-orange-600 text-[10px] font-bold">
                       {{ comment.author_name.charAt(0).toUpperCase() }}
                     </div>
                   </div>
                   <div class="flex-1 min-w-0">
-                    <div class="flex items-center justify-between mb-1">
-                      <div class="flex items-center gap-2">
-                        <span class="text-xs font-semibold text-gray-900">{{ comment.author_name }}</span>
+                    <div class="flex items-center justify-between">
+                      <div class="flex items-center gap-1.5">
+                        <span class="text-[11px] font-semibold text-gray-900">{{ comment.author_name }}</span>
                         <button
                           v-if="comment.timestamp_seconds != null"
                           @click="seekToTime(comment.timestamp_seconds)"
-                          class="text-[10px] font-mono bg-orange-50 text-orange-600 px-1.5 py-0.5 rounded hover:bg-orange-100 transition-colors cursor-pointer"
+                          class="text-[9px] font-mono bg-orange-50 text-orange-600 px-1 py-0.5 rounded hover:bg-orange-100 transition-colors cursor-pointer"
                         >
                           {{ formatTime(comment.timestamp_seconds) }}
                         </button>
                       </div>
-                      <span class="text-[10px] text-gray-400">{{ formatCommentTime(comment.created_at) }}</span>
+                      <span class="text-[9px] text-gray-400">{{ formatCommentTime(comment.created_at) }}</span>
                     </div>
-                    <p class="text-[13px] text-gray-600 leading-relaxed">{{ comment.content }}</p>
+                    <p class="text-[12px] text-gray-600 leading-relaxed mt-0.5">{{ comment.content }}</p>
                   </div>
                 </div>
               </div>
@@ -600,16 +585,16 @@
               <!-- Transcript content with timestamps -->
               <div v-if="transcriptionSegments && transcriptionSegments.length > 0">
                 <!-- Copy header -->
-                <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100 sticky top-0 bg-white/95 backdrop-blur-sm z-10">
-                  <span class="text-xs font-medium text-gray-500">{{ transcriptionSegments.length }} segments</span>
+                <div class="flex items-center justify-between px-3 py-2 border-b border-gray-100 sticky top-0 bg-white/95 backdrop-blur-sm z-10">
+                  <span class="text-[10px] font-medium text-gray-400">{{ transcriptionSegments.length }} segments</span>
                   <button
                     @click="copyTranscript"
-                    class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
+                    class="flex items-center gap-1 px-2 py-1 text-[10px] font-medium text-gray-500 hover:text-orange-600 hover:bg-orange-50 rounded-md transition-colors"
                   >
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
                     </svg>
-                    {{ copiedTranscript ? 'Copied!' : 'Copy All' }}
+                    {{ copiedTranscript ? 'Copied!' : 'Copy' }}
                   </button>
                 </div>
                 <div class="divide-y divide-gray-50" ref="transcriptContainer">
@@ -618,20 +603,20 @@
                     :key="index"
                     :ref="el => { if (el) segmentRefs[index] = el }"
                     @click="seekToTime(segment.start)"
-                    class="w-full text-left p-4 transition-all duration-300 group flex gap-3"
+                    class="w-full text-left px-3 py-2 transition-all duration-200 group flex gap-2"
                     :class="activeSegmentIndex === index
-                      ? 'bg-orange-100 border-l-4 border-orange-500'
-                      : 'hover:bg-orange-50/60 border-l-4 border-transparent'"
+                      ? 'bg-orange-50 border-l-2 border-orange-500'
+                      : 'hover:bg-gray-50 border-l-2 border-transparent'"
                   >
                     <span
-                      class="text-[11px] font-medium tabular-nums tracking-wide flex-shrink-0 transition-colors min-w-[36px]"
+                      class="text-[10px] font-medium tabular-nums tracking-wide flex-shrink-0 transition-colors min-w-[32px] pt-0.5"
                       :class="activeSegmentIndex === index ? 'text-orange-500' : 'text-gray-400'"
                     >
                       {{ formatTime(segment.start) }}
                     </span>
                     <p
-                      class="text-[13px] leading-relaxed transition-colors"
-                      :class="activeSegmentIndex === index ? 'text-gray-900 font-medium' : 'text-gray-700'"
+                      class="text-[12px] leading-relaxed transition-colors"
+                      :class="activeSegmentIndex === index ? 'text-gray-900 font-medium' : 'text-gray-600'"
                     >
                       {{ segment.text }}
                     </p>
@@ -640,94 +625,92 @@
               </div>
 
               <!-- Fallback: show full transcript if no segments -->
-              <div v-else-if="transcription" class="p-5">
-                <div class="flex items-center justify-between mb-3">
-                  <span class="text-xs font-medium text-gray-500">Full transcript</span>
+              <div v-else-if="transcription" class="p-3">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-[10px] font-medium text-gray-400">Full transcript</span>
                   <button
                     @click="copyTranscript"
-                    class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
+                    class="flex items-center gap-1 px-2 py-1 text-[10px] font-medium text-gray-500 hover:text-orange-600 hover:bg-orange-50 rounded-md transition-colors"
                   >
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
                     </svg>
                     {{ copiedTranscript ? 'Copied!' : 'Copy' }}
                   </button>
                 </div>
-                <p class="text-[13px] text-gray-700 leading-relaxed whitespace-pre-wrap">{{ transcription }}</p>
+                <p class="text-[12px] text-gray-600 leading-relaxed whitespace-pre-wrap">{{ transcription }}</p>
               </div>
 
               <!-- Empty state - no transcript available -->
-              <div v-else class="flex flex-col items-center justify-center h-64 text-center px-5">
-                <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
-                  <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div v-else class="flex flex-col items-center justify-center h-48 text-center px-4">
+                <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center mb-3">
+                  <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                   </svg>
                 </div>
-                <p class="text-base font-semibold text-gray-900">No Transcript Available</p>
-                <p class="text-sm text-gray-500 mt-1">The video owner has not generated a transcript yet</p>
+                <p class="text-sm font-medium text-gray-900">No Transcript</p>
+                <p class="text-xs text-gray-500 mt-0.5">Not yet generated</p>
               </div>
             </div>
 
             <!-- TAB: SUMMARY -->
             <div v-show="activeTab === 'summary'" class="flex flex-col min-h-full">
               <!-- Summary content -->
-              <div v-if="summary" class="p-5">
-                <div class="flex items-center justify-between mb-4">
-                  <div class="flex items-center gap-2">
-                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-orange-100 to-amber-100 flex items-center justify-center">
-                      <svg class="w-4 h-4 text-orange-500" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/>
-                      </svg>
-                    </div>
-                    <span class="text-sm font-semibold text-gray-900">AI Summary</span>
+              <div v-if="summary" class="p-3">
+                <div class="flex items-center justify-between mb-3">
+                  <div class="flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-orange-500" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/>
+                    </svg>
+                    <span class="text-xs font-semibold text-gray-900">AI Summary</span>
                   </div>
                   <button
                     @click="copySummary"
-                    class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
+                    class="flex items-center gap-1 px-2 py-1 text-[10px] font-medium text-gray-500 hover:text-orange-600 hover:bg-orange-50 rounded-md transition-colors"
                   >
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
                     </svg>
                     {{ copiedSummary ? 'Copied!' : 'Copy' }}
                   </button>
                 </div>
-                <div class="prose prose-sm max-w-none text-gray-700 leading-relaxed" v-html="formattedSummary"></div>
+                <div class="prose prose-sm max-w-none text-gray-600 leading-relaxed text-[12px]" v-html="formattedSummary"></div>
               </div>
 
               <!-- Empty state - no summary available -->
-              <div v-else class="flex flex-col items-center justify-center h-64 text-center px-5">
-                <div class="w-16 h-16 rounded-full bg-gradient-to-br from-orange-100 to-amber-100 flex items-center justify-center mb-4">
-                  <svg class="w-8 h-8 text-orange-500" fill="currentColor" viewBox="0 0 24 24">
+              <div v-else class="flex flex-col items-center justify-center h-48 text-center px-4">
+                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-orange-100 to-amber-100 flex items-center justify-center mb-3">
+                  <svg class="w-5 h-5 text-orange-500" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/>
                   </svg>
                 </div>
-                <p class="text-base font-semibold text-gray-900">No Summary Available</p>
-                <p class="text-sm text-gray-500 mt-1">The video owner has not generated a summary yet</p>
+                <p class="text-sm font-medium text-gray-900">No Summary</p>
+                <p class="text-xs text-gray-500 mt-0.5">Not yet generated</p>
               </div>
             </div>
 
           </div>
 
           <!-- Comment Input -->
-          <div v-show="activeTab === 'comments'" class="p-4 bg-white border-t border-gray-100 z-20">
+          <div v-show="activeTab === 'comments'" class="px-3 py-2 bg-white border-t border-gray-100 z-20 flex-shrink-0">
             <!-- Authenticated users -->
             <div v-if="isAuthenticated">
-              <div class="relative shadow-sm ring-1 ring-gray-200 rounded-xl bg-white focus-within:ring-2 focus-within:ring-orange-500/20 focus-within:border-orange-500 transition-all">
+              <div class="relative ring-1 ring-gray-200 rounded-lg bg-white focus-within:ring-2 focus-within:ring-orange-500/20 transition-all">
                 <textarea
                   v-model="newComment"
                   rows="1"
                   placeholder="Add a comment..."
                   @keydown.enter.exact.prevent="addComment"
-                  class="w-full bg-transparent border-none text-[13px] text-gray-900 placeholder:text-gray-400 focus:ring-0 p-3 resize-none min-h-[44px]"
+                  class="w-full bg-transparent border-none text-[12px] text-gray-900 placeholder:text-gray-400 focus:ring-0 px-2.5 py-2 resize-none min-h-[36px]"
                 ></textarea>
 
-                <div class="flex items-center justify-end px-2 pb-2">
+                <div class="flex items-center justify-end px-1.5 pb-1.5">
                   <button
                     @click="addComment"
                     :disabled="!newComment.trim() || isSavingComment"
-                    class="bg-orange-600 text-white p-1.5 rounded-lg hover:bg-orange-700 transition-colors shadow-sm shadow-orange-200 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                    class="bg-orange-600 text-white p-1 rounded-md hover:bg-orange-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
                   >
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
                     </svg>
                   </button>
@@ -736,13 +719,13 @@
             </div>
 
             <!-- Sign In Prompt (Non-authenticated users) -->
-            <div v-else class="p-4 bg-gray-50 rounded-xl border border-gray-200">
-              <p class="text-gray-500 text-sm mb-3 text-center">Sign in to leave a comment</p>
+            <div v-else class="p-3 bg-gray-50 rounded-lg border border-gray-200">
+              <p class="text-gray-500 text-xs mb-2 text-center">Sign in to comment</p>
               <button
                 @click="loginToComment"
-                class="flex items-center justify-center w-full px-4 py-2.5 text-sm font-medium text-gray-700 bg-white rounded-lg hover:bg-gray-100 transition-colors border border-gray-200"
+                class="flex items-center justify-center w-full px-3 py-1.5 text-xs font-medium text-gray-700 bg-white rounded-md hover:bg-gray-100 transition-colors border border-gray-200"
               >
-                <svg class="w-5 h-5 mr-2" viewBox="0 0 24 24">
+                <svg class="w-4 h-4 mr-1.5" viewBox="0 0 24 24">
                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                   <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
                   <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
@@ -771,18 +754,18 @@
     </transition>
 
     <!-- Signup CTA Banner (for non-authenticated users) -->
-    <div v-if="!isAuthenticated && !loading" class="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-t border-gray-200 shadow-[0_-4px_24px_rgba(0,0,0,0.08)]">
-      <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
-        <div class="flex items-center gap-3 min-w-0">
-          <img src="/logo.png" alt="OpenKap" class="w-7 h-7 rounded-lg shadow-sm flex-shrink-0" />
-          <p class="text-sm text-gray-700 truncate">
+    <div v-if="!isAuthenticated && !loading" class="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-t border-gray-200">
+      <div class="max-w-5xl mx-auto px-3 py-2 flex items-center justify-between gap-3">
+        <div class="flex items-center gap-2 min-w-0">
+          <img src="/logo.png" alt="OpenKap" class="w-5 h-5 rounded-md flex-shrink-0" />
+          <p class="text-xs text-gray-600 truncate">
             <span class="font-semibold text-gray-900">Made with OpenKap</span>
-            <span class="hidden sm:inline"> — Record and share screen recordings for free</span>
+            <span class="hidden sm:inline"> — Free screen recording</span>
           </p>
         </div>
         <a
           href="/login"
-          class="flex-shrink-0 inline-flex items-center px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium rounded-lg shadow-sm shadow-orange-200 transition-colors"
+          class="flex-shrink-0 inline-flex items-center px-3 py-1.5 bg-orange-600 hover:bg-orange-700 text-white text-xs font-medium rounded-md transition-colors"
         >
           Try Free
         </a>
