@@ -126,7 +126,7 @@
                             preload="metadata"
                             class="w-full h-auto block"
                         >
-                            <source src="{{ asset('app-preview-openkap.mp4') }}" type="video/mp4">
+                            <source src="{{ asset('app-preview-screensense.mp4') }}" type="video/mp4">
                             Your browser does not support the video tag.
                         </video>
                     </div>
