@@ -1,5 +1,91 @@
 <template>
-  <div class="bg-[#FAFAFA] text-slate-900 h-screen flex flex-col overflow-hidden selection:bg-orange-100 selection:text-orange-700">
+  <div class="bg-[#FAFAFA] text-slate-900 h-screen flex overflow-hidden selection:bg-orange-100 selection:text-orange-700">
+
+    <!-- Collapsed Sidebar for authenticated users -->
+    <aside
+      v-if="isAuthenticated && !loading && !error"
+      class="hidden lg:flex flex-col flex-shrink-0 h-full bg-white border-r border-gray-200 z-40 transition-all duration-200"
+      :class="appSidebarExpanded ? 'w-[200px]' : 'w-[48px]'"
+    >
+      <!-- Logo -->
+      <div class="h-11 flex items-center justify-center border-b border-gray-100/50 flex-shrink-0" :class="appSidebarExpanded ? 'px-3.5' : 'px-0'">
+        <router-link v-if="appSidebarExpanded" to="/videos" class="flex items-center gap-2 group cursor-pointer">
+          <img :src="branding.logoUrl.value || '/logo.png'" alt="OpenKap" class="w-6 h-6 rounded-md shadow-sm" />
+          <span class="text-gray-900 font-semibold tracking-tight text-xs">OpenKap</span>
+        </router-link>
+        <button v-else @click="appSidebarExpanded = true" class="p-1.5 rounded-md hover:bg-gray-100 transition-colors" title="Expand sidebar">
+          <img :src="branding.logoUrl.value || '/logo.png'" alt="OpenKap" class="w-6 h-6 rounded-md" />
+        </button>
+      </div>
+
+      <!-- Navigation -->
+      <div class="flex-1 overflow-y-auto" :class="appSidebarExpanded ? 'px-2 py-2.5' : 'px-1 py-2.5'">
+        <nav class="space-y-0.5">
+          <router-link
+            to="/videos"
+            class="flex items-center rounded-md transition-all group"
+            :class="[
+              appSidebarExpanded ? 'gap-2 px-2 py-1.5 text-xs font-medium' : 'justify-center p-2',
+              'text-gray-500 hover:text-gray-900 hover:bg-gray-50'
+            ]"
+            :title="appSidebarExpanded ? '' : 'Library'"
+          >
+            <svg class="w-3.5 h-3.5 text-gray-400 group-hover:text-gray-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
+            </svg>
+            <span v-if="appSidebarExpanded">Library</span>
+          </router-link>
+
+          <router-link
+            to="/playlists"
+            class="flex items-center rounded-md transition-all group"
+            :class="[
+              appSidebarExpanded ? 'gap-2 px-2 py-1.5 text-xs font-medium' : 'justify-center p-2',
+              'text-gray-500 hover:text-gray-900 hover:bg-gray-50'
+            ]"
+            :title="appSidebarExpanded ? '' : 'Playlists'"
+          >
+            <svg class="w-3.5 h-3.5 text-gray-400 group-hover:text-gray-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+            </svg>
+            <span v-if="appSidebarExpanded">Playlists</span>
+          </router-link>
+
+          <router-link
+            to="/settings"
+            class="flex items-center rounded-md transition-all group"
+            :class="[
+              appSidebarExpanded ? 'gap-2 px-2 py-1.5 text-xs font-medium' : 'justify-center p-2',
+              'text-gray-500 hover:text-gray-900 hover:bg-gray-50'
+            ]"
+            :title="appSidebarExpanded ? '' : 'Settings'"
+          >
+            <svg class="w-3.5 h-3.5 text-gray-400 group-hover:text-gray-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+            <span v-if="appSidebarExpanded">Settings</span>
+          </router-link>
+        </nav>
+      </div>
+
+      <!-- Collapse/Expand toggle -->
+      <div class="p-2 border-t border-gray-100 flex-shrink-0">
+        <button
+          @click="appSidebarExpanded = !appSidebarExpanded"
+          class="w-full flex items-center justify-center p-1.5 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+          :title="appSidebarExpanded ? 'Collapse sidebar' : 'Expand sidebar'"
+        >
+          <svg class="w-3.5 h-3.5 transition-transform" :class="appSidebarExpanded ? '' : 'rotate-180'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/>
+          </svg>
+          <span v-if="appSidebarExpanded" class="ml-1.5 text-[10px] font-medium">Collapse</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <div class="flex-1 flex flex-col overflow-hidden">
 
     <!-- Subtle Background Grid -->
     <div class="fixed inset-0 z-0 pointer-events-none" style="background-image: radial-gradient(#e5e7eb 1px, transparent 1px); background-size: 32px 32px; opacity: 0.4;"></div>
@@ -27,7 +113,7 @@
     <!-- Main Content -->
     <template v-else>
       <!-- Navigation -->
-      <nav class="h-14 border-b border-gray-200/60 bg-white/80 backdrop-blur-md flex items-center justify-between px-4 lg:px-6 z-50 fixed top-0 w-full">
+      <nav class="h-14 border-b border-gray-200/60 bg-white/80 backdrop-blur-md flex items-center justify-between px-4 lg:px-6 z-50 sticky top-0 w-full">
         <div class="flex items-center gap-3">
           <a href="/" class="flex items-center gap-2 hover:opacity-80 transition-opacity">
             <img :src="branding.logoUrl.value || '/logo.png'" alt="OpenKap" class="w-8 h-8 rounded-lg shadow-sm" />
@@ -103,7 +189,7 @@
       </div>
 
       <!-- Main Layout -->
-      <main class="flex-1 flex flex-col lg:flex-row h-full pt-14 z-10 relative">
+      <main class="flex-1 flex flex-col lg:flex-row h-full z-10 relative">
 
         <!-- Center Stage: Video Player -->
         <div class="flex-1 flex flex-col items-center justify-center p-3 lg:p-8 relative bg-[#FAFAFA]/50 overflow-hidden">
@@ -703,6 +789,7 @@
       </div>
     </div>
 
+    </div><!-- end Main Content Area -->
   </div>
 </template>
 
@@ -767,6 +854,7 @@ export default {
     const showShareModal = ref(false)
     const activeTab = ref('transcript')
     const sidebarVisible = ref(localStorage.getItem('sidebar_visible') !== 'false')
+    const appSidebarExpanded = ref(false)
 
     const toggleSidebar = () => {
       sidebarVisible.value = !sidebarVisible.value
@@ -1573,7 +1661,7 @@ export default {
       hoverTime, hoverPercent, showSpeedMenu, showBigPlayButton,
       copied, copiedEmbed, toast, shareUrl,
       newComment, isSavingComment, isAuthenticated, currentUser, userInitial,
-      showShareModal, activeTab, sidebarVisible, toggleSidebar,
+      showShareModal, activeTab, sidebarVisible, toggleSidebar, appSidebarExpanded,
       // Transcription (read-only for shared view)
       transcription, transcriptionSegments, summary, formattedSummary, seekToTime,
       // Captions
