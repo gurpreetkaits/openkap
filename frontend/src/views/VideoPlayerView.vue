@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-[#FAFAFA] text-slate-900 h-full flex flex-col overflow-hidden selection:bg-orange-100 selection:text-orange-700">
+  <div class="bg-[#FAFAFA] text-slate-900 h-screen flex flex-col overflow-hidden selection:bg-orange-100 selection:text-orange-700">
 
     <!-- Subtle Background Grid -->
     <div class="fixed inset-0 z-0 pointer-events-none" style="background-image: radial-gradient(#e5e7eb 1px, transparent 1px); background-size: 32px 32px; opacity: 0.4;"></div>

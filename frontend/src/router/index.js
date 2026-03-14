@@ -92,17 +92,19 @@ const routes = [
         component: () => import("../views/AdminDashboardView.vue"),
         meta: { requiresAdmin: true }
       },
-      {
-        path: "video/:id",
-        name: "VideoPlayer",
-        component: () => import("../views/VideoPlayerView.vue"),
-      },
-      {
-        path: "video/:id/edit",
-        name: "VideoEditor",
-        component: () => import("../views/VideoEditorView.vue"),
-      },
     ]
+  },
+  {
+    path: "/video/:id",
+    name: "VideoPlayer",
+    component: () => import("../views/VideoPlayerView.vue"),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: "/video/:id/edit",
+    name: "VideoEditor",
+    component: () => import("../views/VideoEditorView.vue"),
+    meta: { requiresAuth: true }
   },
   {
     path: "/invite/:token",
