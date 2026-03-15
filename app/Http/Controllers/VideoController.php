@@ -158,6 +158,8 @@ class VideoController extends Controller
         $request->validate([
             'title' => 'sometimes|required|string|max:255',
             'description' => 'nullable|string',
+            'is_public' => 'sometimes|boolean',
+            'archived' => 'sometimes|boolean',
         ]);
 
         $video = $this->videoManager->findVideoOrFail($id);
@@ -166,7 +168,13 @@ class VideoController extends Controller
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
-        $video = $this->videoManager->updateVideo($video, $request->only(['title', 'description']));
+        $data = $request->only(['title', 'description', 'is_public']);
+
+        if ($request->has('archived')) {
+            $data['archived_at'] = $request->boolean('archived') ? now() : null;
+        }
+
+        $video = $this->videoManager->updateVideo($video, $data);
 
         return response()->json([
             'message' => 'Video updated successfully',
@@ -174,6 +182,8 @@ class VideoController extends Controller
                 'id' => $video->id,
                 'title' => $video->title,
                 'description' => $video->description,
+                'is_public' => $video->is_public,
+                'archived_at' => $video->archived_at?->toISOString(),
                 'updated_at' => $video->updated_at->toISOString(),
             ],
         ]);

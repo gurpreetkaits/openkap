@@ -50,6 +50,10 @@
       <!-- Navigation -->
       <nav class="h-14 border-b border-gray-200/60 bg-white/90 backdrop-blur-md flex items-center justify-between px-5 z-50 sticky top-0 flex-shrink-0">
         <div class="flex items-center gap-2">
+          <router-link to="/videos" class="flex items-center gap-1.5 hover:opacity-80 transition-opacity">
+            <img :src="branding.logoUrl.value || '/logo.png'" alt="OpenKap" class="w-6 h-6 rounded-md" />
+            <span class="text-xs font-semibold text-gray-900">OpenKap</span>
+          </router-link>
           <!-- Zoom Status Badge -->
           <div v-if="video.zoom_enabled">
             <span
@@ -1292,6 +1296,7 @@
 import { ref, onMounted, onUnmounted, computed, watch, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuth } from '@/stores/auth'
+import { useBranding } from '@/composables/useBranding'
 import videoService from '@/services/videoService'
 import integrationService from '@/services/integrationService'
 import SBDeleteModal from '@/components/Global/SBDeleteModal.vue'
@@ -1311,6 +1316,7 @@ export default {
   setup() {
     const route = useRoute()
     const auth = useAuth()
+    const branding = useBranding()
     const isAuthenticated = computed(() => auth.isAuthenticated.value)
     const currentUser = computed(() => auth.user.value)
     const userInitial = computed(() => (currentUser.value?.name || 'U').charAt(0).toUpperCase())
@@ -2060,25 +2066,26 @@ export default {
     }
 
     const downloadVideo = async () => {
-      if (!video.value.url) return
+      if (!video.value.id) return
 
       try {
-        showToast('Starting download...')
+        showToast('Preparing download...')
 
-        // Fetch the video as a blob
-        const response = await fetch(video.value.url)
-        const blob = await response.blob()
+        const result = await videoService.requestDownloadMp4(video.value.id)
 
-        // Create a blob URL and trigger download
-        const blobUrl = window.URL.createObjectURL(blob)
+        if (result.mode === 'async') {
+          showToast('Video is being prepared for download. This may take a moment.')
+          return
+        }
+
+        // Sync mode - we have the blob directly
+        const blobUrl = window.URL.createObjectURL(result.blob)
         const link = document.createElement('a')
         link.href = blobUrl
         link.download = `${video.value.title || 'video'}.mp4`
         document.body.appendChild(link)
         link.click()
         document.body.removeChild(link)
-
-        // Clean up the blob URL
         window.URL.revokeObjectURL(blobUrl)
 
         showToast('Download complete!')
@@ -2189,7 +2196,8 @@ export default {
 
     const handleMakePrivate = async () => {
       try {
-        await videoService.updateVideo(video.value.id, { is_private: true })
+        await videoService.updateVideo(video.value.id, { is_public: false })
+        video.value.is_public = false
         showToast('Video is now private')
       } catch (err) {
         console.error('Failed to make private:', err)
@@ -2201,7 +2209,9 @@ export default {
       try {
         await videoService.updateVideo(video.value.id, { archived: true })
         showToast('Video archived')
-        window.location.href = import.meta.env.BASE_URL + 'videos'
+        setTimeout(() => {
+          window.location.href = import.meta.env.BASE_URL + 'videos'
+        }, 500)
       } catch (err) {
         console.error('Failed to archive:', err)
         showToast('Failed to archive video')
@@ -2538,6 +2548,9 @@ export default {
     }
 
     onMounted(async () => {
+      if (!branding.loaded.value) {
+        branding.loadBranding()
+      }
       await fetchVideo()
       await loadComments()
       await loadTranscriptionData()
@@ -2566,7 +2579,7 @@ export default {
     })
 
     return {
-      isAuthenticated, currentUser, userInitial,
+      branding, isAuthenticated, currentUser, userInitial,
       video, loading, error, videoRef, progressBar, speedMenuRef, playerContainer,
       isPlaying, isBuffering, videoLoading, isMuted, isFullscreen, volume, currentTime, duration,
       bufferedPercent, progressPercent, playbackSpeed, controlsVisible, hoverTime,

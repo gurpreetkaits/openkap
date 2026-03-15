@@ -16,6 +16,7 @@ class VideoRepository extends BaseRepository
     {
         return Video::with('media')
             ->where('user_id', $userId)
+            ->whereNull('archived_at')
             ->latest()
             ->withCount(['views', 'comments', 'reactions'])
             ->get();
