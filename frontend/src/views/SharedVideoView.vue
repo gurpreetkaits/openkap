@@ -253,15 +253,15 @@
                 aspectRatio: isFullscreen ? 'auto' : '16 / 9',
                 maxHeight: isFullscreen ? 'none' : 'calc(100vh - 180px)',
                 maxWidth: isFullscreen ? 'none' : 'calc((100vh - 180px) * 16 / 9)',
-                ...(video.thumbnail && !isFullscreen ? { backgroundImage: `url(${video.thumbnail})`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' } : {})
               }"
               ref="playerContainer"
               @mousemove="showControls"
               @mouseleave="hideControlsDelayed"
             >
 
-              <!-- Blurred thumbnail backdrop -->
-              <div v-if="video.thumbnail && !isFullscreen" class="absolute inset-0 z-0 backdrop-blur-xl bg-black/40"></div>
+              <!-- Blurred thumbnail backdrop (behind video, visible only in aspect-ratio gaps) -->
+              <div v-if="video.thumbnail && !isFullscreen" class="absolute inset-0 z-0 scale-110 blur-2xl" :style="{ backgroundImage: `url(${video.thumbnail})`, backgroundSize: 'cover', backgroundPosition: 'center' }"></div>
+              <div v-if="video.thumbnail && !isFullscreen" class="absolute inset-0 z-0 bg-black/50"></div>
 
               <!-- Video Loading Text -->
               <div v-if="videoLoading" class="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
@@ -284,7 +284,7 @@
 
               <video
                 ref="videoRef"
-                class="w-full h-full object-contain"
+                class="w-full h-full object-contain relative z-[1]"
                 :poster="video.thumbnail"
                 preload="metadata"
                 crossorigin="anonymous"
