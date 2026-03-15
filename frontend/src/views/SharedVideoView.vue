@@ -253,7 +253,6 @@
                 aspectRatio: isFullscreen ? 'auto' : '16 / 9',
                 maxHeight: isFullscreen ? 'none' : 'calc(100vh - 180px)',
                 maxWidth: isFullscreen ? 'none' : 'calc((100vh - 180px) * 16 / 9)',
-                ...(video.thumbnail && !isFullscreen ? { backgroundImage: `url(${video.thumbnail})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {})
               }"
               ref="playerContainer"
               @mousemove="showControls"
