@@ -2,18 +2,6 @@
   <div class="animate-fade-in">
     <!-- Action Bar -->
     <div class="flex items-center gap-3 mb-6 pb-6 border-b border-gray-100">
-      <!-- Record Without Extension Button -->
-      <button
-        v-if="activeTab !== 'screenshots'"
-        @click="openRecording"
-        class="inline-flex items-center gap-2 px-4 py-2 bg-white text-gray-700 text-sm font-medium rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors"
-      >
-        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-          <circle cx="10" cy="10" r="6"/>
-        </svg>
-        Record Without Extension
-      </button>
-
       <button
         v-if="activeTab !== 'screenshots'"
         @click="showNewFolderModal = true"

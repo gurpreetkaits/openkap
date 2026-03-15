@@ -766,7 +766,11 @@ export default {
     })
 
     const handleNewRecording = () => {
-      recording.openSetupPanel()
+      if (document.documentElement.hasAttribute('data-screensense-extension')) {
+        window.dispatchEvent(new CustomEvent('screensense:new-recording'))
+      } else {
+        window.open(extensionStoreUrl, '_blank')
+      }
     }
 
     const handleLogin = () => {
