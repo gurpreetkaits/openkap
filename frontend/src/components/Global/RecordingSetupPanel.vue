@@ -272,7 +272,7 @@
 
               <!-- Extension info message -->
               <a
-                href="https://chromewebstore.google.com/detail/screensense/nnchnlkilgfemhpcohmgdpcmkjedjkfm"
+                href="https://chromewebstore.google.com/detail/openkap/nnchnlkilgfemhpcohmgdpcmkjedjkfm"
                 target="_blank"
                 class="flex items-center gap-2 p-2.5 bg-blue-50 border border-blue-100 rounded-lg hover:bg-blue-100 transition-colors"
               >
@@ -372,7 +372,7 @@ const showDeleteConfirm = ref(false);
 const cardElement = ref(null);
 
 // Card position (draggable)
-const POSITION_KEY = 'screensense_card_position';
+const POSITION_KEY = 'openkap_card_position';
 const cardPosition = ref({
   x: window.innerWidth - 340 - 24, // Default: right side
   y: 96 // Default: top

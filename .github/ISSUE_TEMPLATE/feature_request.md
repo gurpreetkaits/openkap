@@ -1,6 +1,6 @@
 ---
 name: Feature Request
-about: Suggest an idea for ScreenSense
+about: Suggest an idea for OpenKap
 title: '[FEATURE] '
 labels: enhancement
 assignees: ''

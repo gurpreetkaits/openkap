@@ -691,7 +691,7 @@ export default {
     const activeNotificationTab = ref('all')
     const extensionInstalled = ref(false)
     const showExtensionModal = ref(false)
-    const extensionStoreUrl = 'https://chromewebstore.google.com/detail/screensense/nnchnlkilgfemhpcohmgdpcmkjedjkfm'
+    const extensionStoreUrl = 'https://chromewebstore.google.com/detail/openkap/nnchnlkilgfemhpcohmgdpcmkjedjkfm'
     let pollInterval = null
 
     // Notification tabs (matching backend types)
@@ -766,8 +766,8 @@ export default {
     })
 
     const handleNewRecording = () => {
-      if (document.documentElement.hasAttribute('data-screensense-extension')) {
-        window.dispatchEvent(new CustomEvent('screensense:new-recording'))
+      if (document.documentElement.hasAttribute('data-openkap-extension')) {
+        window.dispatchEvent(new CustomEvent('openkap:new-recording'))
       } else {
         window.open(extensionStoreUrl, '_blank')
       }
@@ -950,12 +950,12 @@ export default {
       }
       document.addEventListener('click', handleClickOutside)
 
-      // Detect if ScreenSense extension is installed
-      window.addEventListener('screensense:extension:ready', () => {
+      // Detect if OpenKap extension is installed
+      window.addEventListener('openkap:extension:ready', () => {
         extensionInstalled.value = true
       })
       // Extension may have already loaded before mount — check DOM attribute
-      if (document.documentElement.hasAttribute('data-screensense-extension')) {
+      if (document.documentElement.hasAttribute('data-openkap-extension')) {
         extensionInstalled.value = true
       }
     })

@@ -10,7 +10,7 @@
 
 cd "$(dirname "$0")"
 
-CONTAINER="screensense-app"
+CONTAINER="openkap-app"
 
 # Check if Docker is running
 if ! docker ps &> /dev/null; then

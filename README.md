@@ -1,12 +1,12 @@
-# ScreenSense
+# OpenKap
 
 > Screen recording and sharing made simple. Record, share, and collaborate with instant shareable links.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Laravel](https://img.shields.io/badge/Laravel-12-red.svg)](https://laravel.com)
-## What is ScreenSense?
+## What is OpenKap?
 
-ScreenSense is an open-source screen recording and sharing platform that makes it easy to capture your screen, automatically generate shareable links, and collaborate with your team. Built with modern web technologies, it provides a seamless recording experience with instant sharing capabilities.
+OpenKap is an open-source screen recording and sharing platform that makes it easy to capture your screen, automatically generate shareable links, and collaborate with your team. Built with modern web technologies, it provides a seamless recording experience with instant sharing capabilities.
 
 ### Key Features
 
@@ -59,8 +59,8 @@ _Coming soon_
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/screensense.git
-   cd screensense
+   git clone https://github.com/yourusername/openkap.git
+   cd openkap
    ```
 
 2. **Install backend dependencies**
@@ -84,7 +84,7 @@ _Coming soon_
 5. **Update `.env` with your database credentials**
    ```env
    DB_CONNECTION=mariadb
-   DB_DATABASE=screensense
+   DB_DATABASE=openkap
    DB_USERNAME=your_username
    DB_PASSWORD=your_password
    ```
@@ -150,7 +150,7 @@ FFPROBE_BINARIES=/path/to/ffprobe
 
 ## Docker Setup (Recommended)
 
-The easiest way to run ScreenSense is with Docker. No need to install PHP, Node, MariaDB, or FFmpeg manually.
+The easiest way to run OpenKap is with Docker. No need to install PHP, Node, MariaDB, or FFmpeg manually.
 
 ### Prerequisites
 
@@ -160,8 +160,8 @@ The easiest way to run ScreenSense is with Docker. No need to install PHP, Node,
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/screensense.git
-cd screensense
+git clone https://github.com/yourusername/openkap.git
+cd openkap
 
 # Copy Docker environment file
 cp .env.docker .env
@@ -298,14 +298,14 @@ If you discover a security vulnerability, please review our [Security Policy](SE
 
 ## Business Model
 
-ScreenSense is **open-source software** with an optional commercial subscription service. The entire codebase is available under the MIT License, allowing you to:
+OpenKap is **open-source software** with an optional commercial subscription service. The entire codebase is available under the MIT License, allowing you to:
 
 - Use it for free
 - Modify it for your needs
 - Self-host your own instance
 - Contribute improvements back
 
-We offer a **hosted subscription service** at [screensense.com](https://screensense.com) with premium features:
+We offer a **hosted subscription service** at [openkap.com](https://openkap.com) with premium features:
 - Unlimited storage
 - Advanced analytics
 - Priority support
@@ -316,14 +316,14 @@ This model is similar to other successful open-source projects like GitLab, Ghos
 
 ## License
 
-ScreenSense is open-source software licensed under the [MIT License](LICENSE).
+OpenKap is open-source software licensed under the [MIT License](LICENSE).
 
 ## Support
 
 - **Documentation**: Check our [docs](./docs) folder
-- **Issues**: [GitHub Issues](https://github.com/yourusername/screensense/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/yourusername/screensense/discussions)
-- **Email**: support@screensense.com
+- **Issues**: [GitHub Issues](https://github.com/yourusername/openkap/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/yourusername/openkap/discussions)
+- **Email**: support@openkap.com
 
 ## Acknowledgments
 
@@ -345,4 +345,4 @@ Built with amazing open-source technologies:
 
 ---
 
-**Made with ❤️ by the ScreenSense community**
+**Made with ❤️ by the OpenKap community**

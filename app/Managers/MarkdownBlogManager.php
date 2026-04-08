@@ -147,7 +147,7 @@ class MarkdownBlogManager
             content: $htmlContent,
             rawContent: $rawContent,
             excerpt: $excerpt,
-            author: $frontMatter['author'] ?? 'ScreenSense Team',
+            author: $frontMatter['author'] ?? 'OpenKap Team',
             category: $frontMatter['category'] ?? null,
             tags: $frontMatter['tags'] ?? [],
             featuredImage: $frontMatter['featured_image'] ?? null,

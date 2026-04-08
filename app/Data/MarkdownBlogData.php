@@ -15,7 +15,7 @@ class MarkdownBlogData extends Data
         public string $content,
         public string $rawContent,
         public ?string $excerpt = null,
-        public string $author = 'ScreenSense Team',
+        public string $author = 'OpenKap Team',
         public ?string $category = null,
         /** @var string[] */
         public array $tags = [],

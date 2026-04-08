@@ -1,4 +1,4 @@
-# ScreenSense Browser Extension
+# OpenKap Browser Extension
 
 A Loom-like screen recording extension for Chrome/Edge that lets you record your screen with camera and microphone.
 
@@ -23,19 +23,19 @@ A Loom-like screen recording extension for Chrome/Edge that lets you record your
 
 4. Select the `extension` folder from this project
 
-5. The ScreenSense extension icon should appear in your browser toolbar
+5. The OpenKap extension icon should appear in your browser toolbar
 
 ### Pin the Extension
 
 - Click the puzzle icon in your browser toolbar
-- Find "ScreenSense - Screen Recorder"
+- Find "OpenKap - Screen Recorder"
 - Click the pin icon to keep it visible
 
 ## Usage
 
 ### Starting a Recording
 
-1. Click the ScreenSense icon in your browser toolbar
+1. Click the OpenKap icon in your browser toolbar
 
 2. Choose your recording options:
    - **Screen**: Record your screen (required)
@@ -135,7 +135,7 @@ extension/
 
 1. Make your changes to the code
 2. Go to `chrome://extensions/`
-3. Click the refresh icon on the ScreenSense extension
+3. Click the refresh icon on the OpenKap extension
 4. Test the changes
 
 ## Known Issues

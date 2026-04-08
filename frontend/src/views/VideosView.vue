@@ -2163,10 +2163,10 @@ export default {
         return
       }
       // Trigger extension recording popup
-      if (document.documentElement.hasAttribute('data-screensense-extension')) {
-        window.dispatchEvent(new CustomEvent('screensense:new-recording'))
+      if (document.documentElement.hasAttribute('data-openkap-extension')) {
+        window.dispatchEvent(new CustomEvent('openkap:new-recording'))
       } else {
-        window.open('https://chromewebstore.google.com/detail/screensense/nnchnlkilgfemhpcohmgdpcmkjedjkfm', '_blank')
+        window.open('https://chromewebstore.google.com/detail/openkap/nnchnlkilgfemhpcohmgdpcmkjedjkfm', '_blank')
       }
     }
 

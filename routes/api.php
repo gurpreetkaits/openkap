@@ -58,7 +58,7 @@ Route::prefix('auth')->middleware('throttle:10,1')->group(function () {
 // Test route to verify API is working
 Route::get('/test', function () {
     return response()->json([
-        'message' => 'ScreenSense API is working!',
+        'message' => 'OpenKap API is working!',
         'timestamp' => now(),
     ]);
 });

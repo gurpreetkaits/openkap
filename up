@@ -6,7 +6,7 @@ echo "Starting ScreenBuddy..."
 
 # Clean start
 docker compose down 2>/dev/null
-docker ps -aq --filter "name=screensense" | xargs -r docker rm -f 2>/dev/null
+docker ps -aq --filter "name=openkap" | xargs -r docker rm -f 2>/dev/null
 
 # Build and start (healthchecks handle readiness)
 docker compose up -d --build --wait

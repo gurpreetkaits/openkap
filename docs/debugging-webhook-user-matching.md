@@ -206,10 +206,10 @@ Log::info('Creating checkout for user', [
 
 ```bash
 # 1. Check if subscriptions are going to user 1
-mysql -u root screensense -e "SELECT id, email, polar_subscription_id FROM users WHERE polar_subscription_id IS NOT NULL;"
+mysql -u root openkap -e "SELECT id, email, polar_subscription_id FROM users WHERE polar_subscription_id IS NOT NULL;"
 
 # 2. Check subscription history
-mysql -u root screensense -e "SELECT user_id, event_type, polar_subscription_id, created_at FROM subscription_history ORDER BY created_at DESC LIMIT 10;"
+mysql -u root openkap -e "SELECT user_id, event_type, polar_subscription_id, created_at FROM subscription_history ORDER BY created_at DESC LIMIT 10;"
 
 # 3. Check recent webhook logs
 grep "subscription.created" storage/logs/laravel.log | tail -1

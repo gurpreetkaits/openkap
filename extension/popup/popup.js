@@ -1,16 +1,16 @@
-// ScreenSense Extension Popup
-// SCREENSENSE_URL is loaded from config.js
+// OpenKap Extension Popup
+// OPENKAP_URL is loaded from config.js
 
-// Helper to check if a URL is a ScreenSense URL
-function isScreenSenseUrl(url) {
+// Helper to check if a URL is a OpenKap URL
+function isOpenKapUrl(url) {
   if (!url) return false;
   return url.includes('localhost:5173') ||
          url.includes('localhost:8000') ||
-         url.includes('screensense.in');
+         url.includes('openkap.in');
 }
 
 function isRecordPage(url) {
-  return isScreenSenseUrl(url) && url.includes('/record');
+  return isOpenKapUrl(url) && url.includes('/record');
 }
 
 // UI Elements
@@ -103,7 +103,7 @@ async function saveOptions() {
 // Start Recording - Opens record page and triggers auto-start
 startRecordingBtn.addEventListener('click', async () => {
   // Debug: Log which URL we're using
-  console.log('SCREENSENSE_URL:', SCREENSENSE_URL);
+  console.log('OPENKAP_URL:', OPENKAP_URL);
   console.log('ENV:', typeof ENV !== 'undefined' ? ENV : 'undefined');
 
   // Save current options
@@ -118,7 +118,7 @@ startRecordingBtn.addEventListener('click', async () => {
     }
   });
 
-  // Find if ScreenSense record tab is already open
+  // Find if OpenKap record tab is already open
   const tabs = await chrome.tabs.query({});
   let recordTab = tabs.find(tab => isRecordPage(tab.url));
 
@@ -138,19 +138,19 @@ startRecordingBtn.addEventListener('click', async () => {
       });
     }, 100);
   } else {
-    // Check if any ScreenSense tab is open
-    let screensenseTab = tabs.find(tab => isScreenSenseUrl(tab.url));
+    // Check if any OpenKap tab is open
+    let openkapTab = tabs.find(tab => isOpenKapUrl(tab.url));
 
-    if (screensenseTab) {
+    if (openkapTab) {
       // Navigate existing tab to record page
-      await chrome.tabs.update(screensenseTab.id, {
+      await chrome.tabs.update(openkapTab.id, {
         active: true,
-        url: SCREENSENSE_URL + '/record?autostart=true'
+        url: OPENKAP_URL + '/record?autostart=true'
       });
-      await chrome.windows.update(screensenseTab.windowId, { focused: true });
+      await chrome.windows.update(openkapTab.windowId, { focused: true });
     } else {
       // Open new tab with record page
-      await chrome.tabs.create({ url: SCREENSENSE_URL + '/record?autostart=true' });
+      await chrome.tabs.create({ url: OPENKAP_URL + '/record?autostart=true' });
     }
   }
 
@@ -161,13 +161,13 @@ startRecordingBtn.addEventListener('click', async () => {
 // Open App Button
 openAppBtn.addEventListener('click', async () => {
   const tabs = await chrome.tabs.query({});
-  let screensenseTab = tabs.find(tab => isScreenSenseUrl(tab.url));
+  let openkapTab = tabs.find(tab => isOpenKapUrl(tab.url));
 
-  if (screensenseTab) {
-    await chrome.tabs.update(screensenseTab.id, { active: true });
-    await chrome.windows.update(screensenseTab.windowId, { focused: true });
+  if (openkapTab) {
+    await chrome.tabs.update(openkapTab.id, { active: true });
+    await chrome.windows.update(openkapTab.windowId, { focused: true });
   } else {
-    await chrome.tabs.create({ url: SCREENSENSE_URL });
+    await chrome.tabs.create({ url: OPENKAP_URL });
   }
 
   window.close();
@@ -197,15 +197,15 @@ stopRecordingBtn.addEventListener('click', () => {
     if (response && response.success) {
       stopTimer();
 
-      // Redirect to ScreenSense to see the video
+      // Redirect to OpenKap to see the video
       const tabs = await chrome.tabs.query({});
-      let screensenseTab = tabs.find(tab => isScreenSenseUrl(tab.url));
+      let openkapTab = tabs.find(tab => isOpenKapUrl(tab.url));
 
-      if (screensenseTab) {
-        await chrome.tabs.update(screensenseTab.id, { active: true, url: SCREENSENSE_URL + '/videos' });
-        await chrome.windows.update(screensenseTab.windowId, { focused: true });
+      if (openkapTab) {
+        await chrome.tabs.update(openkapTab.id, { active: true, url: OPENKAP_URL + '/videos' });
+        await chrome.windows.update(openkapTab.windowId, { focused: true });
       } else {
-        await chrome.tabs.create({ url: SCREENSENSE_URL + '/videos' });
+        await chrome.tabs.create({ url: OPENKAP_URL + '/videos' });
       }
 
       window.close();

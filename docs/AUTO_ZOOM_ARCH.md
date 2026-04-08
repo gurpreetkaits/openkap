@@ -1,4 +1,4 @@
-# Auto-Zoom & Pan Architecture - ScreenSense Design Doc
+# Auto-Zoom & Pan Architecture - OpenKap Design Doc
 
 ## 1. Overview
 The goal is to replicate the "Screen Studio" effect where the camera smoothy follows the mouse cursor and zooms in on clicks or typing, making the video feel professional and mobile-friendly.

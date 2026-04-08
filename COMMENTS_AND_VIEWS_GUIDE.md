@@ -1,4 +1,4 @@
-# Comments & Views Tracking - ScreenSense
+# Comments & Views Tracking - OpenKap
 
 ## ✅ Implementation Complete
 

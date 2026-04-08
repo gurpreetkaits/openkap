@@ -1,7 +1,7 @@
 # PRD: Workspaces & Team Plans
 
 **Version:** 1.0
-**Author:** ScreenSense Team
+**Author:** OpenKap Team
 **Date:** January 2026
 **Status:** In Development
 
@@ -10,7 +10,7 @@
 ## 1. Executive Summary
 
 ### Problem
-ScreenSense currently only supports individual users. Small teams (startups, agencies, small businesses) want to:
+OpenKap currently only supports individual users. Small teams (startups, agencies, small businesses) want to:
 - Share recordings with teammates
 - Collaborate on video content
 - Manage team access centrally
@@ -571,13 +571,13 @@ frontend/src/
 
 ### Invitation Email
 ```
-Subject: Join {workspace_name} on ScreenSense
+Subject: Join {workspace_name} on OpenKap
 
 Hi,
 
-{inviter_name} has invited you to join {workspace_name} on ScreenSense.
+{inviter_name} has invited you to join {workspace_name} on OpenKap.
 
-ScreenSense is a screen recording tool that helps teams share knowledge
+OpenKap is a screen recording tool that helps teams share knowledge
 through video.
 
 [Accept Invitation]
@@ -585,7 +585,7 @@ through video.
 This invitation expires in 7 days.
 
 ---
-ScreenSense
+OpenKap
 ```
 
 ### Welcome to Team Email
@@ -594,7 +594,7 @@ Subject: Welcome to {workspace_name}!
 
 Hi {user_name},
 
-You're now part of {workspace_name} on ScreenSense!
+You're now part of {workspace_name} on OpenKap!
 
 You can now:
 - Record and share videos with your team
@@ -604,7 +604,7 @@ You can now:
 [Go to Workspace]
 
 ---
-ScreenSense
+OpenKap
 ```
 
 ---
@@ -613,19 +613,19 @@ ScreenSense
 
 ### Products to Create in Polar
 
-1. **ScreenSense Team (Monthly)**
+1. **OpenKap Team (Monthly)**
    - Price: $39/month
    - Product ID: Store in `POLAR_TEAM_PRODUCT_ID_MONTHLY`
 
-2. **ScreenSense Team (Yearly)**
+2. **OpenKap Team (Yearly)**
    - Price: $390/year
    - Product ID: Store in `POLAR_TEAM_PRODUCT_ID_YEARLY`
 
-3. **ScreenSense Team Plus (Monthly)**
+3. **OpenKap Team Plus (Monthly)**
    - Price: $69/month
    - Product ID: Store in `POLAR_TEAM_PLUS_PRODUCT_ID_MONTHLY`
 
-4. **ScreenSense Team Plus (Yearly)**
+4. **OpenKap Team Plus (Yearly)**
    - Price: $690/year
    - Product ID: Store in `POLAR_TEAM_PLUS_PRODUCT_ID_YEARLY`
 

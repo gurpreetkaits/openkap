@@ -1,22 +1,22 @@
 ---
-title: "Getting Started with ScreenSense"
-slug: "getting-started-with-screensense"
-excerpt: "Learn how to create your first screen recording with ScreenSense in just a few minutes. This guide covers everything you need to know to get started."
-author: "ScreenSense Team"
+title: "Getting Started with OpenKap"
+slug: "getting-started-with-openkap"
+excerpt: "Learn how to create your first screen recording with OpenKap in just a few minutes. This guide covers everything you need to know to get started."
+author: "OpenKap Team"
 category: "Guides"
 tags:
     - getting-started
     - tutorials
     - screen-recording
 featured_image: null
-meta_title: "Getting Started with ScreenSense | Screen Recording Guide"
-meta_description: "A complete guide to creating your first screen recording with ScreenSense. Learn the basics and start recording in minutes."
+meta_title: "Getting Started with OpenKap | Screen Recording Guide"
+meta_description: "A complete guide to creating your first screen recording with OpenKap. Learn the basics and start recording in minutes."
 read_time: 3
 is_published: true
 published_at: "2025-01-01 10:00:00"
 ---
 
-Welcome to ScreenSense! This guide will help you create your first screen recording and share it with your team.
+Welcome to OpenKap! This guide will help you create your first screen recording and share it with your team.
 
 ## Why Screen Recording?
 
@@ -29,9 +29,9 @@ Screen recordings are one of the most effective ways to communicate complex idea
 
 A quick screen recording can save hours of back-and-forth communication.
 
-## Step 1: Log In to ScreenSense
+## Step 1: Log In to OpenKap
 
-Navigate to the ScreenSense application and log in with your Google account. We use Google OAuth for secure, passwordless authentication.
+Navigate to the OpenKap application and log in with your Google account. We use Google OAuth for secure, passwordless authentication.
 
 ## Step 2: Start Recording
 

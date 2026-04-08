@@ -658,7 +658,7 @@ export default {
 
       // Listen for auto-start message from extension content script
       window.addEventListener('message', (event) => {
-        if (event.data?.type === 'SCREENSENSE_AUTO_START') {
+        if (event.data?.type === 'OPENKAP_AUTO_START') {
           // Auto-start message received from extension
           if (event.data.options) {
             recordingOptions.value.microphone = event.data.options.microphone !== false

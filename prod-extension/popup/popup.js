@@ -1,5 +1,5 @@
-// ScreenSense Extension Popup - Production
-const SCREENSENSE_URL = 'https://record.gurpreetkait.in';
+// OpenKap Extension Popup - Production
+const OPENKAP_URL = 'https://record.gurpreetkait.in';
 
 // UI Elements
 const setupView = document.getElementById('setupView');
@@ -33,24 +33,24 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 // Start Recording - Opens website and shows panel
 startRecordingBtn.addEventListener('click', async () => {
-  // Find if ScreenSense tab is already open
+  // Find if OpenKap tab is already open
   const tabs = await chrome.tabs.query({});
-  let screensenseTab = tabs.find(tab =>
+  let openkapTab = tabs.find(tab =>
     tab.url && tab.url.includes('record.gurpreetkait.in')
   );
 
-  if (screensenseTab) {
+  if (openkapTab) {
     // Focus the existing tab and show panel
-    await chrome.tabs.update(screensenseTab.id, { active: true });
-    await chrome.windows.update(screensenseTab.windowId, { focused: true });
+    await chrome.tabs.update(openkapTab.id, { active: true });
+    await chrome.windows.update(openkapTab.windowId, { focused: true });
 
     // Small delay to ensure tab is focused, then show panel
     setTimeout(() => {
-      chrome.tabs.sendMessage(screensenseTab.id, { action: 'showRecordingPanel' });
+      chrome.tabs.sendMessage(openkapTab.id, { action: 'showRecordingPanel' });
     }, 100);
   } else {
-    // Open new tab with ScreenSense
-    const newTab = await chrome.tabs.create({ url: SCREENSENSE_URL });
+    // Open new tab with OpenKap
+    const newTab = await chrome.tabs.create({ url: OPENKAP_URL });
 
     // Wait for page to load, then show panel
     chrome.tabs.onUpdated.addListener(function listener(tabId, info) {
@@ -70,15 +70,15 @@ startRecordingBtn.addEventListener('click', async () => {
 // Open App Button
 openAppBtn.addEventListener('click', async () => {
   const tabs = await chrome.tabs.query({});
-  let screensenseTab = tabs.find(tab =>
+  let openkapTab = tabs.find(tab =>
     tab.url && tab.url.includes('record.gurpreetkait.in')
   );
 
-  if (screensenseTab) {
-    await chrome.tabs.update(screensenseTab.id, { active: true });
-    await chrome.windows.update(screensenseTab.windowId, { focused: true });
+  if (openkapTab) {
+    await chrome.tabs.update(openkapTab.id, { active: true });
+    await chrome.windows.update(openkapTab.windowId, { focused: true });
   } else {
-    await chrome.tabs.create({ url: SCREENSENSE_URL });
+    await chrome.tabs.create({ url: OPENKAP_URL });
   }
 
   window.close();
@@ -108,17 +108,17 @@ stopRecordingBtn.addEventListener('click', () => {
     if (response && response.success) {
       stopTimer();
 
-      // Redirect to ScreenSense to see the video
+      // Redirect to OpenKap to see the video
       const tabs = await chrome.tabs.query({});
-      let screensenseTab = tabs.find(tab =>
+      let openkapTab = tabs.find(tab =>
         tab.url && tab.url.includes('record.gurpreetkait.in')
       );
 
-      if (screensenseTab) {
-        await chrome.tabs.update(screensenseTab.id, { active: true, url: SCREENSENSE_URL + '/videos' });
-        await chrome.windows.update(screensenseTab.windowId, { focused: true });
+      if (openkapTab) {
+        await chrome.tabs.update(openkapTab.id, { active: true, url: OPENKAP_URL + '/videos' });
+        await chrome.windows.update(openkapTab.windowId, { focused: true });
       } else {
-        await chrome.tabs.create({ url: SCREENSENSE_URL + '/videos' });
+        await chrome.tabs.create({ url: OPENKAP_URL + '/videos' });
       }
 
       window.close();

@@ -8,6 +8,6 @@
   <rect width="1280" height="720" fill="url(#bg)"/>
   <circle cx="640" cy="320" r="80" fill="#f97316"/>
   <polygon points="620,280 620,360 680,320" fill="white"/>
-  <text x="640" y="450" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="32" font-weight="600" fill="white">ScreenSense</text>
+  <text x="640" y="450" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="32" font-weight="600" fill="white">OpenKap</text>
   <text x="640" y="490" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="20" fill="#9ca3af">Screen Recording</text>
 </svg>

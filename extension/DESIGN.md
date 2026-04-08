@@ -1,4 +1,4 @@
-# ScreenSense Extension - Minimal Design
+# OpenKap Extension - Minimal Design
 
 ## Design Inspiration
 Inspired by Percam's clean, minimal interface with focus on simplicity and ease of use.

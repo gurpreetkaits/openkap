@@ -1,6 +1,6 @@
-# Contributing to ScreenSense
+# Contributing to OpenKap
 
-First off, thank you for considering contributing to ScreenSense! It's people like you that make ScreenSense such a great tool.
+First off, thank you for considering contributing to OpenKap! It's people like you that make OpenKap such a great tool.
 
 ## Code of Conduct
 
@@ -24,7 +24,7 @@ Enhancement suggestions are tracked as GitHub issues. When creating an enhanceme
 
 - **Use a clear and descriptive title**
 - **Provide a detailed description** of the suggested enhancement
-- **Explain why this enhancement would be useful** to most ScreenSense users
+- **Explain why this enhancement would be useful** to most OpenKap users
 - **List any similar features** in other tools if applicable
 
 ### Pull Requests
@@ -51,8 +51,8 @@ Enhancement suggestions are tracked as GitHub issues. When creating an enhanceme
 
 ```bash
 # Clone your fork
-git clone https://github.com/yourusername/screensense.git
-cd screensense
+git clone https://github.com/yourusername/openkap.git
+cd openkap
 
 # Install dependencies
 composer install
@@ -400,7 +400,7 @@ Releases are created automatically via GitHub Actions when a tag is pushed.
 ## Project Structure
 
 ```
-screensense/
+openkap/
 ├── app/
 │   ├── Http/
 │   │   └── Controllers/   # Handle HTTP request/response only
@@ -511,4 +511,4 @@ By contributing, you agree that your contributions will be licensed under the MI
 
 ---
 
-Thank you for contributing to ScreenSense!
+Thank you for contributing to OpenKap!

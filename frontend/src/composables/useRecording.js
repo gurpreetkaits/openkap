@@ -41,7 +41,7 @@ let audioLevelInterval = null;
 let timerInterval = null;
 
 // LocalStorage keys
-const RECORDING_STATE_KEY = 'screensense_recording_state';
+const RECORDING_STATE_KEY = 'openkap_recording_state';
 
 // Save recording state to localStorage
 const saveRecordingState = () => {

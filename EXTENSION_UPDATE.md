@@ -1,4 +1,4 @@
-# ScreenSense Extension - Updated Design
+# OpenKap Extension - Updated Design
 
 ## What Changed
 
@@ -116,7 +116,7 @@ I've completely redesigned the extension popup to match the minimal Percam-style
 
 1. **Reload Extension**:
    - Go to `chrome://extensions/`
-   - Find ScreenSense
+   - Find OpenKap
    - Click the refresh icon
 
 2. **Click Extension Icon**:

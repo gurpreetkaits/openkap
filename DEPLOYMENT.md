@@ -40,7 +40,7 @@ ffprobe -version
 
 ```bash
 # Edit .env on production server
-nano /var/www/html/screensense/.env
+nano /var/www/html/openkap/.env
 
 # Change these lines to Linux paths:
 FFMPEG_PATH=/usr/bin/ffmpeg
@@ -54,7 +54,7 @@ FFPROBE_PATH=/usr/bin/ffprobe
 ### 3️⃣ Deploy Latest Code
 
 ```bash
-cd /var/www/html/screensense
+cd /var/www/html/openkap
 
 # Pull latest code
 git pull origin master

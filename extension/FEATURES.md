@@ -1,4 +1,4 @@
-# ScreenSense Extension Features
+# OpenKap Extension Features
 
 ## Core Features
 
@@ -135,8 +135,8 @@
 - **Format**: WebM (`.webm`)
 - **Video Codec**: VP9
 - **Audio**: Opus codec
-- **Filename**: `screensense-recording-[timestamp].webm`
-- **Example**: `screensense-recording-1701234567890.webm`
+- **Filename**: `openkap-recording-[timestamp].webm`
+- **Example**: `openkap-recording-1701234567890.webm`
 
 ## Compatibility
 

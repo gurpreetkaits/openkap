@@ -1,16 +1,16 @@
 ---
 title: "Share Screen Recordings Without Requiring Viewer Accounts"
 slug: "share-videos-without-login"
-excerpt: "ScreenSense lets you share videos with anyone. Viewers can watch, react, and engage without creating an account or logging in."
-author: "ScreenSense Team"
+excerpt: "OpenKap lets you share videos with anyone. Viewers can watch, react, and engage without creating an account or logging in."
+author: "OpenKap Team"
 category: "Features"
 tags:
     - sharing
     - no-login
     - screen-recording
     - collaboration
-meta_title: "Share Screen Recordings Without Viewer Login | ScreenSense"
-meta_description: "Share ScreenSense recordings with anyone. Viewers can watch and react without accounts. Secure token-based links with optional expiration."
+meta_title: "Share Screen Recordings Without Viewer Login | OpenKap"
+meta_description: "Share OpenKap recordings with anyone. Viewers can watch and react without accounts. Secure token-based links with optional expiration."
 read_time: 3
 is_published: true
 published_at: "2025-01-03 13:00:00"
@@ -20,13 +20,13 @@ You've recorded a quick video to explain something. Now you need to share it wit
 
 The last thing you want: forcing them to create an account just to watch a 2-minute video.
 
-## How Sharing Works in ScreenSense
+## How Sharing Works in OpenKap
 
 When you finish recording, you get a shareable link instantly—before the video even finishes processing.
 
 The link looks something like:
 ```
-https://screensense.in/share/video/a8f3b2c1d4e5...
+https://openkap.in/share/video/a8f3b2c1d4e5...
 ```
 
 That 64-character token is unique to your video. Anyone with the link can watch it.

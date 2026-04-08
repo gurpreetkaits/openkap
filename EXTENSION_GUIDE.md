@@ -1,4 +1,4 @@
-# ScreenSense Browser Extension - Quick Start
+# OpenKap Browser Extension - Quick Start
 
 ## What You Get
 
@@ -17,20 +17,20 @@ A Loom-like screen recording browser extension with:
 2. Go to `chrome://extensions/` (or `edge://extensions/`)
 3. Turn on **Developer mode** (top-right toggle)
 4. Click **Load unpacked**
-5. Navigate to and select: `/Users/gurpreetkait/code/ScreenSense/extension`
+5. Navigate to and select: `/Users/gurpreetkait/code/OpenKap/extension`
 6. The extension icon should appear in your toolbar
 
 ### Step 2: Pin the Extension (Optional)
 
 - Click the puzzle piece icon in your toolbar
-- Find "ScreenSense - Screen Recorder"
+- Find "OpenKap - Screen Recorder"
 - Click the pin icon to keep it visible
 
 ## How to Use
 
 ### Start Recording
 
-1. **Click the ScreenSense icon** in your toolbar
+1. **Click the OpenKap icon** in your toolbar
 2. **Select options**:
    - ✅ Screen (captures your screen)
    - ☐ Camera (adds face bubble overlay)
@@ -60,7 +60,7 @@ A Loom-like screen recording browser extension with:
 
 ## Features Comparison with Loom
 
-| Feature | ScreenSense | Loom |
+| Feature | OpenKap | Loom |
 |---------|------------|------|
 | Screen Recording | ✅ | ✅ |
 | Camera Overlay | ✅ | ✅ |
@@ -126,7 +126,7 @@ extension/
 **Make changes:**
 1. Edit files in `/extension/` folder
 2. Go to `chrome://extensions/`
-3. Click refresh icon on ScreenSense
+3. Click refresh icon on OpenKap
 4. Test your changes
 
 **Key files:**

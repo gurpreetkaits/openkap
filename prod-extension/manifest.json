@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "ScreenSense - Screen Recorder",
+  "name": "OpenKap - Screen Recorder",
   "version": "1.0.0",
   "description": "Record your screen with camera and microphone, just like Loom. Capture, share, and collaborate instantly.",
   "permissions": [

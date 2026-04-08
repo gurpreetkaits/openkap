@@ -1,4 +1,4 @@
-# Google OAuth Authentication Setup - ScreenSense
+# Google OAuth Authentication Setup - OpenKap
 
 ## ✅ Backend Setup Complete
 
@@ -63,7 +63,7 @@ POST /api/auth/logout (requires token)
 ### **Step 1: Create OAuth Credentials**
 
 1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. Create a new project or select existing: **"ScreenSense"**
+2. Create a new project or select existing: **"OpenKap"**
 3. Enable **Google+ API**:
    - Go to **APIs & Services** → **Library**
    - Search for "Google+ API"
@@ -73,7 +73,7 @@ POST /api/auth/logout (requires token)
    - Go to **APIs & Services** → **Credentials**
    - Click **Create Credentials** → **OAuth client ID**
    - Application type: **Web application**
-   - Name: **ScreenSense Web**
+   - Name: **OpenKap Web**
 
 5. Configure **Authorized redirect URIs**:
    ```
@@ -87,7 +87,7 @@ POST /api/auth/logout (requires token)
 
 ### **Step 2: Update `.env` File**
 
-Add to `/Users/gurpreetkait/code/ScreenSense/.env`:
+Add to `/Users/gurpreetkait/code/OpenKap/.env`:
 
 ```env
 # Google OAuth

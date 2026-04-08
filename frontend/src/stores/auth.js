@@ -29,7 +29,7 @@ function initFromStorage() {
 
 // Get extension ID from DOM attribute set by content script
 function getExtensionId() {
-  return document.documentElement.getAttribute('data-screensense-extension-id')
+  return document.documentElement.getAttribute('data-openkap-extension-id')
 }
 
 // Send message to extension — prefer direct chrome.runtime.sendMessage, fall back to origin-restricted postMessage
@@ -59,7 +59,7 @@ function clearAuth() {
   localStorage.removeItem('auth_user')
 
   // Notify extension to clear auth storage
-  sendToExtension({ action: 'logout', type: 'SCREENSENSE_AUTH_LOGOUT' })
+  sendToExtension({ action: 'logout', type: 'OPENKAP_AUTH_LOGOUT' })
 }
 
 // Set authentication
@@ -70,7 +70,7 @@ function setAuth(token, user) {
   localStorage.setItem('auth_user', JSON.stringify(user))
 
   // Sync to extension storage if available
-  sendToExtension({ action: 'login', data: { token, user }, type: 'SCREENSENSE_AUTH_UPDATE', token, user })
+  sendToExtension({ action: 'login', data: { token, user }, type: 'OPENKAP_AUTH_UPDATE', token, user })
 }
 
 // Logout function

@@ -1,4 +1,4 @@
-# Video Optimization Strategy - ScreenSense
+# Video Optimization Strategy - OpenKap
 
 ## Problem: Slow Video Loading & Seeking
 

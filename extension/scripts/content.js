@@ -1,15 +1,15 @@
-// Content script for ScreenSense - handles recording and camera overlay
+// Content script for OpenKap - handles recording and camera overlay
 
 // Prevent duplicate injection using IIFE
 (function() {
   // If already loaded, just show panel if requested and exit
-  if (window.__screensenseContentScriptLoaded) {
-    console.log('ScreenSense content script already loaded');
+  if (window.__openkapContentScriptLoaded) {
+    console.log('OpenKap content script already loaded');
     // Re-register message listener to ensure it works
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       if (message.action === 'showFloatingPanel') {
-        if (typeof window.__screensenseShowPanel === 'function') {
-          window.__screensenseShowPanel();
+        if (typeof window.__openkapShowPanel === 'function') {
+          window.__openkapShowPanel();
         }
         sendResponse({ success: true });
       }
@@ -17,23 +17,23 @@
     });
     return;
   }
-  window.__screensenseContentScriptLoaded = true;
-  window.__screensenseExtensionInstalled = true;
-  console.log('ScreenSense content script loaded');
+  window.__openkapContentScriptLoaded = true;
+  window.__openkapExtensionInstalled = true;
+  console.log('OpenKap content script loaded');
 
   // Mark DOM so the page can detect extension (crosses isolation boundary)
-  document.documentElement.setAttribute('data-screensense-extension', 'true');
+  document.documentElement.setAttribute('data-openkap-extension', 'true');
 
   // Expose extension ID so the page can use chrome.runtime.sendMessage directly
-  document.documentElement.setAttribute('data-screensense-extension-id', chrome.runtime.id);
+  document.documentElement.setAttribute('data-openkap-extension-id', chrome.runtime.id);
 
   // Dispatch event to notify website that extension is installed
-  window.dispatchEvent(new CustomEvent('screensense:extension:ready', {
+  window.dispatchEvent(new CustomEvent('openkap:extension:ready', {
     detail: { version: '1.0.0' }
   }));
 
   // Listen for "New Recording" button click from the website
-  window.addEventListener('screensense:new-recording', () => {
+  window.addEventListener('openkap:new-recording', () => {
     if (typeof showFloatingRecordPanel === 'function') {
       showFloatingRecordPanel();
     }
@@ -66,12 +66,12 @@ const CONFIG = {
     API_URL: 'http://localhost:8000'
   },
   production: {
-    APP_URL: 'https://record.screensense.in',
-    API_URL: 'https://record.screensense.in'
+    APP_URL: 'https://record.openkap.in',
+    API_URL: 'https://record.openkap.in'
   }
 };
 
-const SCREENSENSE_URL = CONFIG[ENV].APP_URL;
+const OPENKAP_URL = CONFIG[ENV].APP_URL;
 const API_URL = CONFIG[ENV].API_URL;
 const IS_LOCAL = ENV === 'local';
 
@@ -79,12 +79,12 @@ const IS_LOCAL = ENV === 'local';
 // Website <-> Extension Sync
 // ============================================
 
-function isScreenSensePage() {
+function isOpenKapPage() {
   const currentOrigin = window.location.origin;
   return currentOrigin === CONFIG.local.APP_URL ||
          currentOrigin === CONFIG.production.APP_URL ||
          window.location.hostname === 'localhost' ||
-         window.location.hostname.includes('screensense.in');
+         window.location.hostname.includes('openkap.in');
 }
 
 // Check if extension context is still valid
@@ -113,7 +113,7 @@ function safeSendMessage(message, callback) {
 window.addEventListener('message', (event) => {
   if (!isExtensionContextValid()) return;
 
-  if (event.data?.type === 'SCREENSENSE_AUTH_UPDATE') {
+  if (event.data?.type === 'OPENKAP_AUTH_UPDATE') {
     const { token, user } = event.data;
     // Store in chrome.storage for cross-origin access
     try {
@@ -123,7 +123,7 @@ window.addEventListener('message', (event) => {
     } catch (e) {
       console.warn('Failed to sync auth to extension storage');
     }
-  } else if (event.data?.type === 'SCREENSENSE_AUTH_LOGOUT') {
+  } else if (event.data?.type === 'OPENKAP_AUTH_LOGOUT') {
     try {
       chrome.storage.local.remove(['auth_token', 'auth_user'], () => {
         console.log('Auth cleared from extension storage');
@@ -134,8 +134,8 @@ window.addEventListener('message', (event) => {
   }
 });
 
-// Sync auth from localStorage on ScreenSense pages
-if (isScreenSensePage() && isExtensionContextValid()) {
+// Sync auth from localStorage on OpenKap pages
+if (isOpenKapPage() && isExtensionContextValid()) {
   const token = localStorage.getItem('auth_token');
   const userStr = localStorage.getItem('auth_user');
   if (token && userStr) {
@@ -148,7 +148,7 @@ if (isScreenSensePage() && isExtensionContextValid()) {
 
 // Helper to get auth token (checks localStorage first, then chrome.storage)
 async function getAuthToken() {
-  // First try localStorage (works on ScreenSense pages)
+  // First try localStorage (works on OpenKap pages)
   const localToken = localStorage.getItem('auth_token');
   if (localToken) return localToken;
 
@@ -236,8 +236,8 @@ function clearMaxDurationTimer() {
 
 // Notify website of extension recording state
 function notifyWebsiteOfState(isRecording, isPaused = false) {
-  if (isScreenSensePage()) {
-    window.dispatchEvent(new CustomEvent('screensense:extension:state', {
+  if (isOpenKapPage()) {
+    window.dispatchEvent(new CustomEvent('openkap:extension:state', {
       detail: {
         isRecording,
         isPaused,
@@ -249,7 +249,7 @@ function notifyWebsiteOfState(isRecording, isPaused = false) {
 }
 
 // Listen for website recording state changes
-window.addEventListener('screensense:website:state', (event) => {
+window.addEventListener('openkap:website:state', (event) => {
   const state = event.detail;
   console.log('Extension received website state:', state);
 
@@ -266,13 +266,13 @@ window.addEventListener('screensense:website:state', (event) => {
 });
 
 // Listen for website requesting to show recording panel
-window.addEventListener('screensense:website:showPanel', (event) => {
+window.addEventListener('openkap:website:showPanel', (event) => {
   console.log('Extension received showPanel request');
   createRecordingPanel();
 });
 
 // Listen for website requesting to control extension recording
-window.addEventListener('screensense:website:command', (event) => {
+window.addEventListener('openkap:website:command', (event) => {
   const { command, options } = event.detail;
   console.log('Extension received website command:', command);
 
@@ -293,12 +293,12 @@ window.addEventListener('screensense:website:command', (event) => {
             }
           });
           notifyWebsiteOfState(true, false);
-          window.dispatchEvent(new CustomEvent('screensense:extension:response', {
+          window.dispatchEvent(new CustomEvent('openkap:extension:response', {
             detail: { command: 'start', success: true }
           }));
         })
         .catch((error) => {
-          window.dispatchEvent(new CustomEvent('screensense:extension:response', {
+          window.dispatchEvent(new CustomEvent('openkap:extension:response', {
             detail: { command: 'start', success: false, error: error.message }
           }));
         });
@@ -330,7 +330,7 @@ window.addEventListener('screensense:website:command', (event) => {
       break;
     case 'check':
       // Website is checking if extension is ready
-      window.dispatchEvent(new CustomEvent('screensense:extension:response', {
+      window.dispatchEvent(new CustomEvent('openkap:extension:response', {
         detail: { command: 'check', success: true, installed: true }
       }));
       break;
@@ -386,7 +386,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     case 'pauseRecording':
       // If recording is from website, send command to website
       if (websiteRecordingActive && !mediaRecorder) {
-        window.dispatchEvent(new CustomEvent('screensense:extension:command', {
+        window.dispatchEvent(new CustomEvent('openkap:extension:command', {
           detail: { command: 'pause' }
         }));
         sendResponse({ success: true });
@@ -402,7 +402,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     case 'resumeRecording':
       // If recording is from website, send command to website
       if (websiteRecordingActive && !mediaRecorder) {
-        window.dispatchEvent(new CustomEvent('screensense:extension:command', {
+        window.dispatchEvent(new CustomEvent('openkap:extension:command', {
           detail: { command: 'resume' }
         }));
         sendResponse({ success: true });
@@ -418,7 +418,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     case 'stopRecording':
       // If recording is from website (Vue app), send command to website
       if (websiteRecordingActive && !mediaRecorder) {
-        window.dispatchEvent(new CustomEvent('screensense:extension:command', {
+        window.dispatchEvent(new CustomEvent('openkap:extension:command', {
           detail: { command: 'stop' }
         }));
         websiteRecordingActive = false;
@@ -460,14 +460,14 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
     case 'autoStartRecording':
       // Triggered from extension popup - post message to website to auto-start
-      if (isScreenSensePage()) {
+      if (isOpenKapPage()) {
         window.postMessage({
-          type: 'SCREENSENSE_AUTO_START',
+          type: 'OPENKAP_AUTO_START',
           options: message.options || { camera: false, microphone: true }
         }, '*');
         sendResponse({ success: true });
       } else {
-        sendResponse({ success: false, error: 'Not on ScreenSense page' });
+        sendResponse({ success: false, error: 'Not on OpenKap page' });
       }
       break;
 
@@ -614,7 +614,7 @@ async function initRecording(options) {
 function createCameraOverlay() {
   // Create camera overlay container
   cameraOverlay = document.createElement('div');
-  cameraOverlay.id = 'screensense-camera-overlay';
+  cameraOverlay.id = 'openkap-camera-overlay';
   cameraOverlay.style.cssText = `
     position: fixed;
     bottom: 20px;
@@ -673,7 +673,7 @@ function createCameraOverlay() {
     height: 7px;
     background: white;
     border-radius: 50%;
-    animation: screensense-pulse 1.5s ease-in-out infinite;
+    animation: openkap-pulse 1.5s ease-in-out infinite;
     box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7);
   `;
 
@@ -692,7 +692,7 @@ function createCameraOverlay() {
   // Add animation
   const style = document.createElement('style');
   style.textContent = `
-    @keyframes screensense-pulse {
+    @keyframes openkap-pulse {
       0%, 100% { opacity: 1; }
       50% { opacity: 0.5; }
     }
@@ -707,7 +707,7 @@ function createControlBar() {
   }
 
   controlBar = document.createElement('div');
-  controlBar.id = 'screensense-control-bar';
+  controlBar.id = 'openkap-control-bar';
   controlBar.style.cssText = `
     position: fixed;
     top: 20px;
@@ -724,18 +724,18 @@ function createControlBar() {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     cursor: move;
     user-select: none;
-    animation: screensense-slide-down 0.3s ease-out;
+    animation: openkap-slide-down 0.3s ease-out;
   `;
 
   // Add slide-down animation
   const animStyle = document.createElement('style');
-  animStyle.id = 'screensense-control-bar-styles';
+  animStyle.id = 'openkap-control-bar-styles';
   animStyle.textContent = `
-    @keyframes screensense-slide-down {
+    @keyframes openkap-slide-down {
       from { transform: translateX(-50%) translateY(-100%); opacity: 0; }
       to { transform: translateX(-50%) translateY(0); opacity: 1; }
     }
-    @keyframes screensense-rec-pulse {
+    @keyframes openkap-rec-pulse {
       0%, 100% { opacity: 1; }
       50% { opacity: 0.4; }
     }
@@ -756,12 +756,12 @@ function createControlBar() {
       <circle cx="12" cy="12" r="10"/>
       <circle cx="12" cy="12" r="4" fill="#ea580c"/>
     </svg>
-    <span style="color: #ea580c; font-weight: 600; font-size: 13px;">ScreenSense</span>
+    <span style="color: #ea580c; font-weight: 600; font-size: 13px;">OpenKap</span>
   `;
 
   // Recording indicator with time
   const recIndicator = document.createElement('div');
-  recIndicator.id = 'screensense-rec-indicator';
+  recIndicator.id = 'openkap-rec-indicator';
   recIndicator.style.cssText = `
     display: flex;
     align-items: center;
@@ -774,14 +774,14 @@ function createControlBar() {
       height: 10px;
       background: #ef4444;
       border-radius: 50%;
-      animation: screensense-rec-pulse 1.5s ease-in-out infinite;
+      animation: openkap-rec-pulse 1.5s ease-in-out infinite;
     "></div>
-    <span id="screensense-timer" style="color: white; font-size: 14px; font-weight: 500; font-variant-numeric: tabular-nums;">00:00</span>
+    <span id="openkap-timer" style="color: white; font-size: 14px; font-weight: 500; font-variant-numeric: tabular-nums;">00:00</span>
   `;
 
   // Pause/Resume button
   const pauseBtn = document.createElement('button');
-  pauseBtn.id = 'screensense-pause-btn';
+  pauseBtn.id = 'openkap-pause-btn';
   pauseBtn.style.cssText = `
     background: rgba(255, 255, 255, 0.1);
     border: none;
@@ -795,7 +795,7 @@ function createControlBar() {
     transition: all 0.2s ease;
   `;
   pauseBtn.innerHTML = `
-    <svg id="screensense-pause-icon" width="16" height="16" viewBox="0 0 24 24" fill="white">
+    <svg id="openkap-pause-icon" width="16" height="16" viewBox="0 0 24 24" fill="white">
       <rect x="6" y="4" width="4" height="16" rx="1"/>
       <rect x="14" y="4" width="4" height="16" rx="1"/>
     </svg>
@@ -824,7 +824,7 @@ function createControlBar() {
 
   // Stop button
   const stopBtn = document.createElement('button');
-  stopBtn.id = 'screensense-stop-btn';
+  stopBtn.id = 'openkap-stop-btn';
   stopBtn.style.cssText = `
     background: #ef4444;
     border: none;
@@ -872,8 +872,8 @@ function createControlBar() {
 
 function updateControlBarPauseState(paused) {
   isPaused = paused;
-  const pauseBtn = document.getElementById('screensense-pause-btn');
-  const recDot = controlBar?.querySelector('#screensense-rec-indicator div');
+  const pauseBtn = document.getElementById('openkap-pause-btn');
+  const recDot = controlBar?.querySelector('#openkap-rec-indicator div');
 
   if (pauseBtn) {
     if (paused) {
@@ -901,7 +901,7 @@ function updateControlBarPauseState(paused) {
       recDot.style.animation = 'none';
       recDot.style.background = '#fbbf24'; // Yellow for paused
     } else {
-      recDot.style.animation = 'screensense-rec-pulse 1.5s ease-in-out infinite';
+      recDot.style.animation = 'openkap-rec-pulse 1.5s ease-in-out infinite';
       recDot.style.background = '#ef4444'; // Red for recording
     }
   }
@@ -925,7 +925,7 @@ function startControlBarTimer() {
   const updateTimer = () => {
     if (!recordingStartTime) return;
 
-    const timerEl = document.getElementById('screensense-timer');
+    const timerEl = document.getElementById('openkap-timer');
     if (timerEl) {
       const elapsed = Math.floor((Date.now() - recordingStartTime) / 1000);
       const minutes = Math.floor(elapsed / 60);
@@ -967,7 +967,7 @@ function removeControlBar() {
     controlBar.remove();
     controlBar = null;
   }
-  const styles = document.getElementById('screensense-control-bar-styles');
+  const styles = document.getElementById('openkap-control-bar-styles');
   if (styles) {
     styles.remove();
   }
@@ -983,8 +983,8 @@ async function createRecordingPanel() {
   const authToken = await getAuthToken();
   if (!authToken) {
     // Show login required message and redirect
-    alert('Please sign in to ScreenSense to record videos');
-    window.open(SCREENSENSE_URL + '/login', '_blank');
+    alert('Please sign in to OpenKap to record videos');
+    window.open(OPENKAP_URL + '/login', '_blank');
     return;
   }
 
@@ -995,7 +995,7 @@ async function createRecordingPanel() {
 
   // Create overlay backdrop
   const overlay = document.createElement('div');
-  overlay.id = 'screensense-panel-overlay';
+  overlay.id = 'openkap-panel-overlay';
   overlay.style.cssText = `
     position: fixed;
     top: 0;
@@ -1004,12 +1004,12 @@ async function createRecordingPanel() {
     height: 100%;
     background: rgba(0, 0, 0, 0.5);
     z-index: 999998;
-    animation: screensense-fade-in 0.2s ease-out;
+    animation: openkap-fade-in 0.2s ease-out;
   `;
 
   // Create panel
   recordingPanel = document.createElement('div');
-  recordingPanel.id = 'screensense-recording-panel';
+  recordingPanel.id = 'openkap-recording-panel';
   recordingPanel.style.cssText = `
     position: fixed;
     top: 50%;
@@ -1022,21 +1022,21 @@ async function createRecordingPanel() {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     width: 380px;
     overflow: hidden;
-    animation: screensense-scale-in 0.3s ease-out;
+    animation: openkap-scale-in 0.3s ease-out;
   `;
 
   // Panel content
   recordingPanel.innerHTML = `
     <style>
-      @keyframes screensense-fade-in {
+      @keyframes openkap-fade-in {
         from { opacity: 0; }
         to { opacity: 1; }
       }
-      @keyframes screensense-scale-in {
+      @keyframes openkap-scale-in {
         from { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
         to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
       }
-      #screensense-recording-panel * {
+      #openkap-recording-panel * {
         box-sizing: border-box;
       }
       .sb-option-btn {
@@ -1108,7 +1108,7 @@ async function createRecordingPanel() {
           <circle cx="12" cy="12" r="10"/>
           <circle cx="12" cy="12" r="4" fill="#ea580c"/>
         </svg>
-        <span style="font-weight: 700; font-size: 18px; color: #111827;">ScreenSense</span>
+        <span style="font-weight: 700; font-size: 18px; color: #111827;">OpenKap</span>
       </div>
       <button id="sb-close-panel" style="
         background: none;
@@ -1281,12 +1281,12 @@ async function createRecordingPanel() {
       notifyWebsiteOfState(true, false);
 
       // Notify website of successful start
-      window.dispatchEvent(new CustomEvent('screensense:extension:response', {
+      window.dispatchEvent(new CustomEvent('openkap:extension:response', {
         detail: { command: 'start', success: true }
       }));
     } catch (error) {
       console.error('Failed to start recording:', error);
-      window.dispatchEvent(new CustomEvent('screensense:extension:response', {
+      window.dispatchEvent(new CustomEvent('openkap:extension:response', {
         detail: { command: 'start', success: false, error: error.message }
       }));
     }
@@ -1504,7 +1504,7 @@ async function downloadRecording() {
   const a = document.createElement('a');
   a.style.display = 'none';
   a.href = url;
-  a.download = `screensense-recording-${Date.now()}.webm`;
+  a.download = `openkap-recording-${Date.now()}.webm`;
 
   document.body.appendChild(a);
   a.click();
@@ -1526,8 +1526,8 @@ async function uploadToBackend(blob) {
   const authToken = await getAuthToken();
   if (!authToken) {
     console.error('No auth token found - user not logged in');
-    // Redirect to ScreenSense login
-    window.location.href = SCREENSENSE_URL + '/login';
+    // Redirect to OpenKap login
+    window.location.href = OPENKAP_URL + '/login';
     throw new Error('Not authenticated');
   }
 
@@ -1575,8 +1575,8 @@ async function uploadToBackend(blob) {
   console.log('Video uploaded:', data);
 
   // Notify the page about the successful upload
-  if (isScreenSensePage()) {
-    window.dispatchEvent(new CustomEvent('screensense:extension:uploadComplete', {
+  if (isOpenKapPage()) {
+    window.dispatchEvent(new CustomEvent('openkap:extension:uploadComplete', {
       detail: {
         videoId: data.video.id,
         shareUrl: data.video.share_url,
@@ -1598,7 +1598,7 @@ async function uploadToBackend(blob) {
 function showUploadNotification(shareUrl) {
   // Create a notification overlay
   const notification = document.createElement('div');
-  notification.id = 'screensense-upload-notification';
+  notification.id = 'openkap-upload-notification';
   notification.style.cssText = `
     position: fixed;
     bottom: 20px;
@@ -1611,7 +1611,7 @@ function showUploadNotification(shareUrl) {
     z-index: 999999;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     max-width: 320px;
-    animation: screensense-slide-in 0.3s ease-out;
+    animation: openkap-slide-in 0.3s ease-out;
   `;
 
   notification.innerHTML = `
@@ -1629,10 +1629,10 @@ function showUploadNotification(shareUrl) {
         width: 100%;
         font-size: 12px;
         outline: none;
-      " id="screensense-share-url"/>
+      " id="openkap-share-url"/>
     </div>
     <div style="display: flex; gap: 8px;">
-      <button id="screensense-copy-btn" style="
+      <button id="openkap-copy-btn" style="
         flex: 1;
         background: white;
         color: #059669;
@@ -1643,7 +1643,7 @@ function showUploadNotification(shareUrl) {
         font-size: 13px;
         cursor: pointer;
       ">Copy Link</button>
-      <button id="screensense-close-btn" style="
+      <button id="openkap-close-btn" style="
         background: rgba(255,255,255,0.2);
         color: white;
         border: none;
@@ -1658,7 +1658,7 @@ function showUploadNotification(shareUrl) {
   // Add animation style
   const style = document.createElement('style');
   style.textContent = `
-    @keyframes screensense-slide-in {
+    @keyframes openkap-slide-in {
       from { transform: translateX(100%); opacity: 0; }
       to { transform: translateX(0); opacity: 1; }
     }
@@ -1668,17 +1668,17 @@ function showUploadNotification(shareUrl) {
   document.body.appendChild(notification);
 
   // Copy button handler
-  document.getElementById('screensense-copy-btn').addEventListener('click', () => {
+  document.getElementById('openkap-copy-btn').addEventListener('click', () => {
     navigator.clipboard.writeText(shareUrl).then(() => {
-      document.getElementById('screensense-copy-btn').textContent = 'Copied!';
+      document.getElementById('openkap-copy-btn').textContent = 'Copied!';
       setTimeout(() => {
-        document.getElementById('screensense-copy-btn').textContent = 'Copy Link';
+        document.getElementById('openkap-copy-btn').textContent = 'Copy Link';
       }, 2000);
     });
   });
 
   // Close button handler
-  document.getElementById('screensense-close-btn').addEventListener('click', () => {
+  document.getElementById('openkap-close-btn').addEventListener('click', () => {
     notification.remove();
   });
 
@@ -1749,12 +1749,12 @@ function showFloatingRecordPanel() {
 }
 
 // Expose globally for duplicate script handling
-window.__screensenseShowPanel = showFloatingRecordPanel;
+window.__openkapShowPanel = showFloatingRecordPanel;
 
 function createFloatingPanel(savedOptions) {
   // Create overlay to detect outside clicks
   const overlay = document.createElement('div');
-  overlay.id = 'screensense-floating-overlay';
+  overlay.id = 'openkap-floating-overlay';
   overlay.style.cssText = `
     position: fixed;
     top: 0;
@@ -1767,7 +1767,7 @@ function createFloatingPanel(savedOptions) {
 
   // Create the floating panel
   floatingPanel = document.createElement('div');
-  floatingPanel.id = 'screensense-floating-panel';
+  floatingPanel.id = 'openkap-floating-panel';
   floatingPanel.style.cssText = `
     position: fixed;
     top: 80px;
@@ -1779,16 +1779,16 @@ function createFloatingPanel(savedOptions) {
     z-index: 2147483646;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     color: white;
-    animation: screensense-panel-slide-in 0.3s ease-out;
+    animation: openkap-panel-slide-in 0.3s ease-out;
   `;
 
   floatingPanel.innerHTML = `
     <style>
-      @keyframes screensense-panel-slide-in {
+      @keyframes openkap-panel-slide-in {
         from { opacity: 0; transform: translateY(-10px) scale(0.95); }
         to { opacity: 1; transform: translateY(0) scale(1); }
       }
-      #screensense-floating-panel * {
+      #openkap-floating-panel * {
         box-sizing: border-box;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       }
@@ -1840,7 +1840,7 @@ function createFloatingPanel(savedOptions) {
           <circle cx="12" cy="12" r="10"/>
           <circle cx="12" cy="12" r="4" fill="#ea580c"/>
         </svg>
-        <span style="font-size: 16px; font-weight: 600; color: #ea580c;">ScreenSense</span>
+        <span style="font-size: 16px; font-weight: 600; color: #ea580c;">OpenKap</span>
       </div>
       <button id="ss-close-btn" style="background: none; border: none; cursor: pointer; padding: 4px; color: #9ca3af; transition: color 0.2s;">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1978,7 +1978,7 @@ function createFloatingPanel(savedOptions) {
       recordingOptions: options
     }, () => {
       // Navigate to record page
-      window.location.href = SCREENSENSE_URL + '/record?autostart=true';
+      window.location.href = OPENKAP_URL + '/record?autostart=true';
     });
   });
 }
@@ -1998,7 +1998,7 @@ function saveFloatingPanelOptions() {
 }
 
 function closeFloatingPanel() {
-  const overlay = document.getElementById('screensense-floating-overlay');
+  const overlay = document.getElementById('openkap-floating-overlay');
   if (overlay) overlay.remove();
   if (floatingPanel) {
     floatingPanel.remove();

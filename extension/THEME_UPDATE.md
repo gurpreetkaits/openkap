@@ -1,4 +1,4 @@
-# ScreenSense Extension - Orange Theme Update
+# OpenKap Extension - Orange Theme Update
 
 ## Design Changes
 
@@ -213,7 +213,7 @@ background: linear-gradient(135deg, #10b981 0%, #059669 100%);
 
 To see the changes:
 1. Go to `chrome://extensions/`
-2. Find ScreenSense
+2. Find OpenKap
 3. Click refresh icon 🔄
 4. Click extension icon
 

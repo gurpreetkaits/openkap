@@ -1086,9 +1086,9 @@ export default {
 
     const shareUrl = computed(() => window.location.href)
 
-    const sessionId = ref(localStorage.getItem('screensense_session') || Math.random().toString(36).substring(2))
-    if (!localStorage.getItem('screensense_session')) {
-      localStorage.setItem('screensense_session', sessionId.value)
+    const sessionId = ref(localStorage.getItem('openkap_session') || Math.random().toString(36).substring(2))
+    if (!localStorage.getItem('openkap_session')) {
+      localStorage.setItem('openkap_session', sessionId.value)
     }
 
     const fetchVideo = async () => {

@@ -1,4 +1,4 @@
-// Background service worker for ScreenSense extension - Production
+// Background service worker for OpenKap extension - Production
 
 let mediaRecorder = null;
 let recordedChunks = [];
@@ -75,14 +75,14 @@ async function handleWebsiteStateChanged(state, sender, sendResponse) {
       chrome.storage.local.set({ isPaused: state.isPaused });
     }
 
-    // Notify all ScreenSense tabs about the state change
+    // Notify all OpenKap tabs about the state change
     syncStateToAllTabs();
   }
 
   sendResponse({ success: true });
 }
 
-// Sync recording state to all tabs running ScreenSense
+// Sync recording state to all tabs running OpenKap
 async function syncStateToAllTabs() {
   try {
     const tabs = await chrome.tabs.query({});

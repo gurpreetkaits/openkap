@@ -1,25 +1,25 @@
 ---
-title: "ScreenSense: A Simple Loom Alternative"
+title: "OpenKap: A Simple Loom Alternative"
 slug: "loom-alternative"
-excerpt: "Looking for a straightforward screen recording tool? ScreenSense offers instant sharing, HLS streaming, and transparent pricing starting at $7/month."
-author: "ScreenSense Team"
+excerpt: "Looking for a straightforward screen recording tool? OpenKap offers instant sharing, HLS streaming, and transparent pricing starting at $7/month."
+author: "OpenKap Team"
 category: "Comparisons"
 tags:
     - loom-alternative
     - screen-recording
     - video-sharing
-meta_title: "ScreenSense - A Simple Loom Alternative | Screen Recording Made Easy"
-meta_description: "ScreenSense is a simple screen recording tool with instant sharing, HLS streaming, and pricing at $7/month. Built for teams who want simplicity."
+meta_title: "OpenKap - A Simple Loom Alternative | Screen Recording Made Easy"
+meta_description: "OpenKap is a simple screen recording tool with instant sharing, HLS streaming, and pricing at $7/month. Built for teams who want simplicity."
 read_time: 4
 is_published: true
 published_at: "2025-01-03 10:00:00"
 ---
 
-If you've been using screen recording tools and feel like they've become bloated with features you don't need, ScreenSense might be worth a look.
+If you've been using screen recording tools and feel like they've become bloated with features you don't need, OpenKap might be worth a look.
 
-## What is ScreenSense?
+## What is OpenKap?
 
-ScreenSense is a screen recording tool built with one goal: **record and share quickly**. No complex dashboards, no feature overload—just the essentials done well.
+OpenKap is a screen recording tool built with one goal: **record and share quickly**. No complex dashboards, no feature overload—just the essentials done well.
 
 ## What You Get
 
@@ -75,13 +75,13 @@ No hidden fees. No per-seat pricing. One price for everything.
 
 ## Open Source
 
-ScreenSense is fully open source. You can see exactly how it works, contribute improvements, or even self-host if you prefer.
+OpenKap is fully open source. You can see exactly how it works, contribute improvements, or even self-host if you prefer.
 
 Check it out on [GitHub](https://github.com).
 
 ## Who It's For
 
-ScreenSense works well for:
+OpenKap works well for:
 
 - **Developers** sharing bug reports or code walkthroughs
 - **Designers** presenting mockups and getting feedback

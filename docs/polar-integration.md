@@ -1,8 +1,8 @@
-# Polar Subscription Integration - ScreenSense
+# Polar Subscription Integration - OpenKap
 
 ## Overview
 
-This document describes the complete Polar.sh subscription integration for ScreenSense, implementing a Free vs Pro subscription model:
+This document describes the complete Polar.sh subscription integration for OpenKap, implementing a Free vs Pro subscription model:
 
 - **Free Tier**: Limited to 1 video recording
 - **Pro Tier**: Unlimited video recordings ($7/month or $80/year)
@@ -17,7 +17,7 @@ This document describes the complete Polar.sh subscription integration for Scree
 
 1. Create a Polar account at https://polar.sh
 2. Create an organization (if you haven't already)
-3. Create a product for "ScreenSense Pro" subscription:
+3. Create a product for "OpenKap Pro" subscription:
    - Go to Products → Create Product
    - Set product type to "Subscription"
    - Configure pricing (monthly/yearly)
@@ -303,7 +303,7 @@ tail -f storage/logs/laravel.log
 
 #### 1. Create Test User
 
-Register or login to ScreenSense with a test account.
+Register or login to OpenKap with a test account.
 
 #### 2. Test Free Tier Limit
 
@@ -593,4 +593,4 @@ Key log entries:
 
 **Last Updated:** 2025-12-13
 **Version:** 1.0
-**Author:** ScreenSense Team
+**Author:** OpenKap Team

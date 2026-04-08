@@ -3,8 +3,8 @@
  * Synchronizes recording state between the website and browser extension
  */
 
-const STORAGE_KEY = 'screensense_recording_state';
-const BROADCAST_CHANNEL = 'screensense_recording';
+const STORAGE_KEY = 'openkap_recording_state';
+const BROADCAST_CHANNEL = 'openkap_recording';
 
 class RecordingSyncService {
   constructor() {
@@ -23,7 +23,7 @@ class RecordingSyncService {
     }
 
     // Listen for extension messages via custom events
-    window.addEventListener('screensense:extension:state', (event) => {
+    window.addEventListener('openkap:extension:state', (event) => {
       this.handleExtensionState(event.detail);
     });
 
@@ -109,7 +109,7 @@ class RecordingSyncService {
 
   notifyExtension() {
     // Dispatch event for extension content script to pick up
-    window.dispatchEvent(new CustomEvent('screensense:website:state', {
+    window.dispatchEvent(new CustomEvent('openkap:website:state', {
       detail: this.state
     }));
   }
