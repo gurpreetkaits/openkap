@@ -1,719 +1,369 @@
 @extends('layouts.app')
 
-@section('title', 'OpenKap - Affordable Loom Alternative for Individuals and Small Teams')
-@section('meta_description', 'OpenKap is async video messaging for remote teams. Record your screen, share a link, and communicate without scheduling meetings. Free to start.')
-@section('meta_keywords', 'screen recording software, loom alternative, async video, screen recorder, video messaging, remote team communication, screen capture, video sharing')
+@section('title', 'OpenKap — Record. Share. Ship faster.')
+@section('meta_description', 'The modern screen recording platform for product teams. Capture, share instantly, and collaborate with context.')
+@section('og_title', 'OpenKap — Record. Share. Ship faster.')
+@section('og_description', 'The modern screen recording platform for product teams.')
 
-@section('og_title', 'OpenKap - Affordable Loom Alternative for Individuals and Small Teams')
-@section('og_description', 'Record your screen, share a link, skip the meeting. Free screen recording software for teams.')
+{{-- Activates light mode in navbar + footer partials --}}
+@section('light_mode', true)
 
+{{-- Override body to light background --}}
+@section('body_class', 'bg-[#fafaf9] text-stone-900 selection:bg-orange-200 selection:text-orange-900')
 
 @push('styles')
 <style>
-    .feature-card {
-        transition: transform 0.2s ease, border-color 0.2s ease;
+    *,*::before,*::after{box-sizing:border-box}
+    ::-webkit-scrollbar{width:6px}
+    ::-webkit-scrollbar-track{background:#f5f5f4}
+    ::-webkit-scrollbar-thumb{background:#d6d3d1;border-radius:3px}
+
+    /* Orbs — two subtle warm tones only */
+    .orb{position:fixed;border-radius:50%;filter:blur(100px);opacity:.28;pointer-events:none;z-index:0;animation:orbFloat 20s ease-in-out infinite}
+    .orb-1{width:500px;height:500px;background:radial-gradient(circle,#fdba74 0%,transparent 70%);top:-160px;left:-120px;animation-delay:0s}
+    .orb-2{width:400px;height:400px;background:radial-gradient(circle,#fed7aa 0%,transparent 70%);top:40px;right:-80px;animation-delay:-8s}
+    @keyframes orbFloat{0%,100%{transform:translate(0,0)}50%{transform:translate(20px,-30px)}}
+
+    /* Glass */
+    .glass{background:rgba(255,255,255,.75);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.9)}
+
+    /* Gradient text — subtle, single hue */
+    .grad{background:linear-gradient(135deg,#ea580c 0%,#f97316 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+
+    /* Entrance animations */
+    .reveal{opacity:0;transform:translateY(20px);transition:opacity .7s cubic-bezier(.16,1,.3,1),transform .7s cubic-bezier(.16,1,.3,1)}
+    .reveal.in{opacity:1;transform:translateY(0)}
+    .reveal-r{opacity:0;transform:translateX(40px) perspective(1200px) rotateY(-6deg);transition:opacity .8s cubic-bezier(.16,1,.3,1),transform .8s cubic-bezier(.16,1,.3,1)}
+    .reveal-r.in{opacity:1;transform:translateX(0) perspective(1200px) rotateY(0)}
+    .d1{transition-delay:.08s}.d2{transition-delay:.16s}.d3{transition-delay:.24s}.d4{transition-delay:.32s}
+    .d80{transition-delay:80ms}.d160{transition-delay:160ms}.d240{transition-delay:240ms}.d320{transition-delay:320ms}.d400{transition-delay:400ms}
+
+    /* Badge pulse */
+    .dot-pulse{width:7px;height:7px;border-radius:50%;background:#22c55e;animation:dpulse 2s ease-in-out infinite;flex-shrink:0;display:inline-block}
+    @keyframes dpulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.75)}}
+
+    /* Preview tilt */
+    #preview-wrap{transition:transform .15s ease-out;will-change:transform}
+
+    /* Feature cards */
+    .feat-card{transition:transform .3s cubic-bezier(.16,1,.3,1),box-shadow .3s}
+    .feat-card:hover{transform:translateY(-5px);box-shadow:0 12px 40px rgba(0,0,0,.08)!important}
+    .feat-card:hover .feat-arrow{color:#f97316;transform:translateX(4px)}
+    .feat-arrow{transition:color .25s,transform .25s;display:block}
+
+    /* Btn */
+    .btn-p{display:inline-flex;align-items:center;gap:.5rem;background:#f97316;color:#fff;font-weight:700;text-decoration:none;border-radius:10px;box-shadow:0 2px 12px rgba(249,115,22,.3);transition:transform .2s,box-shadow .2s,background .2s}
+    .btn-p:hover{background:#ea580c;transform:translateY(-1px);box-shadow:0 6px 20px rgba(249,115,22,.4)}
+
+    /* Tag pill */
+    .tag{display:inline-block;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:#f97316;background:rgba(249,115,22,.08);border:1px solid rgba(249,115,22,.15);border-radius:100px;padding:.3rem 1rem;margin-bottom:1.25rem}
+
+    /* ── Hero section ─────────────────────────────────── */
+    .hero-content {
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1.75rem;
+        padding: 4rem 1rem 3rem;
     }
-    .feature-card:hover {
-        transform: translateY(-2px);
-        border-color: rgba(255, 255, 255, 0.15);
+
+    /* Top REC indicator */
+    .rec-indicator {
+        display: inline-flex; align-items: center; gap: .45rem;
+        font-size: .72rem; font-weight: 700;
+        color: #ef4444; letter-spacing: .06em;
+        background: rgba(239,68,68,.06);
+        border: 1px solid rgba(239,68,68,.15);
+        border-radius: 100px;
+        padding: .3rem .9rem;
     }
-    .pricing-card {
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    .rec-circle {
+        width: 8px; height: 8px;
+        border-radius: 50%; background: #ef4444;
+        animation: recBlink 1.2s ease-in-out infinite;
+        flex-shrink: 0;
     }
-    .pricing-card:hover {
-        transform: translateY(-4px);
+    @keyframes recBlink {
+        0%,100% { opacity:1; box-shadow:0 0 0 0 rgba(239,68,68,.5); }
+        50%      { opacity:.4; box-shadow:0 0 0 5px rgba(239,68,68,0); }
     }
-    .btn-primary {
-        transition: all 0.2s ease;
+
+    /* Feature cards */
+    .feat-card{transition:transform .3s cubic-bezier(.16,1,.3,1),box-shadow .3s}
+    .feat-card:hover{transform:translateY(-5px);box-shadow:0 12px 40px rgba(0,0,0,.08)!important}
+    .feat-card:hover .feat-arrow{color:#f97316;transform:translateX(4px)}
+    .feat-arrow{transition:color .25s,transform .25s;display:block}
+
+    @media(max-width:900px){
+        .feat-grid{grid-template-columns:1fr!important}
+        .stats-grid{grid-template-columns:repeat(2,1fr)!important}
+        .steps-row{flex-direction:column!important;gap:2rem!important}
+        .step-line{display:none!important}
     }
-    .btn-primary:hover {
-        box-shadow: 0 8px 30px -5px rgba(249, 115, 22, 0.35);
-    }
-    @keyframes float {
-        0%, 100% { transform: translateY(0px); }
-        50% { transform: translateY(-8px); }
-    }
-    .screenshot-float {
-        animation: float 6s ease-in-out infinite;
+    @media(max-width:640px){
+        .stats-grid{grid-template-columns:1fr!important}
     }
 </style>
 @endpush
 
-@push('scripts')
-<script type="application/ld+json">
-@verbatim
-{
-    "@context": "https://schema.org",
-    "@type": "SoftwareApplication",
-    "name": "OpenKap",
-    "applicationCategory": "MultimediaApplication",
-    "operatingSystem": "Web Browser",
-    "offers": {
-        "@type": "Offer",
-        "price": "0",
-        "priceCurrency": "USD"
-    },
-    "description": "Screen recording software for async video messaging. Record your screen with audio and share instantly.",
-    "aggregateRating": {
-        "@type": "AggregateRating",
-        "ratingValue": "4.8",
-        "ratingCount": "150"
-    }
-}
-@endverbatim
-</script>
-@endpush
-
 @section('content')
-    {{-- Hero Section --}}
-    <section class="relative overflow-hidden">
-        {{-- Background layers --}}
-        <div class="absolute inset-0 bg-gradient-to-b from-orange-500/5 via-transparent to-transparent"></div>
-        <div class="absolute inset-0" style="background-image: radial-gradient(circle at 1px 1px, rgb(255 255 255 / 0.03) 1px, transparent 0); background-size: 32px 32px;"></div>
 
-        {{-- Decorative gradient orb --}}
-        <div class="absolute top-0 left-1/4 -translate-y-1/3 w-[600px] h-[400px] bg-gradient-to-br from-orange-500/10 to-amber-500/5 rounded-full blur-3xl pointer-events-none"></div>
+{{-- Orbs --}}
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
 
-        <div class="relative max-w-7xl mx-auto px-6 pt-20 pb-16 md:pt-28 md:pb-24">
-            <div class="flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
+{{-- ── HERO ──────────────────────────────────────────────────── --}}
+<section style="position:relative;z-index:1;padding:0 2rem 4rem">
+<div style="max-width:780px;margin:0 auto">
+    <div class="hero-content reveal">
 
-                {{-- LEFT: Text Content --}}
-                <div class="flex-1 text-center lg:text-left max-w-xl">
-                    {{-- Badge --}}
-                    <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-400 text-sm font-medium mb-8">
-                        <span class="relative flex h-2 w-2">
-                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
-                            <span class="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
-                        </span>
-                        Say it with a video, not another meeting
-                    </div>
-
-                    {{-- Main headline --}}
-                    <h1 class="text-4xl md:text-5xl lg:text-[3.25rem] font-bold text-white leading-[1.1] tracking-tight mb-6">
-                        Affordable Loom Alternative for Individuals
-                    </h1>
-
-                    {{-- Subheadline --}}
-                    <p class="text-lg text-neutral-400 mb-10 leading-[1.7]">
-                        Record your screen and camera, get a shareable link. Everything as Loom but better at pricing and continue to evolve more in features.
-                    </p>
-
-                    {{-- CTA buttons --}}
-                    <div class="flex flex-col sm:flex-row items-center lg:items-start justify-center lg:justify-start gap-3 mb-6">
-                        <a href="{{ config('app.frontend_url', config('app.url')) }}/login" class="btn-primary w-full sm:w-auto inline-flex items-center justify-center h-12 px-8 rounded-xl bg-orange-600 text-white font-semibold hover:bg-orange-500 shadow-lg shadow-orange-600/25 transition-all">
-                            Record Now
-                            <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
-                        </a>
-                        <a href="https://chromewebstore.google.com/detail/nnchnlkilgfemhpcohmgdpcmkjedjkfm" target="_blank" rel="noopener noreferrer" class="w-full sm:w-auto inline-flex items-center justify-center h-12 px-8 rounded-xl bg-white/10 text-white font-medium hover:bg-white/15 border border-white/10 transition-colors">
-                            <svg class="size-5 mr-2" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C8.21 0 4.831 1.757 2.632 4.501l3.953 6.848A5.454 5.454 0 0 1 12 6.545h10.691A12 12 0 0 0 12 0zM1.931 5.47A11.943 11.943 0 0 0 0 12c0 6.012 4.42 10.991 10.189 11.864l3.953-6.847a5.45 5.45 0 0 1-6.865-2.29zm13.342 2.166a5.446 5.446 0 0 1 1.819 7.533l-3.954 6.847c.538.054 1.085.084 1.638.084C20.09 22.1 24 17.627 24 12.203V12c0-.338-.014-.672-.041-1.003zM12 16.364a4.364 4.364 0 1 0 0-8.728 4.364 4.364 0 0 0 0 8.728z"/></svg>
-                            Add to Chrome
-                        </a>
-                    </div>
-
-                </div>
-
-                {{-- RIGHT: App Preview Video --}}
-                <div class="flex-1 w-full max-w-2xl lg:max-w-none relative">
-                    {{-- Glow behind video --}}
-                    <div class="absolute -inset-4 bg-gradient-to-br from-orange-500/10 via-orange-500/5 to-transparent rounded-3xl blur-2xl pointer-events-none"></div>
-
-                    <div class="relative rounded-2xl overflow-hidden border border-white/10 shadow-2xl shadow-black/40 ring-1 ring-white/5 bg-gray-900">
-                        <video
-                            autoplay
-                            muted
-                            loop
-                            playsinline
-                            preload="metadata"
-                            class="w-full h-auto block"
-                        >
-                            <source src="{{ asset('app-preview-openkap.mp4') }}" type="video/mp4">
-                            Your browser does not support the video tag.
-                        </video>
-                    </div>
-                </div>
-
+        {{-- Badge row --}}
+        <div style="display:flex;align-items:center;justify-content:center;gap:.5rem;flex-wrap:wrap">
+            <div class="rec-indicator">
+                <span class="rec-circle"></span>
+                Screen Record
+            </div>
+            <div style="display:inline-flex;align-items:center;gap:.4rem;font-size:.72rem;font-weight:700;color:#57534e;letter-spacing:.04em;background:rgba(0,0,0,.04);border:1px solid rgba(0,0,0,.08);border-radius:100px;padding:.3rem .9rem">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                Link Sharing
+            </div>
+            <div style="display:inline-flex;align-items:center;gap:.4rem;font-size:.72rem;font-weight:700;color:#57534e;letter-spacing:.04em;background:rgba(0,0,0,.04);border:1px solid rgba(0,0,0,.08);border-radius:100px;padding:.3rem .9rem">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="10" y1="14" x2="10" y2="14" stroke-linecap="round"/><line x1="14" y1="14" x2="14" y2="14" stroke-linecap="round"/></svg>
+                No Meeting Needed
             </div>
         </div>
-    </section>
 
-    {{-- Trust Bar: Launch Badges + Stats --}}
-    <section class="py-12 md:py-14 bg-white/[0.02] border-y border-white/5">
-        <div class="max-w-5xl mx-auto px-6">
-            {{-- Launch Badges --}}
-            <div class="flex flex-wrap justify-center items-center gap-5 mb-10">
-                <a href="https://www.producthunt.com/products/openkap-2?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-openkap-2" target="_blank" rel="noopener noreferrer" class="hover:opacity-80 transition-opacity">
-                    <img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1058090&theme=dark&t=1767617780370" alt="OpenKap on Product Hunt" width="250" height="54" loading="lazy">
+        <h1 style="font-size:clamp(2.6rem,5vw,4.2rem);font-weight:800;letter-spacing:-.04em;line-height:1.1;color:#1c1917;margin:0">
+            Record it, Share it.<br>
+            <em style="font-style:italic;color:#f97316">Move on.</em>
+        </h1>
+
+        <p style="font-size:1.05rem;line-height:1.75;color:#78716c;max-width:520px;margin:0">
+            Skip the scheduling. Record your screen, get a shareable link instantly, and let your team watch on their own time.
+        </p>
+
+        <div style="display:flex;align-items:center;justify-content:center;gap:.875rem;flex-wrap:wrap">
+            <a href="{{ config('app.frontend_url', config('app.url')) }}/login" class="btn-p" style="font-size:.95rem;padding:.9rem 1.75rem">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"/></svg>
+                Record Now
+            </a>
+            <a href="#how-it-works" style="display:inline-flex;align-items:center;gap:.5rem;text-decoration:none;color:#44403c;font-size:.9rem;font-weight:500;padding:.85rem 1.4rem;border-radius:10px;border:1px solid rgba(0,0,0,.1);background:white;transition:border-color .2s" onmouseover="this.style.borderColor='rgba(0,0,0,.2)'" onmouseout="this.style.borderColor='rgba(0,0,0,.1)'">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                See how it works
+            </a>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:.75rem">
+            <div style="display:flex">
+                @foreach([['AK','#E05C2A'],['MR','#2A7EE0'],['SL','#29A06A'],['JP','#8B5CF6']] as $i => $av)
+                <div style="width:26px;height:26px;border-radius:50%;border:2px solid white;background:{{ $av[1] }};display:flex;align-items:center;justify-content:center;font-size:.55rem;font-weight:700;color:white;{{ $i > 0 ? 'margin-left:-7px' : '' }}">{{ $av[0] }}</div>
+                @endforeach
+            </div>
+            <span style="font-size:.8rem;color:#78716c">
+                Joined by <strong style="color:#1c1917;font-weight:600">{{ number_format($userCount) }}</strong> {{ Str::plural('user', $userCount) }}
+                @if($workspaceCount > 0)
+                    across <strong style="color:#1c1917;font-weight:600">{{ number_format($workspaceCount) }}</strong> {{ Str::plural('organization', $workspaceCount) }}
+                @endif
+            </span>
+        </div>
+
+    </div>
+
+    {{-- Demo video placeholder — replace src with your video --}}
+    <div class="reveal d2" style="margin-top:3rem;border-radius:20px;overflow:hidden;border:1px solid rgba(0,0,0,.08);box-shadow:0 8px 40px rgba(0,0,0,.1);background:#f5f5f4;aspect-ratio:16/9;display:flex;align-items:center;justify-content:center">
+        <div style="text-align:center;color:#a8a29e">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity:.4;margin-bottom:.75rem"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8" fill="currentColor" stroke="none"/></svg>
+            <p style="font-size:.85rem;margin:0">Drop your demo video here</p>
+        </div>
+    </div>
+</div>
+</section>
+
+{{-- ── LOGOS BAR ──────────────────────────────────────────────── --}}
+<div style="position:relative;z-index:1;text-align:center;padding:2.5rem 1.5rem;border-top:1px solid rgba(0,0,0,.06);border-bottom:1px solid rgba(0,0,0,.06);background:rgba(255,255,255,.5);backdrop-filter:blur(8px)">
+    <p style="font-size:.72rem;color:#a8a29e;font-weight:600;text-transform:uppercase;letter-spacing:.1em;margin-bottom:1.1rem">Trusted by developers, designers &amp; PMs at</p>
+    <div style="display:flex;justify-content:center;flex-wrap:wrap;gap:.65rem">
+        @foreach(['Notion','Linear','Vercel','Stripe','Figma','Railway','Supabase'] as $co)
+        <span style="background:rgba(255,255,255,.8);border:1px solid rgba(0,0,0,.08);border-radius:100px;padding:.3rem 1rem;font-size:.8rem;font-weight:600;color:#57534e">{{ $co }}</span>
+        @endforeach
+    </div>
+</div>
+
+
+{{-- ── HOW IT WORKS ───────────────────────────────────────────── --}}
+<section id="how-it-works" style="position:relative;z-index:1;background:rgba(255,255,255,.5);backdrop-filter:blur(12px);border-top:1px solid rgba(0,0,0,.06);border-bottom:1px solid rgba(0,0,0,.06);padding:6rem 2rem">
+    <div style="max-width:1000px;margin:0 auto">
+        <div style="text-align:center;max-width:600px;margin:0 auto 3.5rem">
+            <div class="tag">How it works</div>
+            <h2 style="font-size:clamp(1.9rem,3.5vw,2.75rem);font-weight:800;letter-spacing:-.03em;line-height:1.15;color:#1c1917">From idea to shared video in <span class="grad">60 seconds</span></h2>
+        </div>
+        <div class="steps-row" style="display:flex;justify-content:center;position:relative">
+            @php
+            $steps=[
+                ['🧩','01','Install the Extension','Add OpenKap to Chrome in seconds. It lives quietly in your toolbar, ready when you need it.'],
+                ['⏺️','02','Hit Record','Click record, choose your capture area, and start talking. Recording starts instantly — no waiting.'],
+                ['📤','03','Share Your Link','When you stop recording, your video is ready. Copy the link and paste it anywhere — Slack, Notion, Linear, email.'],
+            ];
+            @endphp
+            @foreach($steps as $s)
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;text-align:center;position:relative">
+                <div style="font-size:.68rem;font-weight:800;letter-spacing:.1em;color:#f97316;margin-bottom:.9rem">{{ $s[1] }}</div>
+                @if(!$loop->last)
+                <div class="step-line" style="position:absolute;top:2.7rem;left:55%;right:-45%;height:1px;background:linear-gradient(to right,rgba(249,115,22,.3),rgba(249,115,22,.1))"></div>
+                @endif
+                <div style="padding:0 1.8rem;display:flex;flex-direction:column;align-items:center">
+                    <div style="width:56px;height:56px;border-radius:16px;background:rgba(255,255,255,.92);backdrop-filter:blur(12px);border:1px solid rgba(249,115,22,.15);box-shadow:0 4px 16px rgba(249,115,22,.1);display:flex;align-items:center;justify-content:center;font-size:1.5rem;margin-bottom:1.2rem">{{ $s[0] }}</div>
+                    <h3 style="font-size:.97rem;font-weight:700;color:#1c1917;margin-bottom:.45rem">{{ $s[2] }}</h3>
+                    <p style="font-size:.845rem;color:#78716c;line-height:1.65">{{ $s[3] }}</p>
+                </div>
+            </div>
+            @endforeach
+        </div>
+    </div>
+</section>
+
+{{-- ── STATS ──────────────────────────────────────────────────── --}}
+<section style="position:relative;z-index:1;max-width:960px;margin:0 auto;padding:5rem 2rem">
+    <div class="stats-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:1.2rem">
+        @foreach([['< 3s','Time to first recording'],['100%','Uptime guaranteed'],['∞','Video storage'],['0','Setup required']] as $st)
+        <div class="glass reveal" style="border-radius:20px;padding:1.9rem;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.04)">
+            <div class="grad" style="font-size:2.4rem;font-weight:800;letter-spacing:-.04em;margin-bottom:.35rem">{{ $st[0] }}</div>
+            <div style="font-size:.8rem;color:#78716c;font-weight:500">{{ $st[1] }}</div>
+        </div>
+        @endforeach
+    </div>
+</section>
+
+{{-- ── PRICING ─────────────────────────────────────────────────── --}}
+<section id="pricing" style="position:relative;z-index:1;padding:5rem 2rem 6rem">
+    <div style="max-width:860px;margin:0 auto">
+
+        {{-- Heading --}}
+        <div class="reveal" style="text-align:center;margin-bottom:3rem">
+            <div class="tag">Pricing</div>
+            <h2 style="font-size:clamp(1.9rem,3.5vw,2.75rem);font-weight:800;letter-spacing:-.03em;line-height:1.15;color:#1c1917;margin-bottom:.6rem">
+                Simple, honest pricing
+            </h2>
+            <p style="font-size:.95rem;color:#78716c">Start free. Upgrade when you need more.</p>
+
+            {{-- Monthly / Yearly toggle --}}
+            <div style="display:inline-flex;align-items:center;gap:0;background:#f0eeec;border-radius:100px;padding:4px;margin-top:1.5rem" id="billing-toggle">
+                <button onclick="setBilling('monthly')" id="btn-monthly"
+                    style="font-size:.8rem;font-weight:600;padding:.4rem 1.1rem;border-radius:100px;border:none;cursor:pointer;transition:all .2s;background:white;color:#1c1917;box-shadow:0 1px 4px rgba(0,0,0,.1)">
+                    Monthly
+                </button>
+                <button onclick="setBilling('yearly')" id="btn-yearly"
+                    style="font-size:.8rem;font-weight:600;padding:.4rem 1.1rem;border-radius:100px;border:none;cursor:pointer;transition:all .2s;background:transparent;color:#78716c;box-shadow:none">
+                    Yearly <span style="font-size:.68rem;color:#22c55e;font-weight:700">−17%</span>
+                </button>
+            </div>
+        </div>
+
+        {{-- Cards --}}
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem" class="reveal d1">
+
+            {{-- FREE --}}
+            <div class="glass" style="border-radius:24px;padding:2.25rem 2rem;box-shadow:0 2px 12px rgba(0,0,0,.06)">
+                <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#78716c;margin-bottom:1rem">Free</div>
+                <div style="display:flex;align-items:baseline;gap:.25rem;margin-bottom:.4rem">
+                    <span style="font-size:2.8rem;font-weight:800;letter-spacing:-.04em;color:#1c1917">$0</span>
+                    <span style="font-size:.85rem;color:#a8a29e">/mo</span>
+                </div>
+                <p style="font-size:.82rem;color:#78716c;margin-bottom:1.75rem;line-height:1.5">Everything you need to get started.</p>
+                <a href="{{ config('app.frontend_url', config('app.url')) }}/login"
+                    style="display:flex;align-items:center;justify-content:center;gap:.4rem;width:100%;padding:.75rem;border-radius:10px;border:1.5px solid rgba(0,0,0,.12);background:white;font-size:.88rem;font-weight:600;color:#1c1917;text-decoration:none;transition:border-color .2s"
+                    onmouseover="this.style.borderColor='rgba(0,0,0,.25)'" onmouseout="this.style.borderColor='rgba(0,0,0,.12)'">
+                    Get started free
                 </a>
-                <a href="https://peerlist.io/gurpreet/project/openkap--open-source-screen-recording" target="_blank" rel="noopener noreferrer" class="hover:opacity-80 transition-opacity">
-                    <img src="https://peerlist.io/api/v1/projects/embed/PRJH9OBGM78Q7867EC6ADDNQGK799G?showUpvote=false&theme=dark" alt="OpenKap on Peerlist" style="width: auto; height: 54px;" loading="lazy">
+                <ul style="list-style:none;padding:0;margin:1.75rem 0 0;display:flex;flex-direction:column;gap:.75rem">
+                    @foreach(['5 recordings','Up to 5 min per recording','Shareable links','1 workspace','Chrome extension'] as $f)
+                    <li style="display:flex;align-items:center;gap:.6rem;font-size:.85rem;color:#57534e">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a8a29e" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                        {{ $f }}
+                    </li>
+                    @endforeach
+                </ul>
+            </div>
+
+            {{-- PRO --}}
+            <div style="border-radius:24px;padding:2.25rem 2rem;background:#1c1917;position:relative;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.18)">
+                <div style="position:absolute;width:300px;height:300px;background:radial-gradient(circle,rgba(249,115,22,.18) 0%,transparent 70%);border-radius:50%;top:-80px;right:-60px;pointer-events:none"></div>
+                <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:1rem">
+                    <span style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.5)">Pro</span>
+                    <span style="font-size:.65rem;font-weight:700;background:#f97316;color:white;border-radius:100px;padding:.15rem .55rem;letter-spacing:.04em">POPULAR</span>
+                </div>
+                <div style="display:flex;align-items:baseline;gap:.25rem;margin-bottom:.4rem;position:relative">
+                    <span style="font-size:2.8rem;font-weight:800;letter-spacing:-.04em;color:white" id="price-display">$8</span>
+                    <span style="font-size:.85rem;color:rgba(255,255,255,.4)" id="period-display">/mo</span>
+                </div>
+                <p style="font-size:.82rem;color:rgba(255,255,255,.45);margin-bottom:1.75rem;line-height:1.5;position:relative" id="yearly-note" style="display:none"></p>
+                <a href="{{ config('app.frontend_url', config('app.url')) }}/login" class="btn-p"
+                    style="display:flex;align-items:center;justify-content:center;gap:.4rem;width:100%;padding:.75rem;border-radius:10px;font-size:.88rem;box-shadow:none;position:relative">
+                    Get started with Pro
                 </a>
+                <ul style="list-style:none;padding:0;margin:1.75rem 0 0;display:flex;flex-direction:column;gap:.75rem;position:relative">
+                    @foreach(['Unlimited recordings','Unlimited recording length','Shareable links','Unlimited workspaces','Team collaboration','Priority support','Early access to new features'] as $f)
+                    <li style="display:flex;align-items:center;gap:.6rem;font-size:.85rem;color:rgba(255,255,255,.75)">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                        {{ $f }}
+                    </li>
+                    @endforeach
+                </ul>
             </div>
 
         </div>
-    </section>
 
-    {{-- How it Works Section --}}
-    <section id="how-it-works" class="py-20 md:py-28">
-        <div class="max-w-6xl mx-auto px-6">
-            <div class="text-center mb-16">
-                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-400 text-xs font-semibold uppercase tracking-wider mb-4">How it works</div>
-                <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">Three steps. Zero meetings.</h2>
-                <p class="text-neutral-400 text-lg max-w-2xl mx-auto leading-[1.7]">Replace your next unnecessary meeting with an async video</p>
-            </div>
+        <p class="reveal d2" style="text-align:center;font-size:.8rem;color:#a8a29e;margin-top:1.5rem">
+            No credit card required for free plan &nbsp;·&nbsp; Cancel Pro anytime
+        </p>
+    </div>
+</section>
 
-            <div class="grid md:grid-cols-3 gap-6 md:gap-8">
-                {{-- Step 1 --}}
-                <div class="relative p-8 rounded-2xl bg-gradient-to-b from-orange-500/10 to-white/[0.03] border border-orange-500/15 group hover:shadow-lg hover:shadow-orange-500/10 transition-all duration-300">
-                    <div class="flex items-center gap-3 mb-5">
-                        <div class="w-10 h-10 rounded-xl bg-orange-600 text-white flex items-center justify-center font-bold text-sm shadow-lg shadow-orange-600/20">1</div>
-                        <div class="hidden md:block flex-1 h-px bg-gradient-to-r from-orange-500/30 to-transparent"></div>
-                    </div>
-                    <div class="w-12 h-12 rounded-xl bg-orange-500/15 flex items-center justify-center mb-4">
-                        <i data-lucide="video" class="size-6 text-orange-400"></i>
-                    </div>
-                    <h3 class="text-xl font-semibold text-white mb-3">Record your screen</h3>
-                    <p class="text-neutral-400 leading-[1.7]">Click record, select a window or your whole screen. Add your microphone to explain what you're showing.</p>
-                </div>
-
-                {{-- Step 2 --}}
-                <div class="relative p-8 rounded-2xl bg-gradient-to-b from-blue-500/10 to-white/[0.03] border border-blue-500/15 group hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-300">
-                    <div class="flex items-center gap-3 mb-5">
-                        <div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-sm shadow-lg shadow-blue-600/20">2</div>
-                        <div class="hidden md:block flex-1 h-px bg-gradient-to-r from-blue-500/30 to-transparent"></div>
-                    </div>
-                    <div class="w-12 h-12 rounded-xl bg-blue-500/15 flex items-center justify-center mb-4">
-                        <i data-lucide="link" class="size-6 text-blue-400"></i>
-                    </div>
-                    <h3 class="text-xl font-semibold text-white mb-3">Get a shareable link</h3>
-                    <p class="text-neutral-400 leading-[1.7]">The moment you stop recording, your link is ready. Paste it anywhere — Slack, email, Notion, Linear.</p>
-                </div>
-
-                {{-- Step 3 --}}
-                <div class="relative p-8 rounded-2xl bg-gradient-to-b from-emerald-500/10 to-white/[0.03] border border-emerald-500/15 group hover:shadow-lg hover:shadow-emerald-500/10 transition-all duration-300">
-                    <div class="flex items-center gap-3 mb-5">
-                        <div class="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold text-sm shadow-lg shadow-emerald-600/20">3</div>
-                    </div>
-                    <div class="w-12 h-12 rounded-xl bg-emerald-500/15 flex items-center justify-center mb-4">
-                        <i data-lucide="play-circle" class="size-6 text-emerald-400"></i>
-                    </div>
-                    <h3 class="text-xl font-semibold text-white mb-3">They watch when ready</h3>
-                    <p class="text-neutral-400 leading-[1.7]">No account needed. Plays instantly in any browser. They watch at 1.5x, skip ahead, or replay the tricky parts.</p>
-                </div>
-            </div>
-
-            {{-- Demo GIF section --}}
-            <div class="mt-20 grid md:grid-cols-2 gap-6">
-                {{-- Record a Video --}}
-                <div>
-                    <div class="flex items-center gap-3 mb-4">
-                        <div class="w-10 h-10 rounded-lg bg-orange-500/15 flex items-center justify-center text-orange-400">
-                            <i data-lucide="video" class="size-5"></i>
-                        </div>
-                        <div>
-                            <div class="font-medium text-white">Record a Video</div>
-                            <p class="text-sm text-neutral-400">Select source, hit record, explain your point</p>
-                        </div>
-                    </div>
-                    <div class="rounded-2xl overflow-hidden border border-white/10 bg-white/[0.03] shadow-lg shadow-black/30">
-                        <img src="/demo/how-to-record-screen.gif" alt="How to record your screen with OpenKap" class="w-full h-auto">
-                    </div>
-                </div>
-
-                {{-- Sharing With Your Friends --}}
-                <div>
-                    <div class="flex items-center gap-3 mb-4">
-                        <div class="w-10 h-10 rounded-lg bg-blue-500/15 flex items-center justify-center text-blue-400">
-                            <i data-lucide="share" class="size-5"></i>
-                        </div>
-                        <div>
-                            <div class="font-medium text-white">Sharing With Your Friends</div>
-                            <p class="text-sm text-neutral-400">Copy link, paste anywhere, done</p>
-                        </div>
-                    </div>
-                    <div class="rounded-2xl overflow-hidden border border-white/10 bg-white/[0.03] shadow-lg shadow-black/30">
-                        <img src="/demo/copy-share-link.gif" alt="How to share your screen recording" class="w-full h-auto">
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    {{-- Features Section - Bento Grid --}}
-    <section id="features" class="py-20 md:py-28 bg-white/[0.02] border-y border-white/5">
-        <div class="max-w-6xl mx-auto px-6">
-            <div class="text-center mb-16">
-                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-400 text-xs font-semibold uppercase tracking-wider mb-4">Features</div>
-                <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">Everything you need, nothing you don't</h2>
-                <p class="text-neutral-400 text-lg max-w-2xl mx-auto leading-[1.7]">No bloated feature list. Just the essentials, done well.</p>
-            </div>
-
-            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-                {{-- Feature 1 --}}
-                <div class="feature-card p-7 rounded-2xl border border-white/10 bg-white/[0.03] group hover:border-white/20 hover:shadow-lg hover:shadow-black/20 transition-all duration-300">
-                    <div class="w-11 h-11 rounded-xl bg-orange-500/10 flex items-center justify-center mb-4">
-                        <i data-lucide="zap" class="size-5 text-orange-400"></i>
-                    </div>
-                    <h3 class="text-lg font-semibold text-white mb-2">Instant links</h3>
-                    <p class="text-neutral-400 text-sm leading-[1.7]">Your video link is ready the moment you stop recording. Share it before you even close the tab.</p>
-                </div>
-
-                {{-- Feature 2 --}}
-                <div class="feature-card p-7 rounded-2xl border border-white/10 bg-white/[0.03] group hover:border-white/20 hover:shadow-lg hover:shadow-black/20 transition-all duration-300">
-                    <div class="w-11 h-11 rounded-xl bg-blue-500/10 flex items-center justify-center mb-4">
-                        <i data-lucide="mic" class="size-5 text-blue-400"></i>
-                    </div>
-                    <h3 class="text-lg font-semibold text-white mb-2">Screen + audio</h3>
-                    <p class="text-neutral-400 text-sm leading-[1.7]">Record your screen with microphone audio. Show and tell — way clearer than screenshots.</p>
-                </div>
-
-                {{-- Feature 3 --}}
-                <div class="feature-card p-7 rounded-2xl border border-white/10 bg-white/[0.03] group hover:border-white/20 hover:shadow-lg hover:shadow-black/20 transition-all duration-300">
-                    <div class="w-11 h-11 rounded-xl bg-emerald-500/10 flex items-center justify-center mb-4">
-                        <i data-lucide="user-x" class="size-5 text-emerald-400"></i>
-                    </div>
-                    <h3 class="text-lg font-semibold text-white mb-2">No viewer signup</h3>
-                    <p class="text-neutral-400 text-sm leading-[1.7]">Anyone with the link can watch. No login walls, no "create an account" nonsense.</p>
-                </div>
-
-                {{-- Feature 4 --}}
-                <div class="feature-card p-7 rounded-2xl border border-white/10 bg-white/[0.03] group hover:border-white/20 hover:shadow-lg hover:shadow-black/20 transition-all duration-300">
-                    <div class="w-11 h-11 rounded-xl bg-violet-500/10 flex items-center justify-center mb-4">
-                        <i data-lucide="monitor" class="size-5 text-violet-400"></i>
-                    </div>
-                    <h3 class="text-lg font-semibold text-white mb-2">HD recording</h3>
-                    <p class="text-neutral-400 text-sm leading-[1.7]">1080p capture so every detail is visible. Code, designs, spreadsheets — crystal clear.</p>
-                </div>
-
-                {{-- Feature 5 --}}
-                <div class="feature-card p-7 rounded-2xl border border-white/10 bg-white/[0.03] group hover:border-white/20 hover:shadow-lg hover:shadow-black/20 transition-all duration-300">
-                    <div class="w-11 h-11 rounded-xl bg-sky-500/10 flex items-center justify-center mb-4">
-                        <i data-lucide="play" class="size-5 text-sky-400"></i>
-                    </div>
-                    <h3 class="text-lg font-semibold text-white mb-2">Fast playback</h3>
-                    <p class="text-neutral-400 text-sm leading-[1.7]">HLS adaptive streaming means videos start playing immediately, even on slow connections.</p>
-                </div>
-
-                {{-- Feature 6 --}}
-                <div class="feature-card p-7 rounded-2xl border border-white/10 bg-white/[0.03] group hover:border-white/20 hover:shadow-lg hover:shadow-black/20 transition-all duration-300">
-                    <div class="w-11 h-11 rounded-xl bg-amber-500/10 flex items-center justify-center mb-4">
-                        <i data-lucide="sparkles" class="size-5 text-amber-400"></i>
-                    </div>
-                    <h3 class="text-lg font-semibold text-white mb-2">No watermarks</h3>
-                    <p class="text-neutral-400 text-sm leading-[1.7]">Your videos look professional. No logos stamped on your content, even on the free plan.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    {{-- Pricing Section --}}
-    <section id="pricing" class="py-20 md:py-28 border-t border-white/5">
-        <div class="max-w-3xl mx-auto px-6">
-            <div class="text-center mb-16">
-                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-400 text-xs font-semibold uppercase tracking-wider mb-4">Pricing</div>
-                <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">Simple, transparent pricing</h2>
-                <p class="text-neutral-400 text-lg leading-[1.7]">Start free. Upgrade when your team grows.</p>
-            </div>
-
-            {{-- Single Card with Plan Switcher --}}
-            <div class="bg-white/[0.03] rounded-xl border border-white/10 p-6" id="pricing-card">
-                {{-- Header + Switch --}}
-                <div class="flex items-center justify-between mb-6">
-                    <h3 class="text-sm font-semibold text-white">Choose Your Plan</h3>
-                    <div class="flex items-center gap-0.5 bg-white/10 rounded-lg p-0.5">
-                        <button onclick="switchPlan('free')" id="plan-btn-free" class="px-3 py-1.5 text-xs font-medium rounded-md transition-all text-neutral-500 hover:text-neutral-300">Free</button>
-                        <button onclick="switchPlan('pro')" id="plan-btn-pro" class="px-3 py-1.5 text-xs font-medium rounded-md transition-all bg-white/15 text-white shadow-sm">Pro</button>
-                    </div>
-                </div>
-
-                {{-- Plan Title + Price (centered) --}}
-                <div class="text-center py-6">
-                    {{-- Free --}}
-                    <div id="plan-free" class="hidden">
-                        <h4 class="text-lg font-bold text-white mb-1">Free</h4>
-                        <p class="text-xs text-neutral-500 mb-4">For getting started</p>
-                        <div>
-                            <span class="text-4xl font-bold text-white">$0</span>
-                            <span class="text-neutral-500 text-sm">/mo</span>
-                        </div>
-                    </div>
-
-                    {{-- Pro --}}
-                    <div id="plan-pro" class="">
-                        <h4 class="text-lg font-bold text-white mb-1">Pro</h4>
-                        <p class="text-xs text-neutral-500 mb-3">For individuals & creators</p>
-                        {{-- Billing cycle toggle --}}
-                        <div class="flex items-center justify-center mb-4">
-                            <div class="flex items-center gap-0.5 bg-white/10 rounded-md p-0.5">
-                                <button onclick="switchBilling('monthly')" id="billing-btn-monthly" class="px-2.5 py-1 text-[11px] font-medium rounded transition-all bg-white/15 text-white shadow-sm">Monthly</button>
-                                <button onclick="switchBilling('yearly')" id="billing-btn-yearly" class="px-2.5 py-1 text-[11px] font-medium rounded transition-all text-neutral-500 hover:text-neutral-300">Yearly</button>
-                            </div>
-                        </div>
-                        <div id="price-monthly" class="">
-                            <span class="text-4xl font-bold text-white">$8</span>
-                            <span class="text-neutral-500 text-sm">/mo</span>
-                        </div>
-                        <div id="price-yearly" class="hidden">
-                            <span class="text-4xl font-bold text-white">$80</span>
-                            <span class="text-neutral-500 text-sm">/yr</span>
-                            <div class="mt-1.5">
-                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-500/15 text-green-400 text-[10px] font-medium">Save 17%</span>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-
-                {{-- Benefits Grid --}}
-                <div class="py-5 border-b border-white/5">
-                    {{-- Free benefits --}}
-                    <ul id="benefits-free" class="hidden grid grid-cols-3 gap-x-6 gap-y-3 text-sm text-neutral-300">
-                        <li class="flex items-center gap-2">
-                            <svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                            5 videos
-                        </li>
-                        <li class="flex items-center gap-2">
-                            <svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                            5 min per recording
-                        </li>
-                        <li class="flex items-center gap-2">
-                            <svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                            No watermarks
-                        </li>
-                        <li class="flex items-center gap-2">
-                            <svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                            Shareable links
-                        </li>
-                    </ul>
-
-                    {{-- Pro benefits --}}
-                    <ul id="benefits-pro" class="grid grid-cols-3 gap-x-6 gap-y-3 text-sm text-neutral-300">
-                        <li class="flex items-center gap-2">
-                            <svg class="w-4 h-4 text-orange-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                            Unlimited videos
-                        </li>
-                        <li class="flex items-center gap-2">
-                            <svg class="w-4 h-4 text-orange-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                            Unlimited recording
-                        </li>
-                        <li class="flex items-center gap-2">
-                            <svg class="w-4 h-4 text-orange-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                            HLS streaming
-                        </li>
-                        <li class="flex items-center gap-2">
-                            <svg class="w-4 h-4 text-orange-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                            Priority support
-                        </li>
-                        <li class="flex items-center gap-2">
-                            <svg class="w-4 h-4 text-orange-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                            No watermarks
-                        </li>
-                    </ul>
-
-                    {{-- Team benefits --}}
-                </div>
-
-                {{-- Action Button --}}
-                <div class="pt-5 flex justify-center">
-                    <a id="cta-free" href="{{ config('app.frontend_url', config('app.url')) }}/login" class="hidden w-full max-w-[280px] py-2.5 rounded-lg border border-white/10 text-xs font-medium text-neutral-300 bg-white/5 hover:bg-white/10 transition-colors text-center">
-                        Get started free
-                    </a>
-                    <a id="cta-pro" href="{{ config('app.frontend_url', config('app.url')) }}/login" class="flex w-full max-w-[280px] py-2.5 rounded-lg bg-orange-600 hover:bg-orange-500 text-xs font-medium text-white transition-all shadow-sm text-center items-center justify-center gap-1.5">
-                        Upgrade to Pro
-                        <svg class="w-3.5 h-3.5 inline-block ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
-                    </a>
-                </div>
-            </div>
-
-            <p class="text-center text-neutral-500 text-sm mt-10">
-                Need more seats or custom features? <a href="mailto:contact@openkap.com" class="text-white font-medium hover:text-orange-400 transition-colors underline decoration-neutral-600 hover:decoration-orange-500/30">Talk to us</a>
-            </p>
-        </div>
-    </section>
-
-    {{-- Testimonials Section --}}
-    <section class="py-20 md:py-28">
-        <div class="max-w-6xl mx-auto px-6">
-            <div class="text-center mb-14">
-                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-400 text-xs font-semibold uppercase tracking-wider mb-4">Testimonials</div>
-                <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">Loved by developers and teams</h2>
-                <p class="text-neutral-400 text-lg leading-[1.7]">Honest feedback from people who switched</p>
-            </div>
-
-            <div class="grid md:grid-cols-3 gap-5">
-                {{-- Testimonial 1 --}}
-                <div class="p-7 rounded-2xl border border-white/10 bg-white/[0.03] hover:shadow-lg hover:shadow-black/20 transition-all duration-300">
-                    <div class="flex items-center gap-1 mb-4">
-                        <i data-lucide="star" class="size-4 text-amber-400 fill-amber-400"></i>
-                        <i data-lucide="star" class="size-4 text-amber-400 fill-amber-400"></i>
-                        <i data-lucide="star" class="size-4 text-amber-400 fill-amber-400"></i>
-                        <i data-lucide="star" class="size-4 text-amber-400 fill-amber-400"></i>
-                        <i data-lucide="star" class="size-4 text-amber-400 fill-amber-400"></i>
-                    </div>
-                    <p class="text-neutral-300 text-sm leading-[1.7] mb-5">"Finally, a screen recorder that doesn't nag me to upgrade every 5 seconds. It just works. I replaced Loom for my entire dev team."</p>
-                    <div class="flex items-center gap-3">
-                        <div class="w-9 h-9 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-xs font-bold text-white">SK</div>
-                        <div>
-                            <p class="text-sm font-semibold text-white">Sanjay K.</p>
-                            <p class="text-xs text-neutral-500">Full-stack Developer</p>
-                        </div>
-                    </div>
-                </div>
-
-                {{-- Testimonial 2 --}}
-                <div class="p-7 rounded-2xl border border-white/10 bg-white/[0.03] hover:shadow-lg hover:shadow-black/20 transition-all duration-300">
-                    <div class="flex items-center gap-1 mb-4">
-                        <i data-lucide="star" class="size-4 text-amber-400 fill-amber-400"></i>
-                        <i data-lucide="star" class="size-4 text-amber-400 fill-amber-400"></i>
-                        <i data-lucide="star" class="size-4 text-amber-400 fill-amber-400"></i>
-                        <i data-lucide="star" class="size-4 text-amber-400 fill-amber-400"></i>
-                        <i data-lucide="star" class="size-4 text-amber-400 fill-amber-400"></i>
-                    </div>
-                    <p class="text-neutral-300 text-sm leading-[1.7] mb-5">"I send 3-4 quick videos to clients daily. Saves me hours of back-and-forth emails. The instant link sharing is a game changer."</p>
-                    <div class="flex items-center gap-3">
-                        <div class="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-xs font-bold text-white">MR</div>
-                        <div>
-                            <p class="text-sm font-semibold text-white">Maria R.</p>
-                            <p class="text-xs text-neutral-500">Freelance Designer</p>
-                        </div>
-                    </div>
-                </div>
-
-                {{-- Testimonial 3 --}}
-                <div class="p-7 rounded-2xl border border-white/10 bg-white/[0.03] hover:shadow-lg hover:shadow-black/20 transition-all duration-300">
-                    <div class="flex items-center gap-1 mb-4">
-                        <i data-lucide="star" class="size-4 text-amber-400 fill-amber-400"></i>
-                        <i data-lucide="star" class="size-4 text-amber-400 fill-amber-400"></i>
-                        <i data-lucide="star" class="size-4 text-amber-400 fill-amber-400"></i>
-                        <i data-lucide="star" class="size-4 text-amber-400 fill-amber-400"></i>
-                        <i data-lucide="star" class="size-4 text-amber-400 fill-amber-400"></i>
-                    </div>
-                    <p class="text-neutral-300 text-sm leading-[1.7] mb-5">"Simple pricing, no bloat. My whole team switched over in a day. Way better than paying Loom's enterprise tax."</p>
-                    <div class="flex items-center gap-3">
-                        <div class="w-9 h-9 rounded-full bg-gradient-to-br from-violet-400 to-violet-600 flex items-center justify-center text-xs font-bold text-white">AT</div>
-                        <div>
-                            <p class="text-sm font-semibold text-white">Alex T.</p>
-                            <p class="text-xs text-neutral-500">Startup Founder</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    {{-- Open Source + Security Trust Strip --}}
-    <section class="py-14 md:py-16 bg-white/[0.02] border-y border-white/5">
-        <div class="max-w-5xl mx-auto px-6">
-            <div class="grid md:grid-cols-3 gap-6">
-                <div class="flex items-start gap-4">
-                    <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
-                        <i data-lucide="github" class="size-5 text-white"></i>
-                    </div>
-                    <div>
-                        <h4 class="text-sm font-semibold text-white mb-1">Fully open source</h4>
-                        <p class="text-xs text-neutral-400 leading-[1.7]">Inspect every line of code. No hidden trackers, no black boxes. MIT licensed.</p>
-                    </div>
-                </div>
-                <div class="flex items-start gap-4">
-                    <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
-                        <i data-lucide="shield-check" class="size-5 text-white"></i>
-                    </div>
-                    <div>
-                        <h4 class="text-sm font-semibold text-white mb-1">Your data stays yours</h4>
-                        <p class="text-xs text-neutral-400 leading-[1.7]">Videos are encrypted in transit. No selling your data. Delete anytime, it's actually gone.</p>
-                    </div>
-                </div>
-                <div class="flex items-start gap-4">
-                    <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
-                        <i data-lucide="lock" class="size-5 text-white"></i>
-                    </div>
-                    <div>
-                        <h4 class="text-sm font-semibold text-white mb-1">No vendor lock-in</h4>
-                        <p class="text-xs text-neutral-400 leading-[1.7]">Export your videos anytime. Self-host if you want. You're never trapped.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    {{-- FAQ Section --}}
-    <section id="faq" class="py-20 md:py-28">
-        <div class="max-w-3xl mx-auto px-6">
-            <div class="text-center mb-12">
-                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-400 text-xs font-semibold uppercase tracking-wider mb-4">FAQ</div>
-                <h2 class="text-3xl md:text-4xl font-bold text-white">Frequently asked questions</h2>
-            </div>
-
-            <div class="space-y-3" id="faq-accordion">
-                <div class="faq-item border border-white/10 rounded-xl overflow-hidden bg-white/[0.03] hover:border-white/20 transition-colors">
-                    <button onclick="toggleFaq(this)" class="w-full flex items-center justify-between p-5 text-left">
-                        <span class="text-base font-semibold text-white pr-4">Is OpenKap really free?</span>
-                        <i data-lucide="plus" class="size-5 text-neutral-500 shrink-0 faq-icon transition-transform duration-200"></i>
-                    </button>
-                    <div class="faq-content hidden px-5 pb-5 -mt-1">
-                        <p class="text-neutral-400 leading-[1.7] text-sm">Yes. The free plan includes 5 recordings with no watermarks. After that, Pro is $8/month for unlimited videos. We don't do the "free trial then surprise you with a paywall" thing.</p>
-                    </div>
-                </div>
-
-                <div class="faq-item border border-white/10 rounded-xl overflow-hidden bg-white/[0.03] hover:border-white/20 transition-colors">
-                    <button onclick="toggleFaq(this)" class="w-full flex items-center justify-between p-5 text-left">
-                        <span class="text-base font-semibold text-white pr-4">Do people need an account to watch my videos?</span>
-                        <i data-lucide="plus" class="size-5 text-neutral-500 shrink-0 faq-icon transition-transform duration-200"></i>
-                    </button>
-                    <div class="faq-content hidden px-5 pb-5 -mt-1">
-                        <p class="text-neutral-400 leading-[1.7] text-sm">No. Anyone with the link can watch immediately in their browser. No signup, no app download, no friction.</p>
-                    </div>
-                </div>
-
-                <div class="faq-item border border-white/10 rounded-xl overflow-hidden bg-white/[0.03] hover:border-white/20 transition-colors">
-                    <button onclick="toggleFaq(this)" class="w-full flex items-center justify-between p-5 text-left">
-                        <span class="text-base font-semibold text-white pr-4">How long can my recordings be?</span>
-                        <i data-lucide="plus" class="size-5 text-neutral-500 shrink-0 faq-icon transition-transform duration-200"></i>
-                    </button>
-                    <div class="faq-content hidden px-5 pb-5 -mt-1">
-                        <p class="text-neutral-400 leading-[1.7] text-sm">Free plan: 5 minutes per video. Pro and Team: no limit. Most async updates are under 3 minutes anyway.</p>
-                    </div>
-                </div>
-
-                <div class="faq-item border border-white/10 rounded-xl overflow-hidden bg-white/[0.03] hover:border-white/20 transition-colors">
-                    <button onclick="toggleFaq(this)" class="w-full flex items-center justify-between p-5 text-left">
-                        <span class="text-base font-semibold text-white pr-4">What browsers are supported?</span>
-                        <i data-lucide="plus" class="size-5 text-neutral-500 shrink-0 faq-icon transition-transform duration-200"></i>
-                    </button>
-                    <div class="faq-content hidden px-5 pb-5 -mt-1">
-                        <p class="text-neutral-400 leading-[1.7] text-sm">Chrome, Firefox, Safari, and Edge. We also have a <a href="https://chromewebstore.google.com/detail/nnchnlkilgfemhpcohmgdpcmkjedjkfm" target="_blank" rel="noopener noreferrer" class="text-orange-400 font-medium hover:text-orange-300 underline decoration-orange-500/30">Chrome extension</a> for one-click recording.</p>
-                    </div>
-                </div>
-
-                <div class="faq-item border border-white/10 rounded-xl overflow-hidden bg-white/[0.03] hover:border-white/20 transition-colors">
-                    <button onclick="toggleFaq(this)" class="w-full flex items-center justify-between p-5 text-left">
-                        <span class="text-base font-semibold text-white pr-4">How is this different from Loom?</span>
-                        <i data-lucide="plus" class="size-5 text-neutral-500 shrink-0 faq-icon transition-transform duration-200"></i>
-                    </button>
-                    <div class="faq-content hidden px-5 pb-5 -mt-1">
-                        <p class="text-neutral-400 leading-[1.7] text-sm">Simpler pricing, no aggressive upsells, and a free tier that actually lets you use the product. We're focused on doing one thing well: helping you share quick video explanations with your team.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    {{-- Final CTA --}}
-    <section class="py-20 md:py-28 relative overflow-hidden">
-        <div class="absolute inset-0 bg-gradient-to-b from-transparent via-orange-950/20 to-orange-950/30"></div>
-        <div class="absolute inset-0" style="background-image: radial-gradient(circle at 1px 1px, rgb(249 115 22 / 0.04) 1px, transparent 0); background-size: 24px 24px;"></div>
-        {{-- Decorative blobs --}}
-        <div class="absolute top-1/4 left-1/4 w-72 h-72 bg-orange-500/10 rounded-full blur-3xl pointer-events-none"></div>
-        <div class="absolute bottom-1/4 right-1/4 w-56 h-56 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
-
-        <div class="relative max-w-2xl mx-auto px-6 text-center">
-            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-400 text-xs font-semibold mb-6">
-                <i data-lucide="sparkles" class="size-3"></i>
-                Free to get started
-            </div>
-            <h2 class="text-3xl md:text-5xl font-bold text-white mb-6 leading-tight">Ready to skip your<br class="hidden sm:block"> next meeting?</h2>
-            <p class="text-lg text-neutral-400 mb-10 max-w-lg mx-auto leading-[1.7]">Record your first video in under a minute. Free, no credit card required.</p>
-            <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <a href="{{ config('app.frontend_url', config('app.url')) }}/login" class="btn-primary inline-flex items-center justify-center h-14 px-10 rounded-xl bg-orange-600 text-white text-lg font-semibold hover:bg-orange-500 shadow-xl shadow-orange-600/25 transition-all">
-                    Start recording
-                    <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
-                </a>
-                <a href="https://chromewebstore.google.com/detail/nnchnlkilgfemhpcohmgdpcmkjedjkfm" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center h-14 px-8 rounded-xl border border-white/10 bg-white/5 text-neutral-300 font-medium hover:bg-white/10 hover:border-white/20 transition-all">
-                    <svg class="size-5 mr-2 text-neutral-500" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C8.21 0 4.831 1.757 2.632 4.501l3.953 6.848A5.454 5.454 0 0 1 12 6.545h10.691A12 12 0 0 0 12 0zM1.931 5.47A11.943 11.943 0 0 0 0 12c0 6.012 4.42 10.991 10.189 11.864l3.953-6.847a5.45 5.45 0 0 1-6.865-2.29zm13.342 2.166a5.446 5.446 0 0 1 1.819 7.533l-3.954 6.847c.538.054 1.085.084 1.638.084C20.09 22.1 24 17.627 24 12.203V12c0-.338-.014-.672-.041-1.003zM12 16.364a4.364 4.364 0 1 0 0-8.728 4.364 4.364 0 0 0 0 8.728z"/></svg>
-                    Add to Chrome
-                </a>
-            </div>
-        </div>
-    </section>
 @endsection
 
 @push('scripts')
 <script>
-    function toggleFaq(btn) {
-        const item = btn.closest('.faq-item');
-        const content = item.querySelector('.faq-content');
-        const icon = item.querySelector('.faq-icon');
-        const isOpen = !content.classList.contains('hidden');
+    // Scroll reveal
+    const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) e.target.classList.add('in'); }), { threshold: 0.1 });
+    document.querySelectorAll('.reveal, .reveal-r').forEach(el => io.observe(el));
 
-        // Close all
-        document.querySelectorAll('.faq-item').forEach(function(el) {
-            el.querySelector('.faq-content').classList.add('hidden');
-            el.querySelector('.faq-icon').style.transform = '';
-            el.classList.remove('border-orange-500/20', 'bg-orange-500/10');
-            el.classList.add('border-white/10', 'bg-white/[0.03]');
-        });
-
-        // Open clicked (if it was closed)
-        if (!isOpen) {
-            content.classList.remove('hidden');
-            icon.style.transform = 'rotate(45deg)';
-            item.classList.remove('border-white/10', 'bg-white/[0.03]');
-            item.classList.add('border-orange-500/20', 'bg-orange-500/10');
-        }
-
-        lucide.createIcons();
+    // 3D tilt on preview
+    function tilt(e, el) {
+        const r = el.getBoundingClientRect();
+        const x = ((e.clientX - r.left) / r.width  - 0.5) * 8;
+        const y = ((e.clientY - r.top)  / r.height - 0.5) * -8;
+        el.style.transform = `perspective(1200px) rotateY(${x}deg) rotateX(${y}deg)`;
+    }
+    function resetTilt(el) {
+        el.style.transform = 'perspective(1200px) rotateY(0) rotateX(0)';
     }
 
-    function switchPlan(plan) {
-        var plans = ['free', 'pro'];
-        plans.forEach(function(p) {
-            document.getElementById('plan-' + p).classList.add('hidden');
-            document.getElementById('benefits-' + p).classList.add('hidden');
-            document.getElementById('cta-' + p).classList.add('hidden');
-            document.getElementById('cta-' + p).classList.remove('flex');
-            var btn = document.getElementById('plan-btn-' + p);
-            btn.className = 'px-3 py-1.5 text-xs font-medium rounded-md transition-all text-neutral-500 hover:text-neutral-300';
-        });
-        document.getElementById('plan-' + plan).classList.remove('hidden');
-        document.getElementById('benefits-' + plan).classList.remove('hidden');
-        document.getElementById('cta-' + plan).classList.remove('hidden');
-        if (plan !== 'free') document.getElementById('cta-' + plan).classList.add('flex');
-        document.getElementById('plan-btn-' + plan).className = 'px-3 py-1.5 text-xs font-medium rounded-md transition-all bg-white/15 text-white shadow-sm';
-    }
-
-    function switchBilling(cycle) {
-        var monthly = document.getElementById('price-monthly');
-        var yearly = document.getElementById('price-yearly');
-        var btnMonthly = document.getElementById('billing-btn-monthly');
-        var btnYearly = document.getElementById('billing-btn-yearly');
-        var active = 'px-2.5 py-1 text-[11px] font-medium rounded transition-all bg-white/15 text-white shadow-sm';
-        var inactive = 'px-2.5 py-1 text-[11px] font-medium rounded transition-all text-neutral-500 hover:text-neutral-300';
+    // Pricing billing toggle
+    function setBilling(cycle) {
+        const priceEl  = document.getElementById('price-display');
+        const periodEl = document.getElementById('period-display');
+        const noteEl   = document.getElementById('yearly-note');
+        const btnM     = document.getElementById('btn-monthly');
+        const btnY     = document.getElementById('btn-yearly');
+        if (!priceEl) return;
+        const activeStyle   = 'background:white;color:#1c1917;box-shadow:0 1px 4px rgba(0,0,0,.1)';
+        const inactiveStyle = 'background:transparent;color:#78716c;box-shadow:none';
         if (cycle === 'yearly') {
-            monthly.classList.add('hidden');
-            yearly.classList.remove('hidden');
-            btnYearly.className = active;
-            btnMonthly.className = inactive;
+            priceEl.textContent  = '$80';
+            periodEl.textContent = '/yr';
+            noteEl.textContent   = 'Billed annually — saves you $16/yr';
+            noteEl.style.display = 'block';
+            btnY.style.cssText  += ';' + activeStyle;
+            btnM.style.cssText  += ';' + inactiveStyle;
         } else {
-            yearly.classList.add('hidden');
-            monthly.classList.remove('hidden');
-            btnMonthly.className = active;
-            btnYearly.className = inactive;
+            priceEl.textContent  = '$8';
+            periodEl.textContent = '/mo';
+            noteEl.style.display = 'none';
+            btnM.style.cssText  += ';' + activeStyle;
+            btnY.style.cssText  += ';' + inactiveStyle;
         }
     }
 
-    function showDemo(type) {
-        const recordBtn = document.getElementById('demo-btn-record');
-        const shareBtn = document.getElementById('demo-btn-share');
-        const recordDemo = document.getElementById('demo-record');
-        const shareDemo = document.getElementById('demo-share');
-
-        const activeClasses = 'w-full text-left p-5 rounded-xl border border-orange-500/20 bg-orange-500/10 transition-all';
-        const inactiveClasses = 'w-full text-left p-5 rounded-xl border border-white/10 hover:border-white/20 transition-all';
-
-        if (type === 'record') {
-            recordBtn.className = activeClasses;
-            shareBtn.className = inactiveClasses;
-            recordBtn.querySelector('.w-10').className = 'w-10 h-10 rounded-lg bg-orange-500/15 flex items-center justify-center text-orange-400';
-            shareBtn.querySelector('.w-10').className = 'w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center text-neutral-500';
-            recordDemo.classList.remove('hidden');
-            shareDemo.classList.add('hidden');
-        } else {
-            shareBtn.className = activeClasses;
-            recordBtn.className = inactiveClasses;
-            shareBtn.querySelector('.w-10').className = 'w-10 h-10 rounded-lg bg-orange-500/15 flex items-center justify-center text-orange-400';
-            recordBtn.querySelector('.w-10').className = 'w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center text-neutral-500';
-            shareDemo.classList.remove('hidden');
-            recordDemo.classList.add('hidden');
-        }
-    }
 </script>
 @endpush

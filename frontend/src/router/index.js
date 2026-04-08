@@ -3,7 +3,9 @@ import { createRouter, createWebHistory } from "vue-router";
 const routes = [
   {
     path: "/",
-    redirect: "/videos"
+    name: "Landing",
+    component: () => import("../views/LandingView.vue"),
+    meta: { guest: true }
   },
   {
     path: "/login",
@@ -186,9 +188,9 @@ router.beforeEach((to, from, next) => {
     }
   }
 
-  // Route is for guests only (like login page)
+  // Route is for guests only (like login page and landing)
   if (to.matched.some(record => record.meta.guest)) {
-    if (isAuthenticated) {
+    if (isAuthenticated && to.name !== 'Landing') {
       // Already logged in, redirect to videos
       next({ name: 'Videos' })
       return

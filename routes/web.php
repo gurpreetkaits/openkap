@@ -1,11 +1,15 @@
 <?php
 
 use App\Http\Controllers\MarkdownBlogController;
+use App\Models\User;
 use App\Models\Video;
+use App\Models\Workspace;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('welcome');
+    $userCount      = User::count();
+    $workspaceCount = Workspace::count();
+    return view('welcome', compact('userCount', 'workspaceCount'));
 });
 
 // Privacy Policy page
