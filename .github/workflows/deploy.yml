@@ -71,14 +71,6 @@ jobs:
             set -e  # Exit immediately if a command exits with a non-zero status
             set -o pipefail  # Return value of a pipeline is the status of the last command to exit with a non-zero status
 
-            # Check if we have write permissions
-            if [ ! -w ${{ secrets.DEPLOY_PATH }} ]; then
-              echo "Error: No write permission to ${{ secrets.DEPLOY_PATH }}"
-              exit 1
-            fi
-
-            cd ${{ secrets.DEPLOY_PATH }} || { echo "Error: Cannot change to directory"; exit 1; }
-
             # Check if git is available and working
             if ! command -v git &> /dev/null; then
               echo "Error: git is not installed"
@@ -91,9 +83,11 @@ jobs:
               exit 1
             fi
 
-            # Set ownership to deploy user before git reset (storage may be owned by www-data)
+            # Set ownership to deploy user before git reset (storage may be owned by www-data or root)
             sudo chown -R $(whoami):$(id -gn) ${{ secrets.DEPLOY_PATH }} || { echo "Error: Cannot set directory ownership"; exit 1; }
             sudo chmod -R 775 ${{ secrets.DEPLOY_PATH }} || { echo "Error: Cannot set directory permissions"; exit 1; }
+
+            cd ${{ secrets.DEPLOY_PATH }} || { echo "Error: Cannot change to directory"; exit 1; }
 
             # Fetch latest and force reset to match remote (handles force pushes)
             git fetch origin master || { echo "Error: git fetch failed"; exit 1; }
