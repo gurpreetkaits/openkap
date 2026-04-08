@@ -100,6 +100,7 @@
         .stats-grid{grid-template-columns:repeat(2,1fr)!important}
         .steps-row{flex-direction:column!important;gap:2rem!important}
         .step-line{display:none!important}
+        .demo-grid{grid-template-columns:1fr!important}
     }
     @media(max-width:640px){
         .stats-grid{grid-template-columns:1fr!important}
@@ -148,9 +149,9 @@
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"/></svg>
                 Record Now
             </a>
-            <a href="#how-it-works" style="display:inline-flex;align-items:center;gap:.5rem;text-decoration:none;color:#44403c;font-size:.9rem;font-weight:500;padding:.85rem 1.4rem;border-radius:10px;border:1px solid rgba(0,0,0,.1);background:white;transition:border-color .2s" onmouseover="this.style.borderColor='rgba(0,0,0,.2)'" onmouseout="this.style.borderColor='rgba(0,0,0,.1)'">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-                See how it works
+            <a href="https://chromewebstore.google.com/detail/openkap/nnchnlkilgfemhpcohmgdpcmkjedjkfm" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:.5rem;text-decoration:none;color:#44403c;font-size:.9rem;font-weight:500;padding:.85rem 1.4rem;border-radius:10px;border:1px solid rgba(0,0,0,.1);background:white;transition:border-color .2s" onmouseover="this.style.borderColor='rgba(0,0,0,.2)'" onmouseout="this.style.borderColor='rgba(0,0,0,.1)'">
+                <img src="/logo.png" alt="" style="width:16px;height:16px;border-radius:4px">
+                Install Extension
             </a>
         </div>
 
@@ -170,12 +171,35 @@
 
     </div>
 
-    {{-- Demo video placeholder — replace src with your video --}}
-    <div class="reveal d2" style="margin-top:3rem;border-radius:20px;overflow:hidden;border:1px solid rgba(0,0,0,.08);box-shadow:0 8px 40px rgba(0,0,0,.1);background:#f5f5f4;aspect-ratio:16/9;display:flex;align-items:center;justify-content:center">
-        <div style="text-align:center;color:#a8a29e">
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity:.4;margin-bottom:.75rem"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8" fill="currentColor" stroke="none"/></svg>
-            <p style="font-size:.85rem;margin:0">Drop your demo video here</p>
+    {{-- Demo GIFs --}}
+    <div class="reveal d2 demo-grid" style="margin-top:3rem;display:grid;grid-template-columns:1fr 1fr;gap:1.25rem">
+
+        <div class="glass" style="border-radius:20px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.07)">
+            <img src="/demo/how-to-record-screen.gif" alt="How to record your screen" style="width:100%;display:block;border-bottom:1px solid rgba(0,0,0,.06)">
+            <div style="padding:1rem 1.2rem">
+                <div style="display:flex;align-items:center;gap:.45rem;margin-bottom:.25rem">
+                    <span style="width:20px;height:20px;border-radius:6px;background:rgba(239,68,68,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                        <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3" fill="#ef4444" stroke="none"/></svg>
+                    </span>
+                    <span style="font-size:.84rem;font-weight:700;color:#1c1917">Record your screen</span>
+                </div>
+                <p style="font-size:.77rem;color:#78716c;line-height:1.55;margin:0">Click the extension, choose your area, start in seconds.</p>
+            </div>
         </div>
+
+        <div class="glass" style="border-radius:20px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.07)">
+            <img src="/demo/copy-share-link.gif" alt="Copy and share link" style="width:100%;display:block;border-bottom:1px solid rgba(0,0,0,.06)">
+            <div style="padding:1rem 1.2rem">
+                <div style="display:flex;align-items:center;gap:.45rem;margin-bottom:.25rem">
+                    <span style="width:20px;height:20px;border-radius:6px;background:rgba(249,115,22,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                        <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2.5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                    </span>
+                    <span style="font-size:.84rem;font-weight:700;color:#1c1917">Copy &amp; share instantly</span>
+                </div>
+                <p style="font-size:.77rem;color:#78716c;line-height:1.55;margin:0">Link ready the moment you stop. Paste it in Slack, Notion, anywhere.</p>
+            </div>
+        </div>
+
     </div>
 </div>
 </section>

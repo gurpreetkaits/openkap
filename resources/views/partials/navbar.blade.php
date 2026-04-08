@@ -26,12 +26,13 @@
     .nav-dropdown { position: relative; }
     .nav-dropdown-menu {
         position: absolute;
-        top: calc(100% + 12px);
+        top: 100%;
         left: 50%;
         transform: translateX(-50%);
         min-width: 160px;
         border-radius: 14px;
         padding: 6px;
+        margin-top: 12px;
         opacity: 0;
         visibility: hidden;
         pointer-events: none;
@@ -40,6 +41,15 @@
         background: {{ $light ? 'white' : '#111' }};
         border: 1px solid {{ $light ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.08)' }};
         box-shadow: 0 8px 32px rgba(0,0,0,{{ $light ? '.1' : '.4' }});
+    }
+    /* Invisible bridge to prevent hover gap */
+    .nav-dropdown-menu::before {
+        content: '';
+        position: absolute;
+        top: -12px;
+        left: 0;
+        right: 0;
+        height: 12px;
     }
     .nav-dropdown:hover .nav-dropdown-menu,
     .nav-dropdown:focus-within .nav-dropdown-menu {
