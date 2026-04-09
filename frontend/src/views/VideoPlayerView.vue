@@ -88,6 +88,23 @@
               Zoom Pending
             </span>
           </div>
+          <span
+            v-if="video.id"
+            class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-medium"
+            :class="video.is_public ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'"
+          >
+            <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <template v-if="video.is_public">
+                <circle cx="12" cy="12" r="10" stroke-width="2"/>
+                <path stroke-width="2" d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/>
+              </template>
+              <template v-else>
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" stroke-width="2"/>
+                <path stroke-width="2" d="M7 11V7a5 5 0 0110 0v4"/>
+              </template>
+            </svg>
+            {{ video.is_public ? 'Public' : 'Private' }}
+          </span>
         </div>
 
         <div class="flex items-center gap-2">
@@ -115,7 +132,7 @@
               </svg>
             </button>
             <div v-show="showShareDropdown" class="absolute right-0 top-full mt-1.5 w-48 bg-white rounded-lg shadow-xl border border-gray-200 py-1.5 z-50">
-              <button @click="copyShareLink; showShareDropdown = false" class="w-full px-4 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2.5">
+              <button @click="() => { copyShareLink(); showShareDropdown = false }" class="w-full px-4 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2.5">
                 <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
                 </svg>
@@ -198,41 +215,34 @@
 
       <!-- Confirmation Dialogs -->
       <!-- Archive Confirm -->
-      <div v-if="showArchiveConfirm" class="fixed inset-0 z-[70] flex items-center justify-center">
-        <div class="absolute inset-0 bg-gray-900/20 backdrop-blur-sm" @click="showArchiveConfirm = false"></div>
-        <div class="bg-white rounded-lg shadow-xl w-full max-w-sm relative z-10 p-5">
-          <h3 class="text-sm font-semibold text-gray-900 mb-2">Archive Video</h3>
-          <p class="text-xs text-gray-500 mb-4">Are you sure you want to archive this video? It will be moved to your archive.</p>
-          <div class="flex justify-end gap-2">
-            <button @click="showArchiveConfirm = false" class="px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-100 rounded-md transition-colors">Cancel</button>
-            <button @click="handleArchive; showArchiveConfirm = false" class="px-3 py-1.5 text-xs font-medium text-white bg-orange-600 hover:bg-orange-700 rounded-md transition-colors">Archive</button>
-          </div>
-        </div>
-      </div>
-      <!-- Private Confirm -->
-      <div v-if="showPrivateConfirm" class="fixed inset-0 z-[70] flex items-center justify-center">
-        <div class="absolute inset-0 bg-gray-900/20 backdrop-blur-sm" @click="showPrivateConfirm = false"></div>
-        <div class="bg-white rounded-lg shadow-xl w-full max-w-sm relative z-10 p-5">
-          <h3 class="text-sm font-semibold text-gray-900 mb-2">Make Private</h3>
-          <p class="text-xs text-gray-500 mb-4">Are you sure you want to make this video private? The share link will stop working.</p>
-          <div class="flex justify-end gap-2">
-            <button @click="showPrivateConfirm = false" class="px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-100 rounded-md transition-colors">Cancel</button>
-            <button @click="handleMakePrivate; showPrivateConfirm = false" class="px-3 py-1.5 text-xs font-medium text-white bg-orange-600 hover:bg-orange-700 rounded-md transition-colors">Make Private</button>
-          </div>
-        </div>
-      </div>
+      <SBConfirmModal
+        v-model="showArchiveConfirm"
+        title="Archive Video"
+        message="Are you sure you want to archive this video? It will be moved to your archive."
+        type="warning"
+        confirmText="Archive"
+        @confirm="handleArchive"
+      />
+
+      <!-- Make Private Confirm -->
+      <SBConfirmModal
+        v-model="showPrivateConfirm"
+        title="Make Private"
+        message="Are you sure you want to make this video private? The share link will stop working."
+        type="warning"
+        confirmText="Make Private"
+        @confirm="handleMakePrivate"
+      />
+
       <!-- Delete Confirm -->
-      <div v-if="showDeleteConfirm" class="fixed inset-0 z-[70] flex items-center justify-center">
-        <div class="absolute inset-0 bg-gray-900/20 backdrop-blur-sm" @click="showDeleteConfirm = false"></div>
-        <div class="bg-white rounded-lg shadow-xl w-full max-w-sm relative z-10 p-5">
-          <h3 class="text-sm font-semibold text-gray-900 mb-2">Delete Video</h3>
-          <p class="text-xs text-gray-500 mb-4">Are you sure you want to delete this video? This cannot be undone.</p>
-          <div class="flex justify-end gap-2">
-            <button @click="showDeleteConfirm = false" class="px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-100 rounded-md transition-colors">Cancel</button>
-            <button @click="confirmDeleteVideo; showDeleteConfirm = false" class="px-3 py-1.5 text-xs font-medium text-white bg-red-600 hover:bg-red-700 rounded-md transition-colors">Delete</button>
-          </div>
-        </div>
-      </div>
+      <SBConfirmModal
+        v-model="showDeleteConfirm"
+        title="Delete Video"
+        message="Are you sure you want to delete this video? This cannot be undone."
+        type="danger"
+        confirmText="Delete"
+        @confirm="confirmDeleteVideo"
+      />
 
       <!-- Share Modal -->
       <div v-if="showShareModal" class="fixed inset-0 z-[60] flex items-center justify-center">
@@ -308,10 +318,13 @@
                 <h1
                   v-if="!isEditingTitle"
                   @click="startEditingTitle"
-                  class="text-2xl font-bold text-gray-900 tracking-tight leading-tight cursor-pointer hover:text-orange-600 transition-colors"
+                  class="group/title flex items-center gap-2 text-2xl font-bold text-gray-900 tracking-tight leading-tight cursor-pointer hover:text-orange-600 transition-colors"
                   title="Click to edit title"
                 >
                   {{ video.title }}
+                  <svg class="w-4 h-4 opacity-0 group-hover/title:opacity-40 transition-opacity flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                  </svg>
                 </h1>
                 <input
                   v-else
@@ -473,7 +486,10 @@
                       <span v-for="(word, wi) in activeCaptionCue.words" :key="wi" class="caption-word" :class="word.active ? 'caption-active' : 'caption-inactive'">{{ word.text }}</span>
                     </div>
                   </div>
-                  <!-- Progress -->
+                  <!-- Progress + Control Buttons -->
+                  <transition name="fade">
+                  <div v-show="controlsVisible" class="flex flex-col gap-3">
+                    <!-- Progress -->
                     <div
                       class="relative h-2.5 w-full group/seek cursor-pointer flex items-center"
                       @click.stop="seek"
@@ -502,8 +518,7 @@
                     </div>
 
                     <!-- Control Buttons -->
-                    <transition name="fade">
-                    <div v-show="controlsVisible" class="flex items-center justify-between text-white/90 pt-1 bg-black/40 backdrop-blur-sm rounded-lg px-3 py-2">
+                    <div class="flex items-center justify-between text-white/90 pt-1 bg-black/40 backdrop-blur-sm rounded-lg px-3 py-2">
                       <div class="flex items-center gap-5">
                         <button @click.stop="togglePlay" class="hover:text-orange-400 hover:scale-110 transition-all">
                           <svg v-if="isPlaying" class="w-6 h-6 fill-current" viewBox="0 0 24 24">
@@ -617,9 +632,10 @@
                         </button>
                       </div>
                     </div>
-                    </transition>
                   </div>
+                  </transition>
                 </div>
+              </div>
             </div>
 
             <!-- Reaction Bar - Horizontal, Bottom Center of Video -->
@@ -662,7 +678,7 @@
           <template v-if="sidebarVisible">
 
           <!-- Functional Tabs -->
-          <div class="grid grid-cols-4 gap-0 px-4 py-3 border-b border-gray-100 sticky top-0 bg-white z-10" :class="{ 'grid-cols-3': !jiraConnected }">
+          <div class="grid gap-0 px-4 py-3 border-b border-gray-100 sticky top-0 bg-white z-10" :class="jiraConnected ? 'grid-cols-4' : 'grid-cols-3'">
             <button
               @click="activeTab = 'transcript'"
               class="px-3 py-2 text-xs rounded-lg transition-all text-center truncate"
@@ -702,7 +718,7 @@
             <!-- TAB: COMMENTS -->
             <div v-show="activeTab === 'comments'" class="flex flex-col min-h-full">
               <div v-if="comments.length === 0" class="flex flex-col items-center justify-center h-64 text-center px-5">
-                <svg class="w-16 h-16 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-10 h-10 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
                 </svg>
                 <p class="text-base font-semibold text-gray-900">No comments yet</p>
@@ -1303,6 +1319,7 @@ import { useBranding } from '@/composables/useBranding'
 import videoService from '@/services/videoService'
 import integrationService from '@/services/integrationService'
 import SBDeleteModal from '@/components/Global/SBDeleteModal.vue'
+import SBConfirmModal from '@/components/Global/SBConfirmModal.vue'
 import VideoShareIntegrations from '@/components/VideoShareIntegrations.vue'
 import Hls from 'hls.js'
 import { marked } from 'marked'
@@ -1314,6 +1331,7 @@ export default {
   name: 'VideoPlayerView',
   components: {
     SBDeleteModal,
+    SBConfirmModal,
     VideoShareIntegrations
   },
   setup() {
