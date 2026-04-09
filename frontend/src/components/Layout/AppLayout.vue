@@ -1,24 +1,24 @@
 <template>
   <div class="flex h-screen bg-white text-gray-600 overflow-hidden selection:bg-orange-100 selection:text-orange-700">
     <!-- Sidebar - Hidden on mobile/tablet, shown on desktop (lg and up) -->
-    <aside class="hidden lg:flex w-[200px] bg-white border-r border-gray-200 flex-col flex-shrink-0 h-full z-30 transition-all duration-300 relative">
+    <aside class="hidden lg:flex w-56 bg-white border-r border-gray-200 flex-col flex-shrink-0 h-full z-30 transition-all duration-300 relative">
       <!-- Logo -->
-      <div class="h-11 flex items-center px-3.5 border-b border-gray-100/50 flex-shrink-0">
+      <div class="h-14 flex items-center px-4 border-b border-gray-100/50 flex-shrink-0">
         <router-link to="/videos" class="flex items-center gap-2 group cursor-pointer">
-          <img :src="branding.logoUrl.value || '/logo.png'" alt="OpenKap" class="w-6 h-6 rounded-md shadow-sm group-hover:shadow-md transition-all duration-300" />
-          <span class="text-gray-900 font-semibold tracking-tight text-xs">OpenKap</span>
-          <span v-if="isAuthenticated" class="text-[9px] font-semibold px-1 py-0.5 rounded-full" :class="subscription?.is_active ? 'bg-orange-100 text-orange-700' : 'bg-gray-100 text-gray-600'">
+          <img :src="branding.logoUrl.value || '/logo.png'" alt="OpenKap" class="w-7 h-7 rounded-lg shadow-sm group-hover:shadow-md transition-all duration-300" />
+          <span class="text-gray-900 font-bold tracking-tight text-sm">OpenKap</span>
+          <span v-if="isAuthenticated" class="text-[10px] font-semibold px-1 py-0.5 rounded-full ml-auto" :class="subscription?.is_active ? 'bg-orange-100 text-orange-700' : 'bg-gray-100 text-gray-600'">
             {{ subscription?.is_active ? 'Pro' : 'Free' }}
           </span>
         </router-link>
       </div>
 
       <!-- Navigation Scroll Area -->
-      <div class="flex-1 overflow-y-auto px-2 py-2.5">
+      <div class="flex-1 overflow-y-auto py-4 px-3">
         <!-- Record CTA Button -->
         <button
           @click="handleNewRecording"
-          class="flex items-center justify-center gap-1.5 w-full px-3 py-1.5 mb-3 bg-orange-600 hover:bg-orange-700 text-white text-xs font-semibold rounded-md shadow-sm shadow-orange-200 transition-all hover:shadow-md cursor-pointer"
+          class="flex items-center justify-center gap-1.5 w-full px-3 py-2.5 mb-5 bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium rounded-lg shadow-sm shadow-orange-200 transition-all hover:shadow-md cursor-pointer"
         >
           <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
             <circle cx="10" cy="10" r="6"/>
@@ -31,22 +31,22 @@
           <router-link
             v-if="isAdmin"
             to="/admin/dashboard"
-            class="w-full flex items-center gap-2 px-2 py-1.5 text-xs font-medium rounded-md transition-all group"
-            :class="isActive('/admin/dashboard') ? 'text-gray-900 bg-gray-50' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'"
+            class="w-full flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg transition-all group"
+            :class="isActive('/admin/dashboard') ? 'text-orange-700 bg-orange-50 font-semibold' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'"
           >
-            <svg class="w-3.5 h-3.5 transition-colors" :class="isActive('/admin/dashboard') ? 'text-orange-600' : 'text-gray-400 group-hover:text-gray-600'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-4 h-4 transition-colors" :class="isActive('/admin/dashboard') ? 'text-orange-600' : 'text-gray-400 group-hover:text-gray-600'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
             </svg>
             Dashboard
-            <span class="ml-auto text-[8px] font-bold uppercase tracking-wider px-1 py-0.5 rounded bg-orange-100 text-orange-700">Admin</span>
+            <span class="ml-auto text-[10px] font-bold uppercase tracking-wider px-1 py-0.5 rounded bg-orange-100 text-orange-700">Admin</span>
           </router-link>
 
           <router-link
             to="/videos"
-            class="w-full flex items-center gap-2 px-2 py-1.5 text-xs font-medium rounded-md transition-all group"
-            :class="isActive('/videos') ? 'text-gray-900 bg-gray-50' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'"
+            class="w-full flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg transition-all group"
+            :class="isActive('/videos') ? 'text-orange-700 bg-orange-50 font-semibold' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'"
           >
-            <svg class="w-3.5 h-3.5 transition-colors" :class="isActive('/videos') ? 'text-orange-600' : 'text-gray-400 group-hover:text-gray-600'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-4 h-4 transition-colors" :class="isActive('/videos') ? 'text-orange-600' : 'text-gray-400 group-hover:text-gray-600'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
             </svg>
             Library
@@ -54,10 +54,10 @@
 
           <router-link
             to="/playlists"
-            class="w-full flex items-center gap-2 px-2 py-1.5 text-xs font-medium rounded-md transition-all group"
-            :class="isActive('/playlists') || route.path.startsWith('/playlist/') ? 'text-gray-900 bg-gray-50' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'"
+            class="w-full flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg transition-all group"
+            :class="isActive('/playlists') || route.path.startsWith('/playlist/') ? 'text-orange-700 bg-orange-50 font-semibold' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'"
           >
-            <svg class="w-3.5 h-3.5 transition-colors" :class="isActive('/playlists') || route.path.startsWith('/playlist/') ? 'text-orange-600' : 'text-gray-400 group-hover:text-gray-600'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-4 h-4 transition-colors" :class="isActive('/playlists') || route.path.startsWith('/playlist/') ? 'text-orange-600' : 'text-gray-400 group-hover:text-gray-600'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
             </svg>
             Playlists
@@ -65,10 +65,10 @@
 
           <router-link
             to="/feedback"
-            class="w-full flex items-center gap-2 px-2 py-1.5 text-xs font-medium rounded-md transition-all group"
-            :class="isActive('/feedback') ? 'text-gray-900 bg-gray-50' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'"
+            class="w-full flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg transition-all group"
+            :class="isActive('/feedback') ? 'text-orange-700 bg-orange-50 font-semibold' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'"
           >
-            <svg class="w-3.5 h-3.5 transition-colors" :class="isActive('/feedback') ? 'text-orange-600' : 'text-gray-400 group-hover:text-gray-600'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-4 h-4 transition-colors" :class="isActive('/feedback') ? 'text-orange-600' : 'text-gray-400 group-hover:text-gray-600'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
             </svg>
             Feedback
@@ -76,10 +76,10 @@
 
           <router-link
             to="/subscription"
-            class="w-full flex items-center gap-2 px-2 py-1.5 text-xs font-medium rounded-md transition-all group"
-            :class="isActive('/subscription') ? 'text-gray-900 bg-gray-50' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'"
+            class="w-full flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg transition-all group"
+            :class="isActive('/subscription') ? 'text-orange-700 bg-orange-50 font-semibold' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'"
           >
-            <svg class="w-3.5 h-3.5 transition-colors" :class="isActive('/subscription') ? 'text-orange-600' : 'text-gray-400 group-hover:text-gray-600'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-4 h-4 transition-colors" :class="isActive('/subscription') ? 'text-orange-600' : 'text-gray-400 group-hover:text-gray-600'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
             </svg>
             Billing
@@ -87,10 +87,10 @@
 
           <router-link
             to="/integrations"
-            class="w-full flex items-center gap-2 px-2 py-1.5 text-xs font-medium rounded-md transition-all group"
-            :class="isActive('/integrations') ? 'text-gray-900 bg-gray-50' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'"
+            class="w-full flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg transition-all group"
+            :class="isActive('/integrations') ? 'text-orange-700 bg-orange-50 font-semibold' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'"
           >
-            <svg class="w-3.5 h-3.5 transition-colors" :class="isActive('/integrations') ? 'text-orange-600' : 'text-gray-400 group-hover:text-gray-600'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-4 h-4 transition-colors" :class="isActive('/integrations') ? 'text-orange-600' : 'text-gray-400 group-hover:text-gray-600'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"/>
             </svg>
             Integrations
@@ -98,10 +98,10 @@
 
           <router-link
             to="/settings"
-            class="w-full flex items-center gap-2 px-2 py-1.5 text-xs font-medium rounded-md transition-all group"
-            :class="isActive('/settings') ? 'text-gray-900 bg-gray-50' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'"
+            class="w-full flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg transition-all group"
+            :class="isActive('/settings') ? 'text-orange-700 bg-orange-50 font-semibold' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'"
           >
-            <svg class="w-3.5 h-3.5 transition-colors" :class="isActive('/settings') ? 'text-orange-600' : 'text-gray-400 group-hover:text-gray-600'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-4 h-4 transition-colors" :class="isActive('/settings') ? 'text-orange-600' : 'text-gray-400 group-hover:text-gray-600'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
             </svg>
@@ -111,7 +111,7 @@
       </div>
 
       <!-- Upgrade Badge (when on free plan) -->
-      <div v-if="isAuthenticated && subscription && !subscription.is_active" class="px-2 pb-2">
+      <div v-if="isAuthenticated && subscription && !subscription.is_active" class="px-3 pb-3">
         <div
           @click="router.push('/subscription')"
           class="bg-gradient-to-r from-orange-50 to-orange-100/80 border border-orange-200/60 rounded-lg p-2.5 relative overflow-hidden group cursor-pointer transition-all hover:shadow-sm hover:border-orange-300"
@@ -137,28 +137,28 @@
       </div>
 
       <!-- User Footer (when authenticated) -->
-      <div v-if="isAuthenticated" class="p-2 border-t border-gray-100 bg-gray-50/30 flex-shrink-0 relative" ref="userDropdownRef">
+      <div v-if="isAuthenticated" class="p-3 border-t border-gray-100 flex-shrink-0 relative" ref="userDropdownRef">
         <button
           @click="showUserDropdown = !showUserDropdown"
-          class="w-full flex items-center gap-2 p-1.5 rounded-md hover:bg-white hover:shadow-sm hover:ring-1 hover:ring-gray-200 transition-all text-left group"
+          class="w-full flex items-center gap-2 p-2 rounded-lg hover:bg-white hover:shadow-sm hover:ring-1 hover:ring-gray-200 transition-all text-left group"
         >
           <div class="relative">
             <img
               v-if="userInfo.avatar"
               :src="userInfo.avatar"
               :alt="userInfo.name"
-              class="w-6 h-6 rounded-full bg-gray-200 object-cover ring-1 ring-white"
+              class="w-8 h-8 rounded-full bg-gray-200 object-cover ring-1 ring-white"
             />
-            <div v-else class="w-6 h-6 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center ring-1 ring-white">
+            <div v-else class="w-8 h-8 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center ring-1 ring-white">
               <span class="text-[9px] font-bold text-white">{{ userInfo.initial }}</span>
             </div>
             <div class="absolute -bottom-0.5 -right-0.5 w-2 h-2 bg-green-500 rounded-full border border-white" title="Online"></div>
           </div>
           <div class="flex-1 min-w-0">
-            <p class="text-[11px] font-medium text-gray-900 truncate">{{ userInfo.name }}</p>
-            <p class="text-[9px] text-gray-500 truncate">{{ subscription?.is_active ? 'Pro Plan' : 'Free Plan' }}</p>
+            <p class="text-sm font-medium text-gray-900 truncate">{{ userInfo.name }}</p>
+            <p class="text-xs text-gray-500 truncate">{{ subscription?.is_active ? 'Pro Plan' : 'Free Plan' }}</p>
           </div>
-          <svg class="w-2.5 h-2.5 text-gray-400 group-hover:text-gray-600 transition-transform" :class="{ 'rotate-180': showUserDropdown }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-3 h-3 text-gray-400 group-hover:text-gray-600 transition-transform" :class="{ 'rotate-180': showUserDropdown }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
           </svg>
         </button>
@@ -167,12 +167,12 @@
         <Transition name="dropdown">
           <div
             v-show="showUserDropdown"
-            class="absolute bottom-full left-2 right-2 mb-1.5 bg-white rounded-md shadow-lg border border-gray-200 py-0.5 z-50"
+            class="absolute bottom-full left-2 right-2 mb-1.5 bg-white rounded-lg shadow-lg border border-gray-200 py-0.5 z-50"
           >
             <router-link
               to="/profile"
               @click="showUserDropdown = false"
-              class="flex items-center gap-2 px-2.5 py-1.5 text-xs text-gray-700 hover:bg-gray-50 transition-colors"
+              class="flex items-center gap-2 px-2.5 py-1.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
             >
               <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
@@ -182,7 +182,7 @@
             <div class="border-t border-gray-100 my-0.5"></div>
             <button
               @click="showUserDropdown = false; showLogoutModal = true"
-              class="w-full flex items-center gap-2 px-2.5 py-1.5 text-xs text-red-600 hover:bg-red-50 transition-colors"
+              class="w-full flex items-center gap-2 px-2.5 py-1.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
             >
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>

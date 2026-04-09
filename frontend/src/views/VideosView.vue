@@ -1,11 +1,11 @@
 <template>
   <div class="animate-fade-in">
     <!-- Action Bar -->
-    <div class="flex items-center gap-3 mb-6 pb-6 border-b border-gray-100">
+    <div class="flex items-center gap-2 mb-5">
       <button
         v-if="activeTab !== 'screenshots'"
         @click="showNewFolderModal = true"
-        class="inline-flex items-center gap-2 px-4 py-2 bg-white text-gray-700 text-sm font-medium rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors"
+        class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
       >
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
@@ -17,7 +17,7 @@
       <button
         v-if="activeTab !== 'screenshots'"
         @click="handleUpload"
-        class="inline-flex items-center gap-2 px-4 py-2 bg-white text-gray-700 text-sm font-medium rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors"
+        class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
         :disabled="uploading"
       >
         <svg v-if="!uploading" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -34,7 +34,7 @@
       <button
         v-if="activeTab === 'screenshots'"
         @click="handleScreenshotUpload"
-        class="inline-flex items-center gap-2 px-4 py-2 bg-white text-gray-700 text-sm font-medium rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors"
+        class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
         :disabled="uploadingScreenshot"
       >
         <svg v-if="!uploadingScreenshot" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -65,22 +65,15 @@
         @change="onScreenshotFileSelected"
       />
 
-      <!-- Right-click hint -->
-      <div class="ml-auto hidden sm:flex items-center gap-1.5 text-xs text-gray-400">
-        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M15.042 21.672L13.684 16.6m0 0l-2.51 2.225.569-9.47 5.227 7.917-3.286-.672zM12 2.25V4.5m5.834.166l-1.591 1.591M20.25 10.5H18M7.757 14.743l-1.59 1.59M6 10.5H3.75m4.007-4.243l-1.59-1.59" />
-        </svg>
-        <span>Right-click for quick actions</span>
-      </div>
     </div>
 
     <!-- Folders Section -->
-    <div v-if="activeTab !== 'screenshots' && folders.length > 0" class="mb-8">
+    <div v-if="activeTab !== 'screenshots' && folders.length > 0" class="mb-6">
       <div class="flex flex-wrap gap-2">
         <div
           v-for="folder in folders"
           :key="folder.id"
-          class="group relative flex items-center gap-2.5 px-3.5 py-2 bg-gray-50 border border-gray-200/80 rounded-lg transition-all cursor-pointer"
+          class="group relative flex items-center gap-2.5 px-3 py-1.5 bg-white border border-gray-200 rounded-lg shadow-sm transition-all cursor-pointer"
           :class="dragOverFolderId === folder.id
             ? 'border-orange-400 bg-orange-50'
             : 'hover:border-gray-300 hover:bg-gray-100'"
@@ -90,11 +83,11 @@
           @dragleave="handleFolderDragLeave"
           @drop.prevent="handleDropOnFolder($event, folder)"
         >
-          <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+          <svg class="w-3.5 h-3.5 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z" />
           </svg>
-          <span class="text-sm font-medium text-gray-700 group-hover:text-gray-900 truncate max-w-[140px]">{{ folder.name }}</span>
-          <span class="text-xs text-gray-400">{{ folder.videos_count }}</span>
+          <span class="text-sm font-medium text-gray-700 group-hover:text-gray-900 truncate max-w-[160px]">{{ folder.name }}</span>
+          <span class="text-xs text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded-full">{{ folder.videos_count }}</span>
 
           <!-- Actions Menu Button -->
           <div class="opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity ml-0.5" @click.stop>
@@ -134,20 +127,20 @@
     </div>
 
     <!-- Library Toolbar -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
       <!-- Tabs -->
-      <div class="flex items-center p-1 bg-gray-100 rounded-lg self-start border border-gray-100/50">
+      <div class="flex border border-gray-200 rounded-lg overflow-hidden self-start">
         <button
           @click="activeTab = 'videos'"
-          class="px-3.5 py-1 text-[13px] font-medium rounded-[6px] transition-all"
-          :class="activeTab === 'videos' ? 'text-gray-900 bg-white shadow-sm' : 'text-gray-500 hover:text-gray-900 hover:bg-white/50'"
+          class="px-4 py-1.5 text-sm font-medium transition-colors"
+          :class="activeTab === 'videos' ? 'text-gray-900 bg-gray-100 font-semibold' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'"
         >
           Videos
         </button>
         <button
           @click="activeTab = 'favourites'"
-          class="px-3.5 py-1 text-[13px] font-medium rounded-[6px] transition-all"
-          :class="activeTab === 'favourites' ? 'text-gray-900 bg-white shadow-sm' : 'text-gray-500 hover:text-gray-900 hover:bg-white/50'"
+          class="px-4 py-1.5 text-sm font-medium transition-colors"
+          :class="activeTab === 'favourites' ? 'text-gray-900 bg-gray-100 font-semibold' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'"
         >
           <span class="flex items-center gap-1.5">
             <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
@@ -158,8 +151,8 @@
         </button>
         <button
           @click="activeTab = 'screenshots'"
-          class="px-3.5 py-1 text-[13px] font-medium rounded-[6px] transition-all"
-          :class="activeTab === 'screenshots' ? 'text-gray-900 bg-white shadow-sm' : 'text-gray-500 hover:text-gray-900 hover:bg-white/50'"
+          class="px-4 py-1.5 text-sm font-medium transition-colors"
+          :class="activeTab === 'screenshots' ? 'text-gray-900 bg-gray-100 font-semibold' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'"
         >
           <span class="flex items-center gap-1.5">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -256,7 +249,7 @@
         <div class="relative" ref="sortDropdownRef">
           <button
             @click="showSortDropdown = !showSortDropdown"
-            class="flex items-center gap-2 text-[13px] font-medium text-gray-600 bg-white border border-gray-100 px-3 py-1.5 rounded-lg hover:bg-gray-50 transition-all shadow-sm"
+            class="flex items-center gap-2 text-sm font-medium text-gray-600 bg-white border border-gray-200 px-3 py-1.5 rounded-lg hover:bg-gray-50 transition-all shadow-sm"
           >
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/>
@@ -290,7 +283,7 @@
         <div class="relative" ref="filterDropdownRef">
           <button
             @click="showFilterDropdown = !showFilterDropdown"
-            class="flex items-center gap-2 text-[13px] font-medium text-gray-600 bg-white border border-gray-100 px-3 py-1.5 rounded-lg hover:bg-gray-50 transition-all shadow-sm"
+            class="flex items-center gap-2 text-sm font-medium text-gray-600 bg-white border border-gray-200 px-3 py-1.5 rounded-lg hover:bg-gray-50 transition-all shadow-sm"
             :class="activeDateFilter !== 'all' ? 'border-orange-300 bg-orange-50 text-orange-700' : ''"
           >
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -356,10 +349,10 @@
         </div>
 
         <!-- View Toggle -->
-        <div class="flex items-center gap-1 border border-gray-100 rounded-lg p-0.5 bg-white">
+        <div class="flex border border-gray-200 rounded-lg overflow-hidden">
           <button
             @click="viewMode = 'grid'"
-            class="p-1.5 rounded transition-colors"
+            class="p-2 transition-colors"
             :class="viewMode === 'grid' ? 'bg-gray-100 text-gray-900' : 'text-gray-400 hover:text-gray-600'"
             title="Grid view"
           >
@@ -369,7 +362,7 @@
           </button>
           <button
             @click="viewMode = 'list'"
-            class="p-1.5 rounded transition-colors"
+            class="p-2 transition-colors"
             :class="viewMode === 'list' ? 'bg-gray-100 text-gray-900' : 'text-gray-400 hover:text-gray-600'"
             title="List view"
           >
@@ -382,7 +375,7 @@
     </div>
 
     <!-- Loading State (Skeleton Grid) -->
-    <div v-if="loading" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4 animate-pulse">
+    <div v-if="loading" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-5 animate-pulse">
       <div v-for="n in 8" :key="n" class="bg-white rounded-xl border border-gray-100 overflow-hidden">
         <div class="w-full bg-gray-200" style="aspect-ratio: 16/9;"></div>
         <div class="p-3 space-y-2">
@@ -409,11 +402,11 @@
     </div>
 
     <!-- Videos Grid View -->
-    <div v-else-if="activeTab !== 'screenshots' && filteredVideos.length > 0 && viewMode === 'grid'" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
+    <div v-else-if="activeTab !== 'screenshots' && filteredVideos.length > 0 && viewMode === 'grid'" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-5">
       <div
         v-for="video in paginatedVideos"
         :key="video.id"
-        class="group bg-white rounded-xl border border-gray-100 hover:shadow-sm hover:border-gray-300 transition-all duration-200"
+        class="group bg-white rounded-xl border border-gray-100 hover:shadow-md hover:border-gray-200 transition-all duration-200"
         :class="selectedVideos.includes(video.id) ? 'ring-2 ring-orange-500 ring-offset-2' : ''"
         :draggable="folders.length > 0"
         @dragstart="handleVideoDragStart($event, video)"
@@ -455,7 +448,7 @@
           </div>
 
           <!-- Duration Badge -->
-          <div class="absolute bottom-2 right-2 z-10 bg-black/75 backdrop-blur-sm text-white text-xs font-medium px-1.5 py-0.5 rounded pointer-events-none">
+          <div class="absolute bottom-2 right-2 z-10 bg-black/80 backdrop-blur-sm text-white text-[11px] font-medium px-2 py-0.5 rounded-md pointer-events-none">
             {{ formatDuration(video.duration) }}
           </div>
 
@@ -472,8 +465,8 @@
           <div
             class="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 lg:opacity-0 lg:group-hover:opacity-100"
           >
-            <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-xl transform group-hover:scale-100 scale-90 transition-transform duration-200 pointer-events-none">
-              <svg class="w-4 h-4 text-gray-900 ml-0.5" fill="currentColor" viewBox="0 0 20 20">
+            <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-xl transform group-hover:scale-100 scale-90 transition-transform duration-200 pointer-events-none">
+              <svg class="w-5 h-5 text-gray-900 ml-0.5" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.841z"/>
               </svg>
             </div>
@@ -495,11 +488,11 @@
         </div>
 
         <!-- Video Info -->
-        <div class="p-2.5">
+        <div class="p-3">
           <!-- Title Row -->
           <div class="flex items-start gap-1.5">
             <h3
-              class="flex-1 font-medium text-[13px] text-gray-900 leading-snug line-clamp-2 cursor-pointer hover:text-orange-600 transition-colors"
+              class="flex-1 font-medium text-sm text-gray-900 leading-snug line-clamp-2 cursor-pointer hover:text-orange-600 transition-colors"
               @click="handleVideoClick(video.id)"
             >
               {{ video.title }}
@@ -587,7 +580,7 @@
             <span>{{ formatDate(video.createdAt) }}</span>
           </div>
           <!-- Stats Row -->
-          <div class="flex items-center gap-3 mt-1.5 text-[11px] text-gray-400">
+          <div class="flex items-center gap-2.5 mt-1.5 text-[11px] text-gray-400">
             <span class="flex items-center gap-1" title="Views">
               <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
@@ -613,11 +606,11 @@
     </div>
 
     <!-- Videos List View -->
-    <div v-else-if="activeTab !== 'screenshots' && filteredVideos.length > 0 && viewMode === 'list'" class="space-y-2">
+    <div v-else-if="activeTab !== 'screenshots' && filteredVideos.length > 0 && viewMode === 'list'" class="space-y-1.5">
       <div
         v-for="video in paginatedVideos"
         :key="video.id"
-        class="group flex items-center gap-4 p-3 bg-white border border-gray-100 rounded-xl hover:shadow-sm hover:border-gray-300 transition-all duration-200 cursor-pointer"
+        class="group flex items-center gap-4 p-3.5 bg-white border border-gray-100 rounded-xl hover:shadow-sm hover:border-gray-200 transition-all cursor-pointer"
         :class="selectedVideos.includes(video.id) ? 'ring-2 ring-orange-500 ring-offset-1 border-orange-200' : ''"
         @click="handleVideoClick(video.id)"
         @contextmenu.prevent="handleVideoContextMenu($event, video)"
@@ -637,7 +630,7 @@
         </div>
 
         <!-- Thumbnail -->
-        <div class="relative flex-shrink-0 w-40 rounded-lg overflow-hidden group/thumb" style="aspect-ratio: 16/9;">
+        <div class="relative flex-shrink-0 w-44 rounded-lg overflow-hidden group/thumb" style="aspect-ratio: 16/9;">
           <img
             v-if="video.thumbnail"
             :src="video.thumbnail"
@@ -837,7 +830,7 @@
       </div>
 
       <!-- Screenshots Grid -->
-      <div v-else-if="screenshots.length > 0" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
+      <div v-else-if="screenshots.length > 0" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-5">
         <div
           v-for="screenshot in screenshots"
           :key="screenshot.id"
