@@ -486,39 +486,38 @@
                       <span v-for="(word, wi) in activeCaptionCue.words" :key="wi" class="caption-word" :class="word.active ? 'caption-active' : 'caption-inactive'">{{ word.text }}</span>
                     </div>
                   </div>
-                  <!-- Progress + Control Buttons -->
-                  <transition name="fade">
-                  <div v-show="controlsVisible" class="flex flex-col gap-3">
-                    <!-- Progress -->
+                  <!-- Progress Bar — always visible -->
+                  <div
+                    class="relative h-1.5 w-full group/seek cursor-pointer flex items-center"
+                    @click.stop="seek"
+                    @mousedown.stop="startSeeking"
+                    @mousemove="updateHoverTime"
+                    @mouseleave="hoverTime = null"
+                    ref="progressBar"
+                  >
+                    <div class="absolute left-0 h-full bg-white/30 rounded-full" :style="{ width: bufferedPercent + '%' }"></div>
+                    <div class="absolute left-0 h-full bg-orange-500 rounded-full shadow-[0_0_8px_rgba(249,115,22,0.4)]" :style="{ width: progressPercent + '%' }"></div>
                     <div
-                      class="relative h-2.5 w-full group/seek cursor-pointer flex items-center"
-                      @click.stop="seek"
-                      @mousedown.stop="startSeeking"
-                      @mousemove="updateHoverTime"
-                      @mouseleave="hoverTime = null"
-                      ref="progressBar"
+                      class="absolute w-3.5 h-3.5 bg-white rounded-full shadow-lg scale-0 group-hover/seek:scale-100 transition-transform flex items-center justify-center"
+                      :style="{ left: `calc(${progressPercent}% - 7px)` }"
                     >
-                      <div class="absolute inset-0 bg-white/10 rounded-full"></div>
-                      <div class="absolute left-0 h-full bg-white/30 rounded-full" :style="{ width: bufferedPercent + '%' }"></div>
-                      <div class="absolute left-0 h-full bg-orange-500 rounded-full shadow-[0_0_10px_rgba(249,115,22,0.5)]" :style="{ width: progressPercent + '%' }"></div>
-                      <div
-                        class="absolute w-4 h-4 bg-white rounded-full shadow-lg scale-0 group-hover/seek:scale-100 transition-transform flex items-center justify-center"
-                        :style="{ left: `calc(${progressPercent}% - 8px)` }"
-                      >
-                        <div class="w-1.5 h-1.5 bg-orange-600 rounded-full"></div>
-                      </div>
-                      <!-- Hover time tooltip -->
-                      <div
-                        v-if="hoverTime !== null"
-                        class="absolute -top-10 px-2 py-1 bg-black text-white text-xs rounded transform -translate-x-1/2 pointer-events-none"
-                        :style="{ left: hoverPercent + '%' }"
-                      >
-                        {{ formatTime(hoverTime) }}
-                      </div>
+                      <div class="w-1.5 h-1.5 bg-orange-600 rounded-full"></div>
                     </div>
+                    <!-- Hover time tooltip -->
+                    <div
+                      v-if="hoverTime !== null"
+                      class="absolute -top-8 px-2 py-1 bg-black text-white text-xs rounded transform -translate-x-1/2 pointer-events-none"
+                      :style="{ left: hoverPercent + '%' }"
+                    >
+                      {{ formatTime(hoverTime) }}
+                    </div>
+                  </div>
 
+                  <!-- Control Buttons — visible on hover -->
+                  <transition name="fade">
+                  <div v-show="controlsVisible" class="flex flex-col gap-2">
                     <!-- Control Buttons -->
-                    <div class="flex items-center justify-between text-white/90 pt-1 bg-black/40 backdrop-blur-sm rounded-lg px-3 py-2">
+                    <div class="flex items-center justify-between text-white/90 pt-1 px-1">
                       <div class="flex items-center gap-5">
                         <button @click.stop="togglePlay" class="hover:text-orange-400 hover:scale-110 transition-all">
                           <svg v-if="isPlaying" class="w-6 h-6 fill-current" viewBox="0 0 24 24">
@@ -678,20 +677,13 @@
           <template v-if="sidebarVisible">
 
           <!-- Functional Tabs -->
-          <div class="grid gap-0 px-4 py-3 border-b border-gray-100 sticky top-0 bg-white z-10" :class="jiraConnected ? 'grid-cols-4' : 'grid-cols-3'">
+          <div class="grid gap-0 px-4 py-3 border-b border-gray-100 sticky top-0 bg-white z-10" :class="jiraConnected ? 'grid-cols-3' : 'grid-cols-2'">
             <button
               @click="activeTab = 'transcript'"
               class="px-3 py-2 text-xs rounded-lg transition-all text-center truncate"
               :class="activeTab === 'transcript' ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'"
             >
               Transcript
-            </button>
-            <button
-              @click="activeTab = 'summary'"
-              class="px-3 py-2 text-xs rounded-lg transition-all text-center truncate"
-              :class="activeTab === 'summary' ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'"
-            >
-              Summary
             </button>
             <button
               @click="activeTab = 'comments'"
@@ -760,70 +752,13 @@
 
             <!-- TAB: TRANSCRIPT -->
             <div v-show="activeTab === 'transcript'" class="flex flex-col min-h-full">
-              <!-- Loading state -->
-              <div v-if="transcriptionStatus === 'processing'" class="flex flex-col items-center justify-center h-64 text-center px-5">
-                <div class="w-16 h-16 rounded-full bg-orange-100 flex items-center justify-center mb-4 animate-pulse">
-                  <svg class="w-8 h-8 text-orange-500 animate-spin" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                </div>
-                <p class="text-base font-semibold text-gray-900">Generating Transcript...</p>
-                <p class="text-sm text-gray-500 mt-1">{{ transcriptionProgress }}% complete</p>
-                <div class="w-48 h-1.5 bg-gray-200 rounded-full mt-3 overflow-hidden">
-                  <div class="h-full bg-orange-500 rounded-full transition-all duration-300" :style="{ width: transcriptionProgress + '%' }"></div>
-                </div>
-              </div>
-
-              <!-- Empty state - not started -->
-              <div v-else-if="transcriptionStatus === 'pending'" class="flex flex-col items-center justify-center h-64 text-center px-5">
-                <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
-                  <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                  </svg>
-                </div>
-                <p class="text-base font-semibold text-gray-900">No Transcript Yet</p>
-                <p class="text-sm text-gray-500 mt-1 mb-4">Generate an AI transcript of your video</p>
-                <button
-                  @click="requestTranscription"
-                  :disabled="isRequestingTranscription || !video.conversion_status || video.conversion_status !== 'completed'"
-                  class="px-4 py-2 bg-orange-600 text-white text-sm font-medium rounded-lg hover:bg-orange-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center gap-2"
-                >
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/>
-                  </svg>
-                  {{ isRequestingTranscription ? 'Starting...' : 'Generate Transcript' }}
-                </button>
-              </div>
-
-              <!-- Skipped - no audio -->
-              <div v-else-if="transcriptionStatus === 'skipped'" class="flex flex-col items-center justify-center h-64 text-center px-5">
-                <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
-                  <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/>
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"/>
-                  </svg>
-                </div>
-                <p class="text-base font-semibold text-gray-900">No Audio Detected</p>
-                <p class="text-sm text-gray-500 mt-1">This video has no audio track, so transcription is not available</p>
-              </div>
-
-              <!-- Error state -->
-              <div v-else-if="transcriptionStatus === 'failed'" class="flex flex-col items-center justify-center h-64 text-center px-5">
-                <div class="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mb-4">
-                  <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-                  </svg>
-                </div>
-                <p class="text-base font-semibold text-gray-900">Transcription Failed</p>
-                <p class="text-sm text-gray-500 mt-1 mb-4">{{ transcriptionError || 'Something went wrong' }}</p>
-                <button
-                  @click="requestTranscription"
-                  :disabled="isRequestingTranscription"
-                  class="px-4 py-2 bg-orange-600 text-white text-sm font-medium rounded-lg hover:bg-orange-700 transition-colors disabled:bg-gray-300"
-                >
-                  Try Again
-                </button>
+              <!-- No audio -->
+              <div v-if="transcriptionStatus === 'skipped'" class="flex flex-col items-center justify-center h-48 text-center px-5">
+                <svg class="w-8 h-8 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"/>
+                </svg>
+                <p class="text-sm font-medium text-gray-500">No Audio Detected</p>
               </div>
 
               <!-- Transcript content with timestamps -->
@@ -966,90 +901,6 @@
                   </button>
                 </div>
                 <p class="text-[13px] text-gray-700 leading-relaxed whitespace-pre-wrap">{{ transcription }}</p>
-              </div>
-            </div>
-
-            <!-- TAB: SUMMARY -->
-            <div v-show="activeTab === 'summary'" class="flex flex-col min-h-full">
-              <!-- Loading state -->
-              <div v-if="summaryStatus === 'processing'" class="flex flex-col items-center justify-center h-64 text-center px-5">
-                <div class="w-16 h-16 rounded-full bg-gradient-to-br from-orange-100 to-amber-100 flex items-center justify-center mb-4 animate-pulse">
-                  <svg class="w-8 h-8 text-orange-500 animate-spin" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                </div>
-                <p class="text-base font-semibold text-gray-900">Generating Summary...</p>
-                <p class="text-sm text-gray-500 mt-1">AI is analyzing your video</p>
-              </div>
-
-              <!-- Skipped - no audio -->
-              <div v-else-if="summaryStatus === 'skipped'" class="flex flex-col items-center justify-center h-64 text-center px-5">
-                <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
-                  <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/>
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"/>
-                  </svg>
-                </div>
-                <p class="text-base font-semibold text-gray-900">No Audio Detected</p>
-                <p class="text-sm text-gray-500 mt-1">Summary is not available for videos without audio</p>
-              </div>
-
-              <!-- Empty state - waiting for transcript -->
-              <div v-else-if="summaryStatus === 'pending' && transcriptionStatus !== 'completed'" class="flex flex-col items-center justify-center h-64 text-center px-5">
-                <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
-                  <svg class="w-8 h-8 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/>
-                  </svg>
-                </div>
-                <p class="text-base font-semibold text-gray-900">Summary Requires Transcript</p>
-                <p class="text-sm text-gray-500 mt-1">Generate a transcript first to get an AI summary</p>
-              </div>
-
-              <!-- Error state -->
-              <div v-else-if="summaryStatus === 'failed'" class="flex flex-col items-center justify-center h-64 text-center px-5">
-                <div class="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mb-4">
-                  <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-                  </svg>
-                </div>
-                <p class="text-base font-semibold text-gray-900">Summary Failed</p>
-                <p class="text-sm text-gray-500 mt-1">{{ summaryError || 'Something went wrong' }}</p>
-              </div>
-
-              <!-- Summary content -->
-              <div v-else-if="summary" class="p-5">
-                <div class="flex items-center justify-between mb-4">
-                  <div class="flex items-center gap-2">
-                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-orange-100 to-amber-100 flex items-center justify-center">
-                      <svg class="w-4 h-4 text-orange-500" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/>
-                      </svg>
-                    </div>
-                    <span class="text-sm font-semibold text-gray-900">AI Summary</span>
-                  </div>
-                  <button
-                    @click="copySummary"
-                    class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
-                  >
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
-                    </svg>
-                    {{ copiedSummary ? 'Copied!' : 'Copy' }}
-                  </button>
-                </div>
-                <div class="prose prose-sm max-w-none text-gray-700 leading-relaxed" v-html="formattedSummary"></div>
-              </div>
-
-              <!-- Pending state - transcript complete but no summary yet -->
-              <div v-else-if="summaryStatus === 'pending' && transcriptionStatus === 'completed'" class="flex flex-col items-center justify-center h-64 text-center px-5">
-                <div class="w-16 h-16 rounded-full bg-orange-100 flex items-center justify-center mb-4">
-                  <svg class="w-8 h-8 text-orange-500" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/>
-                  </svg>
-                </div>
-                <p class="text-base font-semibold text-gray-900">Summary Available Soon</p>
-                <p class="text-sm text-gray-500 mt-1">AI summary is being generated...</p>
               </div>
             </div>
 
@@ -2315,7 +2166,7 @@ export default {
           }
 
           // If still processing, start polling
-          if (transcriptionStatus.value === 'processing' || summaryStatus.value === 'processing' || bugDetectionStatus.value === 'processing') {
+          if (transcriptionStatus.value === 'processing' || bugDetectionStatus.value === 'processing') {
             startTranscriptionPolling()
           }
         }
@@ -2329,7 +2180,7 @@ export default {
 
       isRequestingTranscription.value = true
       try {
-        const result = await videoService.requestTranscription(video.value.id, true, true)
+        const result = await videoService.requestTranscription(video.value.id, true, false)
         if (result.success) {
           transcriptionStatus.value = 'processing'
           transcriptionProgress.value = 0
