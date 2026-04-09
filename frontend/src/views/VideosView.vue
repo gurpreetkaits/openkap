@@ -67,6 +67,16 @@
 
     </div>
 
+    <!-- Stats context line -->
+    <div v-if="!loading && videos.length > 0 && activeTab === 'videos'" class="flex items-center gap-2 mb-4 text-sm">
+      <span class="font-semibold text-gray-800">{{ videos.length }}</span>
+      <span class="text-gray-400">recording{{ videos.length !== 1 ? 's' : '' }}</span>
+      <template v-if="filteredVideos.length !== videos.length">
+        <span class="text-gray-200">·</span>
+        <span class="text-gray-500">{{ filteredVideos.length }} shown</span>
+      </template>
+    </div>
+
     <!-- Folders Section -->
     <div v-if="activeTab !== 'screenshots' && folders.length > 0" class="mb-6">
       <div class="flex flex-wrap gap-2">
@@ -406,7 +416,7 @@
       <div
         v-for="video in paginatedVideos"
         :key="video.id"
-        class="group bg-white rounded-xl border border-gray-100 hover:shadow-md hover:border-gray-200 transition-all duration-200"
+        class="group bg-white rounded-xl border border-gray-100 hover:shadow-lg hover:shadow-gray-200/60 hover:border-gray-200 transition-all duration-200 hover:-translate-y-0.5"
         :class="selectedVideos.includes(video.id) ? 'ring-2 ring-orange-500 ring-offset-2' : ''"
         :draggable="folders.length > 0"
         @dragstart="handleVideoDragStart($event, video)"
@@ -465,8 +475,8 @@
           <div
             class="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 lg:opacity-0 lg:group-hover:opacity-100"
           >
-            <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-xl transform group-hover:scale-100 scale-90 transition-transform duration-200 pointer-events-none">
-              <svg class="w-5 h-5 text-gray-900 ml-0.5" fill="currentColor" viewBox="0 0 20 20">
+            <div class="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center shadow-xl shadow-orange-500/25 transform group-hover:scale-100 scale-90 transition-transform duration-200 pointer-events-none">
+              <svg class="w-5 h-5 text-white ml-0.5" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.841z"/>
               </svg>
             </div>
@@ -652,9 +662,9 @@
             {{ formatDuration(video.duration) }}
           </div>
           <!-- Play overlay -->
-          <div class="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover/thumb:opacity-100 transition-opacity duration-200">
-            <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-lg">
-              <svg class="w-4 h-4 text-gray-900 ml-0.5" fill="currentColor" viewBox="0 0 20 20">
+          <div class="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover/thumb:opacity-100 transition-opacity duration-200">
+            <div class="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center shadow-lg shadow-orange-500/25">
+              <svg class="w-4 h-4 text-white ml-0.5" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.841z"/>
               </svg>
             </div>
@@ -795,7 +805,7 @@
               @click="goToPage(page)"
               class="w-8 h-8 text-sm font-medium rounded-lg transition-colors"
               :class="page === currentPage
-                ? 'bg-gray-900 text-white'
+                ? 'bg-orange-600 text-white'
                 : 'text-gray-700 hover:bg-gray-100'"
             >
               {{ page }}
@@ -897,8 +907,8 @@
 
       <!-- Screenshots Empty State -->
       <div v-else class="text-center py-20">
-        <div class="w-16 h-16 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center">
-          <svg class="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="w-20 h-20 mx-auto mb-5 bg-gradient-to-br from-orange-50 to-orange-100 rounded-2xl flex items-center justify-center shadow-sm border border-orange-100">
+          <svg class="w-9 h-9 text-orange-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
           </svg>
         </div>
@@ -919,12 +929,12 @@
     </template>
 
     <!-- Videos Empty State -->
-    <div v-else-if="activeTab !== 'screenshots' && !loading && filteredVideos.length === 0" class="text-center py-20">
-      <div class="w-16 h-16 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center">
-        <svg v-if="activeTab === 'favourites'" class="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div v-else-if="activeTab !== 'screenshots' && !loading && filteredVideos.length === 0" class="text-center py-24">
+      <div class="w-20 h-20 mx-auto mb-5 bg-gradient-to-br from-orange-50 to-orange-100 rounded-2xl flex items-center justify-center shadow-sm border border-orange-100">
+        <svg v-if="activeTab === 'favourites'" class="w-8 h-8 text-orange-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
         </svg>
-        <svg v-else class="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg v-else class="w-8 h-8 text-orange-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
         </svg>
       </div>
