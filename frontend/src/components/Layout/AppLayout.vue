@@ -88,6 +88,21 @@
       </router-link>
 
       <router-link
+        to="/analytics"
+        class="group flex items-center rounded-lg transition-all font-medium text-sm"
+        :class="[
+          sidebarCollapsed ? 'justify-center px-2 py-2.5' : 'gap-3 px-3 py-2',
+          isActive('/analytics') ? 'text-orange-700 bg-orange-50 font-semibold' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+        ]"
+        :title="sidebarCollapsed ? 'Analytics' : ''"
+      >
+        <svg class="w-4 h-4 flex-shrink-0 transition-colors" :class="isActive('/analytics') ? 'text-orange-500' : 'text-gray-400 group-hover:text-gray-600'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+        </svg>
+        <span v-show="!sidebarCollapsed" class="whitespace-nowrap overflow-hidden">Analytics</span>
+      </router-link>
+
+      <router-link
         to="/playlists"
         class="group flex items-center rounded-lg transition-all font-medium text-sm"
         :class="[
