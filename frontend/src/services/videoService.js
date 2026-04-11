@@ -1038,6 +1038,29 @@ class VideoService {
       throw error
     }
   }
+
+  async askTranscriptQuestion(id, question) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/videos/${id}/transcript-chat`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ question })
+      })
+
+      if (handleUnauthorized(response)) return null
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to get answer')
+      }
+
+      return data
+    } catch (error) {
+      console.error('Error asking transcript question:', error)
+      throw error
+    }
+  }
 }
 
 export default new VideoService()

@@ -34,6 +34,8 @@ class GoogleAuthController extends Controller
                 ->orWhere('email', $googleUser->email)
                 ->first();
 
+            $isNewUser = false;
+
             if ($user) {
                 // Update existing user
                 $user->update([
@@ -42,6 +44,7 @@ class GoogleAuthController extends Controller
                 ]);
             } else {
                 // Create new user
+                $isNewUser = true;
                 $user = User::create([
                     'name' => $googleUser->name,
                     'email' => $googleUser->email,
@@ -50,6 +53,11 @@ class GoogleAuthController extends Controller
                     'password' => null, // No password for OAuth users
                     'email_verified_at' => now(),
                 ]);
+            }
+
+            // Also treat existing users who haven't completed onboarding as new
+            if (! $isNewUser && is_null($user->onboarded_at)) {
+                $isNewUser = true;
             }
 
             // Create auth token
@@ -67,6 +75,7 @@ class GoogleAuthController extends Controller
                 'max_recording_seconds' => $user->getMaxRecordingSeconds(),
                 'min_recording_seconds' => $user->getMinRecordingSeconds(),
                 'is_admin' => $user->isAdmin(),
+                'is_new_user' => $isNewUser,
             ]));
 
             // Use URL fragment (#) instead of query string (?) to prevent token leaking

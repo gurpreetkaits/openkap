@@ -21,6 +21,7 @@ use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\VideoController;
 use App\Http\Controllers\VideoViewController;
+use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\WorkspaceController;
 use App\Http\Controllers\WorkspaceInvitationController;
 use App\Http\Controllers\WorkspaceMemberController;
@@ -111,6 +112,9 @@ Route::get('/share/screenshot/{token}', [ScreenshotController::class, 'viewShare
 // ============================================
 
 Route::middleware('auth:sanctum')->group(function () {
+    // Onboarding
+    Route::post('/onboarding/complete', [OnboardingController::class, 'complete']);
+
     // Commenting on shared videos requires auth
     Route::post('/share/video/{token}/comments', [CommentController::class, 'storeByToken']);
 
@@ -241,6 +245,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // Transcription editing
         Route::put('/{id}/transcription', [VideoController::class, 'updateTranscription']);
+
+        // Transcript AI chat (5 questions/day limit)
+        Route::post('/{id}/transcript-chat', [VideoController::class, 'transcriptChat']);
 
         // Video editor
         Route::post('/{id}/apply-edits', [VideoController::class, 'applyEdits']);

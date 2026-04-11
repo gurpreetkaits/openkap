@@ -11,8 +11,10 @@ use App\Http\Requests\BulkDeleteVideosRequest;
 use App\Http\Requests\BulkFavouriteVideosRequest;
 use App\Managers\VideoManager;
 use App\Services\CaptionService;
+use App\Services\ChatService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 class VideoController extends Controller
@@ -811,5 +813,51 @@ class VideoController extends Controller
         $fileName = ($video->title ?? 'video').'.mp4';
 
         return response()->download($filePath, $fileName)->deleteFileAfterSend(true);
+    }
+
+    public function transcriptChat($id, Request $request, ChatService $chatService)
+    {
+        $validated = $request->validate([
+            'question' => 'required|string|max:500',
+        ]);
+
+        $video = $this->videoManager->findVideoOrFail($id);
+
+        if ($video->user_id !== Auth::id()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $transcript = $video->transcription;
+        if (! $transcript) {
+            return response()->json(['message' => 'No transcript available for this video.'], 422);
+        }
+
+        // Limit to 5 questions per video per user per day
+        $cacheKey = "transcript_chat:{$video->id}:{$request->user()->id}";
+        $questionCount = Cache::get($cacheKey, 0);
+
+        if ($questionCount >= 5) {
+            return response()->json(['message' => 'You have reached the limit of 5 questions for this video today.'], 429);
+        }
+
+        $systemPrompt = "You are a helpful assistant. The user has a video with the following transcript. Answer their question based only on the transcript content. Be concise (under 150 words).\n\nTranscript:\n{$transcript}";
+
+        $messages = [
+            ['role' => 'system', 'content' => $systemPrompt],
+            ['role' => 'user', 'content' => $validated['question']],
+        ];
+
+        try {
+            $response = $chatService->forUser($request->user())->sendMessage($messages);
+
+            Cache::put($cacheKey, $questionCount + 1, now()->endOfDay());
+
+            return response()->json([
+                'answer' => $response->content,
+                'questions_remaining' => 4 - $questionCount,
+            ]);
+        } catch (\RuntimeException $e) {
+            return response()->json(['message' => $e->getMessage()], 500);
+        }
     }
 }

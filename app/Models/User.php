@@ -32,6 +32,9 @@ class User extends Authenticatable
         'location',
         'email_verified_at',
         'is_admin',
+        'onboarded_at',
+        'heard_from',
+        'organization_name',
     ];
 
     /**
@@ -58,6 +61,7 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
+            'onboarded_at' => 'datetime',
             'password' => 'hashed',
             'is_admin' => 'boolean',
             // Subscription timestamp casts

@@ -149,6 +149,12 @@ const routes = [
     component: () => import("../views/AuthCallbackView.vue"),
   },
   {
+    path: "/onboarding",
+    name: "Onboarding",
+    component: () => import("../views/OnboardingView.vue"),
+    meta: { requiresAuth: true },
+  },
+  {
     path: "/:pathMatch(.*)*",
     component: () => import("../views/NotFoundView.vue"),
   },

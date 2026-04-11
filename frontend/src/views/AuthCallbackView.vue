@@ -70,6 +70,12 @@ onMounted(() => {
       const user = JSON.parse(decodeURIComponent(userJson))
       auth.setAuth(token, user)
 
+      // New users go through onboarding
+      if (user.is_new_user) {
+        router.push('/onboarding')
+        return
+      }
+
       // Check for stored redirect URL
       const redirect = localStorage.getItem('auth_redirect')
       localStorage.removeItem('auth_redirect')

@@ -710,41 +710,42 @@
             <!-- TAB: COMMENTS -->
             <div v-show="activeTab === 'comments'" class="flex flex-col min-h-full">
               <div v-if="comments.length === 0" class="flex flex-col items-center justify-center h-64 text-center px-5">
-                <svg class="w-10 h-10 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
-                </svg>
-                <p class="text-base font-semibold text-gray-900">No comments yet</p>
-                <p class="text-sm text-gray-500 mt-1">Be the first to share your thoughts!</p>
+                <div class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-3">
+                  <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                  </svg>
+                </div>
+                <p class="text-sm font-semibold text-gray-900">No comments yet</p>
+                <p class="text-xs text-gray-400 mt-1">Start the conversation</p>
               </div>
 
-              <div v-else>
+              <div v-else class="flex flex-col gap-1 p-3">
                 <div
                   v-for="comment in comments"
                   :key="comment.id"
-                  class="group p-5 hover:bg-gray-50/80 transition-colors border-b border-gray-50 flex gap-3 items-start relative"
+                  class="group flex gap-2.5 items-start"
                 >
-                  <div class="absolute left-0 top-0 bottom-0 w-0.5 bg-orange-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                  <div class="relative">
-                    <img v-if="comment.avatar" :src="comment.avatar" class="w-8 h-8 rounded-full object-cover border border-gray-100 shadow-sm">
-                    <div v-else class="w-8 h-8 rounded-full bg-gradient-to-br from-orange-100 to-amber-100 flex items-center justify-center border border-orange-200/50 text-orange-600 text-xs font-bold shadow-sm">
-                      {{ comment.author.charAt(0) }}
+                  <div class="flex-shrink-0 pt-0.5">
+                    <img v-if="comment.avatar" :src="comment.avatar" class="w-7 h-7 rounded-full object-cover ring-1 ring-gray-100">
+                    <div v-else class="w-7 h-7 rounded-full bg-gradient-to-br from-orange-100 to-amber-100 flex items-center justify-center text-orange-600 text-[10px] font-bold ring-1 ring-orange-200/40">
+                      {{ comment.author.charAt(0).toUpperCase() }}
                     </div>
                   </div>
                   <div class="flex-1 min-w-0">
-                    <div class="flex items-center justify-between mb-1">
-                      <div class="flex items-center gap-2">
-                        <span class="text-xs font-semibold text-gray-900">{{ comment.author }}</span>
-                        <button
-                          v-if="comment.timestamp_seconds != null"
-                          @click="seekToTime(comment.timestamp_seconds)"
-                          class="text-[10px] font-mono bg-orange-50 text-orange-600 px-1.5 py-0.5 rounded hover:bg-orange-100 transition-colors cursor-pointer"
-                        >
-                          {{ formatTime(comment.timestamp_seconds) }}
-                        </button>
+                    <div class="bg-gray-50 rounded-xl rounded-tl-sm px-3 py-2">
+                      <div class="flex items-center gap-1.5 mb-0.5">
+                        <span class="text-[11px] font-semibold text-gray-900">{{ comment.author }}</span>
+                        <span class="text-[9px] text-gray-400">{{ comment.time }}</span>
                       </div>
-                      <span class="text-[10px] text-gray-400">{{ comment.time }}</span>
+                      <p class="text-[12px] text-gray-700 leading-relaxed">{{ comment.text }}</p>
                     </div>
-                    <p class="text-[13px] text-gray-600 leading-relaxed">{{ comment.text }}</p>
+                    <button
+                      v-if="comment.timestamp_seconds != null"
+                      @click="seekToTime(comment.timestamp_seconds)"
+                      class="text-[9px] font-mono text-orange-500 hover:text-orange-600 mt-0.5 ml-1 transition-colors"
+                    >
+                      {{ formatTime(comment.timestamp_seconds) }}
+                    </button>
                   </div>
                 </div>
               </div>
@@ -763,9 +764,8 @@
 
               <!-- Transcript content with timestamps -->
               <div v-else-if="transcriptionSegments && transcriptionSegments.length > 0" class="flex flex-col h-full">
-                <!-- Enhanced header with search & actions -->
+                <!-- Header with search & actions -->
                 <div class="sticky top-0 bg-white/95 backdrop-blur-sm z-10 border-b border-gray-100">
-                  <!-- Search bar -->
                   <div class="px-4 pt-3 pb-2">
                     <div class="relative">
                       <svg class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -788,18 +788,13 @@
                       </button>
                     </div>
                   </div>
-                  <!-- Stats & Actions row -->
                   <div class="flex items-center justify-between px-4 py-2">
                     <div class="flex items-center gap-3 text-[11px] text-gray-400">
                       <span>{{ transcriptWordCount }} words</span>
                       <span class="w-1 h-1 rounded-full bg-gray-300"></span>
                       <span>{{ transcriptReadTime }} min read</span>
-                      <span v-if="transcriptSearch && filteredSegments.length !== transcriptionSegments.length" class="text-orange-500 font-medium">
-                        {{ filteredSegments.length }} matches
-                      </span>
                     </div>
                     <div class="flex items-center gap-1">
-                      <!-- Export dropdown -->
                       <div class="relative export-menu-container">
                         <button
                           @click="showExportMenu = !showExportMenu"
@@ -825,7 +820,6 @@
                           </button>
                         </div>
                       </div>
-                      <!-- Copy all -->
                       <button
                         @click="copyTranscript"
                         class="flex items-center gap-1 px-2 py-1.5 text-xs font-medium text-gray-500 hover:text-orange-600 hover:bg-orange-50 rounded-md transition-colors"
@@ -838,46 +832,38 @@
                     </div>
                   </div>
                 </div>
-                <!-- Segments list -->
+                <!-- Half-minute paragraph groups with word-level highlighting -->
                 <div class="flex-1 overflow-y-auto" ref="transcriptContainer">
                   <div
-                    v-for="(segment, index) in filteredSegments"
-                    :key="segment.originalIndex"
-                    :ref="el => { if (el) segmentRefs[segment.originalIndex] = el }"
-                    @click="seekToTime(segment.start)"
+                    v-for="(group, gi) in transcriptParagraphs"
+                    :key="gi"
+                    :ref="el => { if (el) paragraphRefs[gi] = el }"
+                    @click="seekToTime(group.start)"
                     class="group relative px-4 py-3 cursor-pointer transition-all duration-200 border-l-2"
-                    :class="activeSegmentIndex === segment.originalIndex
-                      ? 'bg-orange-50 border-l-orange-500'
+                    :class="activeParagraphIndex === gi
+                      ? 'bg-orange-50/50 border-l-orange-500'
                       : 'hover:bg-gray-50 border-l-transparent'"
                   >
-                    <div class="flex gap-3">
+                    <span
+                      class="text-[10px] font-medium tabular-nums tracking-wide text-gray-400 block mb-1.5"
+                      :class="activeParagraphIndex === gi ? 'text-orange-500' : ''"
+                    >
+                      {{ formatTime(group.start) }}
+                    </span>
+                    <p class="text-[12px] leading-[1.7]">
                       <span
-                        class="text-[11px] font-medium tabular-nums tracking-wide flex-shrink-0 transition-colors min-w-[36px] pt-0.5"
-                        :class="activeSegmentIndex === segment.originalIndex ? 'text-orange-500' : 'text-gray-400'"
-                      >
-                        {{ formatTime(segment.start) }}
-                      </span>
-                      <p
-                        class="text-[13px] leading-relaxed transition-colors flex-1"
-                        :class="activeSegmentIndex === segment.originalIndex ? 'text-gray-900' : 'text-gray-600'"
-                        v-html="highlightSearch(segment.text)"
-                      ></p>
-                    </div>
-                    <!-- Hover actions -->
-                    <div class="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
-                      <button
-                        @click.stop="copySegment(segment)"
-                        class="p-1.5 rounded-md bg-white shadow-sm border border-gray-200 text-gray-400 hover:text-orange-500 hover:border-orange-200 transition-colors"
-                        title="Copy this segment"
-                      >
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
-                        </svg>
-                      </button>
-                    </div>
+                        v-for="(word, wi) in group.words"
+                        :key="wi"
+                        class="transcript-word transition-all duration-100"
+                        :class="word.isActive
+                          ? 'bg-orange-200/70 text-gray-900 rounded px-0.5 -mx-0.5'
+                          : activeParagraphIndex === gi
+                            ? 'text-gray-700'
+                            : 'text-gray-500'"
+                      >{{ word.text }} </span>
+                    </p>
                   </div>
-                  <!-- No results -->
-                  <div v-if="transcriptSearch && filteredSegments.length === 0" class="flex flex-col items-center justify-center py-12 text-center">
+                  <div v-if="transcriptSearch && transcriptParagraphs.length === 0" class="flex flex-col items-center justify-center py-12 text-center">
                     <svg class="w-12 h-12 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                     </svg>
@@ -900,7 +886,77 @@
                     {{ copiedTranscript ? 'Copied!' : 'Copy' }}
                   </button>
                 </div>
-                <p class="text-[13px] text-gray-700 leading-relaxed whitespace-pre-wrap">{{ transcription }}</p>
+                <p class="text-[12px] text-gray-600 leading-relaxed whitespace-pre-wrap">{{ transcription }}</p>
+              </div>
+
+              <!-- AI Chat about transcript -->
+              <div v-if="transcriptionSegments && transcriptionSegments.length > 0" class="border-t border-gray-100">
+                <button
+                  @click="showTranscriptChat = !showTranscriptChat"
+                  class="w-full px-4 py-2.5 flex items-center justify-between text-left hover:bg-gray-50 transition-colors"
+                >
+                  <div class="flex items-center gap-2">
+                    <svg class="w-4 h-4 text-orange-500" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/>
+                    </svg>
+                    <span class="text-xs font-semibold text-gray-900">Ask AI about transcript</span>
+                    <span class="text-[10px] text-gray-400">({{ transcriptChatRemaining }} left)</span>
+                  </div>
+                  <svg class="w-3.5 h-3.5 text-gray-400 transition-transform" :class="showTranscriptChat ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                  </svg>
+                </button>
+
+                <div v-show="showTranscriptChat" class="px-4 pb-3">
+                  <!-- Chat messages -->
+                  <div v-if="transcriptChatMessages.length > 0" class="space-y-2 mb-3 max-h-48 overflow-y-auto">
+                    <div
+                      v-for="(msg, i) in transcriptChatMessages"
+                      :key="i"
+                      class="text-[11px] leading-relaxed"
+                    >
+                      <div v-if="msg.role === 'user'" class="flex justify-end">
+                        <div class="bg-orange-600 text-white rounded-xl rounded-br-sm px-3 py-1.5 max-w-[85%]">
+                          {{ msg.content }}
+                        </div>
+                      </div>
+                      <div v-else class="flex justify-start">
+                        <div class="bg-gray-100 text-gray-700 rounded-xl rounded-bl-sm px-3 py-1.5 max-w-[85%]">
+                          {{ msg.content }}
+                        </div>
+                      </div>
+                    </div>
+                    <div v-if="transcriptChatLoading" class="flex justify-start">
+                      <div class="bg-gray-100 text-gray-400 rounded-xl rounded-bl-sm px-3 py-1.5 text-[11px]">
+                        <span class="inline-flex gap-1">
+                          <span class="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0ms"></span>
+                          <span class="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 150ms"></span>
+                          <span class="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 300ms"></span>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Input -->
+                  <div v-if="transcriptChatRemaining > 0" class="flex gap-2">
+                    <input
+                      v-model="transcriptChatInput"
+                      type="text"
+                      placeholder="Ask about the transcript..."
+                      @keydown.enter.prevent="askTranscriptQuestion"
+                      :disabled="transcriptChatLoading"
+                      class="flex-1 bg-gray-50 border border-gray-200 text-[11px] text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400 rounded-lg px-3 py-1.5 transition-colors disabled:opacity-50"
+                    />
+                    <button
+                      @click="askTranscriptQuestion"
+                      :disabled="!transcriptChatInput.trim() || transcriptChatLoading"
+                      class="bg-orange-600 text-white px-2.5 py-1.5 rounded-lg hover:bg-orange-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed flex-shrink-0 text-[11px] font-medium"
+                    >
+                      Ask
+                    </button>
+                  </div>
+                  <p v-else class="text-[10px] text-gray-400 text-center py-2">Question limit reached for today</p>
+                </div>
               </div>
             </div>
 
@@ -1103,31 +1159,29 @@
           </div>
 
           <!-- Comment Input -->
-          <div v-show="activeTab === 'comments'" class="p-4 bg-white border-t border-gray-100 z-20">
-            <div class="relative shadow-sm ring-1 ring-gray-200 rounded-xl bg-white focus-within:ring-2 focus-within:ring-orange-500/20 focus-within:border-orange-500 transition-all">
-              <textarea
-                v-model="newComment"
-                rows="1"
-                placeholder="Add a comment..."
-                @keydown.enter.exact.prevent="addComment"
-                class="w-full bg-transparent border-none text-[13px] text-gray-900 placeholder:text-gray-400 focus:ring-0 p-3 resize-none min-h-[44px]"
-              ></textarea>
-
-              <div class="flex items-center justify-between px-2 pb-2">
-                <span v-if="currentTime > 0" class="text-[11px] text-gray-400 font-mono bg-gray-50 px-1.5 py-0.5 rounded">
+          <div v-show="activeTab === 'comments'" class="px-3 py-2.5 bg-white border-t border-gray-100 z-20">
+            <div class="flex items-end gap-2">
+              <div class="flex-1 relative">
+                <textarea
+                  v-model="newComment"
+                  rows="1"
+                  placeholder="Write a message..."
+                  @keydown.enter.exact.prevent="addComment"
+                  class="w-full bg-gray-50 border border-gray-200 text-[12px] text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400 rounded-xl px-3 py-2 resize-none min-h-[36px] max-h-[80px] transition-colors"
+                ></textarea>
+                <span v-if="currentTime > 0" class="absolute right-2 bottom-1.5 text-[9px] text-gray-400 font-mono pointer-events-none">
                   @ {{ formatTime(currentTime) }}
                 </span>
-                <span v-else></span>
-                <button
-                  @click="addComment"
-                  :disabled="!newComment.trim() || isSavingComment"
-                  class="bg-orange-600 text-white p-1.5 rounded-lg hover:bg-orange-700 transition-colors shadow-sm shadow-orange-200 disabled:bg-gray-300 disabled:cursor-not-allowed"
-                >
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
-                  </svg>
-                </button>
               </div>
+              <button
+                @click="addComment"
+                :disabled="!newComment.trim() || isSavingComment"
+                class="bg-orange-600 text-white p-2 rounded-xl hover:bg-orange-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed flex-shrink-0"
+              >
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                </svg>
+              </button>
             </div>
           </div>
           </template>
@@ -1283,10 +1337,11 @@ export default {
     // Transcript sync state
     const transcriptContainer = ref(null)
     const segmentRefs = ref({})
+    const paragraphRefs = ref({})
     const autoScrollEnabled = ref(true)
 
     // Captions state
-    const captionsEnabled = ref(true)
+    const captionsEnabled = ref(false)
     const captionsUrl = computed(() => {
       if (transcriptionStatus.value !== 'completed') return null
       if (!transcriptionSegments.value || transcriptionSegments.value.length === 0) return null
@@ -1383,6 +1438,32 @@ export default {
       captionsEnabled.value = !captionsEnabled.value
     }
 
+    // Transcript AI chat
+    const showTranscriptChat = ref(false)
+    const transcriptChatInput = ref('')
+    const transcriptChatMessages = ref([])
+    const transcriptChatLoading = ref(false)
+    const transcriptChatRemaining = ref(5)
+
+    const askTranscriptQuestion = async () => {
+      const question = transcriptChatInput.value.trim()
+      if (!question || transcriptChatLoading.value || transcriptChatRemaining.value <= 0) return
+
+      transcriptChatMessages.value.push({ role: 'user', content: question })
+      transcriptChatInput.value = ''
+      transcriptChatLoading.value = true
+
+      try {
+        const result = await videoService.askTranscriptQuestion(video.value.id, question)
+        transcriptChatMessages.value.push({ role: 'assistant', content: result.answer })
+        transcriptChatRemaining.value = result.questions_remaining
+      } catch (err) {
+        transcriptChatMessages.value.push({ role: 'assistant', content: err.message || 'Failed to get answer' })
+      } finally {
+        transcriptChatLoading.value = false
+      }
+    }
+
     // Enhanced transcript features
     const transcriptSearch = ref('')
     const showExportMenu = ref(false)
@@ -1437,13 +1518,13 @@ export default {
       return -1
     })
 
-    // Auto-scroll to active segment when it changes
-    watch(activeSegmentIndex, (newIndex) => {
+    // Auto-scroll to active paragraph when it changes
+    watch(activeParagraphIndex, (newIndex) => {
       if (newIndex >= 0 && autoScrollEnabled.value && activeTab.value === 'transcript') {
         nextTick(() => {
-          const segmentEl = segmentRefs.value[newIndex]
-          if (segmentEl && transcriptContainer.value) {
-            segmentEl.scrollIntoView({
+          const paragraphEl = paragraphRefs.value[newIndex]
+          if (paragraphEl && transcriptContainer.value) {
+            paragraphEl.scrollIntoView({
               behavior: 'smooth',
               block: 'center'
             })
@@ -1461,6 +1542,80 @@ export default {
       if (!transcriptSearch.value.trim()) return segments
       const search = transcriptSearch.value.toLowerCase()
       return segments.filter(seg => seg.text.toLowerCase().includes(search))
+    })
+
+    // Group segments into ~30 second paragraphs with word-level data
+    const transcriptParagraphs = computed(() => {
+      if (!transcriptionSegments.value || transcriptionSegments.value.length === 0) return []
+
+      const CHUNK_SECONDS = 30
+      const groups = []
+      let currentGroup = null
+
+      for (const seg of transcriptionSegments.value) {
+        const text = (seg.text || '').trim()
+        if (!text) continue
+
+        // Search filter
+        if (transcriptSearch.value.trim()) {
+          const search = transcriptSearch.value.toLowerCase()
+          if (!text.toLowerCase().includes(search)) continue
+        }
+
+        const bucketStart = Math.floor(seg.start / CHUNK_SECONDS) * CHUNK_SECONDS
+
+        if (!currentGroup || currentGroup.bucketStart !== bucketStart) {
+          currentGroup = { bucketStart, start: seg.start, words: [] }
+          groups.push(currentGroup)
+        }
+
+        // Build word-level data
+        if (seg.words && seg.words.length > 0) {
+          for (const w of seg.words) {
+            const wText = (w.text || '').trim()
+            if (!wText) continue
+            currentGroup.words.push({
+              text: wText,
+              start: w.start,
+              end: w.end,
+              isActive: false
+            })
+          }
+        } else {
+          // Fallback: split text into words with estimated timing
+          const words = text.split(/\s+/)
+          const dur = (seg.end || seg.start + 5) - seg.start
+          const wordDur = dur / words.length
+          words.forEach((w, i) => {
+            currentGroup.words.push({
+              text: w,
+              start: +(seg.start + i * wordDur).toFixed(2),
+              end: +(seg.start + (i + 1) * wordDur).toFixed(2),
+              isActive: false
+            })
+          })
+        }
+      }
+
+      // Mark active words based on current playback time
+      const t = currentTime.value
+      for (const group of groups) {
+        for (const word of group.words) {
+          word.isActive = t >= word.start && t < word.end + 0.1
+        }
+      }
+
+      return groups
+    })
+
+    // Find which paragraph is currently active
+    const activeParagraphIndex = computed(() => {
+      const t = currentTime.value
+      for (let i = transcriptParagraphs.value.length - 1; i >= 0; i--) {
+        const g = transcriptParagraphs.value[i]
+        if (t >= g.start) return i
+      }
+      return -1
     })
 
     // Word count
@@ -1975,9 +2130,14 @@ export default {
       isDeleting.value = true
       try {
         await videoService.deleteVideo(video.value.id)
+        showDeleteConfirm.value = false
         showDeleteModal.value = false
-        window.location.href = import.meta.env.BASE_URL + 'videos'
+        showToast('Video deleted successfully')
+        setTimeout(() => {
+          window.location.href = import.meta.env.BASE_URL + 'videos'
+        }, 500)
       } catch (err) {
+        showDeleteConfirm.value = false
         showToast('Failed to delete')
       } finally {
         isDeleting.value = false
@@ -2070,9 +2230,11 @@ export default {
       try {
         await videoService.updateVideo(video.value.id, { is_public: false })
         video.value.is_public = false
+        showPrivateConfirm.value = false
         showToast('Video is now private')
       } catch (err) {
         console.error('Failed to make private:', err)
+        showPrivateConfirm.value = false
         showToast('Failed to update privacy')
       }
     }
@@ -2080,12 +2242,14 @@ export default {
     const handleArchive = async () => {
       try {
         await videoService.updateVideo(video.value.id, { archived: true })
+        showArchiveConfirm.value = false
         showToast('Video archived')
         setTimeout(() => {
           window.location.href = import.meta.env.BASE_URL + 'videos'
         }, 500)
       } catch (err) {
         console.error('Failed to archive:', err)
+        showArchiveConfirm.value = false
         showToast('Failed to archive video')
       }
     }
@@ -2477,8 +2641,9 @@ export default {
       transcription, transcriptionSegments, transcriptionStatus, transcriptionProgress, transcriptionError,
       isRequestingTranscription, requestTranscription, seekToTime,
       // Transcript sync & search
-      transcriptContainer, segmentRefs, activeSegmentIndex,
+      transcriptContainer, segmentRefs, paragraphRefs, activeSegmentIndex,
       transcriptSearch, showExportMenu, filteredSegments,
+      transcriptParagraphs, activeParagraphIndex,
       transcriptWordCount, transcriptReadTime,
       highlightSearch, copySegment, exportTranscript,
       // Summary
@@ -2489,6 +2654,9 @@ export default {
       loadBugTabData, createBugInJira,
       // Captions
       captionsEnabled, captionsUrl, toggleCaptions, activeCaptionCue,
+      // Transcript AI chat
+      showTranscriptChat, transcriptChatInput, transcriptChatMessages,
+      transcriptChatLoading, transcriptChatRemaining, askTranscriptQuestion,
       // Copy
       copiedTranscript, copiedSummary, copyTranscript, copySummary,
       // Bunny
@@ -2533,12 +2701,10 @@ input[type=range]::-webkit-slider-runnable-track {
   align-items: center;
   justify-content: center;
   gap: 4px;
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(0, 0, 0, 0.7);
   backdrop-filter: blur(8px);
-  border-radius: 8px;
+  border-radius: 6px;
   padding: 6px 14px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-  border: 1px solid rgba(229, 231, 235, 0.5);
   max-width: 80%;
 }
 .caption-word {
@@ -2547,9 +2713,9 @@ input[type=range]::-webkit-slider-runnable-track {
   font-weight: 500;
   letter-spacing: -0.01em;
   line-height: 1.5;
-  transition: color 0.2s ease;
+  transition: color 0.15s ease;
 }
-.caption-active { color: #111827; }
-.caption-inactive { color: #d1d5db; }
+.caption-active { color: #ffffff; }
+.caption-inactive { color: rgba(255, 255, 255, 0.45); }
 </style>
 
