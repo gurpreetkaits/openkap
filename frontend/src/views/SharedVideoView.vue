@@ -66,6 +66,9 @@
             </div>
           </div>
 
+          <!-- Download Bell (authenticated users) -->
+          <DownloadBell v-if="isAuthenticated" />
+
           <!-- Options Menu (three-dot) -->
           <div class="relative" ref="optionsMenuRef">
             <button @click="showOptionsMenu = !showOptionsMenu" class="p-2 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors">
@@ -937,6 +940,8 @@ import { useRoute } from 'vue-router'
 import { useAuth } from '@/stores/auth'
 import { useBranding } from '@/composables/useBranding'
 import videoService from '@/services/videoService'
+import DownloadBell from '@/components/Global/DownloadBell.vue'
+import { useDownloadTracker } from '@/composables/useDownloadTracker'
 import Hls from 'hls.js'
 import { marked } from 'marked'
 import { sanitizeHtml } from '@/utils/sanitize'
@@ -945,10 +950,12 @@ const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8888'
 
 export default {
   name: 'SharedVideoView',
+  components: { DownloadBell },
   setup() {
     const route = useRoute()
     const auth = useAuth()
     const branding = useBranding()
+    const { trackDownload } = useDownloadTracker()
     const token = computed(() => route.params.token)
     const isAuthenticated = computed(() => auth.isAuthenticated.value)
     const currentUser = computed(() => auth.user.value)
@@ -1678,8 +1685,34 @@ export default {
 
     // Owner action handlers for shared view
     const handleSharedDownload = async () => {
-      if (!video.value.url) return
+      if (!video.value.id && !video.value.url) return
       try {
+        // For authenticated owners, use the MP4 conversion API (supports async for long videos)
+        if (isAuthenticated.value && isOwner.value && video.value.id) {
+          showToast('Preparing your download...')
+          const result = await videoService.requestDownloadMp4(video.value.id)
+
+          if (result.mode === 'async') {
+            trackDownload(video.value.id, video.value.title || 'Untitled Video')
+            showToast('Your video is being converted to MP4. We\'ll notify you via the bell icon when it\'s ready!')
+            return
+          }
+
+          // Sync mode
+          const blobUrl = window.URL.createObjectURL(result.blob)
+          const link = document.createElement('a')
+          link.href = blobUrl
+          link.download = `${video.value.title || 'video'}.mp4`
+          document.body.appendChild(link)
+          link.click()
+          document.body.removeChild(link)
+          window.URL.revokeObjectURL(blobUrl)
+          showToast('Download complete!')
+          return
+        }
+
+        // Fallback: direct URL download for non-authenticated viewers
+        if (!video.value.url) return
         showToast('Starting download...')
         const response = await fetch(video.value.url)
         const blob = await response.blob()

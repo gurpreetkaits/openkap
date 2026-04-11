@@ -147,6 +147,9 @@
             </div>
           </div>
 
+          <!-- Download Bell -->
+          <DownloadBell />
+
           <!-- Options Menu (three-dot) -->
           <div class="relative" ref="optionsMenuRef">
             <button @click="showOptionsMenu = !showOptionsMenu" class="p-2 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors">
@@ -1218,6 +1221,8 @@ import integrationService from '@/services/integrationService'
 import SBDeleteModal from '@/components/Global/SBDeleteModal.vue'
 import SBConfirmModal from '@/components/Global/SBConfirmModal.vue'
 import VideoShareIntegrations from '@/components/VideoShareIntegrations.vue'
+import DownloadBell from '@/components/Global/DownloadBell.vue'
+import { useDownloadTracker } from '@/composables/useDownloadTracker'
 import Hls from 'hls.js'
 import { marked } from 'marked'
 import { sanitizeHtml } from '@/utils/sanitize'
@@ -1229,12 +1234,14 @@ export default {
   components: {
     SBDeleteModal,
     SBConfirmModal,
-    VideoShareIntegrations
+    VideoShareIntegrations,
+    DownloadBell
   },
   setup() {
     const route = useRoute()
     const auth = useAuth()
     const branding = useBranding()
+    const { trackDownload } = useDownloadTracker()
     const isAuthenticated = computed(() => auth.isAuthenticated.value)
     const currentUser = computed(() => auth.user.value)
     const userInitial = computed(() => (currentUser.value?.name || 'U').charAt(0).toUpperCase())
@@ -2027,12 +2034,13 @@ export default {
       if (!video.value.id) return
 
       try {
-        showToast('Preparing download...')
+        showToast('Preparing your download...')
 
         const result = await videoService.requestDownloadMp4(video.value.id)
 
         if (result.mode === 'async') {
-          showToast('Video is being prepared for download. This may take a moment.')
+          trackDownload(video.value.id, video.value.title || 'Untitled Video')
+          showToast('Your video is being converted to MP4. We\'ll notify you via the bell icon when it\'s ready!')
           return
         }
 

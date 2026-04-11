@@ -1275,6 +1275,7 @@ const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8888'
 import SBDeleteModal from '@/components/Global/SBDeleteModal.vue'
 import SBUpgradeModal from '@/components/Global/SBUpgradeModal.vue'
 import SBModal from '@/components/Global/SBModal.vue'
+import { useDownloadTracker } from '@/composables/useDownloadTracker'
 
 export default {
   name: 'VideosView',
@@ -1287,6 +1288,7 @@ export default {
     const auth = useAuth()
     const router = useRouter()
     const recording = useRecording()
+    const { trackDownload } = useDownloadTracker()
     const currentUser = computed(() => auth.user.value)
     const userInitial = computed(() => (currentUser.value?.name || 'U').charAt(0).toUpperCase())
 
@@ -2137,7 +2139,7 @@ export default {
 
     const downloadVideo = async (video) => {
       try {
-        toast.success('Preparing MP4 download...')
+        toast.success('Preparing your download...')
 
         const result = await videoService.requestDownloadMp4(video.id)
         if (!result) return
@@ -2153,7 +2155,8 @@ export default {
           window.URL.revokeObjectURL(blobUrl)
           toast.success('Download complete!')
         } else {
-          toast.success('Video is being converted to MP4. You\'ll be notified when it\'s ready.')
+          trackDownload(video.id, video.title || 'Untitled Video')
+          toast.success('Your video is being converted to MP4. Check the bell icon for progress!')
         }
       } catch (err) {
         console.error('Failed to download:', err)

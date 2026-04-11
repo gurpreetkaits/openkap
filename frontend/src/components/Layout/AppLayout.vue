@@ -341,6 +341,9 @@
 
           <div class="hidden md:block h-4 w-px bg-gray-200 mx-1"></div>
 
+          <!-- Download Bell -->
+          <DownloadBell />
+
           <!-- Notifications Dropdown -->
           <div class="relative" ref="notificationsDropdownRef">
             <button
@@ -746,6 +749,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { SBLogoutModal } from '../Global'
 import RecordingSetupPanel from '../Global/RecordingSetupPanel.vue'
 import ChatbotWidget from '../Global/ChatbotWidget.vue'
+import DownloadBell from '../Global/DownloadBell.vue'
 import { useAuth } from '@/stores/auth'
 import { useRecording } from '@/composables/useRecording'
 import { useBranding } from '@/composables/useBranding'
@@ -757,7 +761,8 @@ export default {
   components: {
     SBLogoutModal,
     RecordingSetupPanel,
-    ChatbotWidget
+    ChatbotWidget,
+    DownloadBell
   },
   setup() {
     const route = useRoute()
