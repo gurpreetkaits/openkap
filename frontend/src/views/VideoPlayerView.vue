@@ -477,6 +477,9 @@
                 </div>
               </transition>
 
+              <!-- Gradient shadow behind controls -->
+              <div class="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-black/60 via-black/20 to-transparent z-20 pointer-events-none"></div>
+
               <!-- Custom Floating Controls -->
               <div class="absolute bottom-4 left-4 right-4 z-30">
                 <div class="flex flex-col gap-3 px-2">

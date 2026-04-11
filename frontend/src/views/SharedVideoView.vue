@@ -379,6 +379,9 @@
                 </div>
               </transition>
 
+              <!-- Gradient shadow behind controls -->
+              <div class="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-black/60 via-black/20 to-transparent z-20 pointer-events-none"></div>
+
               <!-- Custom Floating Controls -->
               <div class="absolute bottom-4 left-4 right-4 z-30">
                 <div class="flex flex-col gap-3 px-2">
@@ -731,6 +734,76 @@
                 <p class="text-sm font-medium text-gray-900">No Transcript</p>
                 <p class="text-xs text-gray-500 mt-0.5">Not yet generated</p>
               </div>
+
+              <!-- AI Chat about transcript (authenticated users only) -->
+              <div v-if="isAuthenticated && isOwner && transcriptionSegments && transcriptionSegments.length > 0" class="border-t border-gray-100">
+                <button
+                  @click="showTranscriptChat = !showTranscriptChat"
+                  class="w-full px-5 py-2.5 flex items-center justify-between text-left hover:bg-gray-50 transition-colors"
+                >
+                  <div class="flex items-center gap-2">
+                    <svg class="w-4 h-4 text-orange-500" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/>
+                    </svg>
+                    <span class="text-xs font-semibold text-gray-900">Ask AI about transcript</span>
+                    <span class="text-[10px] text-gray-400">({{ transcriptChatRemaining }} left)</span>
+                  </div>
+                  <svg class="w-3.5 h-3.5 text-gray-400 transition-transform" :class="showTranscriptChat ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                  </svg>
+                </button>
+
+                <div v-show="showTranscriptChat" class="px-5 pb-3">
+                  <!-- Chat messages -->
+                  <div v-if="transcriptChatMessages.length > 0" class="space-y-2 mb-3 max-h-48 overflow-y-auto">
+                    <div
+                      v-for="(msg, i) in transcriptChatMessages"
+                      :key="i"
+                      class="text-[11px] leading-relaxed"
+                    >
+                      <div v-if="msg.role === 'user'" class="flex justify-end">
+                        <div class="bg-orange-600 text-white rounded-xl rounded-br-sm px-3 py-1.5 max-w-[85%]">
+                          {{ msg.content }}
+                        </div>
+                      </div>
+                      <div v-else class="flex justify-start">
+                        <div class="bg-gray-100 text-gray-700 rounded-xl rounded-bl-sm px-3 py-1.5 max-w-[85%]">
+                          {{ msg.content }}
+                        </div>
+                      </div>
+                    </div>
+                    <div v-if="transcriptChatLoading" class="flex justify-start">
+                      <div class="bg-gray-100 text-gray-400 rounded-xl rounded-bl-sm px-3 py-1.5 text-[11px]">
+                        <span class="inline-flex gap-1">
+                          <span class="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0ms"></span>
+                          <span class="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 150ms"></span>
+                          <span class="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 300ms"></span>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Input -->
+                  <div v-if="transcriptChatRemaining > 0" class="flex gap-2">
+                    <input
+                      v-model="transcriptChatInput"
+                      type="text"
+                      placeholder="Ask about the transcript..."
+                      @keydown.enter.prevent="askTranscriptQuestion"
+                      :disabled="transcriptChatLoading"
+                      class="flex-1 bg-gray-50 border border-gray-200 text-[11px] text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400 rounded-lg px-3 py-1.5 transition-colors disabled:opacity-50"
+                    />
+                    <button
+                      @click="askTranscriptQuestion"
+                      :disabled="!transcriptChatInput.trim() || transcriptChatLoading"
+                      class="bg-orange-600 text-white px-2.5 py-1.5 rounded-lg hover:bg-orange-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed flex-shrink-0 text-[11px] font-medium"
+                    >
+                      Ask
+                    </button>
+                  </div>
+                  <p v-else class="text-[10px] text-gray-400 text-center py-2">Question limit reached for today</p>
+                </div>
+              </div>
             </div>
 
             <!-- TAB: SUMMARY -->
@@ -952,6 +1025,33 @@ export default {
     // Copy states
     const copiedTranscript = ref(false)
     const copiedSummary = ref(false)
+
+    // Transcript AI chat
+    const showTranscriptChat = ref(false)
+    const transcriptChatInput = ref('')
+    const transcriptChatMessages = ref([])
+    const transcriptChatLoading = ref(false)
+    const transcriptChatRemaining = ref(5)
+
+    const askTranscriptQuestion = async () => {
+      const question = transcriptChatInput.value.trim()
+      if (!question || transcriptChatLoading.value || transcriptChatRemaining.value <= 0) return
+      if (!video.value.id) return
+
+      transcriptChatMessages.value.push({ role: 'user', content: question })
+      transcriptChatInput.value = ''
+      transcriptChatLoading.value = true
+
+      try {
+        const result = await videoService.askTranscriptQuestion(video.value.id, question)
+        transcriptChatMessages.value.push({ role: 'assistant', content: result.answer })
+        transcriptChatRemaining.value = result.questions_remaining
+      } catch (err) {
+        transcriptChatMessages.value.push({ role: 'assistant', content: err.message || 'Failed to get answer' })
+      } finally {
+        transcriptChatLoading.value = false
+      }
+    }
 
     // Captions state
     const captionsEnabled = ref(false)
@@ -1847,6 +1947,9 @@ export default {
       captionsEnabled, captionsUrl, toggleCaptions, activeCaptionCue,
       // Transcript sync
       transcriptContainer, segmentRefs, activeSegmentIndex,
+      // Transcript AI chat
+      showTranscriptChat, transcriptChatInput, transcriptChatMessages,
+      transcriptChatLoading, transcriptChatRemaining, askTranscriptQuestion,
       // Copy
       copiedTranscript, copiedSummary, copyTranscript, copySummary,
       // HLS
