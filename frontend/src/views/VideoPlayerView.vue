@@ -764,18 +764,56 @@
 
               <!-- Transcript content with timestamps -->
               <div v-else-if="transcriptionSegments && transcriptionSegments.length > 0" class="flex flex-col h-full">
-                <!-- Header with search & actions -->
-                <div class="sticky top-0 bg-white/95 backdrop-blur-sm z-10 border-b border-gray-100">
-                  <div class="px-4 pt-3 pb-2">
-                    <div class="relative">
-                      <svg class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <!-- Toolbar: Copy / Download / Search -->
+                <div class="sticky top-0 bg-white z-10 border-b border-gray-100 flex-shrink-0">
+                  <div class="flex items-center gap-2 px-5 py-2.5">
+                    <button
+                      @click="copyTranscript"
+                      class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200"
+                    >
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                      </svg>
+                      {{ copiedTranscript ? 'Copied!' : 'Copy' }}
+                    </button>
+                    <div class="relative export-menu-container">
+                      <button
+                        @click="showExportMenu = !showExportMenu"
+                        class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200"
+                      >
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                        </svg>
+                        Download
+                      </button>
+                      <div v-if="showExportMenu" class="absolute left-0 mt-1 w-40 bg-white rounded-lg shadow-lg border border-gray-100 py-1 z-20">
+                        <button @click="exportTranscript('txt')" class="w-full px-3 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2">
+                          Plain Text (.txt)
+                        </button>
+                        <button @click="exportTranscript('srt')" class="w-full px-3 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2">
+                          Subtitles (.srt)
+                        </button>
+                      </div>
+                    </div>
+                    <div class="flex-1"></div>
+                    <button
+                      @click="showTranscriptSearch = !showTranscriptSearch"
+                      class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200"
+                    >
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                       </svg>
+                      Search
+                    </button>
+                  </div>
+                  <!-- Collapsible search bar -->
+                  <div v-if="showTranscriptSearch" class="px-5 pb-2.5">
+                    <div class="relative">
                       <input
                         v-model="transcriptSearch"
                         type="text"
                         placeholder="Search transcript..."
-                        class="w-full pl-10 pr-8 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400 transition-colors"
+                        class="w-full pl-3 pr-8 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400 transition-colors"
                       />
                       <button
                         v-if="transcriptSearch"
@@ -788,82 +826,33 @@
                       </button>
                     </div>
                   </div>
-                  <div class="flex items-center justify-between px-4 py-2">
-                    <div class="flex items-center gap-3 text-[11px] text-gray-400">
-                      <span>{{ transcriptWordCount }} words</span>
-                      <span class="w-1 h-1 rounded-full bg-gray-300"></span>
-                      <span>{{ transcriptReadTime }} min read</span>
-                    </div>
-                    <div class="flex items-center gap-1">
-                      <div class="relative export-menu-container">
-                        <button
-                          @click="showExportMenu = !showExportMenu"
-                          class="flex items-center gap-1 px-2 py-1.5 text-xs font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
-                        >
-                          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-                          </svg>
-                          Export
-                        </button>
-                        <div v-if="showExportMenu" class="absolute right-0 mt-1 w-36 bg-white rounded-lg shadow-lg border border-gray-100 py-1 z-20">
-                          <button @click="exportTranscript('txt')" class="w-full px-3 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2">
-                            <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                            </svg>
-                            Plain Text (.txt)
-                          </button>
-                          <button @click="exportTranscript('srt')" class="w-full px-3 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2">
-                            <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z"/>
-                            </svg>
-                            Subtitles (.srt)
-                          </button>
-                        </div>
-                      </div>
-                      <button
-                        @click="copyTranscript"
-                        class="flex items-center gap-1 px-2 py-1.5 text-xs font-medium text-gray-500 hover:text-orange-600 hover:bg-orange-50 rounded-md transition-colors"
-                      >
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
-                        </svg>
-                        {{ copiedTranscript ? 'Copied!' : 'Copy' }}
-                      </button>
-                    </div>
-                  </div>
                 </div>
-                <!-- Half-minute paragraph groups with word-level highlighting -->
+                <!-- Segment rows: timestamp | text -->
                 <div class="flex-1 overflow-y-auto" ref="transcriptContainer">
                   <div
-                    v-for="(group, gi) in transcriptParagraphs"
-                    :key="gi"
-                    :ref="el => { if (el) paragraphRefs[gi] = el }"
-                    @click="seekToTime(group.start)"
-                    class="group relative px-4 py-3 cursor-pointer transition-all duration-200 border-l-2"
-                    :class="activeParagraphIndex === gi
-                      ? 'bg-orange-50/50 border-l-orange-500'
-                      : 'hover:bg-gray-50 border-l-transparent'"
+                    v-for="(segment, index) in filteredSegments"
+                    :key="segment.originalIndex"
+                    :ref="el => { if (el) segmentRefs[segment.originalIndex] = el }"
+                    @click="seekToTime(segment.start)"
+                    class="flex gap-4 px-5 py-3 cursor-pointer transition-colors duration-150 border-b border-gray-50"
+                    :class="activeSegmentIndex === segment.originalIndex
+                      ? 'bg-orange-50/60'
+                      : 'hover:bg-gray-50'"
                   >
-                    <span
-                      class="text-[10px] font-medium tabular-nums tracking-wide text-gray-400 block mb-1.5"
-                      :class="activeParagraphIndex === gi ? 'text-orange-500' : ''"
+                    <button
+                      class="text-[13px] font-medium tabular-nums tracking-wide flex-shrink-0 transition-colors pt-0.5"
+                      :class="activeSegmentIndex === segment.originalIndex ? 'text-orange-500' : 'text-gray-400'"
                     >
-                      {{ formatTime(group.start) }}
-                    </span>
-                    <p class="text-[12px] leading-[1.7]">
-                      <span
-                        v-for="(word, wi) in group.words"
-                        :key="wi"
-                        class="transcript-word transition-all duration-100"
-                        :class="word.isActive
-                          ? 'bg-orange-200/70 text-gray-900 rounded px-0.5 -mx-0.5'
-                          : activeParagraphIndex === gi
-                            ? 'text-gray-700'
-                            : 'text-gray-500'"
-                      >{{ word.text }} </span>
-                    </p>
+                      {{ formatTime(segment.start) }}
+                    </button>
+                    <p
+                      class="text-[13px] leading-relaxed flex-1"
+                      :class="activeSegmentIndex === segment.originalIndex ? 'text-gray-900' : 'text-gray-600'"
+                      v-html="highlightSearch(segment.displayText)"
+                    ></p>
                   </div>
-                  <div v-if="transcriptSearch && transcriptParagraphs.length === 0" class="flex flex-col items-center justify-center py-12 text-center">
+                  <!-- No search results -->
+                  <div v-if="transcriptSearch && filteredSegments.length === 0" class="flex flex-col items-center justify-center py-12 text-center">
                     <svg class="w-12 h-12 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                     </svg>
@@ -1337,7 +1326,6 @@ export default {
     // Transcript sync state
     const transcriptContainer = ref(null)
     const segmentRefs = ref({})
-    const paragraphRefs = ref({})
     const autoScrollEnabled = ref(true)
 
     // Captions state
@@ -1520,96 +1508,34 @@ export default {
 
     // captionsUrl watch removed — custom caption overlay used instead
 
+    // Reconstruct properly spaced text from words array if available
+    const getSegmentText = (segment) => {
+      if (segment.words && segment.words.length > 0) {
+        return segment.words.map(w => (w.text || '').trim()).filter(Boolean).join(' ')
+      }
+      return segment.text || ''
+    }
+
     // Filtered segments based on search
     const filteredSegments = computed(() => {
       if (!transcriptionSegments.value) return []
-      const segments = transcriptionSegments.value.map((seg, idx) => ({ ...seg, originalIndex: idx }))
+      const segments = transcriptionSegments.value.map((seg, idx) => ({
+        ...seg,
+        originalIndex: idx,
+        displayText: getSegmentText(seg),
+      }))
       if (!transcriptSearch.value.trim()) return segments
       const search = transcriptSearch.value.toLowerCase()
-      return segments.filter(seg => seg.text.toLowerCase().includes(search))
+      return segments.filter(seg => seg.displayText.toLowerCase().includes(search))
     })
 
-    // Group segments into ~30 second paragraphs with word-level data
-    const transcriptParagraphs = computed(() => {
-      if (!transcriptionSegments.value || transcriptionSegments.value.length === 0) return []
-
-      const CHUNK_SECONDS = 30
-      const groups = []
-      let currentGroup = null
-
-      for (const seg of transcriptionSegments.value) {
-        const text = (seg.text || '').trim()
-        if (!text) continue
-
-        // Search filter
-        if (transcriptSearch.value.trim()) {
-          const search = transcriptSearch.value.toLowerCase()
-          if (!text.toLowerCase().includes(search)) continue
-        }
-
-        const bucketStart = Math.floor(seg.start / CHUNK_SECONDS) * CHUNK_SECONDS
-
-        if (!currentGroup || currentGroup.bucketStart !== bucketStart) {
-          currentGroup = { bucketStart, start: seg.start, words: [] }
-          groups.push(currentGroup)
-        }
-
-        // Build word-level data
-        if (seg.words && seg.words.length > 0) {
-          for (const w of seg.words) {
-            const wText = (w.text || '').trim()
-            if (!wText) continue
-            currentGroup.words.push({
-              text: wText,
-              start: w.start,
-              end: w.end,
-              isActive: false
-            })
-          }
-        } else {
-          // Fallback: split text into words with estimated timing
-          const words = text.split(/\s+/)
-          const dur = (seg.end || seg.start + 5) - seg.start
-          const wordDur = dur / words.length
-          words.forEach((w, i) => {
-            currentGroup.words.push({
-              text: w,
-              start: +(seg.start + i * wordDur).toFixed(2),
-              end: +(seg.start + (i + 1) * wordDur).toFixed(2),
-              isActive: false
-            })
-          })
-        }
-      }
-
-      // Mark active words based on current playback time
-      const t = currentTime.value
-      for (const group of groups) {
-        for (const word of group.words) {
-          word.isActive = t >= word.start && t < word.end + 0.1
-        }
-      }
-
-      return groups
-    })
-
-    // Find which paragraph is currently active
-    const activeParagraphIndex = computed(() => {
-      const t = currentTime.value
-      for (let i = transcriptParagraphs.value.length - 1; i >= 0; i--) {
-        const g = transcriptParagraphs.value[i]
-        if (t >= g.start) return i
-      }
-      return -1
-    })
-
-    // Auto-scroll to active paragraph when it changes
-    watch(activeParagraphIndex, (newIndex) => {
+    // Auto-scroll to active segment when it changes
+    watch(activeSegmentIndex, (newIndex) => {
       if (newIndex >= 0 && autoScrollEnabled.value && activeTab.value === 'transcript') {
         nextTick(() => {
-          const paragraphEl = paragraphRefs.value[newIndex]
-          if (paragraphEl && transcriptContainer.value) {
-            paragraphEl.scrollIntoView({
+          const segmentEl = segmentRefs.value[newIndex]
+          if (segmentEl && transcriptContainer.value) {
+            segmentEl.scrollIntoView({
               behavior: 'smooth',
               block: 'center'
             })
@@ -1618,10 +1544,12 @@ export default {
       }
     })
 
+    const showTranscriptSearch = ref(false)
+
     // Word count
     const transcriptWordCount = computed(() => {
       if (!transcriptionSegments.value) return 0
-      const allText = transcriptionSegments.value.map(s => s.text).join(' ')
+      const allText = transcriptionSegments.value.map(s => getSegmentText(s)).join(' ')
       return allText.split(/\s+/).filter(w => w.length > 0).length
     })
 
@@ -1642,7 +1570,7 @@ export default {
     // Copy individual segment
     const copySegment = async (segment) => {
       try {
-        await navigator.clipboard.writeText(`[${formatTime(segment.start)}] ${segment.text}`)
+        await navigator.clipboard.writeText(`[${formatTime(segment.start)}] ${getSegmentText(segment)}`)
         showToast('Segment copied!')
       } catch (err) {
         console.error('Failed to copy segment:', err)
@@ -1659,7 +1587,7 @@ export default {
 
       if (format === 'txt') {
         content = transcriptionSegments.value
-          .map(seg => `[${formatTime(seg.start)}] ${seg.text}`)
+          .map(seg => `[${formatTime(seg.start)}] ${getSegmentText(seg)}`)
           .join('\n\n')
         downloadFile(content, `${filename}.txt`, 'text/plain')
       } else if (format === 'srt') {
@@ -1667,7 +1595,7 @@ export default {
           .map((seg, idx) => {
             const startSrt = formatSrtTime(seg.start)
             const endSrt = formatSrtTime(seg.end || seg.start + 5)
-            return `${idx + 1}\n${startSrt} --> ${endSrt}\n${seg.text}\n`
+            return `${idx + 1}\n${startSrt} --> ${endSrt}\n${getSegmentText(seg)}\n`
           })
           .join('\n')
         downloadFile(content, `${filename}.srt`, 'text/plain')
@@ -2426,7 +2354,7 @@ export default {
       let textToCopy = transcription.value || ''
       if (transcriptionSegments.value && transcriptionSegments.value.length > 0) {
         textToCopy = transcriptionSegments.value
-          .map(segment => `[${formatTime(segment.start)}] ${segment.text}`)
+          .map(segment => `[${formatTime(segment.start)}] ${getSegmentText(segment)}`)
           .join('\n')
       }
 
@@ -2641,9 +2569,8 @@ export default {
       transcription, transcriptionSegments, transcriptionStatus, transcriptionProgress, transcriptionError,
       isRequestingTranscription, requestTranscription, seekToTime,
       // Transcript sync & search
-      transcriptContainer, segmentRefs, paragraphRefs, activeSegmentIndex,
-      transcriptSearch, showExportMenu, filteredSegments,
-      transcriptParagraphs, activeParagraphIndex,
+      transcriptContainer, segmentRefs, activeSegmentIndex,
+      transcriptSearch, showTranscriptSearch, showExportMenu, filteredSegments,
       transcriptWordCount, transcriptReadTime,
       highlightSearch, copySegment, exportTranscript,
       // Summary

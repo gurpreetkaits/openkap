@@ -155,10 +155,16 @@ class GenerateTranscriptionJob implements ShouldQueue
                         }
                     }
 
+                    // Use words to reconstruct properly spaced text if available
+                    $segText = trim($segment['text']);
+                    if (! empty($segWords)) {
+                        $segText = implode(' ', array_map(fn ($w) => $w['text'], $segWords));
+                    }
+
                     return [
                         'start' => $segStart,
                         'end' => $segEnd,
-                        'text' => trim($segment['text']),
+                        'text' => $segText,
                         'words' => ! empty($segWords) ? $segWords : null,
                     ];
                 }, $transcriptionData->segments);

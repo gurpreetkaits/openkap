@@ -177,12 +177,13 @@ async function loadTranscription() {
     // data.transcription is { transcription: "...", segments: [...], generated_at: "..." }
     const transcription = data?.transcription
     if (transcription?.segments?.length) {
-      segments.value = transcription.segments.map(s => ({
-        start: s.start,
-        end: s.end,
-        text: s.text,
-        words: s.words || null,
-      }))
+      segments.value = transcription.segments.map(s => {
+        // Reconstruct properly spaced text from words if available
+        const text = s.words?.length
+          ? s.words.map(w => (w.text || '').trim()).filter(Boolean).join(' ')
+          : s.text
+        return { start: s.start, end: s.end, text, words: s.words || null }
+      })
     } else if (transcription?.transcription) {
       // Fallback: plain text with no segments, make one big segment
       segments.value = [{
