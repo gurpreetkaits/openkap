@@ -780,6 +780,14 @@ class VideoController extends Controller
         try {
             $result = $this->videoManager->requestMp4Download($video);
 
+            if ($result['mode'] === 'redirect') {
+                return response()->json([
+                    'mode' => 'redirect',
+                    'url' => $result['url'],
+                    'file_name' => $result['file_name'],
+                ]);
+            }
+
             if ($result['mode'] === 'sync') {
                 return response()->download(
                     $result['file_path'],

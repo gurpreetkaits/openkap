@@ -299,6 +299,14 @@ class BunnyStreamService
     }
 
     /**
+     * Generate a signed direct MP4 download URL.
+     */
+    public function generateSignedDownloadUrl(string $videoId, string $resolution = '720p', ?int $expiresInSeconds = null): string
+    {
+        return $this->connector->generateSignedDownloadUrl($videoId, $resolution, $expiresInSeconds);
+    }
+
+    /**
      * Get the library ID
      */
     public function getLibraryId(): string

@@ -147,8 +147,8 @@
             </div>
           </div>
 
-          <!-- Download Bell -->
-          <DownloadBell />
+          <!-- Notifications -->
+          <NotificationBell />
 
           <!-- Options Menu (three-dot) -->
           <div class="relative" ref="optionsMenuRef">
@@ -1221,7 +1221,7 @@ import integrationService from '@/services/integrationService'
 import SBDeleteModal from '@/components/Global/SBDeleteModal.vue'
 import SBConfirmModal from '@/components/Global/SBConfirmModal.vue'
 import VideoShareIntegrations from '@/components/VideoShareIntegrations.vue'
-import DownloadBell from '@/components/Global/DownloadBell.vue'
+import NotificationBell from '@/components/Global/NotificationBell.vue'
 import { useDownloadTracker } from '@/composables/useDownloadTracker'
 import Hls from 'hls.js'
 import { marked } from 'marked'
@@ -1235,7 +1235,7 @@ export default {
     SBDeleteModal,
     SBConfirmModal,
     VideoShareIntegrations,
-    DownloadBell
+    NotificationBell
   },
   setup() {
     const route = useRoute()
@@ -2040,7 +2040,20 @@ export default {
 
         if (result.mode === 'async') {
           trackDownload(video.value.id, video.value.title || 'Untitled Video')
-          showToast('Your video is being converted to MP4. We\'ll notify you via the bell icon when it\'s ready!')
+          showToast('Your video is being converted to MP4. Check notifications when it\'s ready!')
+          return
+        }
+
+        if (result.mode === 'redirect') {
+          // Bunny CDN direct download via signed URL
+          const link = document.createElement('a')
+          link.href = result.url
+          link.download = result.fileName || `${video.value.title || 'video'}.mp4`
+          link.target = '_blank'
+          document.body.appendChild(link)
+          link.click()
+          document.body.removeChild(link)
+          showToast('Download started!')
           return
         }
 

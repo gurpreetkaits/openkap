@@ -138,6 +138,18 @@ class BunnyConnector extends BaseConnector
     }
 
     /**
+     * Generate a signed direct MP4 download URL for a Bunny video.
+     */
+    public function generateSignedDownloadUrl(string $videoId, string $resolution = '720p', ?int $expiresInSeconds = null): string
+    {
+        $expireTime = time() + ($expiresInSeconds ?? 3600);
+        $path = "/{$videoId}/play_{$resolution}.mp4";
+        $token = $this->generateUrlToken($path, $expireTime);
+
+        return "https://{$this->cdnHostname}{$path}?token={$token}&expires={$expireTime}";
+    }
+
+    /**
      * Generate URL token for signed URLs
      */
     private function generateUrlToken(string $path, int $expireTime): string

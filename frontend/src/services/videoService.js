@@ -706,6 +706,15 @@ class VideoService {
         throw new Error(error.message || `Failed to request MP4 download: ${response.statusText}`)
       }
 
+      // Check content type to determine if it's JSON (redirect mode) or a file blob (sync mode)
+      const contentType = response.headers.get('content-type') || ''
+      if (contentType.includes('application/json')) {
+        const data = await response.json()
+        if (data.mode === 'redirect') {
+          return { mode: 'redirect', url: data.url, fileName: data.file_name }
+        }
+      }
+
       const blob = await response.blob()
       return { mode: 'sync', blob }
     } catch (error) {

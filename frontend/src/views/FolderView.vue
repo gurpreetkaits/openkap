@@ -72,72 +72,131 @@
     </div>
 
     <!-- Videos Grid -->
-    <div v-else-if="videos.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+    <div v-else-if="videos.length > 0" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-5">
       <div
         v-for="video in videos"
         :key="video.id"
-        class="group relative"
+        class="group bg-white rounded-xl border border-gray-100 hover:shadow-lg hover:shadow-gray-200/60 hover:border-gray-200 transition-all duration-200 hover:-translate-y-0.5"
       >
-        <!-- Thumbnail -->
+        <!-- Thumbnail Container -->
         <div
-          class="relative aspect-video bg-gray-900 rounded-xl overflow-hidden mb-3 border border-gray-100/50 group-hover:shadow-sm transition-all cursor-pointer"
-          style="aspect-ratio: 16 / 9;"
+          class="relative w-full cursor-pointer overflow-hidden rounded-t-xl"
+          style="aspect-ratio: 16/9;"
           @click="openVideo(video.id)"
         >
+          <!-- Thumbnail Image -->
           <img
             v-if="video.thumbnail"
             :src="video.thumbnail"
             :alt="video.title"
-            class="absolute inset-0 w-full h-full object-cover opacity-90 group-hover:scale-105 group-hover:opacity-100 transition-all duration-500"
+            class="w-full h-full object-cover"
             loading="lazy"
+            @error="$event.target.style.display='none'"
           />
-          <div v-else class="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900">
-            <svg class="w-10 h-10 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+          <!-- Placeholder when no thumbnail -->
+          <div
+            v-if="!video.thumbnail"
+            class="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center"
+          >
+            <svg class="w-12 h-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
             </svg>
           </div>
 
+          <!-- Processing Badge -->
+          <div
+            v-if="video.conversion_status === 'processing'"
+            class="absolute top-2 left-2 z-10 bg-black/70 backdrop-blur-sm text-white text-[10px] font-medium px-2 py-1 rounded-md flex items-center gap-1.5"
+          >
+            <div class="w-2 h-2 bg-orange-400 rounded-full animate-pulse"></div>
+            Processing
+          </div>
+
           <!-- Duration Badge -->
-          <div class="absolute bottom-2 right-2 bg-black/60 backdrop-blur-md text-white text-[10px] font-medium px-1.5 py-0.5 rounded-md border border-white/10 z-10">
+          <div class="absolute bottom-2 right-2 z-10 bg-black/80 backdrop-blur-sm text-white text-[11px] font-medium px-2 py-0.5 rounded-md pointer-events-none">
             {{ formatDuration(video.duration) }}
           </div>
 
-          <!-- Hover Overlay with Remove Button -->
-          <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all duration-200 flex flex-col justify-between p-3">
-            <div class="flex justify-end">
-              <button
-                @click.stop="removeFromFolder(video)"
-                class="p-1.5 bg-white text-red-600 hover:text-red-700 rounded-lg shadow-sm transition-colors"
-                title="Remove from folder"
-              >
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                </svg>
-              </button>
+          <!-- Favourite Badge -->
+          <div v-if="video.is_favourite" class="absolute top-2 right-2 z-10 pointer-events-none">
+            <div class="bg-white/90 backdrop-blur-sm rounded-full p-1 shadow-sm">
+              <svg class="w-3.5 h-3.5 text-orange-500" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+              </svg>
             </div>
+          </div>
 
-            <div class="flex justify-center">
-              <div class="w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg text-orange-600 scale-90 hover:scale-110 transition-transform">
-                <svg class="w-4 h-4 ml-0.5 fill-current" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.841z"/>
-                </svg>
-              </div>
+          <!-- Hover Overlay with Play Button -->
+          <div
+            class="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+          >
+            <!-- Remove from folder button -->
+            <button
+              @click.stop="removeFromFolder(video)"
+              class="absolute top-2 left-2 p-1.5 bg-white text-red-600 hover:text-red-700 rounded-lg shadow-sm transition-colors z-10"
+              title="Remove from folder"
+            >
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
+
+            <div class="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center shadow-xl shadow-orange-500/25 transform group-hover:scale-100 scale-90 transition-transform duration-200 pointer-events-none">
+              <svg class="w-5 h-5 text-white ml-0.5" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.841z"/>
+              </svg>
             </div>
-
-            <div class="h-8"></div>
           </div>
         </div>
 
         <!-- Video Info -->
-        <div class="px-1">
-          <h3
-            class="font-medium text-gray-900 text-[14px] leading-snug truncate group-hover:text-orange-600 transition-colors cursor-pointer"
-            @click="openVideo(video.id)"
-          >
-            {{ video.title }}
-          </h3>
-          <div class="flex items-center gap-2 text-[12px] text-gray-500 mt-1">
+        <div class="p-3">
+          <!-- Title Row -->
+          <div class="flex items-start gap-1.5">
+            <h3
+              class="flex-1 font-medium text-sm text-gray-900 leading-snug line-clamp-2 cursor-pointer hover:text-orange-600 transition-colors"
+              @click="openVideo(video.id)"
+            >
+              {{ video.title }}
+            </h3>
+            <!-- Hover Actions: Copy Link -->
+            <div class="flex items-center gap-0.5 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity z-20" @click.stop>
+              <button
+                @click.stop="copyShareLink(video)"
+                class="p-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+                title="Copy link"
+              >
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <!-- Meta Info -->
+          <div class="flex items-center gap-1 mt-1.5 text-[11px] text-gray-400">
             <span>{{ formatDate(video.created_at) }}</span>
+          </div>
+          <!-- Stats Row -->
+          <div class="flex items-center gap-2.5 mt-1.5 text-[11px] text-gray-400">
+            <span class="flex items-center gap-1" title="Views">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+              </svg>
+              {{ video.views_count || 0 }}
+            </span>
+            <span class="flex items-center gap-1" title="Comments">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+              </svg>
+              {{ video.comments_count || 0 }}
+            </span>
+            <span class="flex items-center gap-1" title="Reactions">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+              </svg>
+              {{ video.reactions_count || 0 }}
+            </span>
           </div>
         </div>
       </div>
@@ -284,6 +343,20 @@ export default {
       window.location.href = import.meta.env.BASE_URL + `video/${id}`
     }
 
+    const copyShareLink = async (video) => {
+      const shareUrl = video.share_url || video.shareUrl
+      if (shareUrl) {
+        try {
+          await navigator.clipboard.writeText(shareUrl)
+          toast.success('Link copied to clipboard!')
+        } catch {
+          toast.error('Failed to copy link.')
+        }
+      } else {
+        toast.error('No share link available')
+      }
+    }
+
     const removeFromFolder = async (video) => {
       try {
         await folderService.removeVideoFromFolder(folderId.value, video.id)
@@ -378,6 +451,7 @@ export default {
       deleteFolder,
       // Methods
       openVideo,
+      copyShareLink,
       removeFromFolder,
       formatDuration,
       formatDate

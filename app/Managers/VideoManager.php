@@ -993,6 +993,28 @@ class VideoManager
 
     public function requestMp4Download(Video $video): array
     {
+        // Bunny CDN videos: redirect to signed download URL
+        if ($video->isBunnyVideo() && $video->bunny_video_id) {
+            $resolution = '720p';
+
+            // Try to pick the best available resolution
+            if ($video->bunny_resolution) {
+                $resolution = $video->bunny_resolution;
+            }
+
+            $downloadUrl = $this->bunnyService->generateSignedDownloadUrl(
+                $video->bunny_video_id,
+                $resolution,
+                3600
+            );
+
+            return [
+                'mode' => 'redirect',
+                'url' => $downloadUrl,
+                'file_name' => ($video->title ?? 'video').'.mp4',
+            ];
+        }
+
         $media = $video->getFirstMedia('videos');
         if (! $media) {
             throw new \Exception('Video file not found');

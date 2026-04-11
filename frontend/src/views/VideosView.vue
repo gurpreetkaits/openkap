@@ -2144,7 +2144,16 @@ export default {
         const result = await videoService.requestDownloadMp4(video.id)
         if (!result) return
 
-        if (result.mode === 'sync') {
+        if (result.mode === 'redirect') {
+          const link = document.createElement('a')
+          link.href = result.url
+          link.download = result.fileName || `${video.title || 'video'}.mp4`
+          link.target = '_blank'
+          document.body.appendChild(link)
+          link.click()
+          document.body.removeChild(link)
+          toast.success('Download started!')
+        } else if (result.mode === 'sync') {
           const blobUrl = window.URL.createObjectURL(result.blob)
           const link = document.createElement('a')
           link.href = blobUrl
@@ -2156,7 +2165,7 @@ export default {
           toast.success('Download complete!')
         } else {
           trackDownload(video.id, video.title || 'Untitled Video')
-          toast.success('Your video is being converted to MP4. Check the bell icon for progress!')
+          toast.success('Your video is being converted to MP4. Check notifications for progress!')
         }
       } catch (err) {
         console.error('Failed to download:', err)
