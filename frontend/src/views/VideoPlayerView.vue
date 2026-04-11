@@ -1518,21 +1518,6 @@ export default {
       return -1
     })
 
-    // Auto-scroll to active paragraph when it changes
-    watch(activeParagraphIndex, (newIndex) => {
-      if (newIndex >= 0 && autoScrollEnabled.value && activeTab.value === 'transcript') {
-        nextTick(() => {
-          const paragraphEl = paragraphRefs.value[newIndex]
-          if (paragraphEl && transcriptContainer.value) {
-            paragraphEl.scrollIntoView({
-              behavior: 'smooth',
-              block: 'center'
-            })
-          }
-        })
-      }
-    })
-
     // captionsUrl watch removed — custom caption overlay used instead
 
     // Filtered segments based on search
@@ -1616,6 +1601,21 @@ export default {
         if (t >= g.start) return i
       }
       return -1
+    })
+
+    // Auto-scroll to active paragraph when it changes
+    watch(activeParagraphIndex, (newIndex) => {
+      if (newIndex >= 0 && autoScrollEnabled.value && activeTab.value === 'transcript') {
+        nextTick(() => {
+          const paragraphEl = paragraphRefs.value[newIndex]
+          if (paragraphEl && transcriptContainer.value) {
+            paragraphEl.scrollIntoView({
+              behavior: 'smooth',
+              block: 'center'
+            })
+          }
+        })
+      }
     })
 
     // Word count
