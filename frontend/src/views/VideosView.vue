@@ -388,6 +388,7 @@
       <div
         v-for="video in paginatedVideos"
         :key="video.id"
+        :data-video-id="video.id"
         class="group bg-white rounded-xl border border-gray-100 hover:shadow-lg hover:shadow-gray-200/60 hover:border-gray-200 transition-all duration-200 hover:-translate-y-0.5"
         :class="selectedVideos.includes(video.id) ? 'ring-2 ring-orange-500 ring-offset-2' : ''"
         :draggable="folders.length > 0"
@@ -549,6 +550,7 @@
       <div
         v-for="video in paginatedVideos"
         :key="video.id"
+        :data-video-id="video.id"
         class="group flex items-center gap-4 p-3.5 bg-white border border-gray-100 rounded-xl hover:shadow-sm hover:border-gray-200 transition-all cursor-pointer"
         :class="selectedVideos.includes(video.id) ? 'ring-2 ring-orange-500 ring-offset-1 border-orange-200' : ''"
         @click="handleVideoClick(video.id)"
@@ -1244,6 +1246,10 @@
               <svg class="w-3.5 h-3.5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
               Move to Folder
             </button>
+            <button @click="contextMenuAction('download')" class="w-full px-3.5 py-2 text-left text-[13px] text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2.5">
+              <svg class="w-3.5 h-3.5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+              Download
+            </button>
             <button @click="contextMenuAction('archive')" class="w-full px-3.5 py-2 text-left text-[13px] text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2.5">
               <svg class="w-3.5 h-3.5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/></svg>
               Archive
@@ -1849,6 +1855,8 @@ export default {
           openRenameVideoModal(target)
         } else if (action === 'move') {
           openMoveToFolderModal(target)
+        } else if (action === 'download') {
+          downloadVideoWithAnimation(target)
         } else if (action === 'archive') {
           archiveVideo(target)
         } else if (action === 'delete') {
@@ -2166,6 +2174,123 @@ export default {
         } else {
           trackDownload(video.id, video.title || 'Untitled Video')
           toast.success('Your video is being converted to MP4. Check notifications for progress!')
+        }
+      } catch (err) {
+        console.error('Failed to download:', err)
+        toast.error('Failed to download video. Please try again.')
+      }
+    }
+
+    const flyThumbnailToNotificationBell = (video) => {
+      // Find the video card's thumbnail in the DOM
+      const videoCards = document.querySelectorAll('[data-video-id]')
+      let sourceEl = null
+      for (const card of videoCards) {
+        if (card.dataset.videoId === String(video.id)) {
+          sourceEl = card.querySelector('img') || card.querySelector('[style*="aspect-ratio"]')
+          break
+        }
+      }
+
+      // Find the notification bell button in the header
+      const bellEl = document.querySelector('[data-notification-bell]')
+
+      if (!sourceEl || !bellEl) return
+
+      const sourceRect = sourceEl.getBoundingClientRect()
+      const bellRect = bellEl.getBoundingClientRect()
+
+      // Create a floating clone
+      const clone = document.createElement('div')
+      clone.style.cssText = `
+        position: fixed;
+        z-index: 9999;
+        left: ${sourceRect.left}px;
+        top: ${sourceRect.top}px;
+        width: ${sourceRect.width}px;
+        height: ${sourceRect.height}px;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        pointer-events: none;
+        transition: all 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+      `
+
+      // Add thumbnail image or gradient placeholder
+      if (video.thumbnail) {
+        const img = document.createElement('img')
+        img.src = video.thumbnail
+        img.style.cssText = 'width: 100%; height: 100%; object-fit: cover;'
+        clone.appendChild(img)
+      } else {
+        clone.style.background = 'linear-gradient(135deg, #f3f4f6, #e5e7eb)'
+      }
+
+      // Add a play icon overlay
+      const overlay = document.createElement('div')
+      overlay.style.cssText = `
+        position: absolute; inset: 0;
+        background: rgba(0,0,0,0.2);
+        display: flex; align-items: center; justify-content: center;
+      `
+      overlay.innerHTML = `<svg width="24" height="24" fill="white" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.841z"/></svg>`
+      clone.appendChild(overlay)
+
+      document.body.appendChild(clone)
+
+      // Trigger the fly animation on next frame
+      requestAnimationFrame(() => {
+        const targetX = bellRect.left + bellRect.width / 2 - 16
+        const targetY = bellRect.top + bellRect.height / 2 - 10
+        clone.style.left = `${targetX}px`
+        clone.style.top = `${targetY}px`
+        clone.style.width = '32px'
+        clone.style.height = '20px'
+        clone.style.opacity = '0.3'
+        clone.style.borderRadius = '50%'
+        clone.style.boxShadow = '0 4px 12px rgba(249, 115, 22, 0.4)'
+      })
+
+      // Pulse the bell after animation lands
+      setTimeout(() => {
+        clone.remove()
+        if (bellEl) {
+          bellEl.classList.add('animate-bounce')
+          setTimeout(() => bellEl.classList.remove('animate-bounce'), 600)
+        }
+      }, 750)
+    }
+
+    const downloadVideoWithAnimation = async (video) => {
+      // Fire the fly animation immediately
+      flyThumbnailToNotificationBell(video)
+
+      try {
+        const result = await videoService.requestDownloadMp4(video.id)
+        if (!result) return
+
+        if (result.mode === 'redirect') {
+          const link = document.createElement('a')
+          link.href = result.url
+          link.download = result.fileName || `${video.title || 'video'}.mp4`
+          link.target = '_blank'
+          document.body.appendChild(link)
+          link.click()
+          document.body.removeChild(link)
+          toast.success('Download started!')
+        } else if (result.mode === 'sync') {
+          const blobUrl = window.URL.createObjectURL(result.blob)
+          const link = document.createElement('a')
+          link.href = blobUrl
+          link.download = `${video.title || 'video'}.mp4`
+          document.body.appendChild(link)
+          link.click()
+          document.body.removeChild(link)
+          window.URL.revokeObjectURL(blobUrl)
+          toast.success('Download complete!')
+        } else {
+          trackDownload(video.id, video.title || 'Untitled Video')
+          toast.success('Your video is being converted. Check the notification bell for progress!')
         }
       } catch (err) {
         console.error('Failed to download:', err)

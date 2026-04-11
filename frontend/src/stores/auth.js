@@ -11,7 +11,7 @@ const state = reactive({
   subscription: null, // Subscription data from API
 })
 
-// Initialize from localStorage
+// Initialize from localStorage and sync to extension if present
 function initFromStorage() {
   const savedToken = localStorage.getItem('auth_token')
   const savedUser = localStorage.getItem('auth_user')
@@ -20,6 +20,8 @@ function initFromStorage() {
     try {
       state.token = savedToken
       state.user = JSON.parse(savedUser)
+      // Sync to extension on every page load so it always has the latest token
+      sendToExtension({ action: 'login', data: { token: savedToken, user: state.user }, type: 'SCREENSENSE_AUTH_UPDATE', token: savedToken, user: state.user })
     } catch (e) {
       console.error('Failed to parse auth data from storage:', e)
       clearAuth()
@@ -59,7 +61,7 @@ function clearAuth() {
   localStorage.removeItem('auth_user')
 
   // Notify extension to clear auth storage
-  sendToExtension({ action: 'logout', type: 'OPENKAP_AUTH_LOGOUT' })
+  sendToExtension({ action: 'logout', type: 'SCREENSENSE_AUTH_LOGOUT' })
 }
 
 // Set authentication
@@ -70,7 +72,7 @@ function setAuth(token, user) {
   localStorage.setItem('auth_user', JSON.stringify(user))
 
   // Sync to extension storage if available
-  sendToExtension({ action: 'login', data: { token, user }, type: 'OPENKAP_AUTH_UPDATE', token, user })
+  sendToExtension({ action: 'login', data: { token, user }, type: 'SCREENSENSE_AUTH_UPDATE', token, user })
 }
 
 // Logout function
