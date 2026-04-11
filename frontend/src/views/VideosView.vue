@@ -389,7 +389,7 @@
         v-for="video in paginatedVideos"
         :key="video.id"
         :data-video-id="video.id"
-        class="group bg-white rounded-xl border border-gray-100 hover:shadow-lg hover:shadow-gray-200/60 hover:border-gray-200 transition-all duration-200 hover:-translate-y-0.5"
+        class="group bg-white rounded-xl border border-gray-100 shadow-sm shadow-transparent hover:shadow-lg hover:shadow-gray-200/60 hover:border-gray-200 transition-all duration-200 hover:-translate-y-0.5"
         :class="selectedVideos.includes(video.id) ? 'ring-2 ring-orange-500 ring-offset-2' : ''"
         :draggable="folders.length > 0"
         @dragstart="handleVideoDragStart($event, video)"
@@ -1294,7 +1294,7 @@ export default {
     const auth = useAuth()
     const router = useRouter()
     const recording = useRecording()
-    const { trackDownload } = useDownloadTracker()
+    const { trackDownload, removeDownload } = useDownloadTracker()
     const currentUser = computed(() => auth.user.value)
     const userInitial = computed(() => (currentUser.value?.name || 'U').charAt(0).toUpperCase())
 
@@ -2265,11 +2265,19 @@ export default {
       // Fire the fly animation immediately
       flyThumbnailToNotificationBell(video)
 
+      // Track in bell immediately so user sees processing state right away
+      trackDownload(video.id, video.title || 'Untitled Video')
+
       try {
         const result = await videoService.requestDownloadMp4(video.id)
-        if (!result) return
+        if (!result) {
+          removeDownload(video.id)
+          return
+        }
 
         if (result.mode === 'redirect') {
+          // Remove the processing tracker — download is instant
+          removeDownload(video.id)
           const link = document.createElement('a')
           link.href = result.url
           link.download = result.fileName || `${video.title || 'video'}.mp4`
@@ -2279,6 +2287,8 @@ export default {
           document.body.removeChild(link)
           toast.success('Download started!')
         } else if (result.mode === 'sync') {
+          // Remove the processing tracker — download is instant
+          removeDownload(video.id)
           const blobUrl = window.URL.createObjectURL(result.blob)
           const link = document.createElement('a')
           link.href = blobUrl
@@ -2289,10 +2299,11 @@ export default {
           window.URL.revokeObjectURL(blobUrl)
           toast.success('Download complete!')
         } else {
-          trackDownload(video.id, video.title || 'Untitled Video')
-          toast.success('Your video is being converted. Check the notification bell for progress!')
+          // Async — already tracked, polling will pick up the ready notification
+          toast.success('Converting to MP4 — check the bell for progress!')
         }
       } catch (err) {
+        removeDownload(video.id)
         console.error('Failed to download:', err)
         toast.error('Failed to download video. Please try again.')
       }

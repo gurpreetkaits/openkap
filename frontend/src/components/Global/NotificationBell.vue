@@ -47,7 +47,7 @@
                 : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'"
             >
               {{ tab.label }}
-              <span v-if="tab.id === 'downloads' && processingCount > 0" class="ml-1 px-1.5 py-0.5 text-[9px] font-bold bg-orange-500 text-white rounded-full">{{ processingCount }}</span>
+              <span v-if="tab.id === 'downloads' && downloadBadge > 0" class="ml-1 px-1.5 py-0.5 text-[9px] font-bold bg-orange-500 text-white rounded-full">{{ downloadBadge }}</span>
             </button>
           </div>
         </div>
@@ -73,22 +73,35 @@
           <!-- Items -->
           <div v-else>
             <!-- Processing downloads (shown at top for downloads tab or all tab) -->
-            <template v-if="activeTab === 'all' || activeTab === 'downloads'">
+            <template v-if="(activeTab === 'all' || activeTab === 'downloads') && processingDownloads.length > 0">
+              <!-- Queue summary banner -->
+              <div class="px-4 py-2 bg-orange-50 border-b border-orange-100 flex items-center gap-2">
+                <div class="w-5 h-5 flex items-center justify-center">
+                  <svg class="w-3.5 h-3.5 text-orange-500 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                  </svg>
+                </div>
+                <span class="text-[11px] font-semibold text-orange-700">
+                  {{ processingDownloads.length }} download{{ processingDownloads.length !== 1 ? 's' : '' }} in queue
+                </span>
+              </div>
+              <!-- Individual processing items -->
               <div
-                v-for="dl in processingDownloads"
+                v-for="(dl, index) in processingDownloads"
                 :key="'dl-' + dl.videoId"
-                class="px-4 py-3 bg-orange-50/50 border-b border-gray-50 transition-colors"
+                class="px-4 py-3 bg-orange-50/30 border-b border-gray-50 transition-colors"
               >
                 <div class="flex items-start gap-3">
-                  <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-orange-100 text-orange-600">
-                    <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-                    </svg>
+                  <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-orange-100 text-orange-600 text-[11px] font-bold">
+                    {{ index + 1 }}
                   </div>
                   <div class="flex-1 min-w-0">
-                    <p class="text-sm font-medium text-gray-700">Converting "<span class="text-gray-900">{{ dl.videoTitle }}</span>" to MP4...</p>
-                    <p class="text-[10px] text-orange-600 mt-1">Processing - we'll notify you when ready</p>
+                    <p class="text-sm font-medium text-gray-700">Converting "<span class="text-gray-900">{{ dl.videoTitle }}</span>"</p>
+                    <p class="text-[10px] text-orange-600 mt-1 flex items-center gap-1.5">
+                      <span class="inline-block w-1.5 h-1.5 bg-orange-400 rounded-full animate-pulse"></span>
+                      {{ index === 0 ? 'Processing now...' : 'Queued - waiting...' }}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -221,7 +234,7 @@ export default {
       { id: 'viewer', label: 'Views' }
     ]
 
-    const totalBadge = computed(() => unreadCount.value + processingCount.value)
+    const totalBadge = computed(() => unreadCount.value + downloadBadge.value)
 
     const processingDownloads = computed(() =>
       downloads.value.filter(d => d.status === 'processing')
@@ -404,6 +417,7 @@ export default {
       notificationTabs,
       totalBadge,
       processingCount,
+      downloadBadge,
       processingDownloads,
       displayNotifications,
       displayItems,
