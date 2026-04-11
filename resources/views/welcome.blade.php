@@ -163,9 +163,6 @@
             </div>
             <span style="font-size:.8rem;color:#78716c">
                 Joined by <strong style="color:#1c1917;font-weight:600">{{ number_format($userCount) }}</strong> {{ Str::plural('user', $userCount) }}
-                @if($workspaceCount > 0)
-                    across <strong style="color:#1c1917;font-weight:600">{{ number_format($workspaceCount) }}</strong> {{ Str::plural('organization', $workspaceCount) }}
-                @endif
             </span>
         </div>
 
