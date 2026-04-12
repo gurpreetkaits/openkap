@@ -96,49 +96,74 @@
     .feat-arrow{transition:color .25s,transform .25s;display:block}
 
     /* ── Demo carousel ───────────────────────────────────── */
-    .demo-carousel-wrap {
-        position: relative;
-        margin-top: 3rem;
-    }
-    /* Default: grid layout (≤6 cards) */
-    .demo-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 1.25rem;
-    }
-    /* Carousel mode (>6 cards, toggled by JS) */
-    .demo-grid.is-carousel {
+    .demo-carousel-wrap { margin-top: 3rem; }
+
+    .demo-carousel-header {
         display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1.25rem;
+    }
+    .demo-carousel-title {
+        font-size: 1.15rem;
+        font-weight: 800;
+        color: #1c1917;
+        letter-spacing: -.02em;
+    }
+    .demo-carousel-title span { color: #f97316; }
+    .demo-carousel-nav {
+        display: flex;
+        gap: .5rem;
+    }
+    .demo-nav-btn {
+        width: 36px; height: 36px;
+        border-radius: 50%;
+        border: 1.5px solid rgba(0,0,0,.12);
+        background: #fff;
+        display: flex; align-items: center; justify-content: center;
+        cursor: pointer;
+        color: #44403c;
+        transition: border-color .2s, background .2s, color .2s;
+        box-shadow: 0 1px 4px rgba(0,0,0,.06);
+    }
+    .demo-nav-btn:hover { border-color: #f97316; color: #f97316; background: rgba(249,115,22,.04); }
+    .demo-nav-btn:disabled { opacity: .35; cursor: default; }
+    .demo-nav-btn:disabled:hover { border-color: rgba(0,0,0,.12); color: #44403c; background: #fff; }
+
+    .demo-grid {
+        display: flex;
+        gap: 1.25rem;
         overflow-x: auto;
         scroll-snap-type: x mandatory;
         -webkit-overflow-scrolling: touch;
         padding-bottom: .5rem;
         scrollbar-width: none;
     }
-    .demo-grid.is-carousel::-webkit-scrollbar { display: none; }
-    .demo-grid.is-carousel .demo-card {
-        flex: 0 0 320px;
-        scroll-snap-align: start;
-    }
+    .demo-grid::-webkit-scrollbar { display: none; }
+
     .demo-card {
-        border-radius: 20px;
+        flex: 0 0 360px;
+        scroll-snap-align: start;
+        border-radius: 16px;
         overflow: hidden;
-        box-shadow: 0 4px 24px rgba(0,0,0,.07);
+        border: 1.5px solid rgba(0,0,0,.08);
+        background: #fff;
         display: flex;
         flex-direction: column;
-        transition: transform .3s cubic-bezier(.16,1,.3,1), box-shadow .3s;
+        transition: transform .3s cubic-bezier(.16,1,.3,1), box-shadow .3s, border-color .2s;
+        box-shadow: 0 2px 12px rgba(0,0,0,.06);
     }
     .demo-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 16px 48px rgba(0,0,0,.12);
+        transform: translateY(-3px);
+        box-shadow: 0 12px 40px rgba(0,0,0,.1);
+        border-color: rgba(249,115,22,.3);
     }
     .demo-media-wrap {
         position: relative;
         width: 100%;
-        height: 200px;
+        height: 220px;
         overflow: hidden;
         background: #f5f5f4;
-        border-bottom: 1px solid rgba(0,0,0,.06);
         flex-shrink: 0;
     }
     .demo-media-wrap img,
@@ -150,9 +175,7 @@
         transition: transform .4s cubic-bezier(.16,1,.3,1);
     }
     .demo-card:hover .demo-media-wrap img,
-    .demo-card:hover .demo-media-wrap video {
-        transform: scale(1.04);
-    }
+    .demo-card:hover .demo-media-wrap video { transform: scale(1.03); }
     .demo-overlay {
         position: absolute;
         inset: 0;
@@ -160,33 +183,43 @@
         align-items: center;
         justify-content: center;
         background: rgba(0,0,0,0);
-        transition: background .3s;
+        transition: background .25s;
         cursor: pointer;
     }
-    .demo-card:hover .demo-overlay {
-        background: rgba(0,0,0,.3);
-    }
+    .demo-card:hover .demo-overlay { background: rgba(0,0,0,.32); }
     .demo-overlay-icon {
-        width: 48px;
-        height: 48px;
+        width: 52px; height: 52px;
         border-radius: 50%;
-        background: rgba(255,255,255,.95);
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        background: rgba(255,255,255,.96);
+        display: flex; align-items: center; justify-content: center;
         opacity: 0;
-        transform: scale(.65);
-        transition: opacity .22s, transform .3s cubic-bezier(.16,1,.3,1);
-        box-shadow: 0 4px 20px rgba(0,0,0,.22);
+        transform: scale(.6);
+        transition: opacity .22s, transform .28s cubic-bezier(.16,1,.3,1);
+        box-shadow: 0 6px 24px rgba(0,0,0,.2);
         pointer-events: none;
     }
-    .demo-card:hover .demo-overlay-icon {
-        opacity: 1;
-        transform: scale(1);
+    .demo-card:hover .demo-overlay-icon { opacity: 1; transform: scale(1); }
+    .demo-card-body { padding: 1rem 1.1rem 1.1rem; }
+    .demo-card-title {
+        font-size: .92rem;
+        font-weight: 700;
+        color: #1c1917;
+        margin: 0 0 .3rem;
+        line-height: 1.35;
     }
-    .demo-card-body {
-        padding: 1rem 1.2rem;
-        flex: 1;
+    .demo-card-desc {
+        font-size: .78rem;
+        color: #78716c;
+        line-height: 1.55;
+        margin: 0 0 .65rem;
+    }
+    .demo-card-meta {
+        display: flex;
+        align-items: center;
+        gap: .35rem;
+        font-size: .72rem;
+        color: #a8a29e;
+        font-weight: 500;
     }
 
     /* ── Demo lightbox ───────────────────────────────────── */
@@ -195,58 +228,59 @@
         position: fixed;
         inset: 0;
         z-index: 9999;
-        background: rgba(0,0,0,.85);
-        backdrop-filter: blur(6px);
+        background: rgba(0,0,0,.88);
+        backdrop-filter: blur(8px);
         align-items: center;
         justify-content: center;
     }
     #demo-lightbox.open { display: flex; }
     #demo-lightbox-inner {
         position: relative;
-        width: min(90vw, 900px);
-        border-radius: 16px;
+        width: min(92vw, 960px);
+        border-radius: 18px;
         overflow: hidden;
         background: #000;
-        box-shadow: 0 32px 80px rgba(0,0,0,.6);
+        box-shadow: 0 40px 100px rgba(0,0,0,.7);
     }
     #demo-lightbox-inner img,
     #demo-lightbox-inner video {
         width: 100%;
         display: block;
-        max-height: 80vh;
+        max-height: 82vh;
         object-fit: contain;
     }
     #demo-lightbox-close {
         position: absolute;
         top: 12px; right: 12px;
-        width: 36px; height: 36px;
+        width: 34px; height: 34px;
         border-radius: 50%;
-        background: rgba(255,255,255,.15);
+        background: rgba(255,255,255,.12);
         border: none;
         cursor: pointer;
         display: flex; align-items: center; justify-content: center;
         transition: background .2s;
         color: #fff;
+        z-index: 2;
     }
-    #demo-lightbox-close:hover { background: rgba(255,255,255,.28); }
+    #demo-lightbox-close:hover { background: rgba(255,255,255,.25); }
     .demo-lb-nav {
         position: absolute;
         top: 50%; transform: translateY(-50%);
-        width: 40px; height: 40px;
+        width: 42px; height: 42px;
         border-radius: 50%;
-        background: rgba(255,255,255,.15);
-        border: none;
+        background: rgba(255,255,255,.12);
+        border: 1.5px solid rgba(255,255,255,.18);
         cursor: pointer;
         display: flex; align-items: center; justify-content: center;
         transition: background .2s;
         color: #fff;
     }
-    .demo-lb-nav:hover { background: rgba(255,255,255,.28); }
-    #demo-lb-prev { left: -56px; }
-    #demo-lb-next { right: -56px; }
-    @media(max-width:900px){
-        #demo-lb-prev { left: 8px; }
-        #demo-lb-next { right: 8px; }
+    .demo-lb-nav:hover { background: rgba(255,255,255,.24); }
+    #demo-lb-prev { left: -60px; }
+    #demo-lb-next { right: -60px; }
+    @media(max-width:1100px){
+        #demo-lb-prev { left: 10px; }
+        #demo-lb-next { right: 10px; }
     }
 
     @media(max-width:900px){
@@ -254,7 +288,7 @@
         .stats-grid{grid-template-columns:repeat(2,1fr)!important}
         .steps-row{flex-direction:column!important;gap:2rem!important}
         .step-line{display:none!important}
-        .demo-grid:not(.is-carousel){grid-template-columns:1fr!important}
+        .demo-card{flex:0 0 280px!important}
     }
     @media(max-width:640px){
         .stats-grid{grid-template-columns:1fr!important}
@@ -324,65 +358,74 @@
 
     {{-- Demo Cards Carousel --}}
     <div class="demo-carousel-wrap reveal d2">
-        <div class="demo-grid">
+        <div class="demo-carousel-header">
+            <div class="demo-carousel-title">See it in <span>action</span></div>
+            <div class="demo-carousel-nav">
+                <button id="demo-scroll-prev" class="demo-nav-btn" aria-label="Previous" disabled>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+                </button>
+                <button id="demo-scroll-next" class="demo-nav-btn" aria-label="Next">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+                </button>
+            </div>
+        </div>
 
-            <div class="glass demo-card" data-demo-index="0">
+        <div class="demo-grid" id="demo-grid">
+
+            <div class="demo-card" data-demo-index="0">
                 <div class="demo-media-wrap">
                     <img src="/demo/how-to-record-screen.gif" alt="How to record your screen">
                     <div class="demo-overlay" onclick="openDemoLightbox(0)">
                         <div class="demo-overlay-icon">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1c1917" stroke-width="2.2"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1c1917" stroke-width="2.2"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
                         </div>
                     </div>
                 </div>
                 <div class="demo-card-body">
-                    <div style="display:flex;align-items:center;gap:.45rem;margin-bottom:.25rem">
-                        <span style="width:20px;height:20px;border-radius:6px;background:rgba(239,68,68,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-                            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3" fill="#ef4444" stroke="none"/></svg>
-                        </span>
-                        <span style="font-size:.84rem;font-weight:700;color:#1c1917">Record your screen</span>
+                    <p class="demo-card-title">Record your screen</p>
+                    <p class="demo-card-desc">Click the extension, choose your area, start in seconds.</p>
+                    <div class="demo-card-meta">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        OpenKap Demo
                     </div>
-                    <p style="font-size:.77rem;color:#78716c;line-height:1.55;margin:0">Click the extension, choose your area, start in seconds.</p>
                 </div>
             </div>
 
-            <div class="glass demo-card" data-demo-index="1">
+            <div class="demo-card" data-demo-index="1">
                 <div class="demo-media-wrap">
                     <img src="/demo/copy-share-link.gif" alt="Copy and share link">
                     <div class="demo-overlay" onclick="openDemoLightbox(1)">
                         <div class="demo-overlay-icon">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1c1917" stroke-width="2.2"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1c1917" stroke-width="2.2"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
                         </div>
                     </div>
                 </div>
                 <div class="demo-card-body">
-                    <div style="display:flex;align-items:center;gap:.45rem;margin-bottom:.25rem">
-                        <span style="width:20px;height:20px;border-radius:6px;background:rgba(249,115,22,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-                            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2.5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-                        </span>
-                        <span style="font-size:.84rem;font-weight:700;color:#1c1917">Copy &amp; share instantly</span>
+                    <p class="demo-card-title">Copy &amp; share instantly</p>
+                    <p class="demo-card-desc">Link ready the moment you stop. Paste it in Slack, Notion, anywhere.</p>
+                    <div class="demo-card-meta">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        OpenKap Demo
                     </div>
-                    <p style="font-size:.77rem;color:#78716c;line-height:1.55;margin:0">Link ready the moment you stop. Paste it in Slack, Notion, anywhere.</p>
                 </div>
             </div>
 
-            <div class="glass demo-card" data-demo-index="2">
+            <div class="demo-card" data-demo-index="2">
                 <div class="demo-media-wrap">
                     <video src="/demo/screenshot-editor-demo.mp4" autoplay loop muted playsinline></video>
                     <div class="demo-overlay" onclick="openDemoLightbox(2)">
                         <div class="demo-overlay-icon">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1c1917" stroke-width="2.2"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1c1917" stroke-width="2.2"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
                         </div>
                     </div>
                 </div>
                 <div class="demo-card-body">
-                    <div style="display:flex;align-items:center;gap:.45rem;margin-bottom:.25rem">
-                        <span style="width:20px;height:20px;border-radius:6px;background:rgba(139,92,246,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-                            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
-                        </span>
-                        <span style="font-size:.84rem;font-weight:700;color:#1c1917">Edit screenshots instantly</span>
+                    <p class="demo-card-title">Edit screenshots instantly</p>
+                    <p class="demo-card-desc">Annotate, highlight, and crop screenshots before sharing.</p>
+                    <div class="demo-card-meta">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        OpenKap Demo
                     </div>
-                    <p style="font-size:.77rem;color:#78716c;line-height:1.55;margin:0">Annotate, highlight, and crop screenshots before sharing.</p>
                 </div>
             </div>
 
@@ -409,10 +452,26 @@
 
 <script>
 (function () {
-    // Enable carousel layout only when there are more than 6 cards
-    const grid = document.querySelector('.demo-grid');
-    if (grid && grid.querySelectorAll('.demo-card').length > 6) {
-        grid.classList.add('is-carousel');
+    // ── Carousel scroll buttons ──────────────────────────
+    const grid     = document.getElementById('demo-grid');
+    const btnPrevS = document.getElementById('demo-scroll-prev');
+    const btnNextS = document.getElementById('demo-scroll-next');
+
+    function updateScrollBtns() {
+        if (!grid) return;
+        btnPrevS.disabled = grid.scrollLeft <= 4;
+        btnNextS.disabled = grid.scrollLeft + grid.clientWidth >= grid.scrollWidth - 4;
+    }
+
+    if (grid) {
+        const cardWidth = () => {
+            const c = grid.querySelector('.demo-card');
+            return c ? c.offsetWidth + 20 : 380; // card + gap
+        };
+        btnPrevS.addEventListener('click', () => { grid.scrollBy({ left: -cardWidth(), behavior: 'smooth' }); });
+        btnNextS.addEventListener('click', () => { grid.scrollBy({ left:  cardWidth(), behavior: 'smooth' }); });
+        grid.addEventListener('scroll', updateScrollBtns, { passive: true });
+        updateScrollBtns();
     }
 
     // Build media list from cards — order matters, add more cards and they just work
