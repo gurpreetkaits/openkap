@@ -95,6 +95,74 @@
     .feat-card:hover .feat-arrow{color:#f97316;transform:translateX(4px)}
     .feat-arrow{transition:color .25s,transform .25s;display:block}
 
+    /* ── Demo cards ─────────────────────────────────────── */
+    .demo-card {
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 4px 24px rgba(0,0,0,.07);
+        display: flex;
+        flex-direction: column;
+        transition: transform .3s cubic-bezier(.16,1,.3,1), box-shadow .3s;
+    }
+    .demo-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 16px 48px rgba(0,0,0,.12);
+    }
+    .demo-media-wrap {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 10;
+        overflow: hidden;
+        background: #f5f5f4;
+        border-bottom: 1px solid rgba(0,0,0,.06);
+        flex-shrink: 0;
+    }
+    .demo-media-wrap img,
+    .demo-media-wrap video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+        transition: transform .4s cubic-bezier(.16,1,.3,1);
+    }
+    .demo-card:hover .demo-media-wrap img,
+    .demo-card:hover .demo-media-wrap video {
+        transform: scale(1.04);
+    }
+    .demo-overlay {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0,0,0,0);
+        transition: background .3s;
+    }
+    .demo-card:hover .demo-overlay {
+        background: rgba(0,0,0,.28);
+    }
+    .demo-overlay-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: rgba(255,255,255,.95);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transform: scale(.7);
+        transition: opacity .25s, transform .3s cubic-bezier(.16,1,.3,1);
+        box-shadow: 0 4px 16px rgba(0,0,0,.18);
+    }
+    .demo-card:hover .demo-overlay-icon {
+        opacity: 1;
+        transform: scale(1);
+    }
+    .demo-card-body {
+        padding: 1rem 1.2rem;
+        flex: 1;
+    }
+
     @media(max-width:900px){
         .feat-grid{grid-template-columns:1fr!important}
         .stats-grid{grid-template-columns:repeat(2,1fr)!important}
@@ -168,12 +236,19 @@
 
     </div>
 
-    {{-- Demo GIFs --}}
-    <div class="reveal d2 demo-grid" style="margin-top:3rem;display:grid;grid-template-columns:1fr 1fr;gap:1.25rem">
+    {{-- Demo Cards --}}
+    <div class="reveal d2 demo-grid" style="margin-top:3rem;display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.25rem;align-items:stretch">
 
-        <div class="glass" style="border-radius:20px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.07)">
-            <img src="/demo/how-to-record-screen.gif" alt="How to record your screen" style="width:100%;display:block;border-bottom:1px solid rgba(0,0,0,.06)">
-            <div style="padding:1rem 1.2rem">
+        <div class="glass demo-card">
+            <div class="demo-media-wrap">
+                <img src="/demo/how-to-record-screen.gif" alt="How to record your screen">
+                <div class="demo-overlay">
+                    <div class="demo-overlay-icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1c1917" stroke-width="2.2"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+                    </div>
+                </div>
+            </div>
+            <div class="demo-card-body">
                 <div style="display:flex;align-items:center;gap:.45rem;margin-bottom:.25rem">
                     <span style="width:20px;height:20px;border-radius:6px;background:rgba(239,68,68,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0">
                         <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3" fill="#ef4444" stroke="none"/></svg>
@@ -184,9 +259,16 @@
             </div>
         </div>
 
-        <div class="glass" style="border-radius:20px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.07)">
-            <img src="/demo/copy-share-link.gif" alt="Copy and share link" style="width:100%;display:block;border-bottom:1px solid rgba(0,0,0,.06)">
-            <div style="padding:1rem 1.2rem">
+        <div class="glass demo-card">
+            <div class="demo-media-wrap">
+                <img src="/demo/copy-share-link.gif" alt="Copy and share link">
+                <div class="demo-overlay">
+                    <div class="demo-overlay-icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1c1917" stroke-width="2.2"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+                    </div>
+                </div>
+            </div>
+            <div class="demo-card-body">
                 <div style="display:flex;align-items:center;gap:.45rem;margin-bottom:.25rem">
                     <span style="width:20px;height:20px;border-radius:6px;background:rgba(249,115,22,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0">
                         <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2.5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
@@ -194,6 +276,26 @@
                     <span style="font-size:.84rem;font-weight:700;color:#1c1917">Copy &amp; share instantly</span>
                 </div>
                 <p style="font-size:.77rem;color:#78716c;line-height:1.55;margin:0">Link ready the moment you stop. Paste it in Slack, Notion, anywhere.</p>
+            </div>
+        </div>
+
+        <div class="glass demo-card">
+            <div class="demo-media-wrap">
+                <video src="/demo/screenshot-editor-demo.mp4" autoplay loop muted playsinline></video>
+                <div class="demo-overlay">
+                    <div class="demo-overlay-icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1c1917" stroke-width="2.2"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+                    </div>
+                </div>
+            </div>
+            <div class="demo-card-body">
+                <div style="display:flex;align-items:center;gap:.45rem;margin-bottom:.25rem">
+                    <span style="width:20px;height:20px;border-radius:6px;background:rgba(139,92,246,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                        <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+                    </span>
+                    <span style="font-size:.84rem;font-weight:700;color:#1c1917">Edit screenshots instantly</span>
+                </div>
+                <p style="font-size:.77rem;color:#78716c;line-height:1.55;margin:0">Annotate, highlight, and crop screenshots before sharing.</p>
             </div>
         </div>
 
