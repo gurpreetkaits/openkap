@@ -95,8 +95,24 @@
     .feat-card:hover .feat-arrow{color:#f97316;transform:translateX(4px)}
     .feat-arrow{transition:color .25s,transform .25s;display:block}
 
-    /* ── Demo cards ─────────────────────────────────────── */
+    /* ── Demo carousel ───────────────────────────────────── */
+    .demo-carousel-wrap {
+        position: relative;
+        margin-top: 3rem;
+    }
+    .demo-grid {
+        display: flex;
+        gap: 1.25rem;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: .5rem;
+        scrollbar-width: none;
+    }
+    .demo-grid::-webkit-scrollbar { display: none; }
     .demo-card {
+        flex: 0 0 320px;
+        scroll-snap-align: start;
         border-radius: 20px;
         overflow: hidden;
         box-shadow: 0 4px 24px rgba(0,0,0,.07);
@@ -111,7 +127,7 @@
     .demo-media-wrap {
         position: relative;
         width: 100%;
-        aspect-ratio: 16 / 10;
+        height: 200px;
         overflow: hidden;
         background: #f5f5f4;
         border-bottom: 1px solid rgba(0,0,0,.06);
@@ -137,22 +153,24 @@
         justify-content: center;
         background: rgba(0,0,0,0);
         transition: background .3s;
+        cursor: pointer;
     }
     .demo-card:hover .demo-overlay {
-        background: rgba(0,0,0,.28);
+        background: rgba(0,0,0,.3);
     }
     .demo-overlay-icon {
-        width: 44px;
-        height: 44px;
+        width: 48px;
+        height: 48px;
         border-radius: 50%;
         background: rgba(255,255,255,.95);
         display: flex;
         align-items: center;
         justify-content: center;
         opacity: 0;
-        transform: scale(.7);
-        transition: opacity .25s, transform .3s cubic-bezier(.16,1,.3,1);
-        box-shadow: 0 4px 16px rgba(0,0,0,.18);
+        transform: scale(.65);
+        transition: opacity .22s, transform .3s cubic-bezier(.16,1,.3,1);
+        box-shadow: 0 4px 20px rgba(0,0,0,.22);
+        pointer-events: none;
     }
     .demo-card:hover .demo-overlay-icon {
         opacity: 1;
@@ -161,6 +179,66 @@
     .demo-card-body {
         padding: 1rem 1.2rem;
         flex: 1;
+    }
+
+    /* ── Demo lightbox ───────────────────────────────────── */
+    #demo-lightbox {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        background: rgba(0,0,0,.85);
+        backdrop-filter: blur(6px);
+        align-items: center;
+        justify-content: center;
+    }
+    #demo-lightbox.open { display: flex; }
+    #demo-lightbox-inner {
+        position: relative;
+        width: min(90vw, 900px);
+        border-radius: 16px;
+        overflow: hidden;
+        background: #000;
+        box-shadow: 0 32px 80px rgba(0,0,0,.6);
+    }
+    #demo-lightbox-inner img,
+    #demo-lightbox-inner video {
+        width: 100%;
+        display: block;
+        max-height: 80vh;
+        object-fit: contain;
+    }
+    #demo-lightbox-close {
+        position: absolute;
+        top: 12px; right: 12px;
+        width: 36px; height: 36px;
+        border-radius: 50%;
+        background: rgba(255,255,255,.15);
+        border: none;
+        cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        transition: background .2s;
+        color: #fff;
+    }
+    #demo-lightbox-close:hover { background: rgba(255,255,255,.28); }
+    .demo-lb-nav {
+        position: absolute;
+        top: 50%; transform: translateY(-50%);
+        width: 40px; height: 40px;
+        border-radius: 50%;
+        background: rgba(255,255,255,.15);
+        border: none;
+        cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        transition: background .2s;
+        color: #fff;
+    }
+    .demo-lb-nav:hover { background: rgba(255,255,255,.28); }
+    #demo-lb-prev { left: -56px; }
+    #demo-lb-next { right: -56px; }
+    @media(max-width:900px){
+        #demo-lb-prev { left: 8px; }
+        #demo-lb-next { right: 8px; }
     }
 
     @media(max-width:900px){
@@ -219,7 +297,7 @@
             </a>
             <a href="https://chromewebstore.google.com/detail/openkap/nnchnlkilgfemhpcohmgdpcmkjedjkfm" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:.5rem;text-decoration:none;color:#44403c;font-size:.9rem;font-weight:500;padding:.85rem 1.4rem;border-radius:10px;border:1px solid rgba(0,0,0,.1);background:white;transition:border-color .2s" onmouseover="this.style.borderColor='rgba(0,0,0,.2)'" onmouseout="this.style.borderColor='rgba(0,0,0,.1)'">
                 <img src="/logo.png" alt="" style="width:16px;height:16px;border-radius:4px">
-                Install Extension
+                Add Chrome Extension
             </a>
         </div>
 
@@ -236,72 +314,153 @@
 
     </div>
 
-    {{-- Demo Cards --}}
-    <div class="reveal d2 demo-grid" style="margin-top:3rem;display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.25rem;align-items:stretch">
+    {{-- Demo Cards Carousel --}}
+    <div class="demo-carousel-wrap reveal d2">
+        <div class="demo-grid">
 
-        <div class="glass demo-card">
-            <div class="demo-media-wrap">
-                <img src="/demo/how-to-record-screen.gif" alt="How to record your screen">
-                <div class="demo-overlay">
-                    <div class="demo-overlay-icon">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1c1917" stroke-width="2.2"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+            <div class="glass demo-card" data-demo-index="0">
+                <div class="demo-media-wrap">
+                    <img src="/demo/how-to-record-screen.gif" alt="How to record your screen">
+                    <div class="demo-overlay" onclick="openDemoLightbox(0)">
+                        <div class="demo-overlay-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1c1917" stroke-width="2.2"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="demo-card-body">
-                <div style="display:flex;align-items:center;gap:.45rem;margin-bottom:.25rem">
-                    <span style="width:20px;height:20px;border-radius:6px;background:rgba(239,68,68,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-                        <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3" fill="#ef4444" stroke="none"/></svg>
-                    </span>
-                    <span style="font-size:.84rem;font-weight:700;color:#1c1917">Record your screen</span>
+                <div class="demo-card-body">
+                    <div style="display:flex;align-items:center;gap:.45rem;margin-bottom:.25rem">
+                        <span style="width:20px;height:20px;border-radius:6px;background:rgba(239,68,68,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3" fill="#ef4444" stroke="none"/></svg>
+                        </span>
+                        <span style="font-size:.84rem;font-weight:700;color:#1c1917">Record your screen</span>
+                    </div>
+                    <p style="font-size:.77rem;color:#78716c;line-height:1.55;margin:0">Click the extension, choose your area, start in seconds.</p>
                 </div>
-                <p style="font-size:.77rem;color:#78716c;line-height:1.55;margin:0">Click the extension, choose your area, start in seconds.</p>
             </div>
-        </div>
 
-        <div class="glass demo-card">
-            <div class="demo-media-wrap">
-                <img src="/demo/copy-share-link.gif" alt="Copy and share link">
-                <div class="demo-overlay">
-                    <div class="demo-overlay-icon">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1c1917" stroke-width="2.2"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+            <div class="glass demo-card" data-demo-index="1">
+                <div class="demo-media-wrap">
+                    <img src="/demo/copy-share-link.gif" alt="Copy and share link">
+                    <div class="demo-overlay" onclick="openDemoLightbox(1)">
+                        <div class="demo-overlay-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1c1917" stroke-width="2.2"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="demo-card-body">
-                <div style="display:flex;align-items:center;gap:.45rem;margin-bottom:.25rem">
-                    <span style="width:20px;height:20px;border-radius:6px;background:rgba(249,115,22,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-                        <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2.5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-                    </span>
-                    <span style="font-size:.84rem;font-weight:700;color:#1c1917">Copy &amp; share instantly</span>
+                <div class="demo-card-body">
+                    <div style="display:flex;align-items:center;gap:.45rem;margin-bottom:.25rem">
+                        <span style="width:20px;height:20px;border-radius:6px;background:rgba(249,115,22,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2.5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                        </span>
+                        <span style="font-size:.84rem;font-weight:700;color:#1c1917">Copy &amp; share instantly</span>
+                    </div>
+                    <p style="font-size:.77rem;color:#78716c;line-height:1.55;margin:0">Link ready the moment you stop. Paste it in Slack, Notion, anywhere.</p>
                 </div>
-                <p style="font-size:.77rem;color:#78716c;line-height:1.55;margin:0">Link ready the moment you stop. Paste it in Slack, Notion, anywhere.</p>
             </div>
-        </div>
 
-        <div class="glass demo-card">
-            <div class="demo-media-wrap">
-                <video src="/demo/screenshot-editor-demo.mp4" autoplay loop muted playsinline></video>
-                <div class="demo-overlay">
-                    <div class="demo-overlay-icon">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1c1917" stroke-width="2.2"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+            <div class="glass demo-card" data-demo-index="2">
+                <div class="demo-media-wrap">
+                    <video src="/demo/screenshot-editor-demo.mp4" autoplay loop muted playsinline></video>
+                    <div class="demo-overlay" onclick="openDemoLightbox(2)">
+                        <div class="demo-overlay-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1c1917" stroke-width="2.2"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="demo-card-body">
-                <div style="display:flex;align-items:center;gap:.45rem;margin-bottom:.25rem">
-                    <span style="width:20px;height:20px;border-radius:6px;background:rgba(139,92,246,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-                        <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
-                    </span>
-                    <span style="font-size:.84rem;font-weight:700;color:#1c1917">Edit screenshots instantly</span>
+                <div class="demo-card-body">
+                    <div style="display:flex;align-items:center;gap:.45rem;margin-bottom:.25rem">
+                        <span style="width:20px;height:20px;border-radius:6px;background:rgba(139,92,246,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+                        </span>
+                        <span style="font-size:.84rem;font-weight:700;color:#1c1917">Edit screenshots instantly</span>
+                    </div>
+                    <p style="font-size:.77rem;color:#78716c;line-height:1.55;margin:0">Annotate, highlight, and crop screenshots before sharing.</p>
                 </div>
-                <p style="font-size:.77rem;color:#78716c;line-height:1.55;margin:0">Annotate, highlight, and crop screenshots before sharing.</p>
             </div>
-        </div>
 
+        </div>
     </div>
 </div>
 </section>
+
+{{-- ── Demo Lightbox ──────────────────────────────────────────── --}}
+<div id="demo-lightbox" role="dialog" aria-modal="true">
+    <button id="demo-lb-prev" class="demo-lb-nav" aria-label="Previous" onclick="moveDemoLightbox(-1)">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <div id="demo-lightbox-inner">
+        <button id="demo-lightbox-close" aria-label="Close" onclick="closeDemoLightbox()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+        <div id="demo-lb-media"></div>
+    </div>
+    <button id="demo-lb-next" class="demo-lb-nav" aria-label="Next" onclick="moveDemoLightbox(1)">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>
+</div>
+
+<script>
+(function () {
+    // Build media list from cards — order matters, add more cards and they just work
+    const cards = Array.from(document.querySelectorAll('.demo-card'));
+    const items = cards.map(card => {
+        const img   = card.querySelector('.demo-media-wrap img');
+        const video = card.querySelector('.demo-media-wrap video');
+        if (video) return { type: 'video', src: video.getAttribute('src') };
+        return { type: 'img', src: img.getAttribute('src'), alt: img.getAttribute('alt') || '' };
+    });
+
+    let current = 0;
+    const lb      = document.getElementById('demo-lightbox');
+    const media   = document.getElementById('demo-lb-media');
+    const btnPrev = document.getElementById('demo-lb-prev');
+    const btnNext = document.getElementById('demo-lb-next');
+
+    function render(idx) {
+        const item = items[idx];
+        if (item.type === 'video') {
+            media.innerHTML = `<video src="${item.src}" autoplay loop muted playsinline style="width:100%;display:block;max-height:80vh;object-fit:contain;background:#000"></video>`;
+        } else {
+            media.innerHTML = `<img src="${item.src}" alt="${item.alt}" style="width:100%;display:block;max-height:80vh;object-fit:contain;background:#000">`;
+        }
+        btnPrev.style.visibility = idx === 0 ? 'hidden' : 'visible';
+        btnNext.style.visibility = idx === items.length - 1 ? 'hidden' : 'visible';
+    }
+
+    window.openDemoLightbox = function (idx) {
+        current = idx;
+        render(current);
+        lb.classList.add('open');
+        document.body.style.overflow = 'hidden';
+    };
+
+    window.closeDemoLightbox = function () {
+        lb.classList.remove('open');
+        media.innerHTML = '';
+        document.body.style.overflow = '';
+    };
+
+    window.moveDemoLightbox = function (dir) {
+        const next = current + dir;
+        if (next < 0 || next >= items.length) return;
+        current = next;
+        render(current);
+    };
+
+    // Close on backdrop click
+    lb.addEventListener('click', function (e) {
+        if (e.target === lb) closeDemoLightbox();
+    });
+
+    // Keyboard nav
+    document.addEventListener('keydown', function (e) {
+        if (!lb.classList.contains('open')) return;
+        if (e.key === 'Escape') closeDemoLightbox();
+        if (e.key === 'ArrowLeft')  moveDemoLightbox(-1);
+        if (e.key === 'ArrowRight') moveDemoLightbox(1);
+    });
+}());
+</script>
 
 {{-- ── LOGOS BAR ──────────────────────────────────────────────── --}}
 <div style="position:relative;z-index:1;text-align:center;padding:2.5rem 1.5rem;border-top:1px solid rgba(0,0,0,.06);border-bottom:1px solid rgba(0,0,0,.06);background:rgba(255,255,255,.5);backdrop-filter:blur(8px)">
