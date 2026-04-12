@@ -100,19 +100,27 @@
         position: relative;
         margin-top: 3rem;
     }
+    /* Default: grid layout (≤6 cards) */
     .demo-grid {
-        display: flex;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
         gap: 1.25rem;
+    }
+    /* Carousel mode (>6 cards, toggled by JS) */
+    .demo-grid.is-carousel {
+        display: flex;
         overflow-x: auto;
         scroll-snap-type: x mandatory;
         -webkit-overflow-scrolling: touch;
         padding-bottom: .5rem;
         scrollbar-width: none;
     }
-    .demo-grid::-webkit-scrollbar { display: none; }
-    .demo-card {
+    .demo-grid.is-carousel::-webkit-scrollbar { display: none; }
+    .demo-grid.is-carousel .demo-card {
         flex: 0 0 320px;
         scroll-snap-align: start;
+    }
+    .demo-card {
         border-radius: 20px;
         overflow: hidden;
         box-shadow: 0 4px 24px rgba(0,0,0,.07);
@@ -246,7 +254,7 @@
         .stats-grid{grid-template-columns:repeat(2,1fr)!important}
         .steps-row{flex-direction:column!important;gap:2rem!important}
         .step-line{display:none!important}
-        .demo-grid{grid-template-columns:1fr!important}
+        .demo-grid:not(.is-carousel){grid-template-columns:1fr!important}
     }
     @media(max-width:640px){
         .stats-grid{grid-template-columns:1fr!important}
@@ -401,6 +409,12 @@
 
 <script>
 (function () {
+    // Enable carousel layout only when there are more than 6 cards
+    const grid = document.querySelector('.demo-grid');
+    if (grid && grid.querySelectorAll('.demo-card').length > 6) {
+        grid.classList.add('is-carousel');
+    }
+
     // Build media list from cards — order matters, add more cards and they just work
     const cards = Array.from(document.querySelectorAll('.demo-card'));
     const items = cards.map(card => {
