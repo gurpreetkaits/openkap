@@ -96,13 +96,16 @@
     .feat-arrow{transition:color .25s,transform .25s;display:block}
 
     /* ── Demo carousel ───────────────────────────────────── */
-    .demo-carousel-wrap { margin-top: 3rem; }
+    .demo-carousel-wrap { margin-top: 0; }
 
     .demo-carousel-header {
         display: flex;
         align-items: center;
         justify-content: space-between;
         margin-bottom: 1.25rem;
+        max-width: 1400px;
+        margin-left: auto;
+        margin-right: auto;
     }
     .demo-carousel-title {
         font-size: 1.15rem;
@@ -130,20 +133,33 @@
     .demo-nav-btn:disabled { opacity: .35; cursor: default; }
     .demo-nav-btn:disabled:hover { border-color: rgba(0,0,0,.12); color: #44403c; background: #fff; }
 
+    /* Default: fluid grid */
     .demo-grid {
-        display: flex;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
         gap: 1.25rem;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+    /* Carousel mode (>5 cards, toggled by JS) */
+    .demo-grid.is-carousel {
+        display: flex;
         overflow-x: auto;
         scroll-snap-type: x mandatory;
         -webkit-overflow-scrolling: touch;
         padding-bottom: .5rem;
         scrollbar-width: none;
+        max-width: none;
+        margin: 0;
     }
-    .demo-grid::-webkit-scrollbar { display: none; }
+    .demo-grid.is-carousel::-webkit-scrollbar { display: none; }
+    .demo-grid.is-carousel .demo-card { flex: 0 0 365px; scroll-snap-align: start; }
+
+    /* Nav buttons only visible in carousel mode */
+    .demo-carousel-nav { display: none; }
+    .demo-carousel-wrap.is-carousel-mode .demo-carousel-nav { display: flex; }
 
     .demo-card {
-        flex: 0 0 360px;
-        scroll-snap-align: start;
         border-radius: 16px;
         overflow: hidden;
         border: 1.5px solid rgba(0,0,0,.08);
@@ -288,7 +304,8 @@
         .stats-grid{grid-template-columns:repeat(2,1fr)!important}
         .steps-row{flex-direction:column!important;gap:2rem!important}
         .step-line{display:none!important}
-        .demo-card{flex:0 0 280px!important}
+        .demo-grid:not(.is-carousel){grid-template-columns:1fr!important}
+        .demo-grid.is-carousel .demo-card{flex:0 0 280px!important}
     }
     @media(max-width:640px){
         .stats-grid{grid-template-columns:1fr!important}
@@ -356,8 +373,12 @@
 
     </div>
 
-    {{-- Demo Cards Carousel --}}
-    <div class="demo-carousel-wrap reveal d2">
+</div>
+</section>
+
+{{-- ── DEMO CARDS ─────────────────────────────────────────────── --}}
+<section style="position:relative;z-index:1;padding:0 2rem 4rem">
+<div class="demo-carousel-wrap reveal d2">
         <div class="demo-carousel-header">
             <div class="demo-carousel-title">See it in <span>action</span></div>
             <div class="demo-carousel-nav">
@@ -434,7 +455,7 @@
 </div>
 </section>
 
-{{-- ── Demo Lightbox ──────────────────────────────────────────── --}}
+{{-- ── Demo Lightbox ─────────────────────────────────────────── --}}
 <div id="demo-lightbox" role="dialog" aria-modal="true">
     <button id="demo-lb-prev" class="demo-lb-nav" aria-label="Previous" onclick="moveDemoLightbox(-1)">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
@@ -452,8 +473,9 @@
 
 <script>
 (function () {
-    // ── Carousel scroll buttons ──────────────────────────
+    // ── Carousel mode: only when >5 cards ───────────────
     const grid     = document.getElementById('demo-grid');
+    const wrap     = grid ? grid.closest('.demo-carousel-wrap') : null;
     const btnPrevS = document.getElementById('demo-scroll-prev');
     const btnNextS = document.getElementById('demo-scroll-next');
 
@@ -464,14 +486,19 @@
     }
 
     if (grid) {
-        const cardWidth = () => {
-            const c = grid.querySelector('.demo-card');
-            return c ? c.offsetWidth + 20 : 380; // card + gap
-        };
-        btnPrevS.addEventListener('click', () => { grid.scrollBy({ left: -cardWidth(), behavior: 'smooth' }); });
-        btnNextS.addEventListener('click', () => { grid.scrollBy({ left:  cardWidth(), behavior: 'smooth' }); });
-        grid.addEventListener('scroll', updateScrollBtns, { passive: true });
-        updateScrollBtns();
+        const count = grid.querySelectorAll('.demo-card').length;
+        if (count > 5) {
+            grid.classList.add('is-carousel');
+            wrap && wrap.classList.add('is-carousel-mode');
+            const cardWidth = () => {
+                const c = grid.querySelector('.demo-card');
+                return c ? c.offsetWidth + 20 : 385;
+            };
+            btnPrevS.addEventListener('click', () => { grid.scrollBy({ left: -cardWidth(), behavior: 'smooth' }); });
+            btnNextS.addEventListener('click', () => { grid.scrollBy({ left:  cardWidth(), behavior: 'smooth' }); });
+            grid.addEventListener('scroll', updateScrollBtns, { passive: true });
+            updateScrollBtns();
+        }
     }
 
     // Build media list from cards — order matters, add more cards and they just work
