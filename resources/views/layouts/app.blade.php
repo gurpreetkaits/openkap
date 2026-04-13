@@ -14,7 +14,7 @@
     <meta property="og:description" content="@yield('og_description', 'Free open source screen recording tool. The best Loom alternative - record your screen, capture audio, and share instantly.')">
     <meta property="og:type" content="@yield('og_type', 'website')">
     <meta property="og:url" content="{{ url()->current() }}">
-    <meta property="og:image" content="@yield('og_image', url('/demo/website-preview.png'))">
+    <meta property="og:image" content="@yield('og_image', url('/demo/website-preview.png?v=2'))">
     <meta property="og:image:alt" content="OpenKap - Open Source Screen Recording Tool">
     <meta property="og:site_name" content="OpenKap">
     <meta property="og:locale" content="en_US">
@@ -23,7 +23,7 @@
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="@yield('twitter_title', 'OpenKap - Free Open Source Loom Alternative')">
     <meta name="twitter:description" content="@yield('twitter_description', 'Free open source screen recording tool. The best Loom alternative - record your screen, capture audio, and share instantly.')">
-    <meta name="twitter:image" content="@yield('twitter_image', url('/demo/website-preview.png'))">
+    <meta name="twitter:image" content="@yield('twitter_image', url('/demo/website-preview.png?v=2'))">
     <meta name="twitter:image:alt" content="OpenKap - Open Source Screen Recording Tool">
 
     <!-- Canonical URL -->
