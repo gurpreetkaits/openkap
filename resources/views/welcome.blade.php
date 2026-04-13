@@ -643,7 +643,7 @@
         </div>
 
         {{-- Cards --}}
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem" class="reveal d1">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1.5rem" class="reveal d1">
 
             {{-- FREE --}}
             <div class="glass" style="border-radius:24px;padding:2.25rem 2rem;box-shadow:0 2px 12px rgba(0,0,0,.06)">
