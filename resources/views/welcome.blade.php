@@ -306,6 +306,7 @@
         .step-line{display:none!important}
         .demo-grid:not(.is-carousel){grid-template-columns:1fr!important}
         .demo-grid.is-carousel .demo-card{flex:0 0 280px!important}
+        .mcp-cards{grid-template-columns:1fr!important}
     }
     @media(max-width:640px){
         .stats-grid{grid-template-columns:1fr!important}
@@ -601,6 +602,83 @@
                 </div>
             </div>
             @endforeach
+        </div>
+    </div>
+</section>
+
+{{-- ── AI INTEGRATION / MCP ─────────────────────────────────── --}}
+<section id="ai-integration" style="position:relative;z-index:1;max-width:960px;margin:0 auto;padding:5rem 2rem">
+
+    {{-- Heading --}}
+    <div class="reveal" style="text-align:center;margin-bottom:3rem">
+        <div class="tag">AI Integration</div>
+        <h2 style="font-size:clamp(1.9rem,3.5vw,2.75rem);font-weight:800;letter-spacing:-.03em;line-height:1.15;color:#1c1917;margin-bottom:.6rem">
+            Talk to your videos with <span class="grad">Claude AI</span>
+        </h2>
+        <p style="font-size:.95rem;color:#78716c;line-height:1.7;max-width:560px;margin:0 auto">
+            Connect OpenKap to Claude Code or any MCP-compatible tool. Ask questions about any shared video — transcriptions, summaries, and comments.
+        </p>
+    </div>
+
+    {{-- Terminal demo --}}
+    <div class="reveal d1" style="background:#1c1917;border-radius:16px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.15);margin-bottom:2rem">
+        {{-- Title bar --}}
+        <div style="display:flex;align-items:center;gap:6px;padding:.75rem 1rem;background:rgba(255,255,255,.06);border-bottom:1px solid rgba(255,255,255,.06)">
+            <span style="width:10px;height:10px;border-radius:50%;background:#ef4444"></span>
+            <span style="width:10px;height:10px;border-radius:50%;background:#eab308"></span>
+            <span style="width:10px;height:10px;border-radius:50%;background:#22c55e"></span>
+            <span style="margin-left:.75rem;font-size:.75rem;color:rgba(255,255,255,.4);font-weight:500">Claude Code</span>
+        </div>
+        {{-- Lines --}}
+        <div style="padding:1.5rem;display:flex;flex-direction:column;gap:1rem">
+            {{-- User --}}
+            <div style="display:flex;gap:.75rem;align-items:flex-start;font-size:.85rem;line-height:1.6">
+                <span style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#f97316;background:rgba(249,115,22,.12);padding:.15rem .5rem;border-radius:4px;flex-shrink:0;margin-top:.1rem">you</span>
+                <span style="color:rgba(255,255,255,.85)">What bugs were reported in this video? openkap.com/share/video/a8xK2m</span>
+            </div>
+            {{-- MCP tool call --}}
+            <div style="display:flex;gap:.75rem;align-items:flex-start;font-size:.85rem;line-height:1.6">
+                <span style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#a78bfa;background:rgba(167,139,250,.12);padding:.15rem .5rem;border-radius:4px;flex-shrink:0;margin-top:.1rem">mcp</span>
+                <span style="color:rgba(255,255,255,.4);font-family:ui-monospace,'SF Mono',monospace;font-size:.8rem">get_video_transcription("a8xK2m")</span>
+            </div>
+            {{-- AI response --}}
+            <div style="display:flex;gap:.75rem;align-items:flex-start;font-size:.85rem;line-height:1.6">
+                <span style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#34d399;background:rgba(52,211,153,.12);padding:.15rem .5rem;border-radius:4px;flex-shrink:0;margin-top:.1rem">claude</span>
+                <span style="color:rgba(255,255,255,.85)">The video reports <strong style="color:#fff;font-weight:600">2 bugs</strong>: (1) Login button unresponsive on staging at <span style="color:#fbbf24;font-weight:600">0:45</span>, and (2) session token expires too early at <span style="color:#fbbf24;font-weight:600">2:12</span>. A teammate commented confirming both issues.</span>
+            </div>
+        </div>
+    </div>
+
+    {{-- Use-case cards --}}
+    <div class="mcp-cards" style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:2.5rem">
+        <div class="glass reveal d1 feat-card" style="border-radius:16px;padding:1.5rem;box-shadow:0 2px 8px rgba(0,0,0,.04);cursor:default">
+            <div style="width:40px;height:40px;border-radius:10px;background:rgba(249,115,22,.08);color:#f97316;display:flex;align-items:center;justify-content:center;margin-bottom:1rem">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+            </div>
+            <div style="font-size:.9rem;font-weight:700;color:#1c1917;margin-bottom:.35rem">Ask about transcriptions</div>
+            <div style="font-size:.8rem;color:#78716c;font-style:italic;line-height:1.5">"What was discussed at the 3-minute mark?"</div>
+        </div>
+        <div class="glass reveal d2 feat-card" style="border-radius:16px;padding:1.5rem;box-shadow:0 2px 8px rgba(0,0,0,.04);cursor:default">
+            <div style="width:40px;height:40px;border-radius:10px;background:rgba(249,115,22,.08);color:#f97316;display:flex;align-items:center;justify-content:center;margin-bottom:1rem">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            </div>
+            <div style="font-size:.9rem;font-weight:700;color:#1c1917;margin-bottom:.35rem">Get summaries</div>
+            <div style="font-size:.8rem;color:#78716c;font-style:italic;line-height:1.5">"Summarize this product demo for me."</div>
+        </div>
+        <div class="glass reveal d3 feat-card" style="border-radius:16px;padding:1.5rem;box-shadow:0 2px 8px rgba(0,0,0,.04);cursor:default">
+            <div style="width:40px;height:40px;border-radius:10px;background:rgba(249,115,22,.08);color:#f97316;display:flex;align-items:center;justify-content:center;margin-bottom:1rem">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+            </div>
+            <div style="font-size:.9rem;font-weight:700;color:#1c1917;margin-bottom:.35rem">Read team comments</div>
+            <div style="font-size:.8rem;color:#78716c;font-style:italic;line-height:1.5">"What feedback did the team leave?"</div>
+        </div>
+    </div>
+
+    {{-- Install command --}}
+    <div class="reveal d3" style="text-align:center">
+        <p style="font-size:.8rem;color:#78716c;margin-bottom:.5rem;font-weight:500">Add to Claude Code in one command:</p>
+        <div style="display:inline-block;background:#1c1917;border-radius:10px;padding:.65rem 1.25rem">
+            <code style="font-family:ui-monospace,'SF Mono',monospace;font-size:.8rem;color:rgba(255,255,255,.8);letter-spacing:-.01em">claude mcp add openkap -- npx tsx mcp-server/server.ts</code>
         </div>
     </div>
 </section>

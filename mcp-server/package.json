@@ -1,15 +1,31 @@
 {
-  "name": "openkap-mcp-server",
+  "name": "openkap-mcp",
   "version": "1.0.0",
-  "description": "MCP server for OpenKap - access video transcriptions from Claude and other AI tools",
+  "description": "MCP server for OpenKap — talk to video transcriptions, summaries, and comments from Claude or any AI tool",
   "type": "module",
-  "bin": "./server.ts",
+  "bin": {
+    "openkap-mcp": "dist/server.js"
+  },
+  "files": [
+    "dist"
+  ],
   "scripts": {
-    "start": "npx tsx server.ts",
-    "build": "npx tsc && node dist/server.js",
+    "build": "tsc",
+    "prepublishOnly": "npm run build",
+    "start": "node dist/server.js",
+    "dev": "tsx server.ts",
     "test": "vitest run",
     "test:watch": "vitest"
   },
+  "keywords": [
+    "mcp",
+    "openkap",
+    "transcription",
+    "video",
+    "claude",
+    "ai"
+  ],
+  "license": "MIT",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.12.1"
   },

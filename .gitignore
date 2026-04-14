@@ -14,7 +14,6 @@
 /auth.json
 /node_modules
 /mcp-server/node_modules
-/mcp-server/dist
 /public/build
 /public/hot
 /public/storage
