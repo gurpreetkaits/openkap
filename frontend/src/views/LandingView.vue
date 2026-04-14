@@ -198,6 +198,69 @@
       </div>
     </section>
 
+    <!-- AI Integration / MCP -->
+    <section class="ai-integration" id="ai-integration">
+      <div class="section-header">
+        <div class="section-tag">AI Integration</div>
+        <h2 class="section-title">Talk to your videos with <span class="gradient-text">Claude AI</span></h2>
+        <p class="section-sub">Connect OpenKap to Claude Code, Claude Desktop, or any MCP-compatible tool. Ask questions about any shared video — transcriptions, summaries, and comments.</p>
+      </div>
+
+      <div class="mcp-showcase">
+        <div class="mcp-terminal">
+          <div class="terminal-bar">
+            <div class="dot red" /><div class="dot yellow" /><div class="dot green" />
+            <span class="terminal-title">Claude Code</span>
+          </div>
+          <div class="terminal-body">
+            <div class="terminal-line user-line">
+              <span class="terminal-prompt">you</span>
+              <span class="terminal-text">What bugs were reported in this video? openkap.com/share/video/a8xK2m</span>
+            </div>
+            <div class="terminal-line tool-line">
+              <span class="terminal-prompt">mcp</span>
+              <span class="terminal-text terminal-dim">get_video_transcription("a8xK2m")</span>
+            </div>
+            <div class="terminal-line ai-line">
+              <span class="terminal-prompt">claude</span>
+              <span class="terminal-text">The video reports <strong>2 bugs</strong>: (1) Login button unresponsive on staging at <span class="terminal-ts">0:45</span>, and (2) session token expires too early at <span class="terminal-ts">2:12</span>. A teammate commented confirming both issues.</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="mcp-cards">
+          <div class="mcp-card">
+            <div class="mcp-card-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+            </div>
+            <h4 class="mcp-card-title">Ask about transcriptions</h4>
+            <p class="mcp-card-desc">"What was discussed at the 3-minute mark?"</p>
+          </div>
+          <div class="mcp-card">
+            <div class="mcp-card-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            </div>
+            <h4 class="mcp-card-title">Get summaries</h4>
+            <p class="mcp-card-desc">"Summarize this product demo for me."</p>
+          </div>
+          <div class="mcp-card">
+            <div class="mcp-card-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+            </div>
+            <h4 class="mcp-card-title">Read team comments</h4>
+            <p class="mcp-card-desc">"What feedback did the team leave?"</p>
+          </div>
+        </div>
+
+        <div class="mcp-install">
+          <p class="mcp-install-label">Add to Claude Code in one command:</p>
+          <div class="mcp-install-cmd">
+            <code>claude mcp add openkap -- npx tsx mcp-server/server.ts</code>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- Stats -->
     <section class="stats">
       <div class="stats-grid">
@@ -1017,6 +1080,160 @@ onUnmounted(() => {
   line-height: 1.65;
 }
 
+/* ── AI Integration / MCP ────────────────────────────── */
+.ai-integration {
+  position: relative;
+  z-index: 1;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 6rem 2rem;
+}
+.mcp-showcase {
+  max-width: 860px;
+  margin: 0 auto;
+}
+.mcp-terminal {
+  background: #1c1917;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.1);
+  margin-bottom: 2rem;
+}
+.terminal-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.75rem 1rem;
+  background: rgba(255,255,255,0.06);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.terminal-bar .dot { width: 10px; height: 10px; border-radius: 50%; }
+.terminal-bar .red { background: #ef4444; }
+.terminal-bar .yellow { background: #eab308; }
+.terminal-bar .green { background: #22c55e; }
+.terminal-title {
+  margin-left: 0.75rem;
+  font-size: 0.75rem;
+  color: rgba(255,255,255,0.4);
+  font-weight: 500;
+}
+.terminal-body {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.terminal-line {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  font-size: 0.85rem;
+  line-height: 1.6;
+}
+.terminal-prompt {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+}
+.user-line .terminal-prompt {
+  color: #f97316;
+  background: rgba(249,115,22,0.12);
+}
+.tool-line .terminal-prompt {
+  color: #a78bfa;
+  background: rgba(167,139,250,0.12);
+}
+.ai-line .terminal-prompt {
+  color: #34d399;
+  background: rgba(52,211,153,0.12);
+}
+.terminal-text {
+  color: rgba(255,255,255,0.85);
+  font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+}
+.terminal-text strong {
+  color: #fff;
+  font-weight: 600;
+}
+.terminal-dim {
+  color: rgba(255,255,255,0.4);
+  font-family: ui-monospace, 'SF Mono', monospace;
+  font-size: 0.8rem;
+}
+.terminal-ts {
+  color: #fbbf24;
+  font-weight: 600;
+}
+
+.mcp-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 2.5rem;
+}
+.mcp-card {
+  background: rgba(255,255,255,0.72);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.9);
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  transition: all 0.25s ease;
+}
+.mcp-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+}
+.mcp-card-icon {
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  background: rgba(249,115,22,0.08);
+  color: #f97316;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+.mcp-card-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #1c1917;
+  margin-bottom: 0.35rem;
+}
+.mcp-card-desc {
+  font-size: 0.8rem;
+  color: #78716c;
+  font-style: italic;
+  line-height: 1.5;
+}
+
+.mcp-install {
+  text-align: center;
+}
+.mcp-install-label {
+  font-size: 0.8rem;
+  color: #78716c;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+.mcp-install-cmd {
+  display: inline-block;
+  background: #1c1917;
+  border-radius: 10px;
+  padding: 0.65rem 1.25rem;
+}
+.mcp-install-cmd code {
+  font-family: ui-monospace, 'SF Mono', monospace;
+  font-size: 0.8rem;
+  color: rgba(255,255,255,0.8);
+  letter-spacing: -0.01em;
+}
+
 /* ── Stats ────────────────────────────────────────────── */
 .stats {
   position: relative;
@@ -1151,6 +1368,7 @@ onUnmounted(() => {
 @media (max-width: 1024px) {
   .features-grid { grid-template-columns: repeat(2, 1fr); }
   .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .mcp-cards { grid-template-columns: repeat(2, 1fr); }
 }
 
 @media (max-width: 768px) {
@@ -1165,6 +1383,10 @@ onUnmounted(() => {
   .nav-links { display: none; }
   .features-grid { grid-template-columns: 1fr; }
   .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .mcp-cards { grid-template-columns: 1fr; }
+  .mcp-install-cmd { max-width: 100%; overflow-x: auto; }
+  .mcp-install-cmd code { font-size: 0.7rem; }
+  .terminal-line { flex-direction: column; gap: 0.25rem; }
   .steps { flex-direction: column; gap: 2rem; }
   .step-line { display: none; }
   .footer-inner { flex-direction: column; }
