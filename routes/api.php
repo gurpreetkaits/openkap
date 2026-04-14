@@ -70,19 +70,27 @@ Route::get('/test', function () {
 
 // Polar webhook handled by laravel-polar package at: POST /polar/webhook
 
-// Public video sharing - anyone can watch
-Route::get('/share/video/{token}', [VideoController::class, 'viewShared']);
-Route::get('/share/video/{token}/stream', [VideoController::class, 'streamShared']); // Public streaming for shared videos
-Route::get('/share/video/{token}/captions.vtt', [VideoController::class, 'sharedCaptions']); // Public WebVTT captions
-Route::get('/share/video/{token}/comments', [CommentController::class, 'indexByToken']);
-Route::get('/share/video/{token}/commenters', [CommentController::class, 'commentersByToken']);
+// Public video sharing - anyone can watch (rate-limited to prevent token brute-force)
+Route::get('/share/video/{token}', [VideoController::class, 'viewShared'])
+    ->middleware('throttle:60,1');
+Route::get('/share/video/{token}/stream', [VideoController::class, 'streamShared'])
+    ->middleware('throttle:30,1');
+Route::get('/share/video/{token}/captions.vtt', [VideoController::class, 'sharedCaptions'])
+    ->middleware('throttle:30,1');
+Route::get('/share/video/{token}/comments', [CommentController::class, 'indexByToken'])
+    ->middleware('throttle:60,1');
+Route::get('/share/video/{token}/commenters', [CommentController::class, 'commentersByToken'])
+    ->middleware('throttle:60,1');
 Route::post('/share/video/{token}/view', [VideoViewController::class, 'recordSharedView'])
     ->middleware([OptionalSanctumAuthMiddleware::class, 'throttle:30,1']);
 
 // HLS streaming with CORS support (for cross-origin playback)
-Route::get('/share/video/{token}/hls/master.m3u8', [HlsController::class, 'masterPlaylist']);
-Route::get('/share/video/{token}/hls/{variant}.m3u8', [HlsController::class, 'variantPlaylist']);
-Route::get('/share/video/{token}/hls/{segment}.ts', [HlsController::class, 'segment']);
+Route::get('/share/video/{token}/hls/master.m3u8', [HlsController::class, 'masterPlaylist'])
+    ->middleware('throttle:120,1');
+Route::get('/share/video/{token}/hls/{variant}.m3u8', [HlsController::class, 'variantPlaylist'])
+    ->middleware('throttle:120,1');
+Route::get('/share/video/{token}/hls/{segment}.ts', [HlsController::class, 'segment'])
+    ->middleware('throttle:300,1');
 
 // Blog routes - public (markdown file-driven)
 Route::prefix('blogs')->group(function () {
@@ -91,7 +99,8 @@ Route::prefix('blogs')->group(function () {
     Route::get('/category/{category}', [MarkdownBlogController::class, 'apiByCategory']);
     Route::get('/{slug}', [MarkdownBlogController::class, 'apiShow']);
 });
-Route::get('/share/video/{token}/reactions', [ReactionController::class, 'indexByToken']);
+Route::get('/share/video/{token}/reactions', [ReactionController::class, 'indexByToken'])
+    ->middleware('throttle:60,1');
 Route::post('/share/video/{token}/reactions', [ReactionController::class, 'storeByToken'])
     ->middleware('throttle:30,1');
 

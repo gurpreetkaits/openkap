@@ -322,10 +322,9 @@ class VideoManager
             'transcription' => $video->isTranscriptionReady() ? $video->transcription : null,
             'transcription_segments' => $video->isTranscriptionReady() ? $video->transcription_segments : null,
             'summary' => $video->isSummaryReady() ? $video->summary : null,
-            // Bunny Stream fields
+            // Bunny Stream fields (only expose what the frontend needs for playback)
             'storage_type' => $video->storage_type,
             'bunny_status' => $video->bunny_status,
-            'bunny_video_id' => $video->bunny_video_id,
             // Creator identity
             'user_name' => $video->user?->name,
             'user_avatar' => $video->user?->avatar_url,
