@@ -2,10 +2,9 @@
   "mcpServers": {
     "openkap": {
       "type": "stdio",
-      "command": "npx",
+      "command": "node",
       "args": [
-        "-y",
-        "github:gurpreetkaits/openkap/mcp-server"
+        "mcp-server/dist/server.js"
       ]
     }
   }
