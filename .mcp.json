@@ -3,9 +3,12 @@
     "openkap": {
       "type": "stdio",
       "command": "npx",
-      "args": ["tsx", "mcp-server/server.ts"],
+      "args": [
+        "tsx",
+        "mcp-server/server.ts"
+      ],
       "env": {
-        "OPENKAP_URL": "${OPENKAP_URL:-https://app.openkap.com}"
+        "OPENKAP_URL": "https://openkap.com"
       }
     }
   }

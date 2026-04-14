@@ -13,7 +13,7 @@ import {
 describe("extractShareToken", () => {
   it("extracts token from full HTTPS URL", () => {
     expect(
-      extractShareToken("https://app.openkap.com/share/video/abc123def456")
+      extractShareToken("https://openkap.com/share/video/abc123def456")
     ).toBe("abc123def456");
   });
 
@@ -40,7 +40,7 @@ describe("extractShareToken", () => {
   it("handles leading/trailing whitespace", () => {
     expect(extractShareToken("  abc123  ")).toBe("abc123");
     expect(
-      extractShareToken("  https://app.openkap.com/share/video/tok  ")
+      extractShareToken("  https://openkap.com/share/video/tok  ")
     ).toBe("tok");
   });
 
@@ -55,7 +55,7 @@ describe("extractShareToken", () => {
 
   it("throws on invalid URL without share path", () => {
     expect(() =>
-      extractShareToken("https://app.openkap.com/videos/123")
+      extractShareToken("https://openkap.com/videos/123")
     ).toThrow("Could not parse share token");
   });
 
@@ -67,7 +67,7 @@ describe("extractShareToken", () => {
 
   it("throws on URL with empty token", () => {
     expect(() =>
-      extractShareToken("https://app.openkap.com/share/video/")
+      extractShareToken("https://openkap.com/share/video/")
     ).toThrow("Could not parse share token");
   });
 });

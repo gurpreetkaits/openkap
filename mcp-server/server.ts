@@ -25,7 +25,7 @@ const server = new Server(
     capabilities: { tools: {} },
     instructions: `OpenKap MCP Server — Read video transcriptions, summaries, and comments from shared OpenKap videos.
 
-Users share a video URL (e.g. https://app.openkap.com/share/video/TOKEN) or a share token. You can then:
+Users share a video URL (e.g. https://openkap.com/share/video/TOKEN) or a share token. You can then:
 - Fetch the full transcription of the video
 - Read time-stamped segments to find what was said at specific moments
 - Get the AI summary of the video
@@ -43,14 +43,14 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     {
       name: "get_video_transcription",
       description:
-        "Get the full transcription of a shared OpenKap video. Accepts a share URL (e.g. https://app.openkap.com/share/video/TOKEN) or just the share token. Returns the transcription text, time-stamped segments, summary, video metadata, and comments.",
+        "Get the full transcription of a shared OpenKap video. Accepts a share URL (e.g. https://openkap.com/share/video/TOKEN) or just the share token. Returns the transcription text, time-stamped segments, summary, video metadata, and comments.",
       inputSchema: {
         type: "object" as const,
         properties: {
           url_or_token: {
             type: "string",
             description:
-              "The OpenKap share URL (e.g. https://app.openkap.com/share/video/abc123) or the share token directly",
+              "The OpenKap share URL (e.g. https://openkap.com/share/video/abc123) or the share token directly",
           },
         },
         required: ["url_or_token"],

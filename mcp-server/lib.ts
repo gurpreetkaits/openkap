@@ -1,9 +1,9 @@
 export const OPENKAP_BASE_URL =
-  process.env.OPENKAP_URL || "https://app.openkap.com";
+  process.env.OPENKAP_URL || "https://openkap.com";
 
 /**
  * Extract a share token from various URL formats:
- *  - https://app.openkap.com/share/video/abc123
+ *  - https://openkap.com/share/video/abc123
  *  - https://custom-domain.com/share/video/abc123
  *  - /share/video/abc123
  *  - abc123 (raw token)
@@ -22,7 +22,7 @@ export function extractShareToken(input: string): string {
   const safe = trimmed.length > 80 ? trimmed.slice(0, 80) + "..." : trimmed;
   throw new Error(
     `Could not parse share token from: "${safe}". ` +
-      `Expected a URL like https://app.openkap.com/share/video/TOKEN or a raw token.`
+      `Expected a URL like https://openkap.com/share/video/TOKEN or a raw token.`
   );
 }
 
