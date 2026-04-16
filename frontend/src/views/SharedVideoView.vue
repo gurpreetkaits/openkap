@@ -1693,10 +1693,8 @@ export default {
     // Owner action handlers for shared view
     const handleSharedDownload = async () => {
       try {
-        showToast('Preparing download...')
-
-        // Try Bunny CDN download first for Bunny videos
-        if (isBunnyVideo.value && ['ready', 'transcoding'].includes(bunnyStatus.value)) {
+        // Bunny video ready — download MP4 from CDN
+        if (isBunnyVideo.value && bunnyStatus.value === 'ready') {
           try {
             const downloadData = await videoService.getBunnySharedDownload(token.value)
             if (downloadData.url) {
@@ -1711,12 +1709,19 @@ export default {
               return
             }
           } catch (bunnyErr) {
-            console.warn('Bunny download failed, falling back to local:', bunnyErr)
+            console.warn('Bunny download failed:', bunnyErr)
           }
         }
 
-        // Fallback to local stream download
+        // Bunny video still processing
+        if (isBunnyVideo.value) {
+          showToast('Video is still processing — download will be available shortly.')
+          return
+        }
+
+        // Local video fallback
         if (!video.value.url) return
+        showToast('Starting download...')
         const response = await fetch(video.value.url)
         const blob = await response.blob()
         const blobUrl = window.URL.createObjectURL(blob)

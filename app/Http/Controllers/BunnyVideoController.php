@@ -430,7 +430,7 @@ class BunnyVideoController extends Controller
             ], 410);
         }
 
-        if (! $video->bunny_video_id || ! in_array($video->bunny_status, ['ready', 'transcoding'])) {
+        if (! $video->bunny_video_id || $video->bunny_status !== 'ready') {
             return response()->json([
                 'error' => 'not_ready',
                 'message' => 'Video is not yet available for download',
