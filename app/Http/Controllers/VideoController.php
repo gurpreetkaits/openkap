@@ -789,10 +789,12 @@ class VideoController extends Controller
             }
 
             if ($result['mode'] === 'sync') {
+                $deleteAfter = $result['delete_after'] ?? true;
+
                 return response()->download(
                     $result['file_path'],
                     $result['file_name']
-                )->deleteFileAfterSend(true);
+                )->deleteFileAfterSend($deleteAfter);
             }
 
             return response()->json([

@@ -993,13 +993,8 @@ class VideoManager
     public function requestMp4Download(Video $video): array
     {
         // Bunny CDN videos: redirect to signed download URL
-        if ($video->isBunnyVideo() && $video->bunny_video_id) {
-            $resolution = '720p';
-
-            // Try to pick the best available resolution
-            if ($video->bunny_resolution) {
-                $resolution = $video->bunny_resolution;
-            }
+        if ($video->isBunnyVideo() && $video->bunny_video_id && in_array($video->bunny_status, ['ready', 'transcoding'])) {
+            $resolution = $video->bunny_resolution ?: '720p';
 
             $downloadUrl = $this->bunnyService->generateSignedDownloadUrl(
                 $video->bunny_video_id,
@@ -1014,6 +1009,20 @@ class VideoManager
             ];
         }
 
+        // Bunny video still processing — download the local WebM directly
+        if ($video->isBunnyVideo()) {
+            $media = $video->getFirstMedia('videos');
+            if ($media && file_exists($media->getPath())) {
+                return [
+                    'mode' => 'sync',
+                    'file_path' => $media->getPath(),
+                    'file_name' => ($video->title ?? 'video').'.webm',
+                    'delete_after' => false,
+                ];
+            }
+        }
+
+        // Local videos: convert to MP4
         $media = $video->getFirstMedia('videos');
         if (! $media) {
             throw new \Exception('Video file not found');
