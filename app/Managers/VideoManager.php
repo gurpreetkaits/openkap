@@ -993,7 +993,7 @@ class VideoManager
     public function requestMp4Download(Video $video): array
     {
         // Bunny CDN videos: redirect to signed download URL
-        if ($video->isBunnyVideo() && $video->bunny_video_id && in_array($video->bunny_status, ['ready', 'transcoding'])) {
+        if ($video->isBunnyVideo() && $video->bunny_video_id && $video->bunny_status === 'ready') {
             $resolution = $video->bunny_resolution ?: '720p';
 
             $downloadUrl = $this->bunnyService->generateSignedDownloadUrl(

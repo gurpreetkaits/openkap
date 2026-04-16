@@ -66,7 +66,7 @@ class BunnyConnector extends BaseConnector
      */
     public function isConfigured(): bool
     {
-        return ! empty($this->libraryId) && ! empty($this->apiKey);
+        return ! empty($this->libraryId) && ! empty($this->apiKey) && ! empty($this->cdnHostname) && ! empty($this->securityKey);
     }
 
     /**
