@@ -148,21 +148,6 @@
       </router-link>
 
       <router-link
-        to="/integrations"
-        class="group flex items-center rounded-lg transition-all font-medium text-sm"
-        :class="[
-          sidebarCollapsed ? 'justify-center px-2 py-2.5' : 'gap-3 px-3 py-2',
-          isActive('/integrations') ? 'text-orange-700 bg-orange-50 font-semibold' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-        ]"
-        :title="sidebarCollapsed ? 'Integrations' : ''"
-      >
-        <svg class="w-4 h-4 flex-shrink-0 transition-colors" :class="isActive('/integrations') ? 'text-orange-500' : 'text-gray-400 group-hover:text-gray-600'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"/>
-        </svg>
-        <span v-show="!sidebarCollapsed" class="whitespace-nowrap overflow-hidden">Integrations</span>
-      </router-link>
-
-      <router-link
         to="/settings"
         class="group flex items-center rounded-lg transition-all font-medium text-sm"
         :class="[
@@ -447,18 +432,6 @@
             </router-link>
 
             <router-link
-              to="/integrations"
-              @click="sidebarOpen = false"
-              class="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all group"
-              :class="isActive('/integrations') ? 'text-gray-900 bg-gray-50' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'"
-            >
-              <svg class="w-4 h-4 transition-colors" :class="isActive('/integrations') ? 'text-orange-600' : 'text-gray-400 group-hover:text-gray-600'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"/>
-              </svg>
-              Integrations
-            </router-link>
-
-            <router-link
               to="/settings"
               @click="sidebarOpen = false"
               class="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all group"
@@ -678,7 +651,6 @@ export default {
         '/playlists': 'Playlists',
         '/profile': 'Profile',
         '/subscription': 'Plans & Billing',
-        '/integrations': 'Integrations',
         '/feedback': 'Feedback',
         '/settings': 'Settings',
         '/admin/dashboard': 'Admin Dashboard'
