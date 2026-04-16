@@ -2262,22 +2262,11 @@ export default {
     }
 
     const downloadVideoWithAnimation = async (video) => {
-      // Fire the fly animation immediately
-      flyThumbnailToNotificationBell(video)
-
-      // Track in bell immediately so user sees processing state right away
-      trackDownload(video.id, video.title || 'Untitled Video')
-
       try {
         const result = await videoService.requestDownloadMp4(video.id)
-        if (!result) {
-          removeDownload(video.id)
-          return
-        }
+        if (!result) return
 
         if (result.mode === 'redirect') {
-          // Remove the processing tracker — download is instant
-          removeDownload(video.id)
           const link = document.createElement('a')
           link.href = result.url
           link.download = result.fileName || `${video.title || 'video'}.mp4`
@@ -2287,8 +2276,6 @@ export default {
           document.body.removeChild(link)
           toast.success('Download started!')
         } else if (result.mode === 'sync') {
-          // Remove the processing tracker — download is instant
-          removeDownload(video.id)
           const blobUrl = window.URL.createObjectURL(result.blob)
           const link = document.createElement('a')
           link.href = blobUrl
@@ -2299,11 +2286,12 @@ export default {
           window.URL.revokeObjectURL(blobUrl)
           toast.success('Download complete!')
         } else {
-          // Async — already tracked, polling will pick up the ready notification
+          // Async (local videos only) — use bell animation
+          flyThumbnailToNotificationBell(video)
+          trackDownload(video.id, video.title || 'Untitled Video')
           toast.success('Converting to MP4 — check the bell for progress!')
         }
       } catch (err) {
-        removeDownload(video.id)
         console.error('Failed to download:', err)
         toast.error('Failed to download video. Please try again.')
       }
