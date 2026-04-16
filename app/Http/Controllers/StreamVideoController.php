@@ -358,30 +358,50 @@ class StreamVideoController extends Controller
         ], 201);
 
         // Dispatch background jobs AFTER response is sent
+        // Each dispatch is isolated so one failure doesn't block the others
         dispatch(function () use ($video, $willUseBunny) {
-            if ($willUseBunny) {
-                // Bunny handles encoding — skip local remux, mark conversion complete
-                // so transcription can start immediately from the raw WebM
-                $video->update([
-                    'conversion_status' => 'completed',
-                    'conversion_progress' => 100,
-                ]);
+            try {
+                if ($willUseBunny) {
+                    // Bunny handles encoding — skip local remux, mark conversion complete
+                    // so transcription can start immediately from the raw WebM
+                    $video->update([
+                        'conversion_status' => 'completed',
+                        'conversion_progress' => 100,
+                    ]);
 
-                Log::info('Dispatching UploadToBunnyJob', ['video_id' => $video->id]);
-                UploadToBunnyJob::dispatch($video);
-            } else {
-                // Local-only: remux WebM for seekable browser playback
-                Log::info('Dispatching RemuxWebmJob', ['video_id' => $video->id]);
-                RemuxWebmJob::dispatch($video);
+                    Log::info('Dispatching UploadToBunnyJob', ['video_id' => $video->id]);
+                    UploadToBunnyJob::dispatch($video);
+                } else {
+                    // Local-only: remux WebM for seekable browser playback
+                    Log::info('Dispatching RemuxWebmJob', ['video_id' => $video->id]);
+                    RemuxWebmJob::dispatch($video);
+                }
+            } catch (\Throwable $e) {
+                Log::error('Failed to dispatch conversion job', [
+                    'video_id' => $video->id,
+                    'error' => $e->getMessage(),
+                ]);
             }
 
-            // Generate thumbnail
-            Log::info('Dispatching GenerateThumbnailJob', ['video_id' => $video->id]);
-            GenerateThumbnailJob::dispatch($video);
+            try {
+                Log::info('Dispatching GenerateThumbnailJob', ['video_id' => $video->id]);
+                GenerateThumbnailJob::dispatch($video);
+            } catch (\Throwable $e) {
+                Log::error('Failed to dispatch thumbnail job', [
+                    'video_id' => $video->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
 
-            // Transcribe from local file (works with raw WebM)
-            Log::info('Dispatching GenerateTranscriptionJob', ['video_id' => $video->id]);
-            GenerateTranscriptionJob::dispatch($video, generateSummary: false, generateTitle: true);
+            try {
+                Log::info('Dispatching GenerateTranscriptionJob', ['video_id' => $video->id]);
+                GenerateTranscriptionJob::dispatch($video, generateSummary: false, generateTitle: true);
+            } catch (\Throwable $e) {
+                Log::error('Failed to dispatch transcription job', [
+                    'video_id' => $video->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
         })->afterResponse();
 
         return $response;

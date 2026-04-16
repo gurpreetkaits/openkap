@@ -86,7 +86,7 @@ class GenerateTranscriptionJob implements ShouldQueue
             ]);
 
             // Reschedule for later with incremented counter
-            self::dispatch($video, $this->generateSummary, $this->generateTitle, $this->rescheduleCount + 1)
+            self::dispatch($video, $this->generateSummary, $this->generateTitle, $this->generateDescription, $this->rescheduleCount + 1)
                 ->delay(now()->addMinutes(2));
 
             return;
