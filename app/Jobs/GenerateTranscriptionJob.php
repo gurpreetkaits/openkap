@@ -38,7 +38,7 @@ class GenerateTranscriptionJob implements ShouldQueue
 
     public function __construct(
         public Video $video,
-        public bool $generateSummary = true,
+        public bool $generateSummary = false,
         public bool $generateTitle = true,
         public bool $generateDescription = false,
         public int $rescheduleCount = 0
@@ -209,12 +209,6 @@ class GenerateTranscriptionJob implements ShouldQueue
                         'error' => $e->getMessage(),
                     ]);
                 }
-            }
-
-            // Dispatch summary job if enabled
-            if ($this->generateSummary && ! empty($transcriptionData->text)) {
-                Log::info('Dispatching summary job', ['video_id' => $video->id]);
-                GenerateSummaryJob::dispatch($video)->delay(now()->addSeconds(5));
             }
 
         } catch (\Exception $e) {

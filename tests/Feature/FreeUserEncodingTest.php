@@ -17,24 +17,24 @@ class FreeUserEncodingTest extends TestCase
     {
         parent::setUp();
 
-        $this->markTestSkipped('Bunny disabled - encoding costs too high');
     }
 
     #[Test]
-    public function free_user_cannot_use_bunny_encoding(): void
+    public function free_user_can_use_bunny_encoding(): void
     {
         $freeUser = User::factory()->free()->create();
 
+        // Bunny is available to all users — free users get the same
+        // encoding as pro users. The only gate is video quota.
         $response = $this->actingAs($freeUser)
             ->postJson('/api/bunny/videos/create', [
                 'title' => 'Test Video',
             ]);
 
-        $response->assertStatus(403)
-            ->assertJsonFragment([
-                'error' => 'subscription_required',
-                'use_local_storage' => true,
-            ]);
+        // If Bunny is configured, it would return 201
+        // If not configured, it returns 503 (bunny_not_configured)
+        // It should NOT return 403 subscription_required
+        $this->assertNotEquals(403, $response->status());
     }
 
     #[Test]
@@ -42,9 +42,6 @@ class FreeUserEncodingTest extends TestCase
     {
         $proUser = User::factory()->withProSubscription()->create();
 
-        // Note: This will fail with 503 if Bunny is not configured,
-        // which is expected in tests. The point is it doesn't return
-        // the subscription_required error.
         $response = $this->actingAs($proUser)
             ->postJson('/api/bunny/videos/create', [
                 'title' => 'Test Video',
@@ -57,36 +54,11 @@ class FreeUserEncodingTest extends TestCase
     }
 
     #[Test]
-    public function free_user_gets_local_storage_on_stream_upload(): void
-    {
-        $freeUser = User::factory()->free()->create();
-
-        $response = $this->actingAs($freeUser)
-            ->postJson('/api/stream/start', [
-                'title' => 'Test Recording',
-            ]);
-
-        $response->assertStatus(200)
-            ->assertJsonFragment([
-                'will_use_bunny' => false,
-                'is_free_account' => true,
-            ]);
-    }
-
-    #[Test]
     public function pro_user_should_encode_videos(): void
     {
         $proUser = User::factory()->withProSubscription()->create();
 
         $this->assertTrue($proUser->shouldEncodeVideos());
-    }
-
-    #[Test]
-    public function free_user_should_not_encode_videos(): void
-    {
-        $freeUser = User::factory()->free()->create();
-
-        $this->assertFalse($freeUser->shouldEncodeVideos());
     }
 
     #[Test]
@@ -99,7 +71,6 @@ class FreeUserEncodingTest extends TestCase
                 'title' => 'Test Recording',
             ]);
 
-        // Free users can start upload, just won't get Bunny encoding
         $response->assertStatus(200)
             ->assertJsonStructure([
                 'session_id',

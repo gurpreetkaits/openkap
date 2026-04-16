@@ -1,7 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdminDashboardController;
-// use App\Http\Controllers\BunnyVideoController; // Bunny disabled - encoding costs too high
+use App\Http\Controllers\BunnyVideoController;
 use App\Http\Controllers\Auth\GoogleAuthController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\ClipForgeController;
@@ -369,32 +369,32 @@ Route::middleware('auth:sanctum')->prefix('stream')->group(function () {
 });
 
 // ============================================
-// BUNNY STREAM ROUTES (Disabled - encoding costs too high)
+// BUNNY STREAM ROUTES
 // ============================================
-// // Bunny webhook (no auth - Bunny sends these automatically)
-// Route::post('/webhooks/bunny', [\App\Http\Controllers\BunnyWebhookController::class, 'handle']);
-//
-// // Public routes for shared video playback
-// Route::get('/bunny/share/{token}/playback', [BunnyVideoController::class, 'sharedPlayback']);
-//
-// // Protected routes for video management
-// Route::middleware('auth:sanctum')->prefix('bunny/videos')->group(function () {
-//     // Create video and get upload credentials (requires subscription check)
-//     Route::post('/create', [BunnyVideoController::class, 'create'])
-//         ->middleware(CheckSubscriptionLimit::class);
-//
-//     // Mark upload as complete
-//     Route::post('/{id}/complete', [BunnyVideoController::class, 'complete']);
-//
-//     // Get video processing status
-//     Route::get('/{id}/status', [BunnyVideoController::class, 'status']);
-//
-//     // Get signed playback URLs
-//     Route::get('/{id}/playback', [BunnyVideoController::class, 'playback']);
-//
-//     // Delete video
-//     Route::delete('/{id}', [BunnyVideoController::class, 'destroy']);
-// });
+// Bunny webhook (no auth - Bunny sends these automatically)
+Route::post('/webhooks/bunny', [\App\Http\Controllers\BunnyWebhookController::class, 'handle']);
+
+// Public routes for shared video playback
+Route::get('/bunny/share/{token}/playback', [BunnyVideoController::class, 'sharedPlayback']);
+
+// Protected routes for video management
+Route::middleware('auth:sanctum')->prefix('bunny/videos')->group(function () {
+    // Create video and get upload credentials (requires subscription check)
+    Route::post('/create', [BunnyVideoController::class, 'create'])
+        ->middleware(CheckSubscriptionLimit::class);
+
+    // Mark upload as complete
+    Route::post('/{id}/complete', [BunnyVideoController::class, 'complete']);
+
+    // Get video processing status
+    Route::get('/{id}/status', [BunnyVideoController::class, 'status']);
+
+    // Get signed playback URLs
+    Route::get('/{id}/playback', [BunnyVideoController::class, 'playback']);
+
+    // Delete video
+    Route::delete('/{id}', [BunnyVideoController::class, 'destroy']);
+});
 
 // ClipForge - Video clip extraction tool (public, per-endpoint rate limits)
 Route::prefix('clipforge')->group(function () {

@@ -21,8 +21,6 @@ class BunnyStreamServiceTest extends TestCase
     {
         parent::setUp();
 
-        $this->markTestSkipped('Bunny disabled - encoding costs too high');
-
         // Set up test configuration
         Config::set('services.bunny', [
             'library_id' => 'test-library-123',

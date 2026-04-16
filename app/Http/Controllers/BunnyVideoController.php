@@ -32,18 +32,6 @@ class BunnyVideoController extends Controller
 
         $user = Auth::user();
 
-        // Check if user has active subscription for Bunny encoding
-        // Free users cannot use Bunny encoding - they should use local storage
-        // This check comes FIRST so free users get a clear message before any Bunny checks
-        if (! $user->shouldEncodeVideos()) {
-            return response()->json([
-                'error' => 'subscription_required',
-                'message' => 'Video encoding requires an active subscription. Free accounts can upload up to 5 videos without encoding.',
-                'use_local_storage' => true,
-                'upgrade_url' => config('services.frontend.url').'/subscription',
-            ], 403);
-        }
-
         // Check user quota
         if (! $user->canRecordVideo()) {
             return response()->json([

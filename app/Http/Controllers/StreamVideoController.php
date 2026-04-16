@@ -5,10 +5,12 @@ namespace App\Http\Controllers;
 use App\Jobs\GenerateThumbnailJob;
 use App\Jobs\GenerateTranscriptionJob;
 use App\Jobs\RemuxWebmJob;
+use App\Jobs\UploadToBunnyJob;
 use App\Models\User;
 use App\Models\Video;
 use App\Models\VideoZoomSetting;
 use App\Repositories\UserSettingRepository;
+use App\Services\BunnyStreamService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -81,9 +83,13 @@ class StreamVideoController extends Controller
 
         file_put_contents("{$sessionDir}/metadata.json", json_encode($metadata));
 
+        // All users get Bunny HLS if configured
+        $willUseBunny = app(BunnyStreamService::class)->isConfigured();
+
         return response()->json([
             'session_id' => $sessionId,
             'storage_type' => 'local',
+            'will_use_bunny' => $willUseBunny,
             'message' => 'Upload session started',
         ]);
     }
@@ -271,22 +277,30 @@ class StreamVideoController extends Controller
             }
         }
 
-        // All videos are stored and converted locally
         $user = User::find($userId);
+
+        // All users get Bunny HLS if configured
+        $willUseBunny = app(BunnyStreamService::class)->isConfigured();
 
         // Create Video record
         $title = $request->title ?? $metadata['title'];
         $workspace = $user->ownedWorkspaces()->first();
 
-        $video = Video::create([
+        $videoData = [
             'user_id' => $userId,
             'workspace_id' => $workspace?->id,
             'title' => $title,
             'description' => null,
             'duration' => (int) ($request->duration ?: 0),
             'is_public' => true,
-            'storage_type' => 'local',
-        ]);
+            'storage_type' => $willUseBunny ? 'bunny' : 'local',
+        ];
+
+        if ($willUseBunny) {
+            $videoData['bunny_status'] = 'pending';
+        }
+
+        $video = Video::create($videoData);
 
         // Get user for settings check
         $user = User::find($userId);
@@ -344,22 +358,30 @@ class StreamVideoController extends Controller
         ], 201);
 
         // Dispatch background jobs AFTER response is sent
-        dispatch(function () use ($video) {
-            // Remux WebM to fix missing Duration and Cues (seek index)
-            // This makes the WebM playable/seekable in browsers
-            Log::info('Dispatching RemuxWebmJob', ['video_id' => $video->id]);
-            RemuxWebmJob::dispatch($video);
+        dispatch(function () use ($video, $willUseBunny) {
+            if ($willUseBunny) {
+                // Bunny handles encoding — skip local remux, mark conversion complete
+                // so transcription can start immediately from the raw WebM
+                $video->update([
+                    'conversion_status' => 'completed',
+                    'conversion_progress' => 100,
+                ]);
+
+                Log::info('Dispatching UploadToBunnyJob', ['video_id' => $video->id]);
+                UploadToBunnyJob::dispatch($video);
+            } else {
+                // Local-only: remux WebM for seekable browser playback
+                Log::info('Dispatching RemuxWebmJob', ['video_id' => $video->id]);
+                RemuxWebmJob::dispatch($video);
+            }
 
             // Generate thumbnail
             Log::info('Dispatching GenerateThumbnailJob', ['video_id' => $video->id]);
             GenerateThumbnailJob::dispatch($video);
 
-            // TODO: MP4/HLS conversion skipped for now — serve remuxed WebM directly.
-            // Revisit with Cloudflare Stream or Bunny CDN once we reach 10-15 users.
-
-            // Auto-transcribe (has built-in rescheduling that waits for conversion)
+            // Transcribe from local file (works with raw WebM)
             Log::info('Dispatching GenerateTranscriptionJob', ['video_id' => $video->id]);
-            GenerateTranscriptionJob::dispatch($video, generateSummary: true, generateTitle: true);
+            GenerateTranscriptionJob::dispatch($video, generateSummary: false, generateTitle: true);
         })->afterResponse();
 
         return $response;
