@@ -1247,31 +1247,30 @@ export default {
         transcriptionSegments.value = data.video.transcription_segments || []
         summary.value = data.video.summary || null
 
-        // Bunny playback disabled - encoding costs too high, using local storage only
-        // if (data.video.storage_type === 'bunny') {
-        //   isBunnyVideo.value = true
-        //   bunnyStatus.value = data.video.bunny_status
-        //   if (['ready', 'transcoding'].includes(data.video.bunny_status)) {
-        //     try {
-        //       const bunnyData = await videoService.getBunnySharedPlayback(token.value)
-        //       if (bunnyData.playback) {
-        //         video.value.hls_url = bunnyData.playback.hlsUrl
-        //         video.value.is_hls_ready = true
-        //       }
-        //       if (bunnyData.video) {
-        //         bunnyStatus.value = bunnyData.video.status
-        //         bunnyEncodeProgress.value = bunnyData.video.encode_progress || 0
-        //         bunnyAvailableResolutions.value = bunnyData.video.available_resolutions || []
-        //         if (bunnyData.video.duration && bunnyData.video.duration > 0) {
-        //           video.value.duration = bunnyData.video.duration
-        //           duration.value = bunnyData.video.duration
-        //         }
-        //       }
-        //     } catch (bunnyErr) {
-        //       console.warn('Failed to fetch Bunny playback, falling back to local file:', bunnyErr)
-        //     }
-        //   }
-        // }
+        if (data.video.storage_type === 'bunny') {
+          isBunnyVideo.value = true
+          bunnyStatus.value = data.video.bunny_status
+          if (['ready', 'transcoding'].includes(data.video.bunny_status)) {
+            try {
+              const bunnyData = await videoService.getBunnySharedPlayback(token.value)
+              if (bunnyData.playback) {
+                video.value.hls_url = bunnyData.playback.hlsUrl
+                video.value.is_hls_ready = true
+              }
+              if (bunnyData.video) {
+                bunnyStatus.value = bunnyData.video.status
+                bunnyEncodeProgress.value = bunnyData.video.encode_progress || 0
+                bunnyAvailableResolutions.value = bunnyData.video.available_resolutions || []
+                if (bunnyData.video.duration && bunnyData.video.duration > 0) {
+                  video.value.duration = bunnyData.video.duration
+                  duration.value = bunnyData.video.duration
+                }
+              }
+            } catch (bunnyErr) {
+              console.warn('Failed to fetch Bunny playback, falling back to local file:', bunnyErr)
+            }
+          }
+        }
 
         // Initialize HLS after video data is loaded
         setTimeout(() => initHls(), 100)
@@ -1683,9 +1682,31 @@ export default {
 
     // Owner action handlers for shared view
     const handleSharedDownload = async () => {
-      if (!video.value.url) return
       try {
-        showToast('Starting download...')
+        showToast('Preparing download...')
+
+        // Try Bunny CDN download first for Bunny videos
+        if (isBunnyVideo.value && ['ready', 'transcoding'].includes(bunnyStatus.value)) {
+          try {
+            const downloadData = await videoService.getBunnySharedDownload(token.value)
+            if (downloadData.url) {
+              const link = document.createElement('a')
+              link.href = downloadData.url
+              link.download = downloadData.file_name || `${video.value.title || 'video'}.mp4`
+              link.target = '_blank'
+              document.body.appendChild(link)
+              link.click()
+              document.body.removeChild(link)
+              showToast('Download started!')
+              return
+            }
+          } catch (bunnyErr) {
+            console.warn('Bunny download failed, falling back to local:', bunnyErr)
+          }
+        }
+
+        // Fallback to local stream download
+        if (!video.value.url) return
         const response = await fetch(video.value.url)
         const blob = await response.blob()
         const blobUrl = window.URL.createObjectURL(blob)

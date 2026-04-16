@@ -405,6 +405,52 @@ class BunnyVideoController extends Controller
     }
 
     /**
+     * Get a signed download URL for a shared video
+     *
+     * GET /api/bunny/share/{token}/download
+     */
+    public function sharedDownload(string $token): JsonResponse
+    {
+        $video = Video::where('share_token', $token)
+            ->where('storage_type', 'bunny')
+            ->where('is_public', true)
+            ->first();
+
+        if (! $video) {
+            return response()->json([
+                'error' => 'not_found',
+                'message' => 'Video not found or is private',
+            ], 404);
+        }
+
+        if ($video->share_expires_at && $video->share_expires_at->isPast()) {
+            return response()->json([
+                'error' => 'expired',
+                'message' => 'This share link has expired',
+            ], 410);
+        }
+
+        if (! $video->bunny_video_id || ! in_array($video->bunny_status, ['ready', 'transcoding'])) {
+            return response()->json([
+                'error' => 'not_ready',
+                'message' => 'Video is not yet available for download',
+            ], 400);
+        }
+
+        $resolution = $video->bunny_resolution ?: '720p';
+        $downloadUrl = $this->bunnyService->generateSignedDownloadUrl(
+            $video->bunny_video_id,
+            $resolution,
+            3600
+        );
+
+        return response()->json([
+            'url' => $downloadUrl,
+            'file_name' => ($video->title ?? 'video').'.mp4',
+        ]);
+    }
+
+    /**
      * Delete a Bunny video
      *
      * DELETE /api/bunny/videos/{id}

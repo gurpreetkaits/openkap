@@ -651,6 +651,31 @@ class VideoService {
   }
 
   /**
+   * Get Bunny download URL for a shared video (public)
+   * Returns a signed download URL
+   */
+  async getBunnySharedDownload(shareToken) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/bunny/share/${shareToken}/download`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json'
+        }
+      })
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}))
+        throw new Error(data.message || `Failed to get download URL: ${response.statusText}`)
+      }
+
+      return await response.json()
+    } catch (error) {
+      console.error('Error fetching Bunny shared download:', error)
+      throw error
+    }
+  }
+
+  /**
    * Get Bunny video status
    * Returns encoding status, progress, and available resolutions
    */

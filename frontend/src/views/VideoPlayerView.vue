@@ -1663,32 +1663,31 @@ export default {
           zoom_event_count: fetchedVideo.zoom_event_count,
         }
 
-        // Bunny playback disabled - encoding costs too high, using local storage only
-        // if (fetchedVideo.storage_type === 'bunny') {
-        //   isBunnyVideo.value = true
-        //   bunnyStatus.value = fetchedVideo.bunny_status
-        //   if (['ready', 'transcoding'].includes(fetchedVideo.bunny_status)) {
-        //     try {
-        //       const bunnyData = await videoService.getBunnyPlayback(fetchedVideo.id)
-        //       bunnyPlaybackData.value = bunnyData
-        //       if (bunnyData.playback) {
-        //         video.value.hls_url = bunnyData.playback.hlsUrl
-        //         video.value.is_hls_ready = true
-        //       }
-        //       if (bunnyData.video) {
-        //         bunnyStatus.value = bunnyData.video.status
-        //         bunnyEncodeProgress.value = bunnyData.video.encode_progress || 0
-        //         bunnyAvailableResolutions.value = bunnyData.video.available_resolutions || []
-        //         if (bunnyData.video.duration && bunnyData.video.duration > 0) {
-        //           video.value.duration = bunnyData.video.duration
-        //           duration.value = bunnyData.video.duration
-        //         }
-        //       }
-        //     } catch (bunnyErr) {
-        //       console.warn('Failed to fetch Bunny playback, falling back to local file:', bunnyErr)
-        //     }
-        //   }
-        // }
+        if (fetchedVideo.storage_type === 'bunny') {
+          isBunnyVideo.value = true
+          bunnyStatus.value = fetchedVideo.bunny_status
+          if (['ready', 'transcoding'].includes(fetchedVideo.bunny_status)) {
+            try {
+              const bunnyData = await videoService.getBunnyPlayback(fetchedVideo.id)
+              bunnyPlaybackData.value = bunnyData
+              if (bunnyData.playback) {
+                video.value.hls_url = bunnyData.playback.hlsUrl
+                video.value.is_hls_ready = true
+              }
+              if (bunnyData.video) {
+                bunnyStatus.value = bunnyData.video.status
+                bunnyEncodeProgress.value = bunnyData.video.encode_progress || 0
+                bunnyAvailableResolutions.value = bunnyData.video.available_resolutions || []
+                if (bunnyData.video.duration && bunnyData.video.duration > 0) {
+                  video.value.duration = bunnyData.video.duration
+                  duration.value = bunnyData.video.duration
+                }
+              }
+            } catch (bunnyErr) {
+              console.warn('Failed to fetch Bunny playback, falling back to local file:', bunnyErr)
+            }
+          }
+        }
 
         setTimeout(() => initHls(), 100)
 

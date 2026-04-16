@@ -374,8 +374,9 @@ Route::middleware('auth:sanctum')->prefix('stream')->group(function () {
 // Bunny webhook (no auth - Bunny sends these automatically)
 Route::post('/webhooks/bunny', [\App\Http\Controllers\BunnyWebhookController::class, 'handle']);
 
-// Public routes for shared video playback
+// Public routes for shared video playback and download
 Route::get('/bunny/share/{token}/playback', [BunnyVideoController::class, 'sharedPlayback']);
+Route::get('/bunny/share/{token}/download', [BunnyVideoController::class, 'sharedDownload']);
 
 // Protected routes for video management
 Route::middleware('auth:sanctum')->prefix('bunny/videos')->group(function () {
