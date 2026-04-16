@@ -578,8 +578,17 @@
                             v-show="showQualityMenu"
                             class="absolute bottom-full right-0 mb-2 py-2 bg-gray-900 rounded-xl shadow-2xl border border-white/20 min-w-[100px] z-50"
                           >
+                            <!-- Auto: let HLS.js adaptively choose quality -->
                             <button
-                              v-for="quality in availableQualities"
+                              @click.stop.prevent="setQuality(-1)"
+                              class="w-full px-3 py-2 text-left text-xs hover:bg-white/10 transition-colors"
+                              :class="currentQuality === -1 ? 'text-orange-400' : 'text-white'"
+                            >
+                              Auto
+                            </button>
+                            <!-- Qualities shown highest-first (4K → 1080P → 720P) -->
+                            <button
+                              v-for="quality in [...availableQualities].reverse()"
                               :key="quality.index"
                               @click.stop.prevent="setQuality(quality.index)"
                               class="w-full px-3 py-2 text-left text-xs hover:bg-white/10 transition-colors"
@@ -1806,6 +1815,7 @@ export default {
     }
 
     const getCurrentQualityLabel = () => {
+      if (currentQuality.value === -1) return 'Auto'
       const quality = availableQualities.value.find(q => q.index === currentQuality.value)
       return quality?.label || 'Auto'
     }

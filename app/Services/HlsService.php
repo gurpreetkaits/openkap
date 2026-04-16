@@ -98,38 +98,40 @@ class HlsService
 
     /**
      * Determine quality variants based on source resolution.
-     * Creates 720p, 1080p, and 4K variants based on source.
-     * Uses lenient thresholds to handle non-standard screen recording resolutions.
+     * Encodes only at 1080P and/or 4K — no unnecessary 720p downscale for HD sources.
+     * For sub-1080p sources, encodes at 720p as the sole variant.
      */
     protected function getQualityVariants(int $sourceHeight, int $sourceWidth): array
     {
         $variants = [];
 
-        // Always include 720p as the base quality
-        $variants['720p'] = [
-            'width' => 1280,
-            'height' => 720,
-            'bitrate' => '2800k',
-            'maxrate' => '2996k',
-            'bufsize' => '4200k',
-            'audio_bitrate' => '128k',
-            'bandwidth' => 2800000,
-        ];
-
-        // Include 1080p if source is >= 1000p (lenient for screen recordings)
-        if ($sourceHeight >= 1000) {
-            $variants['1080p'] = [
-                'width' => 1920,
-                'height' => 1080,
-                'bitrate' => '5000k',
-                'maxrate' => '5350k',
-                'bufsize' => '7500k',
-                'audio_bitrate' => '192k',
-                'bandwidth' => 5000000,
+        // Sub-1080p source: encode at 720p only
+        if ($sourceHeight < 1000) {
+            $variants['720p'] = [
+                'width' => 1280,
+                'height' => 720,
+                'bitrate' => '2800k',
+                'maxrate' => '2996k',
+                'bufsize' => '4200k',
+                'audio_bitrate' => '128k',
+                'bandwidth' => 2800000,
             ];
+
+            return $variants;
         }
 
-        // Include 4K if source is >= 2000p (lenient for screen recordings)
+        // 1080p+ source: include 1080P (added first so HLS manifest lists it before 4K)
+        $variants['1080p'] = [
+            'width' => 1920,
+            'height' => 1080,
+            'bitrate' => '5000k',
+            'maxrate' => '5350k',
+            'bufsize' => '7500k',
+            'audio_bitrate' => '192k',
+            'bandwidth' => 5000000,
+        ];
+
+        // 4K source: also encode at 4K (lenient threshold for screen recordings)
         if ($sourceHeight >= 2000) {
             $variants['2160p'] = [
                 'width' => 3840,
