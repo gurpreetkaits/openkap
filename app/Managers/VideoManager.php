@@ -1009,17 +1009,13 @@ class VideoManager
             ];
         }
 
-        // Bunny video still processing — download the local WebM directly
+        // Bunny video still processing — tell frontend to track progress
         if ($video->isBunnyVideo()) {
-            $media = $video->getFirstMedia('videos');
-            if ($media && file_exists($media->getPath())) {
-                return [
-                    'mode' => 'sync',
-                    'file_path' => $media->getPath(),
-                    'file_name' => ($video->title ?? 'video').'.webm',
-                    'delete_after' => false,
-                ];
-            }
+            return [
+                'mode' => 'processing',
+                'bunny_status' => $video->bunny_status,
+                'message' => 'Video is being processed by Bunny CDN. Check notifications for progress.',
+            ];
         }
 
         // Local videos: convert to MP4

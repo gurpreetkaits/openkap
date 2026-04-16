@@ -723,6 +723,10 @@ class VideoService {
       if (handleUnauthorized(response)) return null
 
       if (response.status === 202) {
+        const data = await response.json().catch(() => ({}))
+        if (data.mode === 'processing') {
+          return { mode: 'processing', bunnyStatus: data.bunny_status, message: data.message }
+        }
         return { mode: 'async' }
       }
 

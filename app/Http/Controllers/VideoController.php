@@ -788,13 +788,19 @@ class VideoController extends Controller
                 ]);
             }
 
-            if ($result['mode'] === 'sync') {
-                $deleteAfter = $result['delete_after'] ?? true;
+            if ($result['mode'] === 'processing') {
+                return response()->json([
+                    'mode' => 'processing',
+                    'bunny_status' => $result['bunny_status'],
+                    'message' => $result['message'],
+                ], 202);
+            }
 
+            if ($result['mode'] === 'sync') {
                 return response()->download(
                     $result['file_path'],
                     $result['file_name']
-                )->deleteFileAfterSend($deleteAfter);
+                )->deleteFileAfterSend(true);
             }
 
             return response()->json([

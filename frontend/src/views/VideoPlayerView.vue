@@ -2047,6 +2047,12 @@ export default {
 
         const result = await videoService.requestDownloadMp4(video.value.id)
 
+        if (result.mode === 'processing') {
+          trackDownload(video.value.id, video.value.title || 'Untitled Video')
+          showToast('Video is still processing — check the bell for progress!')
+          return
+        }
+
         if (result.mode === 'async') {
           trackDownload(video.value.id, video.value.title || 'Untitled Video')
           showToast('Your video is being converted to MP4. Check notifications when it\'s ready!')

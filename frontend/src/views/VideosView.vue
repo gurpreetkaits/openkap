@@ -2285,8 +2285,13 @@ export default {
           document.body.removeChild(link)
           window.URL.revokeObjectURL(blobUrl)
           toast.success('Download complete!')
+        } else if (result.mode === 'processing') {
+          // Bunny is still encoding — show in bell with live progress
+          flyThumbnailToNotificationBell(video)
+          trackDownload(video.id, video.title || 'Untitled Video')
+          toast.info('Video is still processing — check the bell for progress!')
         } else {
-          // Async (local videos only) — use bell animation
+          // Async local conversion
           flyThumbnailToNotificationBell(video)
           trackDownload(video.id, video.title || 'Untitled Video')
           toast.success('Converting to MP4 — check the bell for progress!')
