@@ -155,7 +155,10 @@ class BunnyConnector extends BaseConnector
     private function generateUrlToken(string $path, int $expireTime): string
     {
         $tokenString = $this->securityKey.$path.$expireTime;
+        $token = hash('sha256', $tokenString, true);
+        $token = base64_encode($token);
+        $token = strtr($token, '+/', '-_');
 
-        return hash('sha256', $tokenString);
+        return rtrim($token, '=');
     }
 }
