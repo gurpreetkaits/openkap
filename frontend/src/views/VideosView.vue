@@ -526,9 +526,10 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
                 </svg>
               </button>
-              <!-- More Options (opens context menu at body level - no z-index clipping) -->
+              <!-- More Options (opens context menu on hover) -->
               <button
-                @click.stop="handleVideoMenuClick($event, video)"
+                @mouseenter="handleVideoMenuClick($event, video)"
+                @click.stop
                 class="p-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
                 title="More options"
               >
@@ -1249,6 +1250,7 @@
           class="fixed z-[500] bg-white rounded-xl shadow-xl border border-gray-100 py-1.5 overflow-hidden"
           :style="{ left: contextMenu.x + 'px', top: contextMenu.y + 'px', minWidth: '176px' }"
           @click.stop
+          @mouseleave="closeContextMenu"
         >
           <!-- Folder Context Menu -->
           <template v-if="contextMenu.type === 'folder'">
