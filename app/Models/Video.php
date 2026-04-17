@@ -413,17 +413,17 @@ class Video extends Model implements HasMedia
      */
     public function getShareUrl(): string
     {
-        return url("/share/video/{$this->share_token}");
-    }
-
-    /**
-     * Generate a frontend URL for this video (for internal redirects).
-     */
-    public function getFrontendShareUrl(): string
-    {
         $frontendUrl = rtrim(config('app.frontend_url', 'http://localhost:5173'), '/');
 
         return "{$frontendUrl}/share/video/{$this->share_token}";
+    }
+
+    /**
+     * @deprecated Use getShareUrl() instead — kept for backwards compatibility
+     */
+    public function getFrontendShareUrl(): string
+    {
+        return $this->getShareUrl();
     }
 
     /**

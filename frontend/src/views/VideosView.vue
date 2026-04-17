@@ -379,7 +379,7 @@
     </div>
 
     <!-- Loading State (Skeleton Grid) -->
-    <div v-if="loading" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-5 animate-pulse">
+    <div v-if="loading" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-5 animate-pulse">
       <div v-for="n in 8" :key="n" class="bg-white rounded-xl border border-gray-100 overflow-hidden">
         <div class="w-full bg-gray-200" style="aspect-ratio: 16/9;"></div>
         <div class="p-3 space-y-2">
@@ -406,7 +406,7 @@
     </div>
 
     <!-- Videos Grid View -->
-    <div v-else-if="activeTab !== 'screenshots' && filteredVideos.length > 0 && viewMode === 'grid'" :key="activeTab + '-grid'" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-5 animate-fade-in">
+    <div v-else-if="activeTab !== 'screenshots' && filteredVideos.length > 0 && viewMode === 'grid'" :key="activeTab + '-grid'" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-5 animate-fade-in">
       <div
         v-for="video in paginatedVideos"
         :key="video.id"
@@ -756,7 +756,7 @@
       </div>
 
       <!-- Screenshots Grid -->
-      <div v-else-if="screenshots.length > 0" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-5">
+      <div v-else-if="screenshots.length > 0" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-5">
         <div
           v-for="screenshot in screenshots"
           :key="screenshot.id"
