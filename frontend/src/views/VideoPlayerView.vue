@@ -978,22 +978,22 @@
                     </template>
                   </div>
                 </div>
-                <!-- Flowing transcript text -->
-                <div class="flex-1 overflow-y-auto px-5 py-4" ref="transcriptContainer">
-                  <p class="text-[13px] leading-[1.8] text-gray-500">
-                    <template v-for="(word, wi) in allTranscriptWords" :key="wi">
-                      <br v-if="word.isBreak" />
-                      <span
-                        v-else
-                        @click="seekToTime(word.start)"
-                        class="transcript-word cursor-pointer hover:text-gray-900 transition-colors duration-100"
-                        :class="{
-                          'transcript-word-active': currentTime >= word.start && currentTime < word.end,
-                          'transcript-word-past': currentTime >= word.end,
-                        }"
-                      >{{ word.text }}</span>{{ ' ' }}
-                    </template>
-                  </p>
+                <!-- Segment-based transcript with timestamps -->
+                <div class="flex-1 overflow-y-auto" ref="transcriptContainer">
+                  <div
+                    v-for="(seg, si) in filteredSegments"
+                    :key="si"
+                    @click="seekToTime(seg.start)"
+                    class="flex gap-3 px-4 py-2.5 cursor-pointer transition-colors duration-100"
+                    :class="currentTime >= seg.start && currentTime < (filteredSegments[si + 1]?.start ?? Infinity)
+                      ? 'bg-orange-50/60'
+                      : 'hover:bg-gray-50'"
+                  >
+                    <span class="text-[10px] font-mono text-gray-400 pt-0.5 flex-shrink-0 w-10 text-right">{{ formatTimestamp(seg.start) }}</span>
+                    <p class="text-[13px] leading-relaxed text-gray-600"
+                       :class="{ 'text-gray-900': currentTime >= seg.start && currentTime < (filteredSegments[si + 1]?.start ?? Infinity) }"
+                    >{{ seg.displayText }}</p>
+                  </div>
                 </div>
               </div>
 
@@ -2748,6 +2748,12 @@ export default {
       auth.loginWithGoogle()
     }
 
+    const formatTimestamp = (seconds) => {
+      const mins = Math.floor(seconds / 60)
+      const secs = Math.floor(seconds % 60)
+      return `${mins}:${secs.toString().padStart(2, '0')}`
+    }
+
     const seekToTime = (seconds) => {
       if (videoRef.value) {
         videoRef.value.currentTime = seconds
@@ -3092,7 +3098,7 @@ export default {
       // Sidebar
       activeTab, sidebarVisible, toggleSidebar, tabGridCols, showSummaryTab,
       // Transcription
-      transcription, transcriptionSegments, transcriptionStatus, seekToTime, allTranscriptWords,
+      transcription, transcriptionSegments, transcriptionStatus, seekToTime, formatTimestamp, allTranscriptWords, filteredSegments,
       transcriptContainer, segmentRefs, activeSegmentIndex,
       transcriptSearch, showTranscriptSearch, showExportMenu, filteredSegments,
       highlightSearch, exportTranscript,
