@@ -188,12 +188,75 @@ class VideoManager
     public function deleteVideo(Video $video, User $user): void
     {
         $workspace = $video->workspace;
+
+        // Delete from Bunny CDN if applicable
+        if ($video->storage_type === 'bunny' && $video->bunny_video_id) {
+            try {
+                $this->bunnyService->deleteVideo($video->bunny_video_id);
+            } catch (\Exception $e) {
+                Log::warning('Failed to delete video from Bunny CDN', [
+                    'video_id' => $video->id,
+                    'bunny_video_id' => $video->bunny_video_id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
         $this->videos->deleteVideo($video);
         $user->decrement('videos_count');
 
         if ($workspace) {
             $this->workspaces->recalculateStorage($workspace);
         }
+    }
+
+    public function duplicateVideo(Video $video, User $user): Video
+    {
+        $newVideo = $this->videos->createVideo([
+            'title' => $video->title . ' (copy)',
+            'description' => $video->description,
+            'duration' => $video->duration,
+            'has_audio' => $video->has_audio,
+            'user_id' => $user->id,
+            'folder_id' => $video->folder_id,
+            'workspace_id' => $video->workspace_id,
+            'file_size_bytes' => $video->file_size_bytes,
+            'is_public' => false,
+            'share_token' => \Illuminate\Support\Str::random(64),
+            'storage_type' => $video->storage_type,
+            'bunny_video_id' => $video->bunny_video_id,
+            'bunny_library_id' => $video->bunny_library_id,
+            'bunny_status' => $video->bunny_status,
+            'bunny_resolution' => $video->bunny_resolution,
+            'bunny_file_size' => $video->bunny_file_size,
+            'conversion_status' => $video->conversion_status,
+            'original_extension' => $video->original_extension,
+            'transcription_status' => $video->transcription_status,
+            'transcription' => $video->transcription,
+            'transcription_segments' => $video->transcription_segments,
+            'summary_status' => $video->summary_status,
+            'summary' => $video->summary,
+        ]);
+
+        $user->increment('videos_count');
+
+        // Copy thumbnail if exists
+        $thumbnail = $video->getFirstMedia('thumbnails');
+        if ($thumbnail) {
+            try {
+                $newVideo->addMedia($thumbnail->getPath())
+                    ->preservingOriginal()
+                    ->toMediaCollection('thumbnails');
+            } catch (\Exception $e) {
+                Log::warning('Failed to copy thumbnail for duplicate', [
+                    'original_video_id' => $video->id,
+                    'new_video_id' => $newVideo->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
+        return $newVideo;
     }
 
     /**

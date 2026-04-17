@@ -215,6 +215,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/{id}/stream', [VideoController::class, 'stream']);
         Route::put('/{id}', [VideoController::class, 'update']);
         Route::delete('/{id}', [VideoController::class, 'destroy']);
+        Route::post('/{id}/duplicate', [VideoController::class, 'duplicate']);
         Route::post('/{id}/toggle-sharing', [VideoController::class, 'toggleSharing']);
         Route::post('/{id}/toggle-favourite', [VideoController::class, 'toggleFavourite']);
         Route::post('/{id}/regenerate-token', [VideoController::class, 'regenerateShareToken']);

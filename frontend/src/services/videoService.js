@@ -145,6 +145,30 @@ class VideoService {
   }
 
   /**
+   * Duplicate a video
+   */
+  async duplicateVideo(id) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/videos/${id}/duplicate`, {
+        method: 'POST',
+        headers: getAuthHeaders()
+      })
+
+      if (handleUnauthorized(response)) return null
+
+      if (!response.ok) {
+        throw new Error(`Failed to duplicate video: ${response.statusText}`)
+      }
+
+      const data = await response.json()
+      return data
+    } catch (error) {
+      console.error('Error duplicating video:', error)
+      throw error
+    }
+  }
+
+  /**
    * Delete a video
    */
   async deleteVideo(id) {

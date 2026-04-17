@@ -206,6 +206,26 @@ class VideoController extends Controller
         ]);
     }
 
+    public function duplicate($id)
+    {
+        $video = $this->videoManager->findVideoOrFail($id);
+
+        if ($video->user_id !== Auth::id()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $newVideo = $this->videoManager->duplicateVideo($video, Auth::user());
+
+        return response()->json([
+            'message' => 'Video duplicated successfully',
+            'video' => [
+                'id' => $newVideo->id,
+                'title' => $newVideo->title,
+                'share_url' => $newVideo->getShareUrl(),
+            ],
+        ]);
+    }
+
     public function bulkDestroy(BulkDeleteVideosRequest $request)
     {
         $result = $this->videoManager->bulkDeleteVideos(

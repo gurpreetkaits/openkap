@@ -1732,8 +1732,8 @@ export default {
       if (!isOwner.value) return
       try {
         showToast('Duplicating video...')
-        await videoService.updateVideo(video.value.id, { duplicate: true })
-        showToast('Video duplicated!')
+        const result = await videoService.duplicateVideo(video.value.id)
+        if (result) showToast('Video duplicated!')
       } catch (err) {
         console.error('Failed to duplicate:', err)
         showToast('Failed to duplicate video')
