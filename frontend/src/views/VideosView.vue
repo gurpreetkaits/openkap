@@ -430,6 +430,15 @@
             Processing
           </div>
 
+          <!-- Bunny Encoding Badge -->
+          <div
+            v-else-if="video.storage_type === 'bunny' && video.bunny_status && video.bunny_status !== 'ready'"
+            class="absolute top-2 left-2 z-10 bg-black/70 backdrop-blur-sm text-white text-[10px] font-medium px-2 py-1 rounded-md flex items-center gap-1.5"
+          >
+            <div class="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
+            Encoding
+          </div>
+
           <!-- Duration Badge -->
           <div class="absolute bottom-2 right-2 z-10 bg-black/80 backdrop-blur-sm text-white text-[11px] font-medium px-2 py-0.5 rounded-md pointer-events-none">
             {{ formatDuration(video.duration) }}
@@ -587,6 +596,14 @@
             <svg class="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
             </svg>
+          </div>
+          <!-- Bunny Encoding Badge (list view) -->
+          <div
+            v-if="isBunnyEncoding(video)"
+            class="absolute top-1.5 left-1.5 z-10 bg-black/70 backdrop-blur-sm text-white text-[9px] font-medium px-1.5 py-0.5 rounded flex items-center gap-1"
+          >
+            <div class="w-1.5 h-1.5 bg-blue-400 rounded-full animate-pulse"></div>
+            Encoding
           </div>
           <!-- Duration -->
           <div class="absolute bottom-1.5 right-1.5 bg-black/75 backdrop-blur-sm text-white text-[10px] font-medium px-1.5 py-0.5 rounded">
@@ -1246,8 +1263,14 @@
               <svg class="w-3.5 h-3.5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
               Move to Folder
             </button>
-            <button @click="contextMenuAction('download')" class="w-full px-3.5 py-2 text-left text-[13px] text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2.5">
-              <svg class="w-3.5 h-3.5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            <button
+              @click="contextMenuAction('download')"
+              :disabled="isBunnyEncoding(contextMenu.target)"
+              :title="isBunnyEncoding(contextMenu.target) ? 'Available when video encoding completes' : 'Download'"
+              class="w-full px-3.5 py-2 text-left text-[13px] transition-colors flex items-center gap-2.5"
+              :class="isBunnyEncoding(contextMenu.target) ? 'text-gray-300 cursor-not-allowed' : 'text-gray-700 hover:bg-gray-50'"
+            >
+              <svg class="w-3.5 h-3.5 flex-shrink-0" :class="isBunnyEncoding(contextMenu.target) ? 'text-gray-300' : 'text-gray-400'" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
               Download
             </button>
             <button @click="contextMenuAction('archive')" class="w-full px-3.5 py-2 text-left text-[13px] text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2.5">
@@ -1981,7 +2004,10 @@ export default {
           url: video.url,
           isPublic: video.is_public,
           is_favourite: video.is_favourite || false,
-          shareUrl: video.share_url
+          shareUrl: video.share_url,
+          conversion_status: video.conversion_status,
+          storage_type: video.storage_type,
+          bunny_status: video.bunny_status
         }))
       } catch (err) {
         console.error('Failed to fetch videos:', err)
@@ -2026,6 +2052,57 @@ export default {
       }
     })
 
+    // Poll for encoding status updates on Bunny videos
+    let encodingPollInterval = null
+
+    const pollEncodingStatus = async () => {
+      const encodingVideos = videos.value.filter(v => isBunnyEncoding(v))
+      if (encodingVideos.length === 0) {
+        if (encodingPollInterval) {
+          clearInterval(encodingPollInterval)
+          encodingPollInterval = null
+        }
+        return
+      }
+      // Silently refresh video list without resetting page or showing loading
+      try {
+        const fetchedVideos = await videoService.getVideos()
+        const page = currentPage.value
+        videos.value = fetchedVideos.map(video => ({
+          id: video.id,
+          title: video.title,
+          duration: video.duration,
+          createdAt: new Date(video.created_at),
+          thumbnail: video.thumbnail || null,
+          views_count: video.views_count || 0,
+          comments_count: video.comments_count || 0,
+          reactions_count: video.reactions_count || 0,
+          url: video.url,
+          isPublic: video.is_public,
+          is_favourite: video.is_favourite || false,
+          shareUrl: video.share_url,
+          conversion_status: video.conversion_status,
+          storage_type: video.storage_type,
+          bunny_status: video.bunny_status
+        }))
+        currentPage.value = page
+      } catch (e) {
+        // Silently fail — polling shouldn't disrupt the UI
+      }
+    }
+
+    const startEncodingPoll = () => {
+      if (encodingPollInterval) return
+      const encodingVideos = videos.value.filter(v => isBunnyEncoding(v))
+      if (encodingVideos.length > 0) {
+        encodingPollInterval = setInterval(pollEncodingStatus, 15000)
+      }
+    }
+
+    watch(videos, () => {
+      startEncodingPoll()
+    }, { deep: true })
+
     onMounted(() => {
       fetchVideos()
       fetchFolders()
@@ -2037,6 +2114,10 @@ export default {
     onUnmounted(() => {
       document.removeEventListener('click', handleClickOutside)
       document.removeEventListener('keydown', handleKeyDown)
+      if (encodingPollInterval) {
+        clearInterval(encodingPollInterval)
+        encodingPollInterval = null
+      }
     })
 
     const goToRecord = () => {
@@ -2662,6 +2743,10 @@ export default {
       }
     }
 
+    const isBunnyEncoding = (video) => {
+      return video?.storage_type === 'bunny' && video?.bunny_status && video.bunny_status !== 'ready'
+    }
+
     const formatDuration = (seconds) => {
       if (!seconds || isNaN(seconds)) return '0:00'
       const mins = Math.floor(seconds / 60)
@@ -2860,7 +2945,8 @@ export default {
       deleteScreenshot,
       confirmDeleteScreenshot,
       handleScreenshotUpload,
-      onScreenshotFileSelected
+      onScreenshotFileSelected,
+      isBunnyEncoding
     }
   }
 }
