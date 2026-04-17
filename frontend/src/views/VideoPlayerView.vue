@@ -383,10 +383,10 @@
 
 
       <!-- Main Layout -->
-      <main class="relative z-10" style="height: calc(100vh - 80px)">
+      <main class="flex z-10" style="height: calc(100vh - 80px)">
 
-        <!-- Video Player — full width -->
-        <div class="h-full flex flex-col items-center justify-center p-6 bg-[#FAFAFA]/50 overflow-y-auto">
+        <!-- Video Player — expands/shrinks with sidebar -->
+        <div class="video-stage flex flex-col items-center justify-center p-6 bg-[#FAFAFA]/50 overflow-y-auto">
 
           <div class="w-full flex flex-col" style="max-width: min(calc((100vh - 200px) * 16 / 9), 100%)">
 
@@ -736,9 +736,9 @@
           </div>
         </div>
 
-        <!-- Sidebar Overlay — slides in from right -->
+        <!-- Sidebar — slides in/out from right -->
         <aside
-          class="sidebar-panel absolute top-0 right-0 h-full w-[380px] flex flex-col bg-white border-l border-gray-200 shadow-2xl z-30"
+          class="sidebar-panel flex flex-col bg-white border-l border-gray-200 overflow-hidden flex-shrink-0"
           :class="sidebarVisible ? 'sidebar-open' : 'sidebar-closed'"
         >
           <!-- Functional Tabs -->
@@ -3030,12 +3030,19 @@ export default {
 .controls-visible .controls-row { opacity: 1; }
 .controls-hidden .controls-row { opacity: 0; }
 
+/* Video stage transitions */
+.video-stage {
+  flex: 1;
+  min-width: 0;
+  transition: flex 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
 /* Sidebar slide from right */
 .sidebar-panel {
-  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.sidebar-panel.sidebar-open { transform: translateX(0); }
-.sidebar-panel.sidebar-closed { transform: translateX(100%); pointer-events: none; }
+.sidebar-panel.sidebar-open { width: 380px; }
+.sidebar-panel.sidebar-closed { width: 0; border-left: none; }
 
 .toast-enter-active { transition: all 0.3s ease; }
 .toast-leave-active { transition: all 0.2s ease; }
