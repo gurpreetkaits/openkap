@@ -316,180 +316,180 @@
               </transition>
 
               <!-- Gradient shadow behind controls -->
-              <div class="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-black/60 via-black/20 to-transparent z-20 pointer-events-none"></div>
+              <div
+                class="absolute bottom-0 left-0 right-0 h-44 bg-gradient-to-t from-black/70 via-black/30 to-transparent z-20 pointer-events-none transition-opacity duration-500"
+                :class="controlsVisible ? 'opacity-100' : 'opacity-0'"
+              ></div>
 
               <!-- Custom Floating Controls -->
-              <div class="absolute bottom-4 left-4 right-4 z-30">
-                <div class="flex flex-col gap-3 px-2">
+              <div class="absolute bottom-0 left-0 right-0 z-30 px-5 pb-4">
+                <div class="flex flex-col gap-2">
                   <!-- Captions Bar -->
-                  <div v-if="captionsEnabled && activeCaptionCue" class="flex justify-center pointer-events-none">
+                  <div v-if="captionsEnabled && activeCaptionCue" class="flex justify-center pointer-events-none mb-1">
                     <div class="caption-bar">
                       <span v-for="(word, wi) in activeCaptionCue.words" :key="wi" class="caption-word" :class="word.active ? 'caption-active' : 'caption-inactive'">{{ word.text }}</span>
                     </div>
                   </div>
-                  <!-- Progress Bar — thin by default, grows on hover -->
-                    <div
-                      class="relative h-7 w-full group/seek cursor-pointer flex items-center"
-                      @click.stop="seek"
-                      @mousedown.stop="startSeeking"
-                      @mousemove="updateHoverTime"
-                      @mouseleave="hoverTime = null"
-                      ref="progressBar"
-                    >
-                      <!-- Track: grows from thin to thick on hover, anchored to bottom -->
-                      <div class="absolute left-0 right-0 bottom-2 h-1 group-hover/seek:h-3.5 transition-all duration-200 ease-out rounded-sm overflow-hidden bg-gray-500/70">
-                        <div class="absolute left-0 h-full bg-gray-300/40" :style="{ width: bufferedPercent + '%' }"></div>
-                        <div class="absolute left-0 h-full bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.4)]" :style="{ width: progressPercent + '%' }"></div>
-                      </div>
-                      <!-- Hover time tooltip -->
-                      <div
-                        v-if="hoverTime !== null"
-                        class="absolute -top-8 px-2 py-1 bg-black/80 text-white text-xs rounded transform -translate-x-1/2 pointer-events-none whitespace-nowrap"
-                        :style="{ left: hoverPercent + '%' }"
-                      >
-                        {{ formatTime(hoverTime) }}
-                      </div>
-                      <!-- Duration label: fades in on hover, top-right -->
-                      <div class="absolute right-0 -top-7 opacity-0 group-hover/seek:opacity-100 transition-opacity duration-200 text-white/70 text-[11px] font-mono pointer-events-none whitespace-nowrap">
-                        {{ formatTime(currentTime) }} / {{ formatTime(duration) }}
-                      </div>
-                    </div>
 
-                    <!-- Control Buttons -->
-                    <transition name="fade">
-                    <div v-show="controlsVisible" class="flex items-center justify-between text-white/90 pt-1 bg-black/40 backdrop-blur-sm rounded-lg px-3 py-2">
-                      <div class="flex items-center gap-5">
-                        <button @click.stop="togglePlay" class="hover:text-orange-400 hover:scale-110 transition-all">
-                          <svg v-if="isPlaying" class="w-6 h-6 fill-current" viewBox="0 0 24 24">
-                            <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
-                          </svg>
-                          <svg v-else class="w-6 h-6 fill-current" viewBox="0 0 24 24">
-                            <path d="M8 5v14l11-7z"/>
-                          </svg>
-                        </button>
-                        <span class="text-[12px] font-mono opacity-60 tracking-wider">
-                          {{ formatTime(currentTime) }} <span class="opacity-50">/</span> {{ formatTime(duration) }}
-                        </span>
-                        <div class="w-px h-5 bg-white/10"></div>
-                        <div class="flex items-center gap-4">
-                          <button @click.stop="skip(-5)" class="hover:text-white opacity-70 hover:opacity-100 transition-opacity" title="Rewind 5s">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                              <path stroke-linecap="round" stroke-linejoin="round" d="M12.066 11.2a1 1 0 000 1.6l5.334 4A1 1 0 0019 16V8a1 1 0 00-1.6-.8l-5.333 4zM4.066 11.2a1 1 0 000 1.6l5.334 4A1 1 0 0011 16V8a1 1 0 00-1.6-.8l-5.334 4z"/>
-                            </svg>
-                          </button>
-                          <button @click.stop="skip(5)" class="hover:text-white opacity-70 hover:opacity-100 transition-opacity" title="Forward 5s">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                              <path stroke-linecap="round" stroke-linejoin="round" d="M11.933 12.8a1 1 0 000-1.6L6.6 7.2A1 1 0 005 8v8a1 1 0 001.6.8l5.333-4zM19.933 12.8a1 1 0 000-1.6l-5.333-4A1 1 0 0013 8v8a1 1 0 001.6.8l5.333-4z"/>
-                            </svg>
-                          </button>
-                        </div>
-                      </div>
-                      <div class="flex items-center gap-4">
-                        <!-- Volume -->
-                        <div class="flex items-center gap-1 group/vol">
-                          <button @click.stop="toggleMute" class="hover:text-white opacity-70 hover:opacity-100 transition-opacity">
-                            <svg v-if="isMuted || volume === 0" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                              <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>
-                            </svg>
-                            <svg v-else class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                              <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
-                            </svg>
-                          </button>
-                          <input
-                            type="range" min="0" max="1" step="0.05" v-model="volume" @input="updateVolume"
-                            class="w-0 group-hover/vol:w-20 opacity-0 group-hover/vol:opacity-100 transition-all"
-                          />
-                        </div>
-                        <!-- Quality Selector -->
-                        <div v-if="availableQualities.length > 0" class="relative" ref="qualityMenuRef">
-                          <button
-                            @click.stop.prevent="toggleQualityMenu"
-                            class="text-[11px] font-bold bg-white/10 px-2 py-1 rounded hover:bg-orange-600 transition-colors"
-                          >
-                            {{ getCurrentQualityLabel() }}
-                          </button>
-                          <div
-                            v-show="showQualityMenu"
-                            class="absolute bottom-full right-0 mb-2 py-2 bg-gray-900 rounded-xl shadow-2xl border border-white/20 min-w-[100px] z-50"
-                          >
-                            <!-- Auto: let HLS.js adaptively choose quality -->
-                            <button
-                              @click.stop.prevent="setQuality(-1)"
-                              class="w-full px-3 py-2 text-left text-xs hover:bg-white/10 transition-colors"
-                              :class="currentQuality === -1 ? 'text-orange-400' : 'text-white'"
-                            >
-                              Auto
-                            </button>
-                            <!-- Qualities shown highest-first (4K → 1080P → 720P) -->
-                            <button
-                              v-for="quality in [...availableQualities].reverse()"
-                              :key="quality.index"
-                              @click.stop.prevent="setQuality(quality.index)"
-                              class="w-full px-3 py-2 text-left text-xs hover:bg-white/10 transition-colors"
-                              :class="currentQuality === quality.index ? 'text-orange-400' : 'text-white'"
-                            >
-                              {{ quality.label }}
-                            </button>
-                          </div>
-                        </div>
-                        <!-- Speed -->
-                        <div class="relative" ref="speedMenuRef">
-                          <button
-                            @click.stop.prevent="toggleSpeedMenu"
-                            class="text-[11px] font-bold bg-white/10 px-2 py-1 rounded hover:bg-orange-600 transition-colors"
-                          >
-                            {{ playbackSpeed }}x
-                          </button>
-                          <div
-                            v-show="showSpeedMenu"
-                            class="absolute bottom-full right-0 mb-2 py-2 bg-gray-900 rounded-xl shadow-2xl border border-white/20 min-w-[80px] z-50"
-                          >
-                            <button
-                              v-for="speed in speedOptions"
-                              :key="speed"
-                              @click.stop.prevent="setPlaybackSpeed(speed)"
-                              class="w-full px-3 py-2 text-left text-xs hover:bg-white/10 transition-colors"
-                              :class="playbackSpeed === speed ? 'text-orange-400' : 'text-white'"
-                            >
-                              {{ speed }}x
-                            </button>
-                          </div>
-                        </div>
-                        <!-- Captions Toggle -->
-                        <button
-                          v-if="captionsUrl"
-                          @click.stop="toggleCaptions"
-                          class="hover:text-white hover:scale-110 transition-transform relative"
-                          :class="captionsEnabled ? 'text-orange-400' : 'opacity-70 hover:opacity-100'"
-                          title="Toggle captions"
-                        >
-                          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                            <rect x="2" y="4" width="20" height="16" rx="2"/>
-                            <text x="12" y="15" text-anchor="middle" fill="currentColor" stroke="none" font-size="8" font-weight="bold">CC</text>
-                          </svg>
-                          <div v-if="captionsEnabled" class="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-3 h-0.5 bg-orange-400 rounded-full"></div>
-                        </button>
-                        <!-- PiP -->
-                        <button @click.stop="togglePiP" class="hover:text-white hover:scale-110 transition-transform opacity-70 hover:opacity-100" title="Picture in Picture">
-                          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                            <rect x="2" y="3" width="20" height="14" rx="2"/>
-                            <rect x="11" y="10" width="9" height="6" rx="1" fill="currentColor"/>
-                          </svg>
-                        </button>
-                        <!-- Fullscreen -->
-                        <button @click.stop="toggleFullscreen" class="hover:text-white hover:scale-110 transition-transform">
-                          <svg v-if="!isFullscreen" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/>
-                          </svg>
-                          <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 9V4.5M9 9H4.5M9 9L3.75 3.75M9 15v4.5M9 15H4.5M9 15l-5.25 5.25M15 9h4.5M15 9V4.5M15 9l5.25-5.25M15 15h4.5M15 15v4.5m0-4.5l5.25 5.25"/>
-                          </svg>
-                        </button>
-                      </div>
+                  <!-- Progress Bar -->
+                  <div
+                    class="relative h-7 w-full group/seek cursor-pointer flex items-center"
+                    @click.stop="seek"
+                    @mousedown.stop="startSeeking"
+                    @mousemove="updateHoverTime"
+                    @mouseleave="hoverTime = null"
+                    ref="progressBar"
+                  >
+                    <div class="absolute left-0 right-0 bottom-2 h-1 group-hover/seek:h-3.5 transition-all duration-200 ease-out rounded-sm overflow-hidden bg-gray-500/70">
+                      <div class="absolute left-0 h-full bg-gray-300/40" :style="{ width: bufferedPercent + '%' }"></div>
+                      <div class="absolute left-0 h-full bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.4)]" :style="{ width: progressPercent + '%' }"></div>
                     </div>
-                    </transition>
+                    <div
+                      v-if="hoverTime !== null"
+                      class="absolute -top-8 px-2 py-1 bg-black/80 text-white text-xs rounded transform -translate-x-1/2 pointer-events-none whitespace-nowrap"
+                      :style="{ left: hoverPercent + '%' }"
+                    >
+                      {{ formatTime(hoverTime) }}
+                    </div>
+                    <div class="absolute right-0 -top-7 opacity-0 group-hover/seek:opacity-100 transition-opacity duration-200 text-white/70 text-[11px] font-mono pointer-events-none whitespace-nowrap">
+                      {{ formatTime(currentTime) }} / {{ formatTime(duration) }}
+                    </div>
                   </div>
+
+                  <!-- Control Buttons -->
+                  <transition name="fade">
+                  <div v-show="controlsVisible" class="flex items-center justify-between text-white pt-0.5">
+                    <div class="flex items-center gap-3">
+                      <!-- Play/Pause -->
+                      <button @click.stop="togglePlay" class="ctrl-tip player-btn w-7 h-7 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-all" :data-tip="isPlaying ? 'Pause' : 'Play'">
+                        <svg v-if="isPlaying" class="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                          <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
+                        </svg>
+                        <svg v-else class="w-5 h-5 fill-current ml-0.5" viewBox="0 0 24 24">
+                          <path d="M8 5v14l11-7z"/>
+                        </svg>
+                      </button>
+                      <!-- Skip back -->
+                      <button @click.stop="skip(-5)" class="ctrl-tip player-btn w-7 h-7 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-all opacity-80 hover:opacity-100" data-tip="Rewind 5s">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M12.066 11.2a1 1 0 000 1.6l5.334 4A1 1 0 0019 16V8a1 1 0 00-1.6-.8l-5.333 4zM4.066 11.2a1 1 0 000 1.6l5.334 4A1 1 0 0011 16V8a1 1 0 00-1.6-.8l-5.334 4z"/>
+                        </svg>
+                      </button>
+                      <!-- Skip forward -->
+                      <button @click.stop="skip(5)" class="ctrl-tip player-btn w-7 h-7 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-all opacity-80 hover:opacity-100" data-tip="Forward 5s">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M11.933 12.8a1 1 0 000-1.6L6.6 7.2A1 1 0 005 8v8a1 1 0 001.6.8l5.333-4zM19.933 12.8a1 1 0 000-1.6l-5.333-4A1 1 0 0013 8v8a1 1 0 001.6.8l5.333-4z"/>
+                        </svg>
+                      </button>
+                      <!-- Volume -->
+                      <div class="ctrl-tip flex items-center group/vol bg-white/10 hover:bg-white/20 rounded-full h-7 px-1.5 transition-all" :data-tip="isMuted ? 'Unmute' : 'Volume'">
+                        <button @click.stop="toggleMute" class="flex items-center justify-center w-5 h-5 opacity-80 hover:opacity-100 transition-all">
+                          <svg v-if="isMuted || volume === 0" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>
+                          </svg>
+                          <svg v-else class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+                          </svg>
+                        </button>
+                        <input
+                          type="range" min="0" max="1" step="0.05" v-model="volume" @input="updateVolume"
+                          class="volume-slider w-0 group-hover/vol:w-16 opacity-0 group-hover/vol:opacity-100 transition-all duration-200 ml-1"
+                        />
+                      </div>
+                      <!-- Time -->
+                      <span class="text-[11px] font-mono text-white/50 tracking-wide ml-1 select-none">
+                        {{ formatTime(currentTime) }} / {{ formatTime(duration) }}
+                      </span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <!-- Quality -->
+                      <div v-if="availableQualities.length > 0" class="relative ctrl-tip" ref="qualityMenuRef" data-tip="Quality">
+                        <button
+                          @click.stop.prevent="toggleQualityMenu"
+                          class="text-[10px] font-bold text-white/70 hover:text-white h-7 px-2.5 flex items-center rounded-full bg-white/10 hover:bg-white/20 transition-all"
+                        >
+                          {{ getCurrentQualityLabel() }}
+                        </button>
+                        <div
+                          v-show="showQualityMenu"
+                          class="absolute bottom-full right-0 mb-2 py-1.5 bg-black/80 backdrop-blur-xl rounded-lg shadow-2xl border border-white/10 min-w-[100px] z-50"
+                        >
+                          <button
+                            @click.stop.prevent="setQuality(-1)"
+                            class="w-full px-3 py-1.5 text-left text-[11px] hover:bg-white/10 transition-colors"
+                            :class="currentQuality === -1 ? 'text-orange-400 font-semibold' : 'text-white/80'"
+                          >
+                            Auto
+                          </button>
+                          <button
+                            v-for="quality in [...availableQualities].reverse()"
+                            :key="quality.index"
+                            @click.stop.prevent="setQuality(quality.index)"
+                            class="w-full px-3 py-1.5 text-left text-[11px] hover:bg-white/10 transition-colors"
+                            :class="currentQuality === quality.index ? 'text-orange-400 font-semibold' : 'text-white/80'"
+                          >
+                            {{ quality.label }}
+                          </button>
+                        </div>
+                      </div>
+                      <!-- Speed -->
+                      <div class="relative ctrl-tip" ref="speedMenuRef" data-tip="Speed">
+                        <button
+                          @click.stop.prevent="toggleSpeedMenu"
+                          class="text-[10px] font-bold text-white/70 hover:text-white h-7 px-2.5 flex items-center rounded-full bg-white/10 hover:bg-white/20 transition-all"
+                        >
+                          {{ playbackSpeed }}x
+                        </button>
+                        <div
+                          v-show="showSpeedMenu"
+                          class="absolute bottom-full right-0 mb-2 py-1.5 bg-black/80 backdrop-blur-xl rounded-lg shadow-2xl border border-white/10 min-w-[80px] z-50"
+                        >
+                          <button
+                            v-for="speed in speedOptions"
+                            :key="speed"
+                            @click.stop.prevent="setPlaybackSpeed(speed)"
+                            class="w-full px-3 py-1.5 text-left text-[11px] hover:bg-white/10 transition-colors"
+                            :class="playbackSpeed === speed ? 'text-orange-400 font-semibold' : 'text-white/80'"
+                          >
+                            {{ speed }}x
+                          </button>
+                        </div>
+                      </div>
+                      <!-- Captions -->
+                      <button
+                        v-if="captionsUrl"
+                        @click.stop="toggleCaptions"
+                        class="ctrl-tip player-btn w-7 h-7 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-all relative"
+                        :class="captionsEnabled ? 'text-orange-400' : 'text-white/60 hover:text-white'"
+                        :data-tip="captionsEnabled ? 'Captions on' : 'Captions'"
+                      >
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                          <rect x="2" y="4" width="20" height="16" rx="2"/>
+                          <text x="12" y="15" text-anchor="middle" fill="currentColor" stroke="none" font-size="8" font-weight="bold">CC</text>
+                        </svg>
+                        <div v-if="captionsEnabled" class="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-3 h-0.5 bg-orange-400 rounded-full"></div>
+                      </button>
+                      <!-- PiP -->
+                      <button @click.stop="togglePiP" class="ctrl-tip player-btn w-7 h-7 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-all text-white/60 hover:text-white" data-tip="Picture in Picture">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                          <rect x="2" y="3" width="20" height="14" rx="2"/>
+                          <rect x="11" y="10" width="9" height="6" rx="1" fill="currentColor"/>
+                        </svg>
+                      </button>
+                      <!-- Fullscreen -->
+                      <button @click.stop="toggleFullscreen" class="ctrl-tip player-btn w-7 h-7 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-all text-white/60 hover:text-white" :data-tip="isFullscreen ? 'Exit fullscreen' : 'Fullscreen'">
+                        <svg v-if="!isFullscreen" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/>
+                        </svg>
+                        <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M9 9V4.5M9 9H4.5M9 9L3.75 3.75M9 15v4.5M9 15H4.5M9 15l-5.25 5.25M15 9h4.5M15 9V4.5M15 9l5.25-5.25M15 15h4.5M15 15v4.5m0-4.5l5.25 5.25"/>
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                  </transition>
                 </div>
+              </div>
             </div>
 
             <!-- Action Bar Below Video -->
@@ -2075,6 +2075,35 @@ export default {
 .comment-slide-leave-active { transition: all 0.2s ease-in; }
 .comment-slide-enter-from { opacity: 0; transform: translateX(-20px); max-width: 0; }
 .comment-slide-leave-to { opacity: 0; transform: translateX(-20px); max-width: 0; }
+
+/* Control tooltips */
+.ctrl-tip { position: relative; }
+.ctrl-tip::before {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 3px 8px;
+  background: rgba(0,0,0,0.85);
+  color: white;
+  font-size: 11px;
+  font-weight: 500;
+  border-radius: 5px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  z-index: 60;
+}
+.ctrl-tip:hover::before { opacity: 1; }
+
+/* Volume slider styling */
+.volume-slider { -webkit-appearance: none; appearance: none; background: transparent; cursor: pointer; height: 6px; }
+.volume-slider::-webkit-slider-runnable-track { height: 4px; background: rgba(255,255,255,0.3); border-radius: 3px; }
+.volume-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; background: white; border-radius: 50%; margin-top: -4px; box-shadow: 0 0 4px rgba(0,0,0,0.3); }
+.volume-slider::-moz-range-track { height: 4px; background: rgba(255,255,255,0.3); border-radius: 3px; border: none; }
+.volume-slider::-moz-range-thumb { width: 12px; height: 12px; background: white; border-radius: 50%; border: none; box-shadow: 0 0 4px rgba(0,0,0,0.3); }
 
 /* Video stage transitions */
 .video-stage {
