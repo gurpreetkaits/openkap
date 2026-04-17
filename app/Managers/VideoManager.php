@@ -1069,12 +1069,7 @@ class VideoManager
 
         // Bunny CDN videos: redirect to signed MP4 download URL
         if ($video->isBunnyVideo() && $video->bunny_video_id && $video->bunny_status === 'ready') {
-            // MP4 Fallback supports up to 1080p — cap resolution
-            $resolution = $video->bunny_resolution ?: '720p';
-            $resNum = (int) str_replace('p', '', $resolution);
-            if ($resNum > 1080) {
-                $resolution = '1080p';
-            }
+            $resolution = $this->getBunnyDownloadResolution($video);
 
             $downloadUrl = $this->bunnyService->generateSignedDownloadUrl(
                 $video->bunny_video_id,
@@ -1114,6 +1109,44 @@ class VideoManager
         return [
             'mode' => 'async',
         ];
+    }
+
+    private function getBunnyDownloadResolution(Video $video): string
+    {
+        // If we know the resolution, cap at 1080p
+        if ($video->bunny_resolution) {
+            $resNum = (int) str_replace('p', '', $video->bunny_resolution);
+
+            return $resNum > 1080 ? '1080p' : $video->bunny_resolution;
+        }
+
+        // Resolution unknown — query Bunny for available resolutions
+        try {
+            $status = $this->bunnyService->getVideoStatus($video->bunny_video_id);
+            $available = $status['availableResolutions'] ?? '';
+
+            if ($available) {
+                $resolutions = array_map(fn ($r) => (int) str_replace('p', '', trim($r)), explode(',', $available));
+                sort($resolutions);
+
+                // Pick the best resolution <= 1080p, or the lowest available
+                $best = null;
+                foreach ($resolutions as $res) {
+                    if ($res <= 1080) {
+                        $best = $res;
+                    }
+                }
+
+                return ($best ?: $resolutions[0]).'p';
+            }
+        } catch (\Exception $e) {
+            Log::warning('Failed to fetch Bunny resolutions for download', [
+                'video_id' => $video->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        return '1080p';
     }
 
     public function convertToMp4Sync(Video $video, $media): string
