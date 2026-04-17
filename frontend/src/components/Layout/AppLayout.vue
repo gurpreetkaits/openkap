@@ -569,8 +569,8 @@
     <!-- Global Recording Components -->
     <RecordingSetupPanel />
 
-    <!-- AI Chat Widget -->
-    <ChatbotWidget />
+    <!-- AI Chat Widget (hidden for now) -->
+    <!-- <ChatbotWidget /> -->
   </div>
 </template>
 

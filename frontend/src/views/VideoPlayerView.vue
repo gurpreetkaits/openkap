@@ -89,21 +89,14 @@
             </span>
           </div>
           <span
-            v-if="video.id"
-            class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-medium"
-            :class="video.is_public ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'"
+            v-if="video.id && !video.is_public"
+            class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-gray-100 text-gray-500"
           >
             <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <template v-if="video.is_public">
-                <circle cx="12" cy="12" r="10" stroke-width="2"/>
-                <path stroke-width="2" d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/>
-              </template>
-              <template v-else>
-                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" stroke-width="2"/>
-                <path stroke-width="2" d="M7 11V7a5 5 0 0110 0v4"/>
-              </template>
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" stroke-width="2"/>
+              <path stroke-width="2" d="M7 11V7a5 5 0 0110 0v4"/>
             </svg>
-            {{ video.is_public ? 'Public' : 'Private' }}
+            Private
           </span>
         </div>
 
@@ -166,7 +159,7 @@
                 </svg>
                 Download
               </button>
-              <button @click="handleDuplicate; showOptionsMenu = false" class="w-full px-4 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2.5">
+              <button @click="showDuplicateConfirm = true; showOptionsMenu = false" class="w-full px-4 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2.5">
                 <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
                 </svg>
@@ -186,11 +179,15 @@
                 Download Captions
               </button>
               <div class="my-1.5 border-t border-gray-100"></div>
-              <button @click="showPrivateConfirm = true; showOptionsMenu = false" class="w-full px-4 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2.5">
-                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <button @click="showPrivacyConfirm = true; showOptionsMenu = false" class="w-full px-4 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2.5">
+                <svg v-if="video.is_public" class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
                 </svg>
-                Make it private
+                <svg v-else class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10" stroke-width="2"/>
+                  <path stroke-width="2" d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/>
+                </svg>
+                {{ video.is_public ? 'Make it private' : 'Make it public' }}
               </button>
               <button @click="showArchiveConfirm = true; showOptionsMenu = false" class="w-full px-4 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2.5">
                 <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -227,14 +224,24 @@
         @confirm="handleArchive"
       />
 
-      <!-- Make Private Confirm -->
+      <!-- Duplicate Confirm -->
       <SBConfirmModal
-        v-model="showPrivateConfirm"
-        title="Make Private"
-        message="Are you sure you want to make this video private? The share link will stop working."
-        type="warning"
-        confirmText="Make Private"
-        @confirm="handleMakePrivate"
+        v-model="showDuplicateConfirm"
+        title="Duplicate Video"
+        message="This will create a copy of this video. Do you want to continue?"
+        type="info"
+        confirmText="Duplicate"
+        @confirm="handleDuplicate"
+      />
+
+      <!-- Toggle Privacy Confirm -->
+      <SBConfirmModal
+        v-model="showPrivacyConfirm"
+        :title="video.is_public ? 'Make Private' : 'Make Public'"
+        :message="video.is_public ? 'Are you sure you want to make this video private? The share link will stop working.' : 'Are you sure you want to make this video public? Anyone with the share link will be able to view it.'"
+        :type="video.is_public ? 'warning' : 'info'"
+        :confirmText="video.is_public ? 'Make Private' : 'Make Public'"
+        @confirm="handleTogglePrivacy"
       />
 
       <!-- Delete Confirm -->
@@ -1303,7 +1310,8 @@ export default {
     const showOptionsMenu = ref(false)
     const showArchiveConfirm = ref(false)
     const showDeleteConfirm = ref(false)
-    const showPrivateConfirm = ref(false)
+    const showPrivacyConfirm = ref(false)
+    const showDuplicateConfirm = ref(false)
     const shareDropdownRef = ref(null)
     const optionsMenuRef = ref(null)
     const activeTab = ref('transcript')
@@ -2193,15 +2201,16 @@ export default {
       }
     }
 
-    const handleMakePrivate = async () => {
+    const handleTogglePrivacy = async () => {
+      const makePublic = !video.value.is_public
       try {
-        await videoService.updateVideo(video.value.id, { is_public: false })
-        video.value.is_public = false
-        showPrivateConfirm.value = false
-        showToast('Video is now private')
+        await videoService.updateVideo(video.value.id, { is_public: makePublic })
+        video.value.is_public = makePublic
+        showPrivacyConfirm.value = false
+        showToast(makePublic ? 'Video is now public' : 'Video is now private')
       } catch (err) {
-        console.error('Failed to make private:', err)
-        showPrivateConfirm.value = false
+        console.error('Failed to update privacy:', err)
+        showPrivacyConfirm.value = false
         showToast('Failed to update privacy')
       }
     }
@@ -2601,9 +2610,9 @@ export default {
       showShareModal, activeTab, sidebarVisible, toggleSidebar,
       // Dropdowns
       showShareDropdown, showOptionsMenu, shareDropdownRef, optionsMenuRef,
-      showArchiveConfirm, showDeleteConfirm, showPrivateConfirm,
+      showArchiveConfirm, showDeleteConfirm, showPrivacyConfirm, showDuplicateConfirm,
       // Action handlers
-      handleDownload, handleDuplicate, handleDownloadCaptions, handleMakePrivate, handleArchive,
+      handleDownload, handleDuplicate, handleDownloadCaptions, handleTogglePrivacy, handleArchive,
       // Transcription
       transcription, transcriptionSegments, transcriptionStatus, transcriptionProgress, transcriptionError,
       isRequestingTranscription, requestTranscription, seekToTime,
