@@ -1407,7 +1407,7 @@ export default {
     }
 
     // Ownership check
-    const isOwner = computed(() => currentUser.value?.id && video.value?.user_id && currentUser.value.id === video.value.user_id)
+    const isOwner = computed(() => currentUser.value?.id && video.value?.user_id && Number(currentUser.value.id) === Number(video.value.user_id))
 
     // Transcription state
     const transcription = ref(null)

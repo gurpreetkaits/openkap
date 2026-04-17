@@ -389,7 +389,9 @@ class VideoManager
             // Bunny Stream fields (only expose what the frontend needs for playback)
             'storage_type' => $video->storage_type,
             'bunny_status' => $video->bunny_status,
+            'is_public' => $video->is_public,
             // Creator identity
+            'user_id' => $video->user_id,
             'user_name' => $video->user?->name,
             'user_avatar' => $video->user?->avatar_url,
             // Owner branding
