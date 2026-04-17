@@ -39,71 +39,141 @@
           </svg>
         </div>
         <h3 class="text-lg font-semibold text-gray-900 mb-3">{{ error }}</h3>
-        <button @click="goBack" class="px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-medium transition-colors">
+        <button v-if="!isSharedMode" @click="goBack" class="px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-medium transition-colors">
           Go Back
         </button>
+        <a v-else href="/" class="px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-medium transition-colors inline-block">
+          Go Home
+        </a>
       </div>
     </div>
 
     <!-- Main Content -->
     <template v-else>
       <!-- Navigation -->
-      <nav class="h-14 border-b border-gray-200/60 bg-white/90 backdrop-blur-md flex items-center justify-between px-5 z-50 sticky top-0 flex-shrink-0">
-        <div class="flex items-center gap-2">
-          <router-link to="/videos" class="flex items-center gap-1.5 hover:opacity-80 transition-opacity">
-            <img :src="branding.logoUrl.value || '/logo.png'" alt="OpenKap" class="w-6 h-6 rounded-md" />
-            <span class="text-xs font-semibold text-gray-900">OpenKap</span>
-          </router-link>
-          <!-- Zoom Status Badge -->
-          <div v-if="video.zoom_enabled">
-            <span
-              v-if="video.zoom_status === 'processing'"
-              class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-orange-100 text-orange-700"
-            >
-              <svg class="w-2.5 h-2.5 mr-0.5 animate-spin" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-              </svg>
-              Zoom {{ video.zoom_progress || 0 }}%
-            </span>
-            <span
-              v-else-if="video.is_zoom_ready"
-              class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-green-100 text-green-700"
-            >
-              <svg class="w-2.5 h-2.5 mr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/>
-              </svg>
-              Zoom ({{ video.zoom_event_count }})
-            </span>
-            <span
-              v-else-if="video.zoom_status === 'failed'"
-              class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-red-100 text-red-700"
-            >
-              Zoom Failed
-            </span>
-            <span
-              v-else-if="video.zoom_status === 'pending' && video.zoom_event_count > 0"
-              class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-gray-100 text-gray-600"
-            >
-              Zoom Pending
-            </span>
-          </div>
-          <span
-            v-if="video.id && !video.is_public"
-            class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-gray-100 text-gray-500"
-          >
-            <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" stroke-width="2"/>
-              <path stroke-width="2" d="M7 11V7a5 5 0 0110 0v4"/>
-            </svg>
-            Private
-          </span>
-        </div>
+      <nav class="border-b border-gray-200/60 bg-white/90 backdrop-blur-md z-50 sticky top-0 flex-shrink-0 px-6" style="height: 80px;">
+        <div class="flex items-center gap-4 h-full">
 
-        <div class="flex items-center gap-2">
-          <!-- Editor Button (paid users only) -->
+          <!-- Logo -->
+          <a v-if="isSharedMode" href="/" class="flex items-center gap-2 hover:opacity-80 transition-opacity flex-shrink-0">
+            <img :src="branding.logoUrl.value || '/logo.png'" alt="OpenKap" class="w-7 h-7 rounded-md" />
+            <span class="text-sm font-bold text-gray-900">OpenKap</span>
+          </a>
+          <router-link v-else to="/videos" class="flex items-center gap-2 hover:opacity-80 transition-opacity flex-shrink-0">
+            <img :src="branding.logoUrl.value || '/logo.png'" alt="OpenKap" class="w-7 h-7 rounded-md" />
+            <span class="text-sm font-bold text-gray-900">OpenKap</span>
+          </router-link>
+
+          <!-- Divider -->
+          <div v-if="video.title" class="h-10 w-px bg-gray-200 flex-shrink-0"></div>
+
+          <!-- Title + Meta -->
+          <div v-if="video.title" class="flex-1 min-w-0 flex flex-col justify-center gap-1">
+            <div class="flex items-center gap-2">
+              <!-- Owner mode: click-to-edit title -->
+              <template v-if="!isSharedMode">
+                <h1
+                  v-if="!isEditingTitle"
+                  @click="startEditingTitle"
+                  class="group/title flex items-center gap-2 text-xl font-bold text-gray-900 truncate leading-tight cursor-pointer hover:text-orange-600 transition-colors"
+                  title="Click to edit title"
+                >
+                  {{ video.title }}
+                  <svg class="w-3.5 h-3.5 opacity-0 group-hover/title:opacity-40 transition-opacity flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                  </svg>
+                </h1>
+                <input
+                  v-else
+                  ref="titleInput"
+                  v-model="editedTitle"
+                  @keydown.enter="saveTitle"
+                  @keydown.escape="cancelEditingTitle"
+                  @blur="saveTitle"
+                  class="text-xl font-bold text-gray-900 bg-white border-2 border-orange-500 rounded-lg px-3 py-1 focus:outline-none focus:ring-2 focus:ring-orange-500 flex-1 max-w-md"
+                  placeholder="Enter video title..."
+                />
+              </template>
+              <!-- Shared mode: plain title -->
+              <template v-else>
+                <h1 class="text-xl font-bold text-gray-900 truncate leading-tight">
+                  {{ video.title }}
+                </h1>
+              </template>
+              <!-- Zoom Status Badge (owner mode only) -->
+              <template v-if="!isSharedMode">
+                <div v-if="video.zoom_enabled" class="flex-shrink-0">
+                  <span
+                    v-if="video.zoom_status === 'processing'"
+                    class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-orange-100 text-orange-700"
+                  >
+                    <svg class="w-2.5 h-2.5 mr-0.5 animate-spin" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                    </svg>
+                    Zoom {{ video.zoom_progress || 0 }}%
+                  </span>
+                  <span
+                    v-else-if="video.is_zoom_ready"
+                    class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-green-100 text-green-700"
+                  >
+                    <svg class="w-2.5 h-2.5 mr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/>
+                    </svg>
+                    Zoom ({{ video.zoom_event_count }})
+                  </span>
+                  <span
+                    v-else-if="video.zoom_status === 'failed'"
+                    class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-red-100 text-red-700"
+                  >
+                    Zoom Failed
+                  </span>
+                  <span
+                    v-else-if="video.zoom_status === 'pending' && video.zoom_event_count > 0"
+                    class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-gray-100 text-gray-600"
+                  >
+                    Zoom Pending
+                  </span>
+                </div>
+                <span
+                  v-if="video.id && !video.is_public"
+                  class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-gray-100 text-gray-500 flex-shrink-0"
+                >
+                  <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" stroke-width="2"/>
+                    <path stroke-width="2" d="M7 11V7a5 5 0 0110 0v4"/>
+                  </svg>
+                  Private
+                </span>
+              </template>
+            </div>
+            <div class="flex items-center gap-3 text-xs text-gray-400">
+              <!-- Creator Identity (shared mode) -->
+              <template v-if="isSharedMode && video.user_name">
+                <div class="flex items-center gap-1.5">
+                  <img v-if="video.user_avatar" :src="video.user_avatar" :alt="video.user_name" class="w-4 h-4 rounded-full object-cover" />
+                  <div v-else class="w-4 h-4 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 text-[9px] font-bold">{{ (video.user_name || 'U').charAt(0).toUpperCase() }}</div>
+                  <span class="font-medium text-gray-500">{{ video.user_name }}</span>
+                </div>
+                <span>·</span>
+              </template>
+              <span class="flex items-center gap-1">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                {{ formatTimeAgo(video.created_at) }}
+              </span>
+              <span>·</span>
+              <span class="flex items-center gap-1">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                {{ video.views_count || 0 }} views
+              </span>
+            </div>
+          </div>
+
+          <!-- Right Actions -->
+          <div class="flex items-center gap-2 flex-shrink-0 ml-auto">
+          <!-- Editor Button (owner mode, paid users only) -->
           <router-link
-            v-if="auth.hasActiveSubscription.value"
+            v-if="!isSharedMode && auth.hasActiveSubscription.value"
             :to="`/video/${video.id}/edit`"
             class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5"
           >
@@ -131,7 +201,7 @@
                 </svg>
                 Copy link
               </button>
-              <button @click="copyEmbedCode; showShareDropdown = false" class="w-full px-4 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2.5">
+              <button v-if="!isSharedMode || isOwner" @click="copyEmbedCode; showShareDropdown = false" class="w-full px-4 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2.5">
                 <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
                 </svg>
@@ -141,7 +211,7 @@
           </div>
 
           <!-- Notifications -->
-          <NotificationBell />
+          <NotificationBell v-if="!isSharedMode || isAuthenticated" />
 
           <!-- Options Menu (three-dot) -->
           <div class="relative" ref="optionsMenuRef">
@@ -159,62 +229,66 @@
                 </svg>
                 Download
               </button>
-              <button @click="showDuplicateConfirm = true; showOptionsMenu = false" class="w-full px-4 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2.5">
-                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
-                </svg>
-                Duplicate
-              </button>
-              <button @click="startEditingTitle; showOptionsMenu = false" class="w-full px-4 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2.5">
-                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
-                </svg>
-                Rename
-              </button>
-              <button @click="handleDownloadCaptions; showOptionsMenu = false" class="w-full px-4 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2.5">
-                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <rect x="2" y="4" width="20" height="16" rx="2" stroke-width="2"/>
-                  <text x="12" y="15" text-anchor="middle" fill="currentColor" stroke="none" font-size="8" font-weight="bold">CC</text>
-                </svg>
-                Download Captions
-              </button>
-              <div class="my-1.5 border-t border-gray-100"></div>
-              <button @click="showPrivacyConfirm = true; showOptionsMenu = false" class="w-full px-4 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2.5">
-                <svg v-if="video.is_public" class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-                </svg>
-                <svg v-else class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <circle cx="12" cy="12" r="10" stroke-width="2"/>
-                  <path stroke-width="2" d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/>
-                </svg>
-                {{ video.is_public ? 'Make it private' : 'Make it public' }}
-              </button>
-              <button @click="showArchiveConfirm = true; showOptionsMenu = false" class="w-full px-4 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2.5">
-                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>
-                </svg>
-                Archive
-              </button>
-              <button @click="showDeleteConfirm = true; showOptionsMenu = false" class="w-full px-4 py-2 text-left text-xs text-red-600 hover:bg-red-50 flex items-center gap-2.5">
-                <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                </svg>
-                Delete
-              </button>
+              <!-- Owner-only actions -->
+              <template v-if="isOwner">
+                <button @click="showDuplicateConfirm = true; showOptionsMenu = false" class="w-full px-4 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2.5">
+                  <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                  </svg>
+                  Duplicate
+                </button>
+                <button @click="startEditingTitle; showOptionsMenu = false" class="w-full px-4 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2.5">
+                  <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                  </svg>
+                  Rename
+                </button>
+                <button v-if="!isSharedMode" @click="handleDownloadCaptions; showOptionsMenu = false" class="w-full px-4 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2.5">
+                  <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <rect x="2" y="4" width="20" height="16" rx="2" stroke-width="2"/>
+                    <text x="12" y="15" text-anchor="middle" fill="currentColor" stroke="none" font-size="8" font-weight="bold">CC</text>
+                  </svg>
+                  Download Captions
+                </button>
+                <div class="my-1.5 border-t border-gray-100"></div>
+                <button @click="showPrivacyConfirm = true; showOptionsMenu = false" class="w-full px-4 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2.5">
+                  <svg v-if="video.is_public" class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                  </svg>
+                  <svg v-else class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="10" stroke-width="2"/>
+                    <path stroke-width="2" d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/>
+                  </svg>
+                  {{ video.is_public ? 'Make it private' : 'Make it public' }}
+                </button>
+                <button @click="showArchiveConfirm = true; showOptionsMenu = false" class="w-full px-4 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2.5">
+                  <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>
+                  </svg>
+                  Archive
+                </button>
+                <button @click="showDeleteConfirm = true; showOptionsMenu = false" class="w-full px-4 py-2 text-left text-xs text-red-600 hover:bg-red-50 flex items-center gap-2.5">
+                  <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                  </svg>
+                  Delete
+                </button>
+              </template>
             </div>
           </div>
 
-          <router-link to="/profile" class="w-8 h-8 rounded-full bg-gray-100 border border-gray-200 ml-1.5 overflow-hidden flex-shrink-0">
+          <!-- Profile Avatar (owner mode only) -->
+          <router-link v-if="!isSharedMode" to="/profile" class="w-8 h-8 rounded-full bg-gray-100 border border-gray-200 ml-1.5 overflow-hidden flex-shrink-0">
             <img v-if="currentUser?.avatar" :src="currentUser.avatar" alt="Profile" class="w-full h-full object-cover opacity-90 hover:opacity-100 transition-opacity">
             <div v-else class="w-full h-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white text-[10px] font-semibold">
               {{ userInitial }}
             </div>
           </router-link>
-        </div>
+          </div><!-- end Right Actions -->
+        </div><!-- end nav inner flex -->
       </nav>
 
       <!-- Confirmation Dialogs -->
-      <!-- Archive Confirm -->
       <SBConfirmModal
         v-model="showArchiveConfirm"
         title="Archive Video"
@@ -223,8 +297,6 @@
         confirmText="Archive"
         @confirm="handleArchive"
       />
-
-      <!-- Duplicate Confirm -->
       <SBConfirmModal
         v-model="showDuplicateConfirm"
         title="Duplicate Video"
@@ -233,8 +305,6 @@
         confirmText="Duplicate"
         @confirm="handleDuplicate"
       />
-
-      <!-- Toggle Privacy Confirm -->
       <SBConfirmModal
         v-model="showPrivacyConfirm"
         :title="video.is_public ? 'Make Private' : 'Make Public'"
@@ -243,8 +313,6 @@
         :confirmText="video.is_public ? 'Make Private' : 'Make Public'"
         @confirm="handleTogglePrivacy"
       />
-
-      <!-- Delete Confirm -->
       <SBConfirmModal
         v-model="showDeleteConfirm"
         title="Delete Video"
@@ -268,7 +336,7 @@
           </div>
           <div class="p-5">
             <div class="flex gap-4 mb-6">
-              <a :href="`mailto:?subject=${encodeURIComponent(video.title || 'Check out this video')}&body=${encodeURIComponent(video.shareUrl || '')}`" class="flex-1 flex flex-col items-center gap-2 p-3 rounded-lg border border-gray-200 hover:border-orange-500 hover:bg-orange-50/50 transition-all group no-underline">
+              <a :href="`mailto:?subject=${encodeURIComponent(video.title || 'Check out this video')}&body=${encodeURIComponent(shareUrl || '')}`" class="flex-1 flex flex-col items-center gap-2 p-3 rounded-lg border border-gray-200 hover:border-orange-500 hover:bg-orange-50/50 transition-all group no-underline">
                 <div class="w-8 h-8 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center group-hover:scale-110 transition-transform">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
@@ -284,7 +352,7 @@
                 </div>
                 <span class="text-xs font-medium text-gray-600 group-hover:text-pink-700">{{ copiedEmbed ? 'Copied!' : 'Embed' }}</span>
               </button>
-              <a :href="`https://twitter.com/intent/tweet?url=${encodeURIComponent(video.shareUrl || '')}&text=${encodeURIComponent(video.title || 'Check out this video')}`" target="_blank" rel="noopener noreferrer" class="flex-1 flex flex-col items-center gap-2 p-3 rounded-lg border border-gray-200 hover:border-orange-500 hover:bg-orange-50/50 transition-all group no-underline">
+              <a :href="`https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl || '')}&text=${encodeURIComponent(video.title || 'Check out this video')}`" target="_blank" rel="noopener noreferrer" class="flex-1 flex flex-col items-center gap-2 p-3 rounded-lg border border-gray-200 hover:border-orange-500 hover:bg-orange-50/50 transition-all group no-underline">
                 <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform">
                   <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
@@ -297,7 +365,7 @@
             <label class="text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-2 block">Public Link</label>
             <div class="flex gap-2">
               <div class="flex-1 relative">
-                <input type="text" :value="video.shareUrl" class="w-full pl-9 pr-3 py-2 text-xs bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500 text-gray-600" readonly>
+                <input type="text" :value="shareUrl" class="w-full pl-9 pr-3 py-2 text-xs bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500 text-gray-600" readonly>
                 <svg class="w-3.5 h-3.5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
                 </svg>
@@ -307,63 +375,20 @@
               </button>
             </div>
 
-            <!-- Integration Sharing -->
-            <VideoShareIntegrations v-if="video.id" :videoId="video.id" />
+            <!-- Integration Sharing (owner mode only) -->
+            <VideoShareIntegrations v-if="!isSharedMode && video.id" :videoId="video.id" />
           </div>
         </div>
       </div>
 
 
       <!-- Main Layout -->
-      <main class="flex-1 flex flex-col lg:flex-row h-full z-10 relative overflow-hidden">
+      <main class="relative z-10" style="height: calc(100vh - 80px)">
 
-        <!-- Center Stage: Video Player -->
-        <div class="flex-1 flex flex-col items-center justify-center p-4 lg:p-8 relative bg-[#FAFAFA]/50 overflow-hidden overflow-y-auto">
+        <!-- Video Player — full width -->
+        <div class="h-full flex flex-col items-center justify-center p-6 bg-[#FAFAFA]/50 overflow-y-auto">
 
-          <div class="w-full max-w-[min(calc((100vh-280px)*16/9),100%)] flex flex-col">
-
-            <!-- Video Title Above Container -->
-            <div class="w-full mb-4">
-              <div class="flex items-center gap-3 mb-1">
-                <h1
-                  v-if="!isEditingTitle"
-                  @click="startEditingTitle"
-                  class="group/title flex items-center gap-2 text-2xl font-bold text-gray-900 tracking-tight leading-tight cursor-pointer hover:text-orange-600 transition-colors"
-                  title="Click to edit title"
-                >
-                  {{ video.title }}
-                  <svg class="w-4 h-4 opacity-0 group-hover/title:opacity-40 transition-opacity flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
-                  </svg>
-                </h1>
-                <input
-                  v-else
-                  ref="titleInput"
-                  v-model="editedTitle"
-                  @keydown.enter="saveTitle"
-                  @keydown.escape="cancelEditingTitle"
-                  @blur="saveTitle"
-                  class="text-2xl font-bold text-gray-900 bg-white border-2 border-orange-500 rounded-lg px-3 py-1 focus:outline-none focus:ring-2 focus:ring-orange-500 flex-1"
-                  placeholder="Enter video title..."
-                />
-              </div>
-              <div class="flex items-center gap-3 text-sm text-gray-500">
-                <span class="flex items-center gap-1.5">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                  </svg>
-                  {{ formatTimeAgo(video.createdAt) }}
-                </span>
-                <span class="w-1 h-1 rounded-full bg-gray-300"></span>
-                <span class="flex items-center gap-1.5">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                  </svg>
-                  {{ video.views_count || 0 }} views
-                </span>
-              </div>
-            </div>
+          <div class="w-full flex flex-col" style="max-width: min(calc((100vh - 200px) * 16 / 9), 100%)">
 
             <!-- Video Container - Responsive with 16:9 aspect ratio -->
             <div
@@ -371,15 +396,28 @@
               :class="isFullscreen ? 'rounded-none !aspect-auto h-full' : ''"
               :style="{
                 aspectRatio: isFullscreen ? 'auto' : '16 / 9',
-                maxHeight: isFullscreen ? 'none' : 'calc(100vh - 280px)',
-                maxWidth: isFullscreen ? 'none' : 'calc((100vh - 280px) * 16 / 9)',
+                maxHeight: isFullscreen ? 'none' : 'calc(100vh - 200px)',
               }"
               ref="playerContainer"
               @mousemove="showControls"
               @mouseleave="hideControlsDelayed"
             >
 
-              <!-- Blurred thumbnail backdrop (behind video, visible only in aspect-ratio gaps) -->
+              <!-- Sidebar Toggle — top right of video -->
+              <button
+                @click.stop="sidebarVisible = !sidebarVisible"
+                class="absolute top-3 right-3 z-40 w-8 h-8 flex items-center justify-center rounded-lg bg-black/50 backdrop-blur-sm text-white/80 hover:text-white hover:bg-black/70 transition-all"
+                :title="sidebarVisible ? 'Hide sidebar' : 'Show sidebar'"
+              >
+                <svg v-if="!sidebarVisible" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 5h18M3 12h18M3 19h18"/>
+                </svg>
+                <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </button>
+
+              <!-- Blurred thumbnail backdrop -->
               <div v-if="video.thumbnail && !isFullscreen" class="absolute inset-0 z-0 scale-110 blur-2xl" :style="{ backgroundImage: `url(${video.thumbnail})`, backgroundSize: 'cover', backgroundPosition: 'center' }"></div>
               <div v-if="video.thumbnail && !isFullscreen" class="absolute inset-0 z-0 bg-black/50"></div>
 
@@ -387,20 +425,6 @@
               <div v-if="videoLoading" class="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
                 <p class="text-white/70 text-sm font-medium">Loading video...</p>
               </div>
-
-              <!-- Bunny Encoding Progress (disabled - Bunny costs too high) -->
-              <!-- <div
-                v-if="isBunnyVideo && bunnyStatus === 'transcoding' && !isPlaying"
-                class="absolute top-4 left-4 z-20 bg-black/70 backdrop-blur-sm rounded-lg px-3 py-2 flex items-center gap-2"
-              >
-                <div class="w-4 h-4 border-2 border-orange-500/30 border-t-orange-500 rounded-full animate-spin"></div>
-                <div class="text-white text-xs">
-                  <span class="font-medium">Encoding: {{ bunnyEncodeProgress }}%</span>
-                  <span v-if="bunnyAvailableResolutions.length > 0" class="text-white/60 ml-2">
-                    ({{ bunnyAvailableResolutions.join(', ') }} ready)
-                  </span>
-                </div>
-              </div> -->
 
               <video
                 ref="videoRef"
@@ -487,50 +511,54 @@
                 </div>
               </transition>
 
-              <!-- Gradient shadow behind controls -->
-              <div class="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-black/60 via-black/20 to-transparent z-20 pointer-events-none"></div>
+              <!-- Gradient shadow behind controls — only on hover -->
+              <div
+                class="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-black/60 via-black/20 to-transparent z-20 pointer-events-none transition-opacity duration-300"
+                :class="controlsVisible ? 'opacity-100' : 'opacity-0'"
+              ></div>
 
               <!-- Custom Floating Controls -->
               <div class="absolute bottom-4 left-4 right-4 z-30">
-                <div class="flex flex-col gap-3 px-2">
+                <div
+                  class="flex flex-col gap-3 px-2 controls-panel"
+                  :class="controlsVisible ? 'controls-visible' : 'controls-hidden'"
+                >
                   <!-- Captions Bar -->
                   <div v-if="captionsEnabled && activeCaptionCue" class="flex justify-center pointer-events-none">
                     <div class="caption-bar">
                       <span v-for="(word, wi) in activeCaptionCue.words" :key="wi" class="caption-word" :class="word.active ? 'caption-active' : 'caption-inactive'">{{ word.text }}</span>
                     </div>
                   </div>
-                  <!-- Progress Bar — always visible -->
+                  <!-- Progress Bar — always visible, grows on hover -->
                   <div
-                    class="relative h-1.5 w-full group/seek cursor-pointer flex items-center"
+                    class="relative h-7 w-full group/seek cursor-pointer flex items-center"
                     @click.stop="seek"
                     @mousedown.stop="startSeeking"
                     @mousemove="updateHoverTime"
                     @mouseleave="hoverTime = null"
                     ref="progressBar"
                   >
-                    <div class="absolute left-0 h-full bg-white/30 rounded-full" :style="{ width: bufferedPercent + '%' }"></div>
-                    <div class="absolute left-0 h-full bg-orange-500 rounded-full shadow-[0_0_8px_rgba(249,115,22,0.4)]" :style="{ width: progressPercent + '%' }"></div>
-                    <div
-                      class="absolute w-3.5 h-3.5 bg-white rounded-full shadow-lg scale-0 group-hover/seek:scale-100 transition-transform flex items-center justify-center"
-                      :style="{ left: `calc(${progressPercent}% - 7px)` }"
-                    >
-                      <div class="w-1.5 h-1.5 bg-orange-600 rounded-full"></div>
+                    <!-- Track: grows from thin to thick on hover, anchored to bottom -->
+                    <div class="absolute left-0 right-0 bottom-2 h-1 group-hover/seek:h-3.5 transition-all duration-200 ease-out rounded-sm overflow-hidden bg-gray-500/70">
+                      <div class="absolute left-0 h-full bg-gray-300/40" :style="{ width: bufferedPercent + '%' }"></div>
+                      <div class="absolute left-0 h-full bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.4)]" :style="{ width: progressPercent + '%' }"></div>
                     </div>
                     <!-- Hover time tooltip -->
                     <div
                       v-if="hoverTime !== null"
-                      class="absolute -top-8 px-2 py-1 bg-black text-white text-xs rounded transform -translate-x-1/2 pointer-events-none"
+                      class="absolute -top-8 px-2 py-1 bg-black/80 text-white text-xs rounded transform -translate-x-1/2 pointer-events-none whitespace-nowrap"
                       :style="{ left: hoverPercent + '%' }"
                     >
                       {{ formatTime(hoverTime) }}
                     </div>
+                    <!-- Duration label: fades in on hover, top-right -->
+                    <div class="absolute right-0 -top-7 opacity-0 group-hover/seek:opacity-100 transition-opacity duration-200 text-white/70 text-[11px] font-mono pointer-events-none whitespace-nowrap">
+                      {{ formatTime(currentTime) }} / {{ formatTime(duration) }}
+                    </div>
                   </div>
 
-                  <!-- Control Buttons — visible on hover -->
-                  <transition name="fade">
-                  <div v-show="controlsVisible" class="flex flex-col gap-2">
-                    <!-- Control Buttons -->
-                    <div class="flex items-center justify-between text-white/90 pt-1 px-1">
+                  <!-- Control Buttons -->
+                  <div class="controls-row flex items-center justify-between text-white/90 bg-black/40 backdrop-blur-sm rounded-lg px-3 py-2">
                       <div class="flex items-center gap-5">
                         <button @click.stop="togglePlay" class="hover:text-orange-400 hover:scale-110 transition-all">
                           <svg v-if="isPlaying" class="w-6 h-6 fill-current" viewBox="0 0 24 24">
@@ -585,7 +613,6 @@
                             v-show="showQualityMenu"
                             class="absolute bottom-full right-0 mb-2 py-2 bg-gray-900 rounded-xl shadow-2xl border border-white/20 min-w-[100px] z-50"
                           >
-                            <!-- Auto: let HLS.js adaptively choose quality -->
                             <button
                               @click.stop.prevent="setQuality(-1)"
                               class="w-full px-3 py-2 text-left text-xs hover:bg-white/10 transition-colors"
@@ -593,7 +620,6 @@
                             >
                               Auto
                             </button>
-                            <!-- Qualities shown highest-first (4K → 1080P → 720P) -->
                             <button
                               v-for="quality in [...availableQualities].reverse()"
                               :key="quality.index"
@@ -628,6 +654,18 @@
                             </button>
                           </div>
                         </div>
+                        <!-- Skip Silence Toggle -->
+                        <button
+                          @click.stop="toggleSkipSilence"
+                          class="hover:text-white hover:scale-110 transition-transform relative"
+                          :class="skipSilenceEnabled ? 'text-orange-400' : 'opacity-70 hover:opacity-100'"
+                          :title="skipSilenceEnabled ? 'Disable skip silence' : 'Skip silence'"
+                        >
+                          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M13 5l7 7-7 7M5 5l7 7-7 7"/>
+                          </svg>
+                          <div v-if="skipSilenceEnabled" class="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-3 h-0.5 bg-orange-400 rounded-full"></div>
+                        </button>
                         <!-- Captions Toggle -->
                         <button
                           v-if="captionsUrl"
@@ -652,26 +690,41 @@
                           </svg>
                         </button>
                       </div>
-                    </div>
                   </div>
-                  </transition>
                 </div>
               </div>
             </div>
 
-            <!-- Reaction Bar - Horizontal, Bottom Center of Video -->
+            <!-- Reaction Bar -->
             <div class="mt-4 flex justify-center z-30 relative">
               <div class="flex items-center gap-1 bg-white border border-gray-200/60 rounded-full shadow-sm px-2 py-1.5">
-                <button
-                  v-for="emoji in reactions"
-                  :key="emoji.icon"
-                  @click="addReaction(emoji.icon)"
-                  class="w-9 h-9 rounded-full hover:bg-gray-100 flex items-center justify-center text-lg transition-transform hover:scale-110 active:scale-95"
-                  :class="emoji.selected ? 'bg-orange-100' : ''"
-                  :title="emoji.icon"
-                >
-                  {{ emoji.icon }}
-                </button>
+                <!-- Shared mode: API-based reactions -->
+                <template v-if="isSharedMode">
+                  <button
+                    v-for="(data, type) in sharedReactions"
+                    :key="type"
+                    @click="toggleSharedReaction(type)"
+                    class="w-7 h-7 rounded-full hover:bg-gray-100 flex items-center justify-center text-sm transition-transform hover:-translate-y-0.5 active:scale-95 relative bg-white border border-gray-200/60"
+                    :class="userReactions.includes(type) ? 'bg-orange-100 border-orange-300' : ''"
+                    :title="type"
+                  >
+                    {{ data.emoji }}
+                    <span v-if="data.count > 0" class="absolute -top-1 -right-1 bg-orange-600 text-white text-[9px] font-bold rounded-full min-w-[14px] h-3.5 flex items-center justify-center px-0.5">{{ data.count }}</span>
+                  </button>
+                </template>
+                <!-- Owner mode: local reactions -->
+                <template v-else>
+                  <button
+                    v-for="emoji in reactions"
+                    :key="emoji.icon"
+                    @click="addReaction(emoji.icon)"
+                    class="w-9 h-9 rounded-full hover:bg-gray-100 flex items-center justify-center text-lg transition-transform hover:scale-110 active:scale-95"
+                    :class="emoji.selected ? 'bg-orange-100' : ''"
+                    :title="emoji.icon"
+                  >
+                    {{ emoji.icon }}
+                  </button>
+                </template>
                 <div class="w-px h-5 bg-gray-200 mx-0.5"></div>
                 <button @click="copyShareLink" class="w-9 h-9 rounded-full hover:bg-gray-50 hover:text-orange-600 flex items-center justify-center text-gray-400 transition-colors" title="Copy Link">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -683,29 +736,27 @@
           </div>
         </div>
 
-        <!-- Sidebar -->
-        <aside class="relative flex flex-col z-40 bg-white border-l border-gray-200 transition-all duration-300 ease-in-out" :class="sidebarVisible ? 'w-full lg:w-[400px]' : 'w-0 lg:w-10'">
-          <!-- Sidebar Toggle Button -->
-          <button
-            @click="toggleSidebar"
-            class="hidden lg:flex absolute -left-3 top-1/2 -translate-y-1/2 z-50 items-center justify-center w-6 h-12 bg-white border border-gray-200 rounded-l-lg shadow-sm hover:bg-gray-50 transition-all"
-            :title="sidebarVisible ? 'Collapse sidebar' : 'Expand sidebar'"
-          >
-            <svg class="w-3.5 h-3.5 text-gray-500 transition-transform" :class="sidebarVisible ? '' : 'rotate-180'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-            </svg>
-          </button>
-
-          <template v-if="sidebarVisible">
-
+        <!-- Sidebar Overlay — slides in from right -->
+        <aside
+          class="sidebar-panel absolute top-0 right-0 h-full w-[380px] flex flex-col bg-white border-l border-gray-200 shadow-2xl z-30"
+          :class="sidebarVisible ? 'sidebar-open' : 'sidebar-closed'"
+        >
           <!-- Functional Tabs -->
-          <div class="grid gap-0 px-4 py-3 border-b border-gray-100 sticky top-0 bg-white z-10" :class="jiraConnected ? 'grid-cols-3' : 'grid-cols-2'">
+          <div class="grid gap-0 px-4 py-3 border-b border-gray-100 sticky top-0 bg-white z-10" :class="tabGridCols">
             <button
               @click="activeTab = 'transcript'"
               class="px-3 py-2 text-xs rounded-lg transition-all text-center truncate"
               :class="activeTab === 'transcript' ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'"
             >
               Transcript
+            </button>
+            <button
+              v-if="showSummaryTab"
+              @click="activeTab = 'summary'"
+              class="px-3 py-2 text-xs rounded-lg transition-all text-center truncate"
+              :class="activeTab === 'summary' ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'"
+            >
+              Summary
             </button>
             <button
               @click="activeTab = 'comments'"
@@ -716,7 +767,7 @@
               <span v-if="comments.length" class="text-[10px] text-gray-400 font-normal">{{ comments.length }}</span>
             </button>
             <button
-              v-if="jiraConnected"
+              v-if="!isSharedMode && jiraConnected"
               @click="activeTab = 'bugs'; loadBugTabData()"
               class="px-3 py-2 text-xs rounded-lg transition-all text-center truncate flex items-center justify-center gap-1"
               :class="activeTab === 'bugs' ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'"
@@ -748,18 +799,18 @@
                   class="group flex gap-2.5 items-start"
                 >
                   <div class="flex-shrink-0 pt-0.5">
-                    <img v-if="comment.avatar" :src="comment.avatar" class="w-7 h-7 rounded-full object-cover ring-1 ring-gray-100">
+                    <img v-if="comment.author_avatar" :src="comment.author_avatar" class="w-7 h-7 rounded-full object-cover ring-1 ring-gray-100">
                     <div v-else class="w-7 h-7 rounded-full bg-gradient-to-br from-orange-100 to-amber-100 flex items-center justify-center text-orange-600 text-[10px] font-bold ring-1 ring-orange-200/40">
-                      {{ comment.author.charAt(0).toUpperCase() }}
+                      {{ (comment.author_name || 'U').charAt(0).toUpperCase() }}
                     </div>
                   </div>
                   <div class="flex-1 min-w-0">
                     <div class="bg-gray-50 rounded-xl rounded-tl-sm px-3 py-2">
                       <div class="flex items-center gap-1.5 mb-0.5">
-                        <span class="text-[11px] font-semibold text-gray-900">{{ comment.author }}</span>
-                        <span class="text-[9px] text-gray-400">{{ comment.time }}</span>
+                        <span class="text-[11px] font-semibold text-gray-900">{{ comment.author_name }}</span>
+                        <span class="text-[9px] text-gray-400">{{ formatCommentTime(comment.created_at) }}</span>
                       </div>
-                      <p class="text-[12px] text-gray-700 leading-relaxed">{{ comment.text }}</p>
+                      <p class="text-[12px] text-gray-700 leading-relaxed">{{ comment.content }}</p>
                     </div>
                     <button
                       v-if="comment.timestamp_seconds != null"
@@ -775,8 +826,8 @@
 
             <!-- TAB: TRANSCRIPT -->
             <div v-show="activeTab === 'transcript'" class="flex flex-col min-h-full">
-              <!-- No audio -->
-              <div v-if="transcriptionStatus === 'skipped'" class="flex flex-col items-center justify-center h-48 text-center px-5">
+              <!-- No audio (owner mode) -->
+              <div v-if="!isSharedMode && transcriptionStatus === 'skipped'" class="flex flex-col items-center justify-center h-48 text-center px-5">
                 <svg class="w-8 h-8 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/>
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"/>
@@ -786,7 +837,7 @@
 
               <!-- Transcript content with timestamps -->
               <div v-else-if="transcriptionSegments && transcriptionSegments.length > 0" class="flex flex-col h-full">
-                <!-- Toolbar: Copy / Download / Search -->
+                <!-- Toolbar -->
                 <div class="sticky top-0 bg-white z-10 border-b border-gray-100 flex-shrink-0">
                   <div class="flex items-center gap-2 px-5 py-2.5">
                     <button
@@ -798,38 +849,41 @@
                       </svg>
                       {{ copiedTranscript ? 'Copied!' : 'Copy' }}
                     </button>
-                    <div class="relative export-menu-container">
+                    <!-- Export (owner mode only) -->
+                    <template v-if="!isSharedMode">
+                      <div class="relative export-menu-container">
+                        <button
+                          @click="showExportMenu = !showExportMenu"
+                          class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200"
+                        >
+                          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                          </svg>
+                          Download
+                        </button>
+                        <div v-if="showExportMenu" class="absolute left-0 mt-1 w-40 bg-white rounded-lg shadow-lg border border-gray-100 py-1 z-20">
+                          <button @click="exportTranscript('txt')" class="w-full px-3 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2">
+                            Plain Text (.txt)
+                          </button>
+                          <button @click="exportTranscript('srt')" class="w-full px-3 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2">
+                            Subtitles (.srt)
+                          </button>
+                        </div>
+                      </div>
+                      <div class="flex-1"></div>
                       <button
-                        @click="showExportMenu = !showExportMenu"
+                        @click="showTranscriptSearch = !showTranscriptSearch"
                         class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200"
                       >
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                         </svg>
-                        Download
+                        Search
                       </button>
-                      <div v-if="showExportMenu" class="absolute left-0 mt-1 w-40 bg-white rounded-lg shadow-lg border border-gray-100 py-1 z-20">
-                        <button @click="exportTranscript('txt')" class="w-full px-3 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2">
-                          Plain Text (.txt)
-                        </button>
-                        <button @click="exportTranscript('srt')" class="w-full px-3 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2">
-                          Subtitles (.srt)
-                        </button>
-                      </div>
-                    </div>
-                    <div class="flex-1"></div>
-                    <button
-                      @click="showTranscriptSearch = !showTranscriptSearch"
-                      class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200"
-                    >
-                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                      </svg>
-                      Search
-                    </button>
+                    </template>
                   </div>
-                  <!-- Collapsible search bar -->
-                  <div v-if="showTranscriptSearch" class="px-5 pb-2.5">
+                  <!-- Collapsible search bar (owner mode) -->
+                  <div v-if="!isSharedMode && showTranscriptSearch" class="px-5 pb-2.5">
                     <div class="relative">
                       <input
                         v-model="transcriptSearch"
@@ -849,7 +903,7 @@
                     </div>
                   </div>
                 </div>
-                <!-- Segment rows: timestamp | text -->
+                <!-- Segment rows -->
                 <div class="flex-1 overflow-y-auto" ref="transcriptContainer">
                   <div
                     v-for="(segment, index) in filteredSegments"
@@ -900,6 +954,17 @@
                 <p class="text-[12px] text-gray-600 leading-relaxed whitespace-pre-wrap">{{ transcription }}</p>
               </div>
 
+              <!-- Empty state -->
+              <div v-else class="flex flex-col items-center justify-center h-48 text-center px-4">
+                <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center mb-3">
+                  <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                  </svg>
+                </div>
+                <p class="text-sm font-medium text-gray-900">No Transcript</p>
+                <p class="text-xs text-gray-500 mt-0.5">Not yet generated</p>
+              </div>
+
               <!-- AI Chat about transcript -->
               <div v-if="transcriptionSegments && transcriptionSegments.length > 0" class="border-t border-gray-100">
                 <button
@@ -919,7 +984,6 @@
                 </button>
 
                 <div v-show="showTranscriptChat" class="px-4 pb-3">
-                  <!-- Chat messages -->
                   <div v-if="transcriptChatMessages.length > 0" class="space-y-2 mb-3 max-h-48 overflow-y-auto">
                     <div
                       v-for="(msg, i) in transcriptChatMessages"
@@ -948,7 +1012,6 @@
                     </div>
                   </div>
 
-                  <!-- Input -->
                   <div v-if="transcriptChatRemaining > 0" class="flex gap-2">
                     <input
                       v-model="transcriptChatInput"
@@ -971,8 +1034,41 @@
               </div>
             </div>
 
-            <!-- TAB: BUGS -->
-            <div v-show="activeTab === 'bugs'" class="flex flex-col min-h-full">
+            <!-- TAB: SUMMARY -->
+            <div v-show="activeTab === 'summary'" class="flex flex-col min-h-full">
+              <div v-if="summary" class="p-3">
+                <div class="flex items-center justify-between mb-3">
+                  <div class="flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-orange-500" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/>
+                    </svg>
+                    <span class="text-xs font-semibold text-gray-900">AI Summary</span>
+                  </div>
+                  <button
+                    @click="copySummary"
+                    class="flex items-center gap-1 px-2 py-1 text-[10px] font-medium text-gray-500 hover:text-orange-600 hover:bg-orange-50 rounded-md transition-colors"
+                  >
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                    </svg>
+                    {{ copiedSummary ? 'Copied!' : 'Copy' }}
+                  </button>
+                </div>
+                <div class="prose prose-sm max-w-none text-gray-600 leading-relaxed text-[12px]" v-html="formattedSummary"></div>
+              </div>
+              <div v-else class="flex flex-col items-center justify-center h-48 text-center px-4">
+                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-orange-100 to-amber-100 flex items-center justify-center mb-3">
+                  <svg class="w-5 h-5 text-orange-500" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/>
+                  </svg>
+                </div>
+                <p class="text-sm font-medium text-gray-900">No Summary</p>
+                <p class="text-xs text-gray-500 mt-0.5">Not yet generated</p>
+              </div>
+            </div>
+
+            <!-- TAB: BUGS (owner mode only) -->
+            <div v-if="!isSharedMode" v-show="activeTab === 'bugs'" class="flex flex-col min-h-full">
               <!-- Processing state -->
               <div v-if="bugDetectionStatus === 'processing'" class="flex flex-col items-center justify-center h-64 text-center px-5">
                 <div class="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mb-4 animate-pulse">
@@ -985,7 +1081,6 @@
                 <p class="text-sm text-gray-500 mt-1">AI is analyzing your transcript for bugs</p>
               </div>
 
-              <!-- Skipped - no audio -->
               <div v-else-if="bugDetectionStatus === 'skipped'" class="flex flex-col items-center justify-center h-64 text-center px-5">
                 <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
                   <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -997,7 +1092,6 @@
                 <p class="text-sm text-gray-500 mt-1">Bug detection is not available for videos without audio</p>
               </div>
 
-              <!-- Pending state -->
               <div v-else-if="bugDetectionStatus === 'pending'" class="flex flex-col items-center justify-center h-64 text-center px-5">
                 <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
                   <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1008,7 +1102,6 @@
                 <p class="text-sm text-gray-500 mt-1">Bug detection will start after transcription and summary complete</p>
               </div>
 
-              <!-- Failed state -->
               <div v-else-if="bugDetectionStatus === 'failed'" class="flex flex-col items-center justify-center h-64 text-center px-5">
                 <div class="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mb-4">
                   <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1019,7 +1112,6 @@
                 <p class="text-sm text-gray-500 mt-1">{{ bugDetectionError || 'Something went wrong' }}</p>
               </div>
 
-              <!-- No bugs found -->
               <div v-else-if="bugDetectionStatus === 'completed' && detectedBugs.length === 0" class="flex flex-col items-center justify-center h-64 text-center px-5">
                 <div class="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mb-4">
                   <svg class="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1030,7 +1122,6 @@
                 <p class="text-sm text-gray-500 mt-1">No issues were found in the video transcript</p>
               </div>
 
-              <!-- Bugs found -->
               <div v-else-if="detectedBugs.length > 0" class="p-4 space-y-3">
                 <div class="flex items-center justify-between mb-2">
                   <p class="text-xs text-gray-500">
@@ -1038,7 +1129,6 @@
                   </p>
                 </div>
 
-                <!-- Jira project selector -->
                 <div v-if="jiraProjects.length > 0" class="mb-3">
                   <label class="text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-1 block">Jira Project</label>
                   <select
@@ -1052,18 +1142,15 @@
                   </select>
                 </div>
 
-                <!-- Bug cards -->
                 <div
                   v-for="bug in detectedBugs"
                   :key="bug.id"
                   class="border border-gray-200 rounded-lg overflow-hidden transition-all hover:border-gray-300"
                 >
-                  <!-- Bug card header -->
                   <button
                     @click="expandedBugId = expandedBugId === bug.id ? null : bug.id"
                     class="w-full px-4 py-3 flex items-center gap-3 text-left hover:bg-gray-50 transition-colors"
                   >
-                    <!-- Severity dot -->
                     <span
                       class="w-2.5 h-2.5 rounded-full flex-shrink-0"
                       :class="{
@@ -1096,23 +1183,17 @@
                     </svg>
                   </button>
 
-                  <!-- Bug card details (expanded) -->
                   <div v-if="expandedBugId === bug.id" class="px-4 pb-4 border-t border-gray-100 space-y-3">
-                    <!-- Description -->
                     <div v-if="bug.description" class="pt-3">
                       <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Description</p>
                       <p class="text-sm text-gray-700 leading-relaxed">{{ bug.description }}</p>
                     </div>
-
-                    <!-- Steps to reproduce -->
                     <div v-if="bug.steps_to_reproduce && bug.steps_to_reproduce.length > 0">
                       <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Steps to Reproduce</p>
                       <ol class="list-decimal list-inside text-sm text-gray-700 space-y-1">
                         <li v-for="(step, i) in bug.steps_to_reproduce" :key="i">{{ step }}</li>
                       </ol>
                     </div>
-
-                    <!-- Mentioned at timestamp -->
                     <div v-if="bug.mentioned_at_seconds != null">
                       <button
                         @click="seekToTime(bug.mentioned_at_seconds)"
@@ -1121,8 +1202,6 @@
                         Mentioned at {{ formatTime(bug.mentioned_at_seconds) }}
                       </button>
                     </div>
-
-                    <!-- Create in Jira / View in Jira -->
                     <div class="pt-2">
                       <a
                         v-if="bug.jira_url"
@@ -1171,51 +1250,60 @@
 
           <!-- Comment Input -->
           <div v-show="activeTab === 'comments'" class="px-3 py-2.5 bg-white border-t border-gray-100 z-20">
-            <div class="flex items-end gap-2">
-              <div class="flex-1 relative">
-                <textarea
-                  v-model="newComment"
-                  rows="1"
-                  placeholder="Write a message..."
-                  @keydown.enter.exact.prevent="addComment"
-                  class="w-full bg-gray-50 border border-gray-200 text-[12px] text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400 rounded-xl px-3 py-2 resize-none min-h-[36px] max-h-[80px] transition-colors"
-                ></textarea>
-                <span v-if="currentTime > 0" class="absolute right-2 bottom-1.5 text-[9px] text-gray-400 font-mono pointer-events-none">
-                  @ {{ formatTime(currentTime) }}
-                </span>
+            <!-- Authenticated users -->
+            <div v-if="isAuthenticated">
+              <div class="flex items-end gap-2">
+                <div class="flex-1 relative">
+                  <textarea
+                    v-model="newComment"
+                    rows="1"
+                    placeholder="Write a message..."
+                    @keydown.enter.exact.prevent="addComment"
+                    class="w-full bg-gray-50 border border-gray-200 text-[12px] text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400 rounded-xl px-3 py-2 resize-none min-h-[36px] max-h-[80px] transition-colors"
+                  ></textarea>
+                  <span v-if="currentTime > 0" class="absolute right-2 bottom-1.5 text-[9px] text-gray-400 font-mono pointer-events-none">
+                    @ {{ formatTime(currentTime) }}
+                  </span>
+                </div>
+                <button
+                  @click="addComment"
+                  :disabled="!newComment.trim() || isSavingComment"
+                  class="bg-orange-600 text-white p-2 rounded-xl hover:bg-orange-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed flex-shrink-0"
+                >
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                  </svg>
+                </button>
               </div>
+            </div>
+            <!-- Sign In Prompt (shared mode, non-authenticated) -->
+            <div v-else-if="isSharedMode" class="p-2.5 bg-gray-50 rounded-xl border border-gray-200">
+              <p class="text-gray-500 text-[10px] mb-1.5 text-center">Sign in to comment</p>
               <button
-                @click="addComment"
-                :disabled="!newComment.trim() || isSavingComment"
-                class="bg-orange-600 text-white p-2 rounded-xl hover:bg-orange-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed flex-shrink-0"
+                @click="loginToComment"
+                class="flex items-center justify-center w-full px-3 py-1.5 text-[11px] font-medium text-gray-700 bg-white rounded-lg hover:bg-gray-100 transition-colors border border-gray-200"
               >
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                <svg class="w-3.5 h-3.5 mr-1.5" viewBox="0 0 24 24">
+                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                 </svg>
+                Sign in with Google
               </button>
             </div>
           </div>
-          </template>
         </aside>
 
       </main>
     </template>
-
-    <!-- Delete Video Modal (legacy - kept for compatibility) -->
-    <SBDeleteModal
-      v-model="showDeleteModal"
-      title="Delete Video"
-      message="Are you sure you want to delete this video? This cannot be undone."
-      :loading="isDeleting"
-      @confirm="confirmDeleteVideo"
-      @cancel="showDeleteModal = false"
-    />
 
     <!-- Toast -->
     <transition name="toast">
       <div
         v-if="toast"
         class="fixed bottom-8 left-1/2 -translate-x-1/2 px-5 py-3 bg-white text-gray-900 rounded-xl text-sm font-medium shadow-2xl border border-gray-200 flex items-center gap-2 z-[100]"
+        :class="isSharedMode && !isAuthenticated ? 'bottom-20' : 'bottom-8'"
       >
         <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
           <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
@@ -1223,6 +1311,25 @@
         {{ toast }}
       </div>
     </transition>
+
+    <!-- Signup CTA Banner (shared mode, non-authenticated users) -->
+    <div v-if="isSharedMode && !isAuthenticated && !loading" class="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-t border-gray-200">
+      <div class="max-w-5xl mx-auto px-3 py-2 flex items-center justify-between gap-3">
+        <div class="flex items-center gap-2 min-w-0">
+          <img src="/logo.png" alt="OpenKap" class="w-5 h-5 rounded-md flex-shrink-0" />
+          <p class="text-xs text-gray-600 truncate">
+            <span class="font-semibold text-gray-900">Made with OpenKap</span>
+            <span class="hidden sm:inline"> — Free screen recording</span>
+          </p>
+        </div>
+        <a
+          href="/login"
+          class="flex-shrink-0 inline-flex items-center px-3 py-1.5 bg-orange-600 hover:bg-orange-700 text-white text-xs font-medium rounded-md transition-colors"
+        >
+          Try Free
+        </a>
+      </div>
+    </div>
 
   </div>
 </template>
@@ -1234,7 +1341,6 @@ import { useAuth } from '@/stores/auth'
 import { useBranding } from '@/composables/useBranding'
 import videoService from '@/services/videoService'
 import integrationService from '@/services/integrationService'
-import SBDeleteModal from '@/components/Global/SBDeleteModal.vue'
 import SBConfirmModal from '@/components/Global/SBConfirmModal.vue'
 import VideoShareIntegrations from '@/components/VideoShareIntegrations.vue'
 import NotificationBell from '@/components/Global/NotificationBell.vue'
@@ -1248,7 +1354,6 @@ const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8888'
 export default {
   name: 'VideoPlayerView',
   components: {
-    SBDeleteModal,
     SBConfirmModal,
     VideoShareIntegrations,
     NotificationBell
@@ -1258,6 +1363,11 @@ export default {
     const auth = useAuth()
     const branding = useBranding()
     const { trackDownload } = useDownloadTracker()
+
+    // Mode detection
+    const isSharedMode = computed(() => !!route.params.token)
+    const token = computed(() => route.params.token)
+
     const isAuthenticated = computed(() => auth.isAuthenticated.value)
     const currentUser = computed(() => auth.user.value)
     const userInitial = computed(() => (currentUser.value?.name || 'U').charAt(0).toUpperCase())
@@ -1297,9 +1407,6 @@ export default {
     const isLoadingComments = ref(false)
     const isSavingComment = ref(false)
 
-    const showDeleteModal = ref(false)
-    const isDeleting = ref(false)
-
     const isEditingTitle = ref(false)
     const editedTitle = ref('')
     const isSavingTitle = ref(false)
@@ -1321,6 +1428,9 @@ export default {
       sidebarVisible.value = !sidebarVisible.value
       localStorage.setItem('sidebar_visible', sidebarVisible.value)
     }
+
+    // Ownership check
+    const isOwner = computed(() => currentUser.value?.id && video.value?.user_id && currentUser.value.id === video.value.user_id)
 
     // Transcription state
     const transcription = ref(null)
@@ -1358,9 +1468,9 @@ export default {
     // Captions state
     const captionsEnabled = ref(false)
     const captionsUrl = computed(() => {
-      if (transcriptionStatus.value !== 'completed') return null
+      if (!isSharedMode.value && transcriptionStatus.value !== 'completed') return null
       if (!transcriptionSegments.value || transcriptionSegments.value.length === 0) return null
-      return true // just indicates captions are available
+      return true
     })
 
     // Build caption cues with word-level timing from segments
@@ -1373,7 +1483,6 @@ export default {
         const text = (seg.text || '').trim()
         if (!text) continue
 
-        // Use real word timestamps when available
         if (seg.words && seg.words.length > 0) {
           let cueWords = []
           let cueStart = null
@@ -1399,7 +1508,6 @@ export default {
           continue
         }
 
-        // Fallback: no word timestamps — split by duration
         const dur = seg.end - seg.start
         if (dur <= MAX_CUE) {
           const splitWords = text.split(/\s+/)
@@ -1439,7 +1547,6 @@ export default {
       return cues
     })
 
-    // Find active cue and highlight words by their actual timestamps
     const activeCaptionCue = computed(() => {
       const t = currentTime.value
       const cue = captionCues.value.find(c => t >= c.start && t < c.end)
@@ -1453,6 +1560,109 @@ export default {
       captionsEnabled.value = !captionsEnabled.value
     }
 
+    // Skip silence — uses Web Audio API to detect silent sections and skip them
+    const skipSilenceEnabled = ref(false)
+    let audioContext = null
+    let analyserNode = null
+    let mediaSource = null
+    let silenceRafId = null
+    let silenceStart = 0 // timestamp when silence began
+    const SILENCE_THRESHOLD = -50  // dBFS — below this is "silent"
+    const SILENCE_SKIP_AFTER = 0.3 // seconds of silence before skipping
+    const SILENCE_SKIP_STEP = 0.25 // seconds to jump per frame while silent
+
+    const initAudioAnalyser = () => {
+      if (audioContext || !videoRef.value) return
+      try {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)()
+        analyserNode = audioContext.createAnalyser()
+        analyserNode.fftSize = 256
+        mediaSource = audioContext.createMediaElementSource(videoRef.value)
+        mediaSource.connect(analyserNode)
+        analyserNode.connect(audioContext.destination) // keep audio audible
+      } catch (err) {
+        console.warn('Skip silence: failed to init audio analyser', err)
+        audioContext = null
+      }
+    }
+
+    const getAudioLevel = () => {
+      if (!analyserNode) return 0
+      const data = new Float32Array(analyserNode.fftSize)
+      analyserNode.getFloatTimeDomainData(data)
+      // RMS level
+      let sum = 0
+      for (let i = 0; i < data.length; i++) sum += data[i] * data[i]
+      const rms = Math.sqrt(sum / data.length)
+      // Convert to dBFS
+      return rms > 0 ? 20 * Math.log10(rms) : -100
+    }
+
+    const silenceDetectionLoop = () => {
+      if (!skipSilenceEnabled.value || !isPlaying.value || !videoRef.value) {
+        silenceRafId = requestAnimationFrame(silenceDetectionLoop)
+        return
+      }
+
+      const level = getAudioLevel()
+      const now = performance.now() / 1000
+
+      if (level < SILENCE_THRESHOLD) {
+        if (silenceStart === 0) silenceStart = now
+        const silenceDuration = now - silenceStart
+        if (silenceDuration >= SILENCE_SKIP_AFTER) {
+          // Skip forward
+          const vid = videoRef.value
+          const videoDuration = isFinite(vid.duration) && vid.duration > 0 ? vid.duration : duration.value
+          if (videoDuration > 0) {
+            const newTime = Math.min(vid.currentTime + SILENCE_SKIP_STEP, videoDuration - 0.5)
+            vid.currentTime = newTime
+            currentTime.value = newTime
+          }
+        }
+      } else {
+        silenceStart = 0
+      }
+
+      silenceRafId = requestAnimationFrame(silenceDetectionLoop)
+    }
+
+    const startSilenceDetection = () => {
+      initAudioAnalyser()
+      if (!audioContext) return
+      silenceStart = 0
+      silenceRafId = requestAnimationFrame(silenceDetectionLoop)
+    }
+
+    const stopSilenceDetection = () => {
+      silenceStart = 0
+      if (silenceRafId) {
+        cancelAnimationFrame(silenceRafId)
+        silenceRafId = null
+      }
+    }
+
+    const destroyAudioAnalyser = () => {
+      stopSilenceDetection()
+      if (audioContext) {
+        audioContext.close().catch(() => {})
+        audioContext = null
+        analyserNode = null
+        mediaSource = null
+      }
+    }
+
+    const toggleSkipSilence = () => {
+      skipSilenceEnabled.value = !skipSilenceEnabled.value
+      if (skipSilenceEnabled.value) {
+        startSilenceDetection()
+        showToast('Skip silence on')
+      } else {
+        stopSilenceDetection()
+        showToast('Skip silence off')
+      }
+    }
+
     // Transcript AI chat
     const showTranscriptChat = ref(false)
     const transcriptChatInput = ref('')
@@ -1463,6 +1673,7 @@ export default {
     const askTranscriptQuestion = async () => {
       const question = transcriptChatInput.value.trim()
       if (!question || transcriptChatLoading.value || transcriptChatRemaining.value <= 0) return
+      if (!video.value.id) return
 
       transcriptChatMessages.value.push({ role: 'user', content: question })
       transcriptChatInput.value = ''
@@ -1479,23 +1690,25 @@ export default {
       }
     }
 
-    // Enhanced transcript features
+    // Enhanced transcript features (owner mode)
     const transcriptSearch = ref('')
     const showExportMenu = ref(false)
-
-    // Close export menu on click outside
-    const closeExportMenu = (e) => {
-      if (showExportMenu.value && !e.target.closest('.export-menu-container')) {
-        showExportMenu.value = false
-      }
-    }
-
+    const showTranscriptSearch = ref(false)
     let transcriptionPollInterval = null
 
+    // Reactions — shared mode uses API-based, owner mode uses local
+    const sharedReactions = ref({})
+    const userReactions = ref([])
+    const sessionId = ref(localStorage.getItem('openkap_session') || Math.random().toString(36).substring(2))
+    if (!localStorage.getItem('openkap_session')) {
+      localStorage.setItem('openkap_session', sessionId.value)
+    }
+
+    // Owner mode local reactions
     const reactions = ref([
-      { icon: '👍', count: 0, selected: false },
-      { icon: '❤️', count: 0, selected: false },
-      { icon: '😂', count: 0, selected: false },
+      { icon: '\u{1F44D}', count: 0, selected: false },
+      { icon: '\u2764\uFE0F', count: 0, selected: false },
+      { icon: '\u{1F602}', count: 0, selected: false },
     ])
 
     const hlsInstance = ref(null)
@@ -1522,20 +1735,14 @@ export default {
     // Find the active transcript segment based on current video time
     const activeSegmentIndex = computed(() => {
       if (!transcriptionSegments.value || transcriptionSegments.value.length === 0) return -1
-
       const time = currentTime.value
       for (let i = transcriptionSegments.value.length - 1; i >= 0; i--) {
         const segment = transcriptionSegments.value[i]
-        if (time >= segment.start) {
-          return i
-        }
+        if (time >= segment.start) return i
       }
       return -1
     })
 
-    // captionsUrl watch removed — custom caption overlay used instead
-
-    // Reconstruct properly spaced text from words array if available
     const getSegmentText = (segment) => {
       if (segment.words && segment.words.length > 0) {
         return segment.words.map(w => (w.text || '').trim()).filter(Boolean).join(' ')
@@ -1571,20 +1778,6 @@ export default {
       }
     })
 
-    const showTranscriptSearch = ref(false)
-
-    // Word count
-    const transcriptWordCount = computed(() => {
-      if (!transcriptionSegments.value) return 0
-      const allText = transcriptionSegments.value.map(s => getSegmentText(s)).join(' ')
-      return allText.split(/\s+/).filter(w => w.length > 0).length
-    })
-
-    // Estimated read time (avg 200 words per minute)
-    const transcriptReadTime = computed(() => {
-      return Math.max(1, Math.ceil(transcriptWordCount.value / 200))
-    })
-
     // Highlight search matches in text
     const highlightSearch = (text) => {
       if (!transcriptSearch.value.trim()) return sanitizeHtml(text)
@@ -1592,16 +1785,6 @@ export default {
       const search = transcriptSearch.value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
       const regex = new RegExp(`(${search})`, 'gi')
       return escaped.replace(regex, '<mark class="bg-yellow-200 text-yellow-900 rounded px-0.5">$1</mark>')
-    }
-
-    // Copy individual segment
-    const copySegment = async (segment) => {
-      try {
-        await navigator.clipboard.writeText(`[${formatTime(segment.start)}] ${getSegmentText(segment)}`)
-        showToast('Segment copied!')
-      } catch (err) {
-        console.error('Failed to copy segment:', err)
-      }
     }
 
     // Export transcript
@@ -1650,75 +1833,163 @@ export default {
       showToast(`Downloaded ${filename}`)
     }
 
+    // Computed: share URL
+    const shareUrl = computed(() => {
+      if (isSharedMode.value) return window.location.href
+      return video.value.shareUrl || ''
+    })
+
+    // Computed: show summary tab
+    const showSummaryTab = computed(() => !!summary.value)
+
+    // Computed: tab grid cols
+    const tabGridCols = computed(() => {
+      let cols = 2 // transcript + comments
+      if (showSummaryTab.value) cols++
+      if (!isSharedMode.value && jiraConnected.value) cols++
+      // Use explicit classes so Tailwind JIT can detect them
+      const colsMap = { 2: 'grid-cols-2', 3: 'grid-cols-3', 4: 'grid-cols-4' }
+      return colsMap[cols] || 'grid-cols-2'
+    })
+
+    // --- Data Fetching ---
+
     const fetchVideo = async () => {
       loading.value = true
       error.value = null
 
       try {
-        const fetchedVideo = await videoService.getVideo(route.params.id)
-
-        video.value = {
-          id: fetchedVideo.id,
-          title: fetchedVideo.title,
-          description: fetchedVideo.description,
-          duration: fetchedVideo.duration,
-          url: fetchedVideo.url,
-          thumbnail: fetchedVideo.thumbnail,
-          hls_url: fetchedVideo.hls_url,
-          is_hls_ready: fetchedVideo.is_hls_ready,
-          shareUrl: fetchedVideo.share_url,
-          views_count: fetchedVideo.views_count,
-          createdAt: new Date(fetchedVideo.created_at),
-          conversion_status: fetchedVideo.conversion_status,
-          storage_type: fetchedVideo.storage_type,
-          bunny_status: fetchedVideo.bunny_status,
-          // Zoom fields
-          zoom_enabled: fetchedVideo.zoom_enabled,
-          zoom_status: fetchedVideo.zoom_status,
-          zoom_progress: fetchedVideo.zoom_progress,
-          is_zoom_ready: fetchedVideo.is_zoom_ready,
-          zoom_event_count: fetchedVideo.zoom_event_count,
+        if (isSharedMode.value) {
+          await fetchSharedVideo()
+        } else {
+          await fetchOwnerVideo()
         }
-
-        if (fetchedVideo.storage_type === 'bunny') {
-          isBunnyVideo.value = true
-          bunnyStatus.value = fetchedVideo.bunny_status
-          if (['ready', 'transcoding'].includes(fetchedVideo.bunny_status)) {
-            try {
-              const bunnyData = await videoService.getBunnyPlayback(fetchedVideo.id)
-              bunnyPlaybackData.value = bunnyData
-              if (bunnyData.playback) {
-                video.value.hls_url = bunnyData.playback.hlsUrl
-                video.value.is_hls_ready = true
-              }
-              if (bunnyData.video) {
-                bunnyStatus.value = bunnyData.video.status
-                bunnyEncodeProgress.value = bunnyData.video.encode_progress || 0
-                bunnyAvailableResolutions.value = bunnyData.video.available_resolutions || []
-                if (bunnyData.video.duration && bunnyData.video.duration > 0) {
-                  video.value.duration = bunnyData.video.duration
-                  duration.value = bunnyData.video.duration
-                }
-              }
-            } catch (bunnyErr) {
-              console.warn('Failed to fetch Bunny playback, falling back to local file:', bunnyErr)
-            }
-          }
-        }
-
-        setTimeout(() => initHls(), 100)
-
-        if (fetchedVideo.duration && fetchedVideo.duration > 0) {
-          duration.value = fetchedVideo.duration
-        }
-
       } catch (err) {
         console.error('Failed to load video:', err)
-        error.value = 'Failed to load video. Please try again.'
+        error.value = err.message || 'Failed to load video. Please try again.'
       } finally {
         loading.value = false
       }
     }
+
+    const fetchSharedVideo = async () => {
+      const response = await fetch(`${API_BASE_URL}/api/share/video/${token.value}`)
+      if (!response.ok) throw new Error('Video not available')
+      const data = await response.json()
+      video.value = data.video
+      // Normalize comments
+      comments.value = (data.video.comments || []).map(normalizeComment)
+      sharedReactions.value = data.video.reactions || {}
+      duration.value = data.video.duration || 0
+
+      // Apply owner's branding
+      if (data.video.branding) {
+        if (data.video.branding.brand_color) branding.setBrandColor(data.video.branding.brand_color)
+        if (data.video.branding.logo_url) branding.setLogoUrl(data.video.branding.logo_url)
+      }
+
+      // Load transcription/summary
+      transcription.value = data.video.transcription || null
+      transcriptionSegments.value = data.video.transcription_segments || []
+      summary.value = data.video.summary || null
+
+      if (data.video.storage_type === 'bunny') {
+        isBunnyVideo.value = true
+        bunnyStatus.value = data.video.bunny_status
+        if (['ready', 'transcoding'].includes(data.video.bunny_status)) {
+          try {
+            const bunnyData = await videoService.getBunnySharedPlayback(token.value)
+            if (bunnyData.playback) {
+              video.value.hls_url = bunnyData.playback.hlsUrl
+              video.value.is_hls_ready = true
+            }
+            if (bunnyData.video) {
+              bunnyStatus.value = bunnyData.video.status
+              bunnyEncodeProgress.value = bunnyData.video.encode_progress || 0
+              bunnyAvailableResolutions.value = bunnyData.video.available_resolutions || []
+              if (bunnyData.video.duration && bunnyData.video.duration > 0) {
+                video.value.duration = bunnyData.video.duration
+                duration.value = bunnyData.video.duration
+              }
+            }
+          } catch (bunnyErr) {
+            console.warn('Failed to fetch Bunny playback, falling back to local file:', bunnyErr)
+          }
+        }
+      }
+
+      setTimeout(() => initHls(), 100)
+    }
+
+    const fetchOwnerVideo = async () => {
+      const fetchedVideo = await videoService.getVideo(route.params.id)
+
+      video.value = {
+        id: fetchedVideo.id,
+        title: fetchedVideo.title,
+        description: fetchedVideo.description,
+        duration: fetchedVideo.duration,
+        url: fetchedVideo.url,
+        thumbnail: fetchedVideo.thumbnail,
+        hls_url: fetchedVideo.hls_url,
+        is_hls_ready: fetchedVideo.is_hls_ready,
+        shareUrl: fetchedVideo.share_url,
+        views_count: fetchedVideo.views_count,
+        created_at: fetchedVideo.created_at,
+        is_public: fetchedVideo.is_public,
+        user_id: fetchedVideo.user_id,
+        conversion_status: fetchedVideo.conversion_status,
+        storage_type: fetchedVideo.storage_type,
+        bunny_status: fetchedVideo.bunny_status,
+        zoom_enabled: fetchedVideo.zoom_enabled,
+        zoom_status: fetchedVideo.zoom_status,
+        zoom_progress: fetchedVideo.zoom_progress,
+        is_zoom_ready: fetchedVideo.is_zoom_ready,
+        zoom_event_count: fetchedVideo.zoom_event_count,
+      }
+
+      if (fetchedVideo.storage_type === 'bunny') {
+        isBunnyVideo.value = true
+        bunnyStatus.value = fetchedVideo.bunny_status
+        if (['ready', 'transcoding'].includes(fetchedVideo.bunny_status)) {
+          try {
+            const bunnyData = await videoService.getBunnyPlayback(fetchedVideo.id)
+            bunnyPlaybackData.value = bunnyData
+            if (bunnyData.playback) {
+              video.value.hls_url = bunnyData.playback.hlsUrl
+              video.value.is_hls_ready = true
+            }
+            if (bunnyData.video) {
+              bunnyStatus.value = bunnyData.video.status
+              bunnyEncodeProgress.value = bunnyData.video.encode_progress || 0
+              bunnyAvailableResolutions.value = bunnyData.video.available_resolutions || []
+              if (bunnyData.video.duration && bunnyData.video.duration > 0) {
+                video.value.duration = bunnyData.video.duration
+                duration.value = bunnyData.video.duration
+              }
+            }
+          } catch (bunnyErr) {
+            console.warn('Failed to fetch Bunny playback, falling back to local file:', bunnyErr)
+          }
+        }
+      }
+
+      setTimeout(() => initHls(), 100)
+
+      if (fetchedVideo.duration && fetchedVideo.duration > 0) {
+        duration.value = fetchedVideo.duration
+      }
+    }
+
+    // Normalize comment data from both sources
+    const normalizeComment = (comment) => ({
+      id: comment.id,
+      author_name: comment.author_name || comment.author || 'Anonymous',
+      content: comment.content || comment.text || '',
+      author_avatar: comment.author_avatar || comment.avatar || null,
+      created_at: comment.created_at,
+      timestamp_seconds: comment.timestamp_seconds
+    })
 
     const initHls = () => {
       const videoElement = videoRef.value
@@ -1745,7 +2016,6 @@ export default {
             xhr.onreadystatechange = function () {
               if (xhr.readyState === 4) {
                 if (xhr.status === 404 || xhr.status === 403) {
-                  // HLS manifest missing/forbidden, falling back to MP4
                   hls.destroy()
                   videoElement.src = video.value.url
                 }
@@ -1800,7 +2070,6 @@ export default {
       } else if (hlsUrl && videoElement.canPlayType('application/vnd.apple.mpegurl')) {
         videoElement.src = hlsUrl
         videoElement.onerror = () => {
-          // Native HLS failed, falling back to MP4
           videoElement.src = video.value.url
         }
       } else {
@@ -1855,7 +2124,6 @@ export default {
 
     const onVideoLoaded = () => {
       if (!videoRef.value) return
-
       const videoDuration = videoRef.value.duration
       const apiDuration = video.value.duration
 
@@ -1886,17 +2154,17 @@ export default {
     }
 
     const seekToPosition = (clientX) => {
-      const video = videoRef.value
+      const vid = videoRef.value
       const bar = progressBar.value
-      if (!video || !bar) return
+      if (!vid || !bar) return
 
-      const videoDuration = isFinite(video.duration) && video.duration > 0 ? video.duration : duration.value
+      const videoDuration = isFinite(vid.duration) && vid.duration > 0 ? vid.duration : duration.value
       if (!videoDuration || !isFinite(videoDuration) || videoDuration <= 0) return
 
       const rect = bar.getBoundingClientRect()
       const percent = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width))
       const newTime = percent * videoDuration
-      video.currentTime = newTime
+      vid.currentTime = newTime
       currentTime.value = newTime
     }
 
@@ -1906,11 +2174,11 @@ export default {
 
     const startSeeking = (e) => {
       e.preventDefault()
-      const video = videoRef.value
-      if (!video) return
+      const vid = videoRef.value
+      if (!vid) return
 
-      const wasPlaying = !video.paused
-      if (wasPlaying) video.pause()
+      const wasPlaying = !vid.paused
+      if (wasPlaying) vid.pause()
 
       const onMouseMove = (moveEvent) => {
         seekToPosition(moveEvent.clientX)
@@ -1919,12 +2187,11 @@ export default {
       const onMouseUp = () => {
         document.removeEventListener('mousemove', onMouseMove)
         document.removeEventListener('mouseup', onMouseUp)
-        if (wasPlaying && video) video.play()
+        if (wasPlaying && vid) vid.play()
       }
 
       document.addEventListener('mousemove', onMouseMove)
       document.addEventListener('mouseup', onMouseUp)
-
       seekToPosition(e.clientX)
     }
 
@@ -1937,15 +2204,15 @@ export default {
     }
 
     const skip = (seconds) => {
-      const video = videoRef.value
-      if (!video) return
+      const vid = videoRef.value
+      if (!vid) return
 
-      const videoDuration = isFinite(video.duration) && video.duration > 0 ? video.duration : duration.value
+      const videoDuration = isFinite(vid.duration) && vid.duration > 0 ? vid.duration : duration.value
       if (!videoDuration || !isFinite(videoDuration) || videoDuration <= 0) return
 
-      const currentVideoTime = video.currentTime || 0
+      const currentVideoTime = vid.currentTime || 0
       const newTime = Math.max(0, Math.min(videoDuration, currentVideoTime + seconds))
-      video.currentTime = newTime
+      vid.currentTime = newTime
       currentTime.value = newTime
     }
 
@@ -1986,16 +2253,17 @@ export default {
       } catch (err) {}
     }
 
-    const showControls = () => {
+    const showControls_fn = () => {
       controlsVisible.value = true
       if (controlsTimeout) clearTimeout(controlsTimeout)
     }
 
     const hideControlsDelayed = () => {
       if (controlsTimeout) clearTimeout(controlsTimeout)
+      if (showSpeedMenu.value || showQualityMenu.value) return
       controlsTimeout = setTimeout(() => {
-        if (isPlaying.value && !showSpeedMenu.value && !showQualityMenu.value) controlsVisible.value = false
-      }, 3000)
+        controlsVisible.value = false
+      }, 500)
     }
 
     const showToast = (msg) => {
@@ -2011,8 +2279,9 @@ export default {
       return `${mins}:${secs.toString().padStart(2, '0')}`
     }
 
-    const formatTimeAgo = (date) => {
-      if (!date) return ''
+    const formatTimeAgo = (dateStr) => {
+      if (!dateStr) return ''
+      const date = new Date(dateStr)
       const seconds = Math.floor((new Date() - date) / 1000)
       if (seconds < 60) return 'Just now'
       if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`
@@ -2021,29 +2290,55 @@ export default {
       return date.toLocaleDateString()
     }
 
+    const formatCommentTime = (dateStr) => {
+      if (!dateStr) return ''
+      const date = new Date(dateStr)
+      const now = new Date()
+      const diff = now - date
+      const minutes = Math.floor(diff / 60000)
+      if (minutes < 1) return 'Just now'
+      if (minutes < 60) return `${minutes}m ago`
+      const hours = Math.floor(minutes / 60)
+      if (hours < 24) return `${hours}h ago`
+      const days = Math.floor(hours / 24)
+      return `${days}d ago`
+    }
+
     const copyShareLink = async () => {
-      if (video.value.shareUrl) {
-        try {
-          await navigator.clipboard.writeText(video.value.shareUrl)
-          copied.value = true
-          showToast('Share link copied!')
-          setTimeout(() => { copied.value = false }, 3000)
-        } catch (err) {}
-      }
+      try {
+        await navigator.clipboard.writeText(shareUrl.value)
+        copied.value = true
+        showToast('Link copied!')
+        setTimeout(() => { copied.value = false }, 3000)
+      } catch (err) {}
     }
 
     const copyEmbedCode = async () => {
-      if (video.value.shareUrl) {
-        try {
-          const embedUrl = video.value.shareUrl.replace('/share/video/', '/embed/video/')
-          const embedCode = `<iframe src="${embedUrl}" width="640" height="360" frameborder="0" allowfullscreen></iframe>`
-          await navigator.clipboard.writeText(embedCode)
-          copiedEmbed.value = true
-          showToast('Embed code copied!')
-          setTimeout(() => { copiedEmbed.value = false }, 3000)
-        } catch (err) {
-          console.error('Failed to copy embed code:', err)
+      try {
+        let embedUrl
+        if (isSharedMode.value) {
+          embedUrl = `${API_BASE_URL}/embed/video/${token.value}`
+        } else if (video.value.shareUrl) {
+          embedUrl = video.value.shareUrl.replace('/share/video/', '/embed/video/')
+        } else {
+          return
         }
+        const embedCode = `<iframe src="${embedUrl}" width="640" height="360" frameborder="0" allowfullscreen></iframe>`
+        await navigator.clipboard.writeText(embedCode)
+        copiedEmbed.value = true
+        showToast('Embed code copied!')
+        setTimeout(() => { copiedEmbed.value = false }, 3000)
+      } catch (err) {
+        console.error('Failed to copy embed code:', err)
+      }
+    }
+
+    // --- Download ---
+    const handleDownload = async () => {
+      if (isSharedMode.value) {
+        await handleSharedDownload()
+      } else {
+        await downloadVideo()
       }
     }
 
@@ -2052,7 +2347,6 @@ export default {
 
       try {
         showToast('Preparing your download...')
-
         const result = await videoService.requestDownloadMp4(video.value.id)
 
         if (result.mode === 'processing') {
@@ -2068,7 +2362,6 @@ export default {
         }
 
         if (result.mode === 'redirect') {
-          // Bunny CDN direct download via signed URL
           const link = document.createElement('a')
           link.href = result.url
           link.download = result.fileName || `${video.value.title || 'video'}.mp4`
@@ -2080,7 +2373,6 @@ export default {
           return
         }
 
-        // Sync mode - we have the blob directly
         const blobUrl = window.URL.createObjectURL(result.blob)
         const link = document.createElement('a')
         link.href = blobUrl
@@ -2097,25 +2389,68 @@ export default {
       }
     }
 
-    const deleteVideo = () => {
-      showDeleteModal.value = true
+    const handleSharedDownload = async () => {
+      try {
+        if (isBunnyVideo.value && bunnyStatus.value === 'ready') {
+          try {
+            const downloadData = await videoService.getBunnySharedDownload(token.value)
+            if (downloadData.url) {
+              const link = document.createElement('a')
+              link.href = downloadData.url
+              link.download = downloadData.file_name || `${video.value.title || 'video'}.mp4`
+              link.target = '_blank'
+              document.body.appendChild(link)
+              link.click()
+              document.body.removeChild(link)
+              showToast('Download started!')
+              return
+            }
+          } catch (bunnyErr) {
+            console.warn('Bunny download failed:', bunnyErr)
+          }
+        }
+
+        if (isBunnyVideo.value) {
+          showToast('Video is still processing — download will be available shortly.')
+          return
+        }
+
+        if (!video.value.url) return
+        showToast('Starting download...')
+        const response = await fetch(video.value.url)
+        const blob = await response.blob()
+        const blobUrl = window.URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = blobUrl
+        link.download = `${video.value.title || 'video'}.mp4`
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        window.URL.revokeObjectURL(blobUrl)
+        showToast('Download complete!')
+      } catch (err) {
+        console.error('Failed to download:', err)
+        showToast('Failed to download video')
+      }
     }
 
+    // --- Owner Actions ---
     const confirmDeleteVideo = async () => {
-      isDeleting.value = true
+      if (!isOwner.value) return
       try {
         await videoService.deleteVideo(video.value.id)
         showDeleteConfirm.value = false
-        showDeleteModal.value = false
         showToast('Video deleted successfully')
         setTimeout(() => {
-          window.location.href = import.meta.env.BASE_URL + 'videos'
+          if (isSharedMode.value) {
+            window.location.href = '/'
+          } else {
+            window.location.href = import.meta.env.BASE_URL + 'videos'
+          }
         }, 500)
       } catch (err) {
         showDeleteConfirm.value = false
         showToast('Failed to delete')
-      } finally {
-        isDeleting.value = false
       }
     }
 
@@ -2124,6 +2459,7 @@ export default {
     }
 
     const startEditingTitle = () => {
+      if (!isOwner.value) return
       editedTitle.value = video.value.title
       isEditingTitle.value = true
       setTimeout(() => {
@@ -2167,26 +2503,12 @@ export default {
       editedTitle.value = video.value.title
     }
 
-    const addReaction = (icon) => {
-      const reaction = reactions.value.find(r => r.icon === icon)
-      if (reaction) {
-        reaction.selected = !reaction.selected
-        reaction.count += reaction.selected ? 1 : -1
-      }
-    }
-
-    // Action handlers for options menu
-    const handleDownload = async () => {
-      await downloadVideo()
-    }
-
     const handleDuplicate = async () => {
+      if (!isOwner.value) return
       try {
         showToast('Duplicating video...')
         const result = await videoService.updateVideo(video.value.id, { duplicate: true })
-        if (result) {
-          showToast('Video duplicated!')
-        }
+        if (result) showToast('Video duplicated!')
       } catch (err) {
         console.error('Failed to duplicate:', err)
         showToast('Failed to duplicate video')
@@ -2202,6 +2524,7 @@ export default {
     }
 
     const handleTogglePrivacy = async () => {
+      if (!isOwner.value) return
       const makePublic = !video.value.is_public
       try {
         await videoService.updateVideo(video.value.id, { is_public: makePublic })
@@ -2216,12 +2539,17 @@ export default {
     }
 
     const handleArchive = async () => {
+      if (!isOwner.value) return
       try {
         await videoService.updateVideo(video.value.id, { archived: true })
         showArchiveConfirm.value = false
         showToast('Video archived')
         setTimeout(() => {
-          window.location.href = import.meta.env.BASE_URL + 'videos'
+          if (isSharedMode.value) {
+            window.location.href = '/'
+          } else {
+            window.location.href = import.meta.env.BASE_URL + 'videos'
+          }
         }, 500)
       } catch (err) {
         console.error('Failed to archive:', err)
@@ -2230,19 +2558,43 @@ export default {
       }
     }
 
+    // --- Reactions ---
+    const addReaction = (icon) => {
+      const reaction = reactions.value.find(r => r.icon === icon)
+      if (reaction) {
+        reaction.selected = !reaction.selected
+        reaction.count += reaction.selected ? 1 : -1
+      }
+    }
+
+    const toggleSharedReaction = async (type) => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/share/video/${token.value}/reactions`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type, session_id: sessionId.value })
+        })
+        const data = await response.json()
+
+        if (data.action === 'added') {
+          userReactions.value.push(type)
+          if (sharedReactions.value[type]) sharedReactions.value[type].count++
+        } else {
+          userReactions.value = userReactions.value.filter(r => r !== type)
+          if (sharedReactions.value[type]) sharedReactions.value[type].count--
+        }
+      } catch (err) {
+        console.error('Failed to toggle reaction:', err)
+      }
+    }
+
+    // --- Comments ---
     const loadComments = async () => {
       if (!video.value.id) return
       isLoadingComments.value = true
       try {
         const fetchedComments = await videoService.getComments(video.value.id)
-        comments.value = fetchedComments.map(comment => ({
-          id: comment.id,
-          author: comment.author_name,
-          avatar: comment.author_avatar,
-          text: comment.content,
-          time: formatTimeAgo(new Date(comment.created_at)),
-          timestamp_seconds: comment.timestamp_seconds
-        }))
+        comments.value = fetchedComments.map(normalizeComment)
       } catch (err) {
         console.error('Failed to load comments:', err)
       } finally {
@@ -2253,22 +2605,37 @@ export default {
     const addComment = async () => {
       if (!newComment.value.trim() || isSavingComment.value) return
 
+      // Shared mode requires auth
+      if (isSharedMode.value && !isAuthenticated.value) return
+      // Owner mode is always auth'd
+      if (!isSharedMode.value && !isAuthenticated.value) return
+
       isSavingComment.value = true
       const commentText = newComment.value.trim()
       const timestampSeconds = videoRef.value ? Math.floor(videoRef.value.currentTime) : null
       newComment.value = ''
 
       try {
-        const savedComment = await videoService.addComment(video.value.id, commentText, 'You', timestampSeconds)
-
-        comments.value.unshift({
-          id: savedComment.id,
-          author: savedComment.author_name,
-          avatar: savedComment.author_avatar,
-          text: savedComment.content,
-          time: 'Just now',
-          timestamp_seconds: savedComment.timestamp_seconds
-        })
+        if (isSharedMode.value) {
+          const response = await fetch(`${API_BASE_URL}/api/share/video/${token.value}/comments`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${auth.token.value}`
+            },
+            body: JSON.stringify({
+              content: commentText,
+              author_name: currentUser.value?.name || 'Anonymous',
+              timestamp_seconds: timestampSeconds
+            })
+          })
+          const data = await response.json()
+          comments.value.unshift(normalizeComment(data.comment))
+        } else {
+          const savedComment = await videoService.addComment(video.value.id, commentText, 'You', timestampSeconds)
+          comments.value.unshift(normalizeComment(savedComment))
+        }
+        showToast('Comment added!')
       } catch (err) {
         console.error('Failed to save comment:', err)
         newComment.value = commentText
@@ -2278,113 +2645,9 @@ export default {
       }
     }
 
-    // Transcription methods
-    const loadTranscriptionData = async () => {
-      if (!video.value.id) return
-
-      try {
-        const data = await videoService.getTranscription(video.value.id)
-        if (data) {
-          transcription.value = data.transcription?.transcription || null
-          transcriptionSegments.value = data.transcription?.segments || []
-          summary.value = data.summary?.summary || null
-
-          // Load bug detection data
-          if (data.bugs) {
-            detectedBugs.value = data.bugs.bugs || []
-          }
-
-          // Update status from response
-          if (data.status) {
-            transcriptionStatus.value = data.status.transcription_status || 'pending'
-            transcriptionProgress.value = data.status.transcription_progress || 0
-            transcriptionError.value = data.status.transcription_error || null
-            summaryStatus.value = data.status.summary_status || 'pending'
-            summaryError.value = data.status.summary_error || null
-            bugDetectionStatus.value = data.status.bug_detection_status || 'pending'
-            bugDetectionError.value = data.status.bug_detection_error || null
-          }
-
-          // If still processing, start polling
-          if (transcriptionStatus.value === 'processing' || bugDetectionStatus.value === 'processing') {
-            startTranscriptionPolling()
-          }
-        }
-      } catch (err) {
-        console.error('Failed to load transcription:', err)
-      }
-    }
-
-    const requestTranscription = async () => {
-      if (isRequestingTranscription.value) return
-
-      isRequestingTranscription.value = true
-      try {
-        const result = await videoService.requestTranscription(video.value.id, true, false)
-        if (result.success) {
-          transcriptionStatus.value = 'processing'
-          transcriptionProgress.value = 0
-          summaryStatus.value = 'pending'
-          showToast('Transcription started')
-          startTranscriptionPolling()
-        } else {
-          showToast(result.message || 'Failed to start transcription')
-        }
-      } catch (err) {
-        console.error('Failed to request transcription:', err)
-        showToast('Failed to start transcription')
-      } finally {
-        isRequestingTranscription.value = false
-      }
-    }
-
-    const startTranscriptionPolling = () => {
-      if (transcriptionPollInterval) return
-
-      transcriptionPollInterval = setInterval(async () => {
-        try {
-          const status = await videoService.getTranscriptionStatus(video.value.id)
-          if (status) {
-            transcriptionStatus.value = status.transcription_status || 'pending'
-            transcriptionProgress.value = status.transcription_progress || 0
-            transcriptionError.value = status.transcription_error || null
-            summaryStatus.value = status.summary_status || 'pending'
-            summaryError.value = status.summary_error || null
-            bugDetectionStatus.value = status.bug_detection_status || 'pending'
-            bugDetectionError.value = status.bug_detection_error || null
-
-            // If transcription completed, fetch the full data
-            if (status.is_transcription_ready) {
-              await loadTranscriptionData()
-
-              // Also update the video title if it changed
-              const updatedVideo = await videoService.getVideo(video.value.id)
-              if (updatedVideo && updatedVideo.title !== video.value.title) {
-                video.value.title = updatedVideo.title
-              }
-            }
-
-            // If bug detection just completed, reload data
-            if (status.is_bug_detection_ready && detectedBugs.value.length === 0) {
-              await loadTranscriptionData()
-            }
-
-            // Stop polling if all are done
-            if (!status.is_transcribing && !status.is_summarizing && !status.is_bug_detecting) {
-              stopTranscriptionPolling()
-            }
-          }
-        } catch (err) {
-          console.error('Failed to poll transcription status:', err)
-        }
-      }, 3000) // Poll every 3 seconds
-    }
-
-    const stopTranscriptionPolling = () => {
-      if (transcriptionPollInterval) {
-        clearInterval(transcriptionPollInterval)
-        transcriptionPollInterval = null
-      }
+    const loginToComment = () => {
+      localStorage.setItem('auth_redirect', window.location.pathname)
+      auth.loginWithGoogle()
     }
 
     const seekToTime = (seconds) => {
@@ -2434,7 +2697,85 @@ export default {
       return sanitizeHtml(marked.parse(summary.value, { breaks: true }))
     })
 
-    // Bug detection methods
+    // --- Transcription polling (owner mode) ---
+    const loadTranscriptionData = async () => {
+      if (!video.value.id) return
+
+      try {
+        const data = await videoService.getTranscription(video.value.id)
+        if (data) {
+          transcription.value = data.transcription?.transcription || null
+          transcriptionSegments.value = data.transcription?.segments || []
+          summary.value = data.summary?.summary || null
+
+          if (data.bugs) {
+            detectedBugs.value = data.bugs.bugs || []
+          }
+
+          if (data.status) {
+            transcriptionStatus.value = data.status.transcription_status || 'pending'
+            transcriptionProgress.value = data.status.transcription_progress || 0
+            transcriptionError.value = data.status.transcription_error || null
+            summaryStatus.value = data.status.summary_status || 'pending'
+            summaryError.value = data.status.summary_error || null
+            bugDetectionStatus.value = data.status.bug_detection_status || 'pending'
+            bugDetectionError.value = data.status.bug_detection_error || null
+          }
+
+          if (transcriptionStatus.value === 'processing' || bugDetectionStatus.value === 'processing') {
+            startTranscriptionPolling()
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load transcription:', err)
+      }
+    }
+
+    const startTranscriptionPolling = () => {
+      if (transcriptionPollInterval) return
+
+      transcriptionPollInterval = setInterval(async () => {
+        try {
+          const status = await videoService.getTranscriptionStatus(video.value.id)
+          if (status) {
+            transcriptionStatus.value = status.transcription_status || 'pending'
+            transcriptionProgress.value = status.transcription_progress || 0
+            transcriptionError.value = status.transcription_error || null
+            summaryStatus.value = status.summary_status || 'pending'
+            summaryError.value = status.summary_error || null
+            bugDetectionStatus.value = status.bug_detection_status || 'pending'
+            bugDetectionError.value = status.bug_detection_error || null
+
+            if (status.is_transcription_ready) {
+              await loadTranscriptionData()
+              const updatedVideo = await videoService.getVideo(video.value.id)
+              if (updatedVideo && updatedVideo.title !== video.value.title) {
+                video.value.title = updatedVideo.title
+              }
+            }
+
+            if (status.is_bug_detection_ready && detectedBugs.value.length === 0) {
+              await loadTranscriptionData()
+            }
+
+            if (!status.is_transcribing && !status.is_summarizing && !status.is_bug_detecting) {
+              stopTranscriptionPolling()
+            }
+          }
+        } catch (err) {
+          console.error('Failed to poll transcription status:', err)
+        }
+      }, 3000)
+    }
+
+    const stopTranscriptionPolling = () => {
+      if (transcriptionPollInterval) {
+        clearInterval(transcriptionPollInterval)
+        transcriptionPollInterval = null
+      }
+    }
+
+    // --- Bug detection ---
     const checkJiraConnectivity = async () => {
       try {
         const providers = await integrationService.getAvailableProviders()
@@ -2478,13 +2819,9 @@ export default {
         })
 
         if (result && result.success) {
-          // Mark as sent — the job will create it in the background
           const idx = detectedBugs.value.findIndex(b => b.id === bug.id)
           if (idx !== -1) {
-            detectedBugs.value[idx] = {
-              ...detectedBugs.value[idx],
-              jira_queued: true
-            }
+            detectedBugs.value[idx] = { ...detectedBugs.value[idx], jira_queued: true }
           }
           showToast('Bug will be created in Jira shortly')
         } else {
@@ -2498,6 +2835,7 @@ export default {
       }
     }
 
+    // --- Keyboard shortcuts ---
     const handleKeydown = (e) => {
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) return
 
@@ -2514,6 +2852,7 @@ export default {
         case 'm':
           e.preventDefault()
           toggleMute()
+          showToast(isMuted.value ? 'Muted' : 'Unmuted')
           break
         case 'arrowleft':
           e.preventDefault()
@@ -2531,6 +2870,30 @@ export default {
           e.preventDefault()
           skip(10)
           break
+        case 'arrowup':
+          e.preventDefault()
+          volume.value = Math.min(1, Number(volume.value) + 0.1)
+          updateVolume()
+          showToast(`Volume: ${Math.round(volume.value * 100)}%`)
+          break
+        case 'arrowdown':
+          e.preventDefault()
+          volume.value = Math.max(0, Number(volume.value) - 0.1)
+          updateVolume()
+          showToast(`Volume: ${Math.round(volume.value * 100)}%`)
+          break
+      }
+
+      if (e.key >= '0' && e.key <= '9') {
+        e.preventDefault()
+        const percent = parseInt(e.key) * 10
+        const vid = videoRef.value
+        if (vid && duration.value) {
+          const newTime = (percent / 100) * duration.value
+          vid.currentTime = newTime
+          currentTime.value = newTime
+          showToast(`Jumped to ${percent}%`)
+        }
       }
     }
 
@@ -2541,15 +2904,12 @@ export default {
       if (qualityMenuRef.value && !qualityMenuRef.value.contains(e.target)) {
         showQualityMenu.value = false
       }
-      // Close export menu
       if (showExportMenu.value && !e.target.closest('.export-menu-container')) {
         showExportMenu.value = false
       }
-      // Close share dropdown
       if (shareDropdownRef.value && !shareDropdownRef.value.contains(e.target)) {
         showShareDropdown.value = false
       }
-      // Close options menu
       if (optionsMenuRef.value && !optionsMenuRef.value.contains(e.target)) {
         showOptionsMenu.value = false
       }
@@ -2560,19 +2920,26 @@ export default {
     }
 
     onMounted(async () => {
-      if (!branding.loaded.value) {
+      if (!isSharedMode.value && !branding.loaded.value) {
         branding.loadBranding()
       }
+
       await fetchVideo()
-      await loadComments()
-      await loadTranscriptionData()
 
-      // Check Jira connectivity (non-blocking)
-      checkJiraConnectivity()
+      if (isSharedMode.value) {
+        // Record view for shared
+        if (token.value) {
+          videoService.recordSharedView(token.value).catch(() => {})
+        }
+      } else {
+        // Owner mode: load comments, transcription, check Jira
+        await loadComments()
+        await loadTranscriptionData()
+        checkJiraConnectivity()
 
-      // Record view (non-blocking)
-      if (video.value.id) {
-        videoService.recordView(video.value.id).catch(() => {})
+        if (video.value.id) {
+          videoService.recordView(video.value.id).catch(() => {})
+        }
       }
 
       document.addEventListener('keydown', handleKeydown)
@@ -2587,57 +2954,61 @@ export default {
       if (controlsTimeout) clearTimeout(controlsTimeout)
       if (toastTimeout) clearTimeout(toastTimeout)
       stopTranscriptionPolling()
+      destroyAudioAnalyser()
       destroyHls()
     })
 
     return {
-      branding, isAuthenticated, currentUser, userInitial,
+      branding, auth, isAuthenticated, currentUser, userInitial,
+      isSharedMode, isOwner, token,
       video, loading, error, videoRef, progressBar, speedMenuRef, playerContainer,
       isPlaying, isBuffering, videoLoading, isMuted, isFullscreen, volume, currentTime, duration,
       bufferedPercent, progressPercent, playbackSpeed, controlsVisible, hoverTime,
-      hoverPercent, showSpeedMenu, showBigPlayButton, showPrePlaySpeedMenu, copied, toast, newComment, comments, reactions,
-      isLoadingComments, isSavingComment, copiedEmbed, copyEmbedCode,
+      hoverPercent, showSpeedMenu, showBigPlayButton, showPrePlaySpeedMenu, copied, copiedEmbed, toast,
+      newComment, comments, reactions, sharedReactions, userReactions,
+      isLoadingComments, isSavingComment,
       speedOptions, toggleSpeedMenu,
       availableQualities, currentQuality, showQualityMenu, qualityMenuRef,
       setQuality, toggleQualityMenu, getCurrentQualityLabel,
       togglePlay, updateProgress, onVideoLoaded, onVideoError, onVideoEnded, seek, startSeeking, updateHoverTime,
       skip, toggleMute, updateVolume, setPlaybackSpeed, toggleFullscreen,
-      showControls, hideControlsDelayed, formatTime, formatTimeAgo, copyShareLink,
-      downloadVideo, deleteVideo, confirmDeleteVideo, goBack, addReaction, addComment, loadComments,
-      showDeleteModal, isDeleting,
+      showControls: showControls_fn, hideControlsDelayed, formatTime, formatTimeAgo, formatCommentTime,
+      copyShareLink, copyEmbedCode, shareUrl,
+      // Download
+      handleDownload,
+      // Owner actions
+      confirmDeleteVideo, goBack,
       isEditingTitle, editedTitle, isSavingTitle, titleInput,
       startEditingTitle, saveTitle, cancelEditingTitle,
-      showShareModal, activeTab, sidebarVisible, toggleSidebar,
-      // Dropdowns
-      showShareDropdown, showOptionsMenu, shareDropdownRef, optionsMenuRef,
+      handleDuplicate, handleDownloadCaptions, handleTogglePrivacy, handleArchive,
+      addReaction, toggleSharedReaction, addComment, loginToComment,
+      // Modals
+      showShareModal, showShareDropdown, showOptionsMenu, shareDropdownRef, optionsMenuRef,
       showArchiveConfirm, showDeleteConfirm, showPrivacyConfirm, showDuplicateConfirm,
-      // Action handlers
-      handleDownload, handleDuplicate, handleDownloadCaptions, handleTogglePrivacy, handleArchive,
+      // Sidebar
+      activeTab, sidebarVisible, toggleSidebar, tabGridCols, showSummaryTab,
       // Transcription
-      transcription, transcriptionSegments, transcriptionStatus, transcriptionProgress, transcriptionError,
-      isRequestingTranscription, requestTranscription, seekToTime,
-      // Transcript sync & search
+      transcription, transcriptionSegments, transcriptionStatus, seekToTime,
       transcriptContainer, segmentRefs, activeSegmentIndex,
       transcriptSearch, showTranscriptSearch, showExportMenu, filteredSegments,
-      transcriptWordCount, transcriptReadTime,
-      highlightSearch, copySegment, exportTranscript,
+      highlightSearch, exportTranscript,
       // Summary
-      summary, summaryStatus, summaryError, formattedSummary,
+      summary, formattedSummary,
+      // Copy
+      copiedTranscript, copiedSummary, copyTranscript, copySummary,
       // Bug detection
       detectedBugs, bugDetectionStatus, bugDetectionError,
       expandedBugId, creatingBugId, jiraConnected, jiraProjects, selectedBugProject,
       loadBugTabData, createBugInJira,
       // Captions
       captionsEnabled, captionsUrl, toggleCaptions, activeCaptionCue,
+      // Skip silence
+      skipSilenceEnabled, toggleSkipSilence,
       // Transcript AI chat
       showTranscriptChat, transcriptChatInput, transcriptChatMessages,
       transcriptChatLoading, transcriptChatRemaining, askTranscriptQuestion,
-      // Copy
-      copiedTranscript, copiedSummary, copyTranscript, copySummary,
       // Bunny
       isBunnyVideo, bunnyStatus, bunnyEncodeProgress, bunnyAvailableResolutions,
-      // Auth
-      auth,
     }
   }
 }
@@ -2646,6 +3017,25 @@ export default {
 <style scoped>
 .fade-enter-active, .fade-leave-active { transition: opacity 0.2s ease; }
 .fade-enter-from, .fade-leave-to { opacity: 0; }
+
+/* Controls panel: whole block slides up/down together */
+.controls-panel {
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.controls-panel.controls-visible { transform: translateY(0); }
+.controls-panel.controls-hidden { transform: translateY(48px); }
+.controls-row {
+  transition: opacity 0.3s ease;
+}
+.controls-visible .controls-row { opacity: 1; }
+.controls-hidden .controls-row { opacity: 0; }
+
+/* Sidebar slide from right */
+.sidebar-panel {
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.sidebar-panel.sidebar-open { transform: translateX(0); }
+.sidebar-panel.sidebar-closed { transform: translateX(100%); pointer-events: none; }
 
 .toast-enter-active { transition: all 0.3s ease; }
 .toast-leave-active { transition: all 0.2s ease; }
@@ -2693,4 +3083,3 @@ input[type=range]::-webkit-slider-runnable-track {
 .caption-active { color: #ffffff; }
 .caption-inactive { color: rgba(255, 255, 255, 0.45); }
 </style>
-

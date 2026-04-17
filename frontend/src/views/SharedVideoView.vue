@@ -30,97 +30,50 @@
     <!-- Main Content -->
     <template v-else>
       <!-- Navigation -->
-      <nav class="h-14 border-b border-gray-200/60 bg-white/90 backdrop-blur-md flex items-center justify-between px-5 z-50 sticky top-0 flex-shrink-0">
-        <div class="flex items-center gap-2">
-          <a href="/" class="flex items-center gap-1.5 hover:opacity-80 transition-opacity">
-            <img :src="branding.logoUrl.value || '/logo.png'" alt="OpenKap" class="w-6 h-6 rounded-md" />
-            <span class="text-xs font-semibold text-gray-900">OpenKap</span>
-          </a>
-        </div>
+      <nav class="border-b border-gray-200/60 bg-white/90 backdrop-blur-md z-50 sticky top-0 flex-shrink-0 px-6" style="height: 80px;">
+        <div class="flex items-center gap-4 h-full">
 
-        <div class="flex items-center gap-2">
-          <!-- Share Dropdown -->
-          <div class="relative" ref="shareDropdownRef">
-            <button @click="showShareDropdown = !showShareDropdown" class="bg-orange-600 hover:bg-orange-700 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5">
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
-              </svg>
-              Share
-              <svg class="w-2.5 h-2.5 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-              </svg>
-            </button>
-            <div v-show="showShareDropdown" class="absolute right-0 top-full mt-1.5 w-48 bg-white rounded-lg shadow-xl border border-gray-200 py-1.5 z-50">
-              <button @click="copyShareLink; showShareDropdown = false" class="w-full px-4 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2.5">
-                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
-                </svg>
-                Copy link
-              </button>
-              <button v-if="isOwner" @click="copyEmbedCode; showShareDropdown = false" class="w-full px-4 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2.5">
-                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
-                </svg>
-                Copy embed code
-              </button>
+          <!-- Logo -->
+          <a href="/" class="flex items-center gap-2 hover:opacity-80 transition-opacity flex-shrink-0">
+            <img :src="branding.logoUrl.value || '/logo.png'" alt="OpenKap" class="w-7 h-7 rounded-md" />
+            <span class="text-sm font-bold text-gray-900">OpenKap</span>
+          </a>
+
+          <!-- Divider -->
+          <div v-if="video.title" class="h-10 w-px bg-gray-200 flex-shrink-0"></div>
+
+          <!-- Title + Meta -->
+          <div v-if="video.title" class="flex-1 min-w-0 flex flex-col justify-center gap-1">
+            <h1 class="text-xl font-bold text-gray-900 truncate leading-tight">{{ video.title }}</h1>
+            <div class="flex items-center gap-3 text-xs text-gray-400">
+              <template v-if="video.user_name">
+                <div class="flex items-center gap-1.5">
+                  <img v-if="video.user_avatar" :src="video.user_avatar" :alt="video.user_name" class="w-4 h-4 rounded-full object-cover" />
+                  <div v-else class="w-4 h-4 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 text-[9px] font-bold">{{ (video.user_name || 'U').charAt(0).toUpperCase() }}</div>
+                  <span class="font-medium text-gray-500">{{ video.user_name }}</span>
+                </div>
+                <span>·</span>
+              </template>
+              <span class="flex items-center gap-1">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                {{ formatTimeAgo(video.created_at) }}
+              </span>
+              <span>·</span>
+              <span class="flex items-center gap-1">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                {{ video.views_count || 0 }} views
+              </span>
             </div>
           </div>
+
+          <!-- Right Actions -->
+          <div class="flex items-center gap-2 flex-shrink-0 ml-auto">
 
           <!-- Notifications (authenticated users) -->
           <NotificationBell v-if="isAuthenticated" />
 
-          <!-- Options Menu (three-dot) -->
-          <div class="relative" ref="optionsMenuRef">
-            <button @click="showOptionsMenu = !showOptionsMenu" class="p-2 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors">
-              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                <circle cx="12" cy="5" r="1.5"/>
-                <circle cx="12" cy="12" r="1.5"/>
-                <circle cx="12" cy="19" r="1.5"/>
-              </svg>
-            </button>
-            <div v-show="showOptionsMenu" class="absolute right-0 top-full mt-1.5 w-52 bg-white rounded-lg shadow-xl border border-gray-200 py-1.5 z-50">
-              <button @click="handleSharedDownload; showOptionsMenu = false" class="w-full px-4 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2.5">
-                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-                </svg>
-                Download
-              </button>
-              <template v-if="isOwner">
-                <button @click="handleSharedDuplicate; showOptionsMenu = false" class="w-full px-4 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2.5">
-                  <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
-                  </svg>
-                  Duplicate
-                </button>
-                <button @click="handleSharedRename; showOptionsMenu = false" class="w-full px-4 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2.5">
-                  <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
-                  </svg>
-                  Rename
-                </button>
-                <div class="my-1.5 border-t border-gray-100"></div>
-                <button @click="showPrivateConfirm = true; showOptionsMenu = false" class="w-full px-4 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2.5">
-                  <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-                  </svg>
-                  Make it private
-                </button>
-                <button @click="showArchiveConfirm = true; showOptionsMenu = false" class="w-full px-4 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2.5">
-                  <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>
-                  </svg>
-                  Archive
-                </button>
-                <button @click="showDeleteConfirm = true; showOptionsMenu = false" class="w-full px-4 py-2 text-left text-xs text-red-600 hover:bg-red-50 flex items-center gap-2.5">
-                  <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                  </svg>
-                  Delete
-                </button>
-              </template>
-            </div>
-          </div>
-        </div>
+          </div><!-- end Right Actions -->
+        </div><!-- end nav inner flex -->
       </nav>
 
       <!-- Confirmation Dialogs (owner only) -->
@@ -220,46 +173,12 @@
       </div>
 
       <!-- Main Layout -->
-      <main class="flex-1 flex flex-col lg:flex-row h-full z-10 relative overflow-hidden">
+      <main class="relative z-10" style="height: calc(100vh - 80px)">
 
-        <!-- Center Stage: Video Player -->
-        <div class="flex-1 flex flex-col items-center justify-center p-4 lg:p-8 relative bg-[#FAFAFA]/50 overflow-hidden overflow-y-auto">
+        <!-- Video Player — full width -->
+        <div class="h-full flex flex-col items-center justify-center p-6 bg-[#FAFAFA]/50 overflow-y-auto">
 
-          <div class="w-full max-w-[min(calc((100vh-280px)*16/9),100%)] flex flex-col">
-
-            <!-- Video Title & Meta -->
-            <div class="w-full mb-4">
-              <h1 class="text-2xl font-bold text-gray-900 tracking-tight leading-tight">
-                {{ video.title }}
-              </h1>
-              <div class="flex items-center gap-3 text-sm text-gray-500 mt-1">
-                <!-- Creator Identity -->
-                <template v-if="video.user_name">
-                  <div class="flex items-center gap-1.5">
-                    <img v-if="video.user_avatar" :src="video.user_avatar" :alt="video.user_name" class="w-5 h-5 rounded-full object-cover ring-1 ring-gray-200" />
-                    <div v-else class="w-5 h-5 rounded-full bg-gradient-to-br from-orange-100 to-amber-100 flex items-center justify-center text-orange-600 text-[10px] font-bold ring-1 ring-orange-200/50">
-                      {{ (video.user_name || 'U').charAt(0).toUpperCase() }}
-                    </div>
-                    <span class="text-xs font-medium text-gray-600">{{ video.user_name }}</span>
-                  </div>
-                  <span class="w-1 h-1 rounded-full bg-gray-300"></span>
-                </template>
-                <span class="flex items-center gap-1.5">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                  </svg>
-                  {{ formatTimeAgo(video.created_at) }}
-                </span>
-                <span class="w-1 h-1 rounded-full bg-gray-300"></span>
-                <span class="flex items-center gap-1.5">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                  </svg>
-                  {{ video.views_count || 0 }} views
-                </span>
-              </div>
-            </div>
+          <div class="w-full flex flex-col" style="max-width: min(calc((100vh - 200px) * 16 / 9), 100%)">
 
             <!-- Video Container - Responsive with 16:9 aspect ratio -->
             <div
@@ -267,8 +186,8 @@
               :class="isFullscreen ? 'rounded-none !aspect-auto h-full' : ''"
               :style="{
                 aspectRatio: isFullscreen ? 'auto' : '16 / 9',
-                maxHeight: isFullscreen ? 'none' : 'calc(100vh - 280px)',
-                maxWidth: isFullscreen ? 'none' : 'calc((100vh - 280px) * 16 / 9)',
+                maxHeight: isFullscreen ? 'none' : 'calc(100vh - 200px)',
+                maxWidth: isFullscreen ? 'none' : 'calc((100vh - 200px) * 16 / 9)',
               }"
               ref="playerContainer"
               @mousemove="showControls"
@@ -394,31 +313,31 @@
                       <span v-for="(word, wi) in activeCaptionCue.words" :key="wi" class="caption-word" :class="word.active ? 'caption-active' : 'caption-inactive'">{{ word.text }}</span>
                     </div>
                   </div>
-                  <!-- Progress -->
+                  <!-- Progress Bar — thin by default, grows on hover -->
                     <div
-                      class="relative h-2.5 w-full group/seek cursor-pointer flex items-center"
+                      class="relative h-7 w-full group/seek cursor-pointer flex items-center"
                       @click.stop="seek"
                       @mousedown.stop="startSeeking"
                       @mousemove="updateHoverTime"
                       @mouseleave="hoverTime = null"
                       ref="progressBar"
                     >
-                      <div class="absolute inset-0 bg-white/10 rounded-full"></div>
-                      <div class="absolute left-0 h-full bg-white/30 rounded-full" :style="{ width: bufferedPercent + '%' }"></div>
-                      <div class="absolute left-0 h-full bg-orange-500 rounded-full shadow-[0_0_10px_rgba(249,115,22,0.5)]" :style="{ width: progressPercent + '%' }"></div>
-                      <div
-                        class="absolute w-4 h-4 bg-white rounded-full shadow-lg scale-0 group-hover/seek:scale-100 transition-transform flex items-center justify-center"
-                        :style="{ left: `calc(${progressPercent}% - 8px)` }"
-                      >
-                        <div class="w-1.5 h-1.5 bg-orange-600 rounded-full"></div>
+                      <!-- Track: grows from thin to thick on hover, anchored to bottom -->
+                      <div class="absolute left-0 right-0 bottom-2 h-1 group-hover/seek:h-3.5 transition-all duration-200 ease-out rounded-sm overflow-hidden bg-gray-500/70">
+                        <div class="absolute left-0 h-full bg-gray-300/40" :style="{ width: bufferedPercent + '%' }"></div>
+                        <div class="absolute left-0 h-full bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.4)]" :style="{ width: progressPercent + '%' }"></div>
                       </div>
                       <!-- Hover time tooltip -->
                       <div
                         v-if="hoverTime !== null"
-                        class="absolute -top-10 px-2 py-1 bg-black text-white text-xs rounded transform -translate-x-1/2 pointer-events-none"
+                        class="absolute -top-8 px-2 py-1 bg-black/80 text-white text-xs rounded transform -translate-x-1/2 pointer-events-none whitespace-nowrap"
                         :style="{ left: hoverPercent + '%' }"
                       >
                         {{ formatTime(hoverTime) }}
+                      </div>
+                      <!-- Duration label: fades in on hover, top-right -->
+                      <div class="absolute right-0 -top-7 opacity-0 group-hover/seek:opacity-100 transition-opacity duration-200 text-white/70 text-[11px] font-mono pointer-events-none whitespace-nowrap">
+                        {{ formatTime(currentTime) }} / {{ formatTime(duration) }}
                       </div>
                     </div>
 
@@ -560,47 +479,121 @@
             </div>
 
             <!-- Action Bar Below Video -->
-            <div class="mt-3 flex items-center justify-center gap-2 z-30 relative flex-wrap">
+            <div class="mt-3 flex items-center justify-between gap-2 z-30 relative">
 
-              <!-- Reactions -->
-              <button
-                v-for="(data, type) in reactions"
-                :key="type"
-                @click="toggleReaction(type)"
-                class="w-7 h-7 rounded-full hover:bg-gray-100 flex items-center justify-center text-sm transition-transform hover:-translate-y-0.5 active:scale-95 relative bg-white border border-gray-200/60"
-                :class="userReactions.includes(type) ? 'bg-orange-100 border-orange-300' : ''"
-                :title="type"
-              >
-                {{ data.emoji }}
-                <span v-if="data.count > 0" class="absolute -top-1 -right-1 bg-orange-600 text-white text-[9px] font-bold rounded-full min-w-[14px] h-3.5 flex items-center justify-center px-0.5">{{ data.count }}</span>
-              </button>
+              <!-- Left: Reactions -->
+              <div class="flex items-center gap-1.5">
+                <button
+                  v-for="(data, type) in reactions"
+                  :key="type"
+                  @click="toggleReaction(type)"
+                  class="w-7 h-7 rounded-full hover:bg-gray-100 flex items-center justify-center text-sm transition-transform hover:-translate-y-0.5 active:scale-95 relative bg-white border border-gray-200/60"
+                  :class="userReactions.includes(type) ? 'bg-orange-100 border-orange-300' : ''"
+                  :title="type"
+                >
+                  {{ data.emoji }}
+                  <span v-if="data.count > 0" class="absolute -top-1 -right-1 bg-orange-600 text-white text-[9px] font-bold rounded-full min-w-[14px] h-3.5 flex items-center justify-center px-0.5">{{ data.count }}</span>
+                </button>
+              </div>
 
-              <div class="w-px h-4 bg-gray-200"></div>
+              <!-- Right: Actions -->
+              <div class="flex items-center gap-1.5">
 
-              <!-- Embed -->
-              <button @click="copyEmbedCode" class="w-7 h-7 rounded-full hover:bg-gray-50 hover:text-orange-600 flex items-center justify-center text-gray-400 transition-colors group/embed relative bg-white border border-gray-200/60" title="Embed">
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
-                </svg>
-              </button>
+                <!-- Share button with dropdown -->
+                <div class="relative" ref="shareDropdownRef">
+                  <button
+                    @click="showShareDropdown = !showShareDropdown"
+                    class="flex items-center gap-1.5 px-3 py-1.5 bg-orange-600 hover:bg-orange-700 text-white text-xs font-medium rounded-lg transition-colors"
+                  >
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
+                    </svg>
+                    Share
+                    <svg class="w-2.5 h-2.5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                  </button>
+                  <div v-show="showShareDropdown" class="absolute bottom-full right-0 mb-1.5 w-48 bg-white rounded-lg shadow-xl border border-gray-200 py-1.5 z-50">
+                    <button @click="copyShareLink(); showShareDropdown = false" class="w-full px-4 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2.5">
+                      <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+                      </svg>
+                      {{ copied ? 'Copied!' : 'Copy link' }}
+                    </button>
+                    <button v-if="isOwner" @click="copyEmbedCode(); showShareDropdown = false" class="w-full px-4 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2.5">
+                      <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
+                      </svg>
+                      {{ copiedEmbed ? 'Copied!' : 'Copy embed code' }}
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Download -->
+                <button
+                  @click="handleSharedDownload"
+                  class="flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-gray-50 text-gray-700 text-xs font-medium rounded-lg border border-gray-200 transition-colors"
+                  title="Download"
+                >
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                  </svg>
+                  Download
+                </button>
+
+                <!-- Owner actions dropdown -->
+                <div v-if="isOwner" class="relative" ref="optionsMenuRef">
+                  <button
+                    @click="showOptionsMenu = !showOptionsMenu"
+                    class="flex items-center justify-center w-8 h-8 bg-white hover:bg-gray-50 text-gray-500 hover:text-gray-700 rounded-lg border border-gray-200 transition-colors"
+                    title="More actions"
+                  >
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                      <circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/>
+                    </svg>
+                  </button>
+                  <div v-show="showOptionsMenu" class="absolute bottom-full right-0 mb-1.5 w-52 bg-white rounded-lg shadow-xl border border-gray-200 py-1.5 z-50">
+                    <button @click="handleSharedDuplicate(); showOptionsMenu = false" class="w-full px-4 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2.5">
+                      <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                      </svg>
+                      Duplicate
+                    </button>
+                    <button @click="handleSharedRename(); showOptionsMenu = false" class="w-full px-4 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2.5">
+                      <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                      </svg>
+                      Rename
+                    </button>
+                    <div class="my-1.5 border-t border-gray-100"></div>
+                    <button @click="showPrivateConfirm = true; showOptionsMenu = false" class="w-full px-4 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2.5">
+                      <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                      </svg>
+                      Make it private
+                    </button>
+                    <button @click="showArchiveConfirm = true; showOptionsMenu = false" class="w-full px-4 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2.5">
+                      <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>
+                      </svg>
+                      Archive
+                    </button>
+                    <button @click="showDeleteConfirm = true; showOptionsMenu = false" class="w-full px-4 py-2 text-left text-xs text-red-600 hover:bg-red-50 flex items-center gap-2.5">
+                      <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                      </svg>
+                      Delete
+                    </button>
+                  </div>
+                </div>
+
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- Sidebar Toggle Button -->
-        <button
-          @click="toggleSidebar"
-          class="hidden lg:flex fixed top-1/2 -translate-y-1/2 z-50 items-center justify-center w-6 h-12 bg-white border border-gray-200 rounded-l-lg shadow-sm hover:bg-gray-50 transition-all"
-          :class="sidebarVisible ? 'right-[400px]' : 'right-0'"
-          :title="sidebarVisible ? 'Hide sidebar' : 'Show sidebar'"
-        >
-          <svg class="w-3.5 h-3.5 text-gray-500 transition-transform" :class="sidebarVisible ? '' : 'rotate-180'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-          </svg>
-        </button>
-
-        <!-- Sidebar -->
-        <aside v-show="sidebarVisible" class="w-full lg:w-[400px] bg-white border-l border-gray-200 flex flex-col z-40">
+        <!-- Sidebar (30%) -->
+        <aside class="flex flex-col overflow-hidden bg-white border-l border-gray-200">
 
           <!-- Functional Tabs -->
           <div class="grid grid-cols-3 gap-0 px-4 py-3 border-b border-gray-100 sticky top-0 bg-white z-10 flex-shrink-0">
