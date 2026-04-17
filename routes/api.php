@@ -47,7 +47,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 // Authentication routes (rate limited to prevent abuse)
-Route::prefix('auth')->middleware('throttle:10,1')->group(function () {
+Route::prefix('auth')->middleware('throttle:60,1')->group(function () {
     Route::get('/google', [GoogleAuthController::class, 'redirect']);
     Route::get('/google/callback', [GoogleAuthController::class, 'callback']);
     Route::middleware('auth:sanctum')->group(function () {

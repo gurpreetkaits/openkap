@@ -227,6 +227,28 @@
           Cancel
         </button>
 
+        <!-- Search -->
+        <div class="relative group">
+          <svg class="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-orange-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+          <input
+            v-model="searchQuery"
+            type="text"
+            placeholder="Search..."
+            class="pl-9 pr-8 py-1.5 text-sm font-medium bg-white border border-gray-200 focus:border-orange-500/30 focus:ring-4 focus:ring-orange-500/5 rounded-lg w-48 transition-all outline-none placeholder:text-gray-400 shadow-sm"
+          />
+          <button
+            v-if="searchQuery"
+            @click="searchQuery = ''"
+            class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+          >
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+
         <!-- Sort Dropdown -->
         <div class="relative" ref="sortDropdownRef">
           <button
@@ -389,7 +411,7 @@
         v-for="video in paginatedVideos"
         :key="video.id"
         :data-video-id="video.id"
-        class="group bg-white rounded-xl border border-gray-100 shadow-sm shadow-transparent hover:shadow-lg hover:shadow-gray-200/60 hover:border-gray-200 transition-all duration-200 hover:-translate-y-0.5"
+        class="group"
         :class="selectedVideos.includes(video.id) ? 'ring-2 ring-orange-500 ring-offset-2' : ''"
         :draggable="folders.length > 0"
         @dragstart="handleVideoDragStart($event, video)"
@@ -398,7 +420,7 @@
       >
         <!-- Thumbnail Container -->
         <div
-          class="relative w-full cursor-pointer overflow-hidden rounded-t-xl"
+          class="relative w-full cursor-pointer overflow-hidden rounded-xl"
           style="aspect-ratio: 16/9;"
           @click="handleVideoClick(video.id)"
         >
@@ -453,16 +475,8 @@
             </div>
           </div>
 
-          <!-- Hover Overlay with Play Button -->
-          <div
-            class="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 lg:opacity-0 lg:group-hover:opacity-100"
-          >
-            <div class="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center shadow-xl shadow-orange-500/25 transform group-hover:scale-100 scale-90 transition-transform duration-200 pointer-events-none">
-              <svg class="w-5 h-5 text-white ml-0.5" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.841z"/>
-              </svg>
-            </div>
-          </div>
+          <!-- Hover Overlay -->
+          <div class="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none"></div>
 
           <!-- Select Checkbox -->
           <div
@@ -484,7 +498,7 @@
           <!-- Title Row -->
           <div class="flex items-start gap-1.5">
             <h3
-              class="flex-1 font-medium text-sm text-gray-900 leading-snug line-clamp-2 cursor-pointer hover:text-orange-600 transition-colors"
+              class="flex-1 font-medium text-sm text-gray-900 leading-snug line-clamp-2 cursor-pointer"
               @click="handleVideoClick(video.id)"
             >
               {{ video.title }}
@@ -1404,6 +1418,9 @@ export default {
       target: null
     })
 
+    // Search state
+    const searchQuery = ref('')
+
     // Sort state
     const sortBy = ref('date_desc')
     const showSortDropdown = ref(false)
@@ -1454,6 +1471,12 @@ export default {
       // Apply tab filter (favourites)
       if (activeTab.value === 'favourites') {
         result = result.filter(v => v.is_favourite)
+      }
+
+      // Apply search filter
+      if (searchQuery.value.trim()) {
+        const q = searchQuery.value.toLowerCase()
+        result = result.filter(v => v.title.toLowerCase().includes(q))
       }
 
       // Apply date filter
@@ -1509,7 +1532,7 @@ export default {
     })
 
     // Reset page when filters or tab change
-    watch([activeDateFilter, customDateFrom, customDateTo, sortBy, activeTab], () => {
+    watch([activeDateFilter, customDateFrom, customDateTo, sortBy, activeTab, searchQuery], () => {
       currentPage.value = 1
     })
 
@@ -2835,6 +2858,8 @@ export default {
       loading,
       error,
       activeTab,
+      // Search
+      searchQuery,
       // Sort
       sortBy,
       showSortDropdown,

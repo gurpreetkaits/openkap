@@ -120,7 +120,7 @@ const routes = [
   {
     path: "/share/video/:token",
     name: "SharedVideo",
-    component: () => import("../views/SharedVideoView.vue"),
+    component: () => import("../views/VideoPlayerView.vue"),
     // Public - no auth required
   },
   {

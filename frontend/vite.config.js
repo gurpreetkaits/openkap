@@ -18,6 +18,10 @@ export default defineConfig(({ mode }) => {
       include: ['hls.js']
     },
     server: {
+      watch: {
+        usePolling: true,
+        interval: 300
+      },
       proxy: {
         '/api': {
           // Use VITE_PROXY_TARGET for Docker (http://nginx), fallback to VITE_BACKEND_URL or localhost

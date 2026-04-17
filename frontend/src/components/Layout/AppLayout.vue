@@ -309,23 +309,6 @@
 
         <!-- Global Search & Actions -->
         <div class="flex items-center gap-3">
-          <!-- Search (Desktop only) -->
-          <div class="relative group hidden md:block">
-            <svg class="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-orange-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-            </svg>
-            <input
-              type="text"
-              placeholder="Search..."
-              class="pl-9 pr-3 py-1.5 text-xs font-medium bg-gray-100 border border-transparent focus:bg-white focus:border-orange-500/30 focus:ring-4 focus:ring-orange-500/5 rounded-lg w-56 transition-all outline-none placeholder:text-gray-400"
-            />
-            <div class="absolute right-2 top-1/2 -translate-y-1/2 hidden group-focus-within:hidden sm:flex items-center gap-0.5">
-              <kbd class="px-1.5 py-0.5 text-[10px] font-sans font-medium text-gray-400 bg-white border border-gray-200 rounded">⌘K</kbd>
-            </div>
-          </div>
-
-          <div class="hidden md:block h-4 w-px bg-gray-200 mx-1"></div>
-
           <!-- Notifications -->
           <NotificationBell />
         </div>
