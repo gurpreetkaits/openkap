@@ -430,24 +430,25 @@ class BunnyVideoController extends Controller
             ], 410);
         }
 
-        if (! $video->bunny_video_id || $video->bunny_status !== 'ready') {
+        if ($video->bunny_status && ! in_array($video->bunny_status, ['ready', 'error'])) {
             return response()->json([
                 'error' => 'not_ready',
                 'message' => 'Video is not yet available for download',
             ], 400);
         }
 
-        $resolution = $video->bunny_resolution ?: '720p';
-        $downloadUrl = $this->bunnyService->generateSignedDownloadUrl(
-            $video->bunny_video_id,
-            $resolution,
-            3600
-        );
+        // Serve local file for download
+        $media = $video->getFirstMedia('videos');
+        if (! $media || ! file_exists($media->getPath())) {
+            return response()->json([
+                'error' => 'not_found',
+                'message' => 'Video file not found',
+            ], 404);
+        }
 
-        return response()->json([
-            'url' => $downloadUrl,
-            'file_name' => ($video->title ?? 'video').'.mp4',
-        ]);
+        $fileName = ($video->title ?? 'video').'.'.pathinfo($media->file_name, PATHINFO_EXTENSION);
+
+        return response()->download($media->getPath(), $fileName);
     }
 
     /**

@@ -992,25 +992,8 @@ class VideoManager
 
     public function requestMp4Download(Video $video): array
     {
-        // Bunny CDN videos: redirect to signed download URL
-        if ($video->isBunnyVideo() && $video->bunny_video_id && $video->bunny_status === 'ready') {
-            $resolution = $video->bunny_resolution ?: '720p';
-
-            $downloadUrl = $this->bunnyService->generateSignedDownloadUrl(
-                $video->bunny_video_id,
-                $resolution,
-                3600
-            );
-
-            return [
-                'mode' => 'redirect',
-                'url' => $downloadUrl,
-                'file_name' => ($video->title ?? 'video').'.mp4',
-            ];
-        }
-
-        // Bunny video still processing — tell frontend to track progress
-        if ($video->isBunnyVideo()) {
+        // Bunny video still encoding — tell frontend to wait
+        if ($video->isBunnyVideo() && $video->bunny_status && ! in_array($video->bunny_status, ['ready', 'error'])) {
             return [
                 'mode' => 'processing',
                 'bunny_status' => $video->bunny_status,
@@ -1018,7 +1001,7 @@ class VideoManager
             ];
         }
 
-        // Local videos: convert to MP4
+        // Convert local file to MP4 for download (works for both Bunny and local videos)
         $media = $video->getFirstMedia('videos');
         if (! $media) {
             throw new \Exception('Video file not found');
