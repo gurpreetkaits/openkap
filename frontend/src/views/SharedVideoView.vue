@@ -173,10 +173,10 @@
       </div>
 
       <!-- Main Layout -->
-      <main class="relative z-10" style="height: calc(100vh - 80px)">
+      <main class="flex z-10" style="height: calc(100vh - 80px)">
 
-        <!-- Video Player — full width -->
-        <div class="h-full flex flex-col items-center justify-center p-6 bg-[#FAFAFA]/50 overflow-y-auto">
+        <!-- Video Player — expands/shrinks with sidebar -->
+        <div class="video-stage flex flex-col items-center justify-center p-6 bg-[#FAFAFA]/50 overflow-y-auto" :class="sidebarVisible ? 'sidebar-is-open' : 'sidebar-is-closed'">
 
           <div class="w-full flex flex-col" style="max-width: min(calc((100vh - 200px) * 16 / 9), 100%)">
 
@@ -193,6 +193,20 @@
               @mousemove="showControls"
               @mouseleave="hideControlsDelayed"
             >
+
+              <!-- Sidebar Toggle — top right of video -->
+              <button
+                @click.stop="sidebarVisible = !sidebarVisible"
+                class="absolute top-3 right-3 z-40 w-8 h-8 flex items-center justify-center rounded-lg bg-black/50 backdrop-blur-sm text-white/80 hover:text-white hover:bg-black/70 transition-all"
+                :title="sidebarVisible ? 'Hide sidebar' : 'Show sidebar'"
+              >
+                <svg v-if="!sidebarVisible" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 5h18M3 12h18M3 19h18"/>
+                </svg>
+                <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </button>
 
               <!-- Blurred thumbnail backdrop (behind video, visible only in aspect-ratio gaps) -->
               <div v-if="video.thumbnail && !isFullscreen" class="absolute inset-0 z-0 scale-110 blur-2xl" :style="{ backgroundImage: `url(${video.thumbnail})`, backgroundSize: 'cover', backgroundPosition: 'center' }"></div>
@@ -479,121 +493,119 @@
             </div>
 
             <!-- Action Bar Below Video -->
-            <div class="mt-3 flex items-center justify-between gap-2 z-30 relative">
+            <div class="mt-3 z-30 relative flex items-center gap-2">
 
-              <!-- Left: Reactions -->
-              <div class="flex items-center gap-1.5">
-                <button
-                  v-for="(data, type) in reactions"
-                  :key="type"
-                  @click="toggleReaction(type)"
-                  class="w-7 h-7 rounded-full hover:bg-gray-100 flex items-center justify-center text-sm transition-transform hover:-translate-y-0.5 active:scale-95 relative bg-white border border-gray-200/60"
-                  :class="userReactions.includes(type) ? 'bg-orange-100 border-orange-300' : ''"
-                  :title="type"
-                >
-                  {{ data.emoji }}
-                  <span v-if="data.count > 0" class="absolute -top-1 -right-1 bg-orange-600 text-white text-[9px] font-bold rounded-full min-w-[14px] h-3.5 flex items-center justify-center px-0.5">{{ data.count }}</span>
-                </button>
-              </div>
-
-              <!-- Right: Actions -->
-              <div class="flex items-center gap-1.5">
-
-                <!-- Share button with dropdown -->
-                <div class="relative" ref="shareDropdownRef">
-                  <button
-                    @click="showShareDropdown = !showShareDropdown"
-                    class="flex items-center gap-1.5 px-3 py-1.5 bg-orange-600 hover:bg-orange-700 text-white text-xs font-medium rounded-lg transition-colors"
+              <!-- Comment input bar (slides open from left) -->
+              <transition name="comment-slide">
+              <div v-if="showCommentBox" class="flex-1 min-w-0 flex items-center bg-white border border-gray-200 rounded-full px-1.5 py-1 gap-1.5 transition-colors">
+                <!-- Avatar -->
+                <div v-if="currentUser" class="flex-shrink-0">
+                  <img v-if="currentUser.avatar" :src="currentUser.avatar" class="w-7 h-7 rounded-full object-cover" />
+                  <div v-else class="w-7 h-7 rounded-full bg-green-100 flex items-center justify-center text-green-700 text-[10px] font-bold">
+                    {{ (currentUser.name || 'U').substring(0, 2).toUpperCase() }}
+                  </div>
+                </div>
+                <!-- Timestamp badge -->
+                <span class="text-[10px] text-gray-500 font-mono font-medium bg-gray-100 px-1.5 py-0.5 rounded flex-shrink-0">
+                  {{ formatTime(currentTime) }}
+                </span>
+                <!-- Input -->
+                <div class="flex-1 min-w-0 relative">
+                  <input
+                    ref="commentBoxRef"
+                    v-model="newComment"
+                    type="text"
+                    placeholder="Add new comment..."
+                    @keydown.enter.prevent="addComment"
+                    @keydown.escape="showCommentBox = false; newComment = ''"
+                    @input="onCommentInput"
+                    class="w-full text-xs text-gray-900 placeholder:text-gray-400 outline-none border-0 ring-0 focus:outline-none focus:ring-0 focus:border-0 bg-transparent py-1"
+                  />
+                  <!-- @ Mention Dropdown -->
+                  <div
+                    v-if="showMentionDropdown && mentionUsers.length > 0"
+                    class="absolute bottom-full left-0 mb-2 w-56 bg-white border border-gray-200 rounded-lg shadow-xl py-1 z-50 max-h-40 overflow-y-auto"
                   >
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
-                    </svg>
-                    Share
-                    <svg class="w-2.5 h-2.5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                    </svg>
-                  </button>
-                  <div v-show="showShareDropdown" class="absolute bottom-full right-0 mb-1.5 w-48 bg-white rounded-lg shadow-xl border border-gray-200 py-1.5 z-50">
-                    <button @click="copyShareLink(); showShareDropdown = false" class="w-full px-4 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2.5">
-                      <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
-                      </svg>
-                      {{ copied ? 'Copied!' : 'Copy link' }}
-                    </button>
-                    <button v-if="isOwner" @click="copyEmbedCode(); showShareDropdown = false" class="w-full px-4 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2.5">
-                      <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
-                      </svg>
-                      {{ copiedEmbed ? 'Copied!' : 'Copy embed code' }}
+                    <button
+                      v-for="user in mentionUsers"
+                      :key="user.id"
+                      @mousedown.prevent="insertMention(user)"
+                      class="w-full px-3 py-1.5 text-left text-xs text-gray-700 hover:bg-orange-50 flex items-center gap-2"
+                    >
+                      <img v-if="user.avatar_url" :src="user.avatar_url" class="w-5 h-5 rounded-full object-cover" />
+                      <div v-else class="w-5 h-5 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 text-[9px] font-bold">
+                        {{ (user.name || 'U').charAt(0).toUpperCase() }}
+                      </div>
+                      <span class="font-medium">{{ user.name }}</span>
                     </button>
                   </div>
                 </div>
-
-                <!-- Download -->
-                <button
-                  @click="handleSharedDownload"
-                  class="flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-gray-50 text-gray-700 text-xs font-medium rounded-lg border border-gray-200 transition-colors"
-                  title="Download"
-                >
-                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-                  </svg>
-                  Download
-                </button>
-
-                <!-- Owner actions dropdown -->
-                <div v-if="isOwner" class="relative" ref="optionsMenuRef">
-                  <button
-                    @click="showOptionsMenu = !showOptionsMenu"
-                    class="flex items-center justify-center w-8 h-8 bg-white hover:bg-gray-50 text-gray-500 hover:text-gray-700 rounded-lg border border-gray-200 transition-colors"
-                    title="More actions"
-                  >
-                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                      <circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/>
-                    </svg>
-                  </button>
-                  <div v-show="showOptionsMenu" class="absolute bottom-full right-0 mb-1.5 w-52 bg-white rounded-lg shadow-xl border border-gray-200 py-1.5 z-50">
-                    <button @click="handleSharedDuplicate(); showOptionsMenu = false" class="w-full px-4 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2.5">
-                      <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
-                      </svg>
-                      Duplicate
-                    </button>
-                    <button @click="handleSharedRename(); showOptionsMenu = false" class="w-full px-4 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2.5">
-                      <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
-                      </svg>
-                      Rename
-                    </button>
-                    <div class="my-1.5 border-t border-gray-100"></div>
-                    <button @click="showPrivateConfirm = true; showOptionsMenu = false" class="w-full px-4 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2.5">
-                      <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-                      </svg>
-                      Make it private
-                    </button>
-                    <button @click="showArchiveConfirm = true; showOptionsMenu = false" class="w-full px-4 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2.5">
-                      <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>
-                      </svg>
-                      Archive
-                    </button>
-                    <button @click="showDeleteConfirm = true; showOptionsMenu = false" class="w-full px-4 py-2 text-left text-xs text-red-600 hover:bg-red-50 flex items-center gap-2.5">
-                      <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                      </svg>
-                      Delete
-                    </button>
-                  </div>
+                <!-- Quick emoji reactions -->
+                <div class="flex items-center gap-0.5 flex-shrink-0">
+                  <button v-for="emoji in quickEmojis" :key="emoji" @click="newComment += emoji" class="w-6 h-6 flex items-center justify-center text-sm hover:bg-gray-100 rounded-full transition-colors">{{ emoji }}</button>
                 </div>
-
+                <!-- @ mention button -->
+                <button
+                  @click="triggerMention"
+                  class="w-6 h-6 flex items-center justify-center text-gray-400 hover:text-orange-600 hover:bg-orange-50 rounded-full transition-colors flex-shrink-0"
+                  title="Mention someone"
+                >
+                  <span class="text-sm font-bold">@</span>
+                </button>
+                <!-- Send button -->
+                <button
+                  @click="addComment"
+                  :disabled="!newComment.trim() || isSavingComment"
+                  class="flex-shrink-0 bg-orange-600 text-white px-3 py-1 rounded-full text-[11px] font-semibold hover:bg-orange-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+                >
+                  Send
+                </button>
               </div>
+              </transition>
+
+              <!-- Spacer when comment box is closed -->
+              <div v-if="!showCommentBox" class="flex-1"></div>
+
+              <!-- Comment button (hidden when box is open) -->
+              <button
+                v-if="!showCommentBox"
+                @click="isAuthenticated ? openCommentBox() : loginToComment()"
+                class="flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-gray-50 text-gray-600 text-xs font-medium rounded-lg border border-gray-200 transition-colors flex-shrink-0"
+              >
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                </svg>
+                Comment
+              </button>
+              <!-- Copy Link -->
+              <button
+                @click="copyShareLink"
+                class="flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-gray-50 text-gray-600 text-xs font-medium rounded-lg border border-gray-200 transition-colors flex-shrink-0"
+              >
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+                </svg>
+                {{ copied ? 'Copied!' : 'Copy Link' }}
+              </button>
+              <!-- Download -->
+              <button
+                @click="handleSharedDownload"
+                class="flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-gray-50 text-gray-600 text-xs font-medium rounded-lg border border-gray-200 transition-colors flex-shrink-0"
+              >
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                </svg>
+                Download
+              </button>
             </div>
           </div>
         </div>
 
-        <!-- Sidebar (30%) -->
-        <aside class="flex flex-col overflow-hidden bg-white border-l border-gray-200">
+        <!-- Sidebar — slides in/out from right -->
+        <aside
+          class="sidebar-panel flex flex-col bg-white border-l border-gray-200 overflow-hidden flex-shrink-0"
+          :class="sidebarVisible ? 'sidebar-open' : 'sidebar-closed'"
+        >
 
           <!-- Functional Tabs -->
           <div class="grid grid-cols-3 gap-0 px-4 py-3 border-b border-gray-100 sticky top-0 bg-white z-10 flex-shrink-0">
@@ -654,7 +666,7 @@
                         <span class="text-[10px] font-semibold text-gray-900">{{ comment.author_name }}</span>
                         <span class="text-[9px] text-gray-400">{{ formatCommentTime(comment.created_at) }}</span>
                       </div>
-                      <p class="text-[11px] text-gray-700 leading-relaxed">{{ comment.content }}</p>
+                      <p class="text-[11px] text-gray-700 leading-relaxed comment-content" v-html="renderCommentContent(comment.content)"></p>
                     </div>
                     <button
                       v-if="comment.timestamp_seconds != null"
@@ -913,24 +925,6 @@
       </div>
     </transition>
 
-    <!-- Signup CTA Banner (for non-authenticated users) -->
-    <div v-if="!isAuthenticated && !loading" class="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-t border-gray-200">
-      <div class="max-w-5xl mx-auto px-3 py-2 flex items-center justify-between gap-3">
-        <div class="flex items-center gap-2 min-w-0">
-          <img src="/logo.png" alt="OpenKap" class="w-5 h-5 rounded-md flex-shrink-0" />
-          <p class="text-xs text-gray-600 truncate">
-            <span class="font-semibold text-gray-900">Made with OpenKap</span>
-            <span class="hidden sm:inline"> — Free screen recording</span>
-          </p>
-        </div>
-        <a
-          href="/login"
-          class="flex-shrink-0 inline-flex items-center px-3 py-1.5 bg-orange-600 hover:bg-orange-700 text-white text-xs font-medium rounded-md transition-colors"
-        >
-          Try Free
-        </a>
-      </div>
-    </div>
 
     </div><!-- end Main Content Area -->
   </div>
@@ -995,6 +989,8 @@ export default {
     const toast = ref(null)
 
     const newComment = ref('')
+    const showCommentBox = ref(false)
+    const commentBoxRef = ref(null)
     const isSavingComment = ref(false)
 
     const showShareModal = ref(false)
@@ -1836,6 +1832,7 @@ export default {
         const data = await response.json()
         comments.value.unshift(data.comment)
         showToast('Comment added!')
+        showCommentBox.value = false
       } catch (err) {
         console.error('Failed to add comment:', err)
         newComment.value = commentText
@@ -1843,6 +1840,73 @@ export default {
       } finally {
         isSavingComment.value = false
       }
+    }
+
+    const openCommentBox = () => {
+      showCommentBox.value = true
+      nextTick(() => {
+        commentBoxRef.value?.focus()
+      })
+    }
+
+    // --- Mention & Emoji ---
+    const quickEmojis = ['👍', '🤩', '😮', '👎', '😊']
+    const showMentionDropdown = ref(false)
+    const mentionUsers = ref([])
+    const mentionQuery = ref('')
+    let allCommenters = []
+
+    const loadCommenters = async () => {
+      if (allCommenters.length > 0) return
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/share/video/${token.value}/commenters`, {
+          headers: { 'Authorization': `Bearer ${auth.token.value}` }
+        })
+        const data = await res.json()
+        allCommenters = data.commenters || []
+      } catch { allCommenters = [] }
+    }
+
+    const onCommentInput = () => {
+      const val = newComment.value
+      const atIdx = val.lastIndexOf('@')
+      if (atIdx >= 0 && (atIdx === 0 || val[atIdx - 1] === ' ')) {
+        const query = val.substring(atIdx + 1).toLowerCase()
+        if (!query.includes(' ') || query.length < 20) {
+          mentionQuery.value = query
+          loadCommenters().then(() => {
+            mentionUsers.value = allCommenters.filter(u =>
+              u.name.toLowerCase().includes(query)
+            ).slice(0, 6)
+            showMentionDropdown.value = mentionUsers.value.length > 0
+          })
+          return
+        }
+      }
+      showMentionDropdown.value = false
+    }
+
+    const triggerMention = () => {
+      const val = newComment.value
+      newComment.value = val + (val.length > 0 && val[val.length - 1] !== ' ' ? ' @' : '@')
+      commentBoxRef.value?.focus()
+      onCommentInput()
+    }
+
+    const insertMention = (user) => {
+      const val = newComment.value
+      const atIdx = val.lastIndexOf('@')
+      newComment.value = val.substring(0, atIdx) + `@[${user.name}](${user.id}) `
+      showMentionDropdown.value = false
+      commentBoxRef.value?.focus()
+    }
+
+    const renderCommentContent = (content) => {
+      if (!content) return ''
+      let safe = content.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      safe = safe.replace(/@\[([^\]]+)\]\(\d+\)/g, '<span class="text-orange-600 font-semibold cursor-pointer hover:underline">@$1</span>')
+      safe = safe.replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline break-all">$1</a>')
+      return safe
     }
 
     const loginToComment = () => {
@@ -1991,7 +2055,8 @@ export default {
       togglePlay, updateProgress, onVideoLoaded, onVideoError, onVideoEnded, seek, startSeeking,
       updateHoverTime, skip, toggleMute, updateVolume, toggleSpeedMenu, setPlaybackSpeed,
       toggleFullscreen, togglePiP, showControls, hideControlsDelayed,
-      formatTime, formatTimeAgo, formatCommentTime, copyShareLink, copyEmbedCode, toggleReaction, addComment, loginToComment,
+      formatTime, formatTimeAgo, formatCommentTime, copyShareLink, copyEmbedCode, toggleReaction, addComment, loginToComment, openCommentBox, showCommentBox, commentBoxRef,
+      quickEmojis, showMentionDropdown, mentionUsers, onCommentInput, triggerMention, insertMention, renderCommentContent,
       // HLS functions
       setQuality, toggleQualityMenu, getCurrentQualityLabel,
       // Bunny
@@ -2004,6 +2069,26 @@ export default {
 <style scoped>
 .fade-enter-active, .fade-leave-active { transition: opacity 0.2s ease; }
 .fade-enter-from, .fade-leave-to { opacity: 0; }
+
+/* Comment bar slide in from left */
+.comment-slide-enter-active { transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+.comment-slide-leave-active { transition: all 0.2s ease-in; }
+.comment-slide-enter-from { opacity: 0; transform: translateX(-20px); max-width: 0; }
+.comment-slide-leave-to { opacity: 0; transform: translateX(-20px); max-width: 0; }
+
+/* Video stage transitions */
+.video-stage {
+  flex: 1;
+  min-width: 0;
+  transition: flex 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Sidebar slide from right */
+.sidebar-panel {
+  transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.sidebar-panel.sidebar-open { width: 380px; }
+.sidebar-panel.sidebar-closed { width: 0; border-left: none; }
 
 .toast-enter-active { transition: all 0.3s ease; }
 .toast-leave-active { transition: all 0.2s ease; }

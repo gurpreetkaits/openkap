@@ -695,86 +695,157 @@
               </div>
             </div>
 
-            <!-- Reaction Bar -->
-            <div class="mt-4 flex justify-center z-30 relative">
-              <div class="flex items-center gap-1 bg-white border border-gray-200/60 rounded-full shadow-sm px-2 py-1.5">
-                <!-- Shared mode: API-based reactions -->
-                <template v-if="isSharedMode">
-                  <button
-                    v-for="(data, type) in sharedReactions"
-                    :key="type"
-                    @click="toggleSharedReaction(type)"
-                    class="w-7 h-7 rounded-full hover:bg-gray-100 flex items-center justify-center text-sm transition-transform hover:-translate-y-0.5 active:scale-95 relative bg-white border border-gray-200/60"
-                    :class="userReactions.includes(type) ? 'bg-orange-100 border-orange-300' : ''"
-                    :title="type"
+            <!-- Action Bar Below Video -->
+            <div class="mt-3 z-30 relative flex items-center gap-2">
+
+              <!-- Comment input bar (slides open from left) -->
+              <transition name="comment-slide">
+              <div v-if="showCommentBox" class="flex-1 min-w-0 flex items-center bg-white border border-gray-200 rounded-full px-1.5 py-1 gap-1.5 transition-colors">
+                <!-- Avatar -->
+                <div v-if="currentUser" class="flex-shrink-0">
+                  <img v-if="currentUser.avatar" :src="currentUser.avatar" class="w-7 h-7 rounded-full object-cover" />
+                  <div v-else class="w-7 h-7 rounded-full bg-green-100 flex items-center justify-center text-green-700 text-[10px] font-bold">
+                    {{ (currentUser.name || 'U').substring(0, 2).toUpperCase() }}
+                  </div>
+                </div>
+                <!-- Timestamp badge -->
+                <span class="text-[10px] text-gray-500 font-mono font-medium bg-gray-100 px-1.5 py-0.5 rounded flex-shrink-0">
+                  {{ formatTime(currentTime) }}
+                </span>
+                <!-- Input -->
+                <div class="flex-1 min-w-0 relative">
+                  <input
+                    ref="commentBoxRef"
+                    v-model="newComment"
+                    type="text"
+                    placeholder="Add new comment..."
+                    @keydown.enter.prevent="addComment"
+                    @keydown.escape="showCommentBox = false; newComment = ''"
+                    @input="onCommentInput"
+                    class="w-full text-xs text-gray-900 placeholder:text-gray-400 outline-none border-0 ring-0 focus:outline-none focus:ring-0 focus:border-0 bg-transparent py-1"
+                  />
+                  <!-- @ Mention Dropdown -->
+                  <div
+                    v-if="showMentionDropdown && mentionUsers.length > 0"
+                    class="absolute bottom-full left-0 mb-2 w-56 bg-white border border-gray-200 rounded-lg shadow-xl py-1 z-50 max-h-40 overflow-y-auto"
                   >
-                    {{ data.emoji }}
-                    <span v-if="data.count > 0" class="absolute -top-1 -right-1 bg-orange-600 text-white text-[9px] font-bold rounded-full min-w-[14px] h-3.5 flex items-center justify-center px-0.5">{{ data.count }}</span>
-                  </button>
-                </template>
-                <!-- Owner mode: local reactions -->
-                <template v-else>
-                  <button
-                    v-for="emoji in reactions"
-                    :key="emoji.icon"
-                    @click="addReaction(emoji.icon)"
-                    class="w-9 h-9 rounded-full hover:bg-gray-100 flex items-center justify-center text-lg transition-transform hover:scale-110 active:scale-95"
-                    :class="emoji.selected ? 'bg-orange-100' : ''"
-                    :title="emoji.icon"
-                  >
-                    {{ emoji.icon }}
-                  </button>
-                </template>
-                <div class="w-px h-5 bg-gray-200 mx-0.5"></div>
-                <button @click="copyShareLink" class="w-9 h-9 rounded-full hover:bg-gray-50 hover:text-orange-600 flex items-center justify-center text-gray-400 transition-colors" title="Copy Link">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
-                  </svg>
+                    <button
+                      v-for="user in mentionUsers"
+                      :key="user.id"
+                      @mousedown.prevent="insertMention(user)"
+                      class="w-full px-3 py-1.5 text-left text-xs text-gray-700 hover:bg-orange-50 flex items-center gap-2"
+                    >
+                      <img v-if="user.avatar_url" :src="user.avatar_url" class="w-5 h-5 rounded-full object-cover" />
+                      <div v-else class="w-5 h-5 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 text-[9px] font-bold">
+                        {{ (user.name || 'U').charAt(0).toUpperCase() }}
+                      </div>
+                      <span class="font-medium">{{ user.name }}</span>
+                    </button>
+                  </div>
+                </div>
+                <!-- Quick emoji reactions -->
+                <div class="flex items-center gap-0.5 flex-shrink-0">
+                  <button v-for="emoji in quickEmojis" :key="emoji" @click="newComment += emoji" class="w-6 h-6 flex items-center justify-center text-sm hover:bg-gray-100 rounded-full transition-colors">{{ emoji }}</button>
+                </div>
+                <!-- @ mention button -->
+                <button
+                  @click="triggerMention"
+                  class="w-6 h-6 flex items-center justify-center text-gray-400 hover:text-orange-600 hover:bg-orange-50 rounded-full transition-colors flex-shrink-0"
+                  title="Mention someone"
+                >
+                  <span class="text-sm font-bold">@</span>
+                </button>
+                <!-- Send button -->
+                <button
+                  @click="addComment"
+                  :disabled="!newComment.trim() || isSavingComment"
+                  class="flex-shrink-0 bg-orange-600 text-white px-3 py-1 rounded-full text-[11px] font-semibold hover:bg-orange-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+                >
+                  Send
                 </button>
               </div>
+              </transition>
+
+              <!-- Spacer when comment box is open -->
+              <div v-if="!showCommentBox" class="flex-1"></div>
+
+              <!-- Right buttons -->
+              <!-- Comment button (hidden when box is open) -->
+              <button
+                v-if="!showCommentBox"
+                @click="isAuthenticated ? openCommentBox() : loginToComment()"
+                class="flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-gray-50 text-gray-600 text-xs font-medium rounded-lg border border-gray-200 transition-colors flex-shrink-0"
+              >
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                </svg>
+                Comment
+              </button>
+              <!-- Copy Link -->
+              <button
+                @click="copyShareLink"
+                class="flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-gray-50 text-gray-600 text-xs font-medium rounded-lg border border-gray-200 transition-colors flex-shrink-0"
+              >
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+                </svg>
+                {{ copied ? 'Copied!' : 'Copy Link' }}
+              </button>
+              <!-- Download -->
+              <button
+                @click="handleDownload"
+                class="flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-gray-50 text-gray-600 text-xs font-medium rounded-lg border border-gray-200 transition-colors flex-shrink-0"
+              >
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                </svg>
+                Download
+              </button>
             </div>
           </div>
         </div>
 
-        <!-- Sidebar — slides in/out from right -->
+        <!-- Sidebar — slides in/out from right, aligned with video -->
         <aside
-          class="sidebar-panel flex flex-col bg-white border-l border-gray-200 overflow-hidden flex-shrink-0"
+          class="sidebar-panel flex flex-col bg-white rounded-xl overflow-hidden flex-shrink-0 my-6 mr-6 shadow-sm ring-1 ring-gray-200/60"
           :class="sidebarVisible ? 'sidebar-open' : 'sidebar-closed'"
         >
-          <!-- Functional Tabs -->
-          <div class="grid gap-0 px-4 py-3 border-b border-gray-100 sticky top-0 bg-white z-10" :class="tabGridCols">
-            <button
-              @click="activeTab = 'transcript'"
-              class="px-3 py-2 text-xs rounded-lg transition-all text-center truncate"
-              :class="activeTab === 'transcript' ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'"
-            >
-              Transcript
-            </button>
-            <button
-              v-if="showSummaryTab"
-              @click="activeTab = 'summary'"
-              class="px-3 py-2 text-xs rounded-lg transition-all text-center truncate"
-              :class="activeTab === 'summary' ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'"
-            >
-              Summary
-            </button>
-            <button
-              @click="activeTab = 'comments'"
-              class="px-3 py-2 text-xs rounded-lg transition-all text-center truncate flex items-center justify-center gap-1"
-              :class="activeTab === 'comments' ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'"
-            >
-              Comments
-              <span v-if="comments.length" class="text-[10px] text-gray-400 font-normal">{{ comments.length }}</span>
-            </button>
-            <button
-              v-if="!isSharedMode && jiraConnected"
-              @click="activeTab = 'bugs'; loadBugTabData()"
-              class="px-3 py-2 text-xs rounded-lg transition-all text-center truncate flex items-center justify-center gap-1"
-              :class="activeTab === 'bugs' ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'"
-            >
-              Bugs
-              <span v-if="detectedBugs.length" class="text-[10px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full font-medium">{{ detectedBugs.length }}</span>
-            </button>
+          <!-- Tabs -->
+          <div class="px-4 pt-3 pb-2 flex-shrink-0">
+            <div class="flex bg-gray-100 rounded-lg p-0.5" :class="tabGridCols">
+              <button
+                @click="activeTab = 'transcript'"
+                class="flex-1 px-3 py-1.5 text-xs font-medium rounded-md transition-all text-center truncate"
+                :class="activeTab === 'transcript' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'"
+              >
+                Transcript
+              </button>
+              <button
+                v-if="showSummaryTab"
+                @click="activeTab = 'summary'"
+                class="flex-1 px-3 py-1.5 text-xs font-medium rounded-md transition-all text-center truncate"
+                :class="activeTab === 'summary' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'"
+              >
+                Summary
+              </button>
+              <button
+                @click="activeTab = 'comments'"
+                class="flex-1 px-3 py-1.5 text-xs font-medium rounded-md transition-all text-center truncate flex items-center justify-center gap-1"
+                :class="activeTab === 'comments' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'"
+              >
+                Comments
+                <span v-if="comments.length" class="text-[10px] text-gray-400 font-normal">{{ comments.length }}</span>
+              </button>
+              <button
+                v-if="!isSharedMode && jiraConnected"
+                @click="activeTab = 'bugs'; loadBugTabData()"
+                class="flex-1 px-3 py-1.5 text-xs font-medium rounded-md transition-all text-center truncate flex items-center justify-center gap-1"
+                :class="activeTab === 'bugs' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'"
+              >
+                Bugs
+                <span v-if="detectedBugs.length" class="text-[10px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full font-medium">{{ detectedBugs.length }}</span>
+              </button>
+            </div>
           </div>
 
           <!-- Content Area -->
@@ -810,7 +881,7 @@
                         <span class="text-[11px] font-semibold text-gray-900">{{ comment.author_name }}</span>
                         <span class="text-[9px] text-gray-400">{{ formatCommentTime(comment.created_at) }}</span>
                       </div>
-                      <p class="text-[12px] text-gray-700 leading-relaxed">{{ comment.content }}</p>
+                      <p class="text-[12px] text-gray-700 leading-relaxed comment-content" v-html="renderCommentContent(comment.content)"></p>
                     </div>
                     <button
                       v-if="comment.timestamp_seconds != null"
@@ -835,7 +906,7 @@
                 <p class="text-sm font-medium text-gray-500">No Audio Detected</p>
               </div>
 
-              <!-- Transcript content with timestamps -->
+              <!-- Transcript content — flowing text with word-level highlight -->
               <div v-else-if="transcriptionSegments && transcriptionSegments.length > 0" class="flex flex-col h-full">
                 <!-- Toolbar -->
                 <div class="sticky top-0 bg-white z-10 border-b border-gray-100 flex-shrink-0">
@@ -849,7 +920,6 @@
                       </svg>
                       {{ copiedTranscript ? 'Copied!' : 'Copy' }}
                     </button>
-                    <!-- Export (owner mode only) -->
                     <template v-if="!isSharedMode">
                       <div class="relative export-menu-container">
                         <button
@@ -870,70 +940,25 @@
                           </button>
                         </div>
                       </div>
-                      <div class="flex-1"></div>
-                      <button
-                        @click="showTranscriptSearch = !showTranscriptSearch"
-                        class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200"
-                      >
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                        </svg>
-                        Search
-                      </button>
                     </template>
                   </div>
-                  <!-- Collapsible search bar (owner mode) -->
-                  <div v-if="!isSharedMode && showTranscriptSearch" class="px-5 pb-2.5">
-                    <div class="relative">
-                      <input
-                        v-model="transcriptSearch"
-                        type="text"
-                        placeholder="Search transcript..."
-                        class="w-full pl-3 pr-8 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400 transition-colors"
-                      />
-                      <button
-                        v-if="transcriptSearch"
-                        @click="transcriptSearch = ''"
-                        class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                      >
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
                 </div>
-                <!-- Segment rows -->
-                <div class="flex-1 overflow-y-auto" ref="transcriptContainer">
-                  <div
-                    v-for="(segment, index) in filteredSegments"
-                    :key="segment.originalIndex"
-                    :ref="el => { if (el) segmentRefs[segment.originalIndex] = el }"
-                    @click="seekToTime(segment.start)"
-                    class="flex gap-4 px-5 py-3 cursor-pointer transition-colors duration-150 border-b border-gray-50"
-                    :class="activeSegmentIndex === segment.originalIndex
-                      ? 'bg-orange-50/60'
-                      : 'hover:bg-gray-50'"
-                  >
-                    <button
-                      class="text-[13px] font-medium tabular-nums tracking-wide flex-shrink-0 transition-colors pt-0.5"
-                      :class="activeSegmentIndex === segment.originalIndex ? 'text-orange-500' : 'text-gray-400'"
-                    >
-                      {{ formatTime(segment.start) }}
-                    </button>
-                    <p
-                      class="text-[13px] leading-relaxed flex-1"
-                      :class="activeSegmentIndex === segment.originalIndex ? 'text-gray-900' : 'text-gray-600'"
-                      v-html="highlightSearch(segment.displayText)"
-                    ></p>
-                  </div>
-                  <!-- No search results -->
-                  <div v-if="transcriptSearch && filteredSegments.length === 0" class="flex flex-col items-center justify-center py-12 text-center">
-                    <svg class="w-12 h-12 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                    </svg>
-                    <p class="text-sm text-gray-500">No matches found for "{{ transcriptSearch }}"</p>
-                  </div>
+                <!-- Flowing transcript text -->
+                <div class="flex-1 overflow-y-auto px-5 py-4" ref="transcriptContainer">
+                  <p class="text-[13px] leading-[1.8] text-gray-500">
+                    <template v-for="(word, wi) in allTranscriptWords" :key="wi">
+                      <br v-if="word.isBreak" />
+                      <span
+                        v-else
+                        @click="seekToTime(word.start)"
+                        class="transcript-word cursor-pointer hover:text-gray-900 transition-colors duration-100"
+                        :class="{
+                          'transcript-word-active': currentTime >= word.start && currentTime < word.end,
+                          'transcript-word-past': currentTime >= word.end,
+                        }"
+                      >{{ word.text }}</span>{{ ' ' }}
+                    </template>
+                  </p>
                 </div>
               </div>
 
@@ -965,73 +990,6 @@
                 <p class="text-xs text-gray-500 mt-0.5">Not yet generated</p>
               </div>
 
-              <!-- AI Chat about transcript -->
-              <div v-if="transcriptionSegments && transcriptionSegments.length > 0" class="border-t border-gray-100">
-                <button
-                  @click="showTranscriptChat = !showTranscriptChat"
-                  class="w-full px-4 py-2.5 flex items-center justify-between text-left hover:bg-gray-50 transition-colors"
-                >
-                  <div class="flex items-center gap-2">
-                    <svg class="w-4 h-4 text-orange-500" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/>
-                    </svg>
-                    <span class="text-xs font-semibold text-gray-900">Ask AI about transcript</span>
-                    <span class="text-[10px] text-gray-400">({{ transcriptChatRemaining }} left)</span>
-                  </div>
-                  <svg class="w-3.5 h-3.5 text-gray-400 transition-transform" :class="showTranscriptChat ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                  </svg>
-                </button>
-
-                <div v-show="showTranscriptChat" class="px-4 pb-3">
-                  <div v-if="transcriptChatMessages.length > 0" class="space-y-2 mb-3 max-h-48 overflow-y-auto">
-                    <div
-                      v-for="(msg, i) in transcriptChatMessages"
-                      :key="i"
-                      class="text-[11px] leading-relaxed"
-                    >
-                      <div v-if="msg.role === 'user'" class="flex justify-end">
-                        <div class="bg-orange-600 text-white rounded-xl rounded-br-sm px-3 py-1.5 max-w-[85%]">
-                          {{ msg.content }}
-                        </div>
-                      </div>
-                      <div v-else class="flex justify-start">
-                        <div class="bg-gray-100 text-gray-700 rounded-xl rounded-bl-sm px-3 py-1.5 max-w-[85%]">
-                          {{ msg.content }}
-                        </div>
-                      </div>
-                    </div>
-                    <div v-if="transcriptChatLoading" class="flex justify-start">
-                      <div class="bg-gray-100 text-gray-400 rounded-xl rounded-bl-sm px-3 py-1.5 text-[11px]">
-                        <span class="inline-flex gap-1">
-                          <span class="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0ms"></span>
-                          <span class="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 150ms"></span>
-                          <span class="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 300ms"></span>
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div v-if="transcriptChatRemaining > 0" class="flex gap-2">
-                    <input
-                      v-model="transcriptChatInput"
-                      type="text"
-                      placeholder="Ask about the transcript..."
-                      @keydown.enter.prevent="askTranscriptQuestion"
-                      :disabled="transcriptChatLoading"
-                      class="flex-1 bg-gray-50 border border-gray-200 text-[11px] text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400 rounded-lg px-3 py-1.5 transition-colors disabled:opacity-50"
-                    />
-                    <button
-                      @click="askTranscriptQuestion"
-                      :disabled="!transcriptChatInput.trim() || transcriptChatLoading"
-                      class="bg-orange-600 text-white px-2.5 py-1.5 rounded-lg hover:bg-orange-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed flex-shrink-0 text-[11px] font-medium"
-                    >
-                      Ask
-                    </button>
-                  </div>
-                  <p v-else class="text-[10px] text-gray-400 text-center py-2">Question limit reached for today</p>
-                </div>
-              </div>
             </div>
 
             <!-- TAB: SUMMARY -->
@@ -1312,24 +1270,6 @@
       </div>
     </transition>
 
-    <!-- Signup CTA Banner (shared mode, non-authenticated users) -->
-    <div v-if="isSharedMode && !isAuthenticated && !loading" class="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-t border-gray-200">
-      <div class="max-w-5xl mx-auto px-3 py-2 flex items-center justify-between gap-3">
-        <div class="flex items-center gap-2 min-w-0">
-          <img src="/logo.png" alt="OpenKap" class="w-5 h-5 rounded-md flex-shrink-0" />
-          <p class="text-xs text-gray-600 truncate">
-            <span class="font-semibold text-gray-900">Made with OpenKap</span>
-            <span class="hidden sm:inline"> — Free screen recording</span>
-          </p>
-        </div>
-        <a
-          href="/login"
-          class="flex-shrink-0 inline-flex items-center px-3 py-1.5 bg-orange-600 hover:bg-orange-700 text-white text-xs font-medium rounded-md transition-colors"
-        >
-          Try Free
-        </a>
-      </div>
-    </div>
 
   </div>
 </template>
@@ -1403,6 +1343,8 @@ export default {
     const toast = ref(null)
 
     const newComment = ref('')
+    const showCommentBox = ref(false)
+    const commentBoxRef = ref(null)
     const comments = ref([])
     const isLoadingComments = ref(false)
     const isSavingComment = ref(false)
@@ -1741,6 +1683,37 @@ export default {
         if (time >= segment.start) return i
       }
       return -1
+    })
+
+    // Build flat list of all words with timing for flowing transcript view
+    const allTranscriptWords = computed(() => {
+      if (!transcriptionSegments.value || transcriptionSegments.value.length === 0) return []
+      const words = []
+      transcriptionSegments.value.forEach((seg, segIdx) => {
+        if (seg.words && seg.words.length > 0) {
+          seg.words.forEach(w => {
+            const text = (w.text || '').trim()
+            if (!text) return
+            words.push({ text, start: w.start, end: w.end, segIdx })
+          })
+        } else {
+          const text = (seg.text || '').trim()
+          if (!text) return
+          const splitWords = text.split(/\s+/)
+          const dur = (seg.end - seg.start) / splitWords.length
+          splitWords.forEach((w, i) => {
+            words.push({
+              text: w,
+              start: +(seg.start + i * dur).toFixed(2),
+              end: +(seg.start + (i + 1) * dur).toFixed(2),
+              segIdx
+            })
+          })
+        }
+        // Add segment break marker
+        words.push({ text: null, segIdx, isBreak: true })
+      })
+      return words
     })
 
     const getSegmentText = (segment) => {
@@ -2636,6 +2609,7 @@ export default {
           comments.value.unshift(normalizeComment(savedComment))
         }
         showToast('Comment added!')
+        showCommentBox.value = false
       } catch (err) {
         console.error('Failed to save comment:', err)
         newComment.value = commentText
@@ -2643,6 +2617,80 @@ export default {
       } finally {
         isSavingComment.value = false
       }
+    }
+
+    const openCommentBox = () => {
+      showCommentBox.value = true
+      nextTick(() => {
+        commentBoxRef.value?.focus()
+      })
+    }
+
+    // --- Mention & Emoji ---
+    const quickEmojis = ['👍', '🤩', '😮', '👎', '😊']
+    const showMentionDropdown = ref(false)
+    const mentionUsers = ref([])
+    const mentionQuery = ref('')
+    let allCommenters = []
+
+    const loadCommenters = async () => {
+      if (allCommenters.length > 0) return
+      try {
+        if (isSharedMode.value) {
+          const res = await fetch(`${API_BASE_URL}/api/share/video/${token.value}/commenters`, {
+            headers: { 'Authorization': `Bearer ${auth.token.value}` }
+          })
+          const data = await res.json()
+          allCommenters = data.commenters || []
+        } else {
+          allCommenters = await videoService.getCommenters(video.value.id)
+        }
+      } catch { allCommenters = [] }
+    }
+
+    const onCommentInput = () => {
+      const val = newComment.value
+      const atIdx = val.lastIndexOf('@')
+      if (atIdx >= 0 && (atIdx === 0 || val[atIdx - 1] === ' ')) {
+        const query = val.substring(atIdx + 1).toLowerCase()
+        if (!query.includes(' ') || query.length < 20) {
+          mentionQuery.value = query
+          loadCommenters().then(() => {
+            mentionUsers.value = allCommenters.filter(u =>
+              u.name.toLowerCase().includes(query)
+            ).slice(0, 6)
+            showMentionDropdown.value = mentionUsers.value.length > 0
+          })
+          return
+        }
+      }
+      showMentionDropdown.value = false
+    }
+
+    const triggerMention = () => {
+      const val = newComment.value
+      newComment.value = val + (val.length > 0 && val[val.length - 1] !== ' ' ? ' @' : '@')
+      commentBoxRef.value?.focus()
+      onCommentInput()
+    }
+
+    const insertMention = (user) => {
+      const val = newComment.value
+      const atIdx = val.lastIndexOf('@')
+      newComment.value = val.substring(0, atIdx) + `@[${user.name}](${user.id}) `
+      showMentionDropdown.value = false
+      commentBoxRef.value?.focus()
+    }
+
+    const renderCommentContent = (content) => {
+      if (!content) return ''
+      // Escape HTML
+      let safe = content.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      // Render @[Name](id) mentions
+      safe = safe.replace(/@\[([^\]]+)\]\(\d+\)/g, '<span class="text-orange-600 font-semibold cursor-pointer hover:underline">@$1</span>')
+      // Render URLs as links
+      safe = safe.replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline break-all">$1</a>')
+      return safe
     }
 
     const loginToComment = () => {
@@ -2981,14 +3029,15 @@ export default {
       isEditingTitle, editedTitle, isSavingTitle, titleInput,
       startEditingTitle, saveTitle, cancelEditingTitle,
       handleDuplicate, handleDownloadCaptions, handleTogglePrivacy, handleArchive,
-      addReaction, toggleSharedReaction, addComment, loginToComment,
+      addReaction, toggleSharedReaction, addComment, loginToComment, openCommentBox, showCommentBox, commentBoxRef,
+      quickEmojis, showMentionDropdown, mentionUsers, onCommentInput, triggerMention, insertMention, renderCommentContent,
       // Modals
       showShareModal, showShareDropdown, showOptionsMenu, shareDropdownRef, optionsMenuRef,
       showArchiveConfirm, showDeleteConfirm, showPrivacyConfirm, showDuplicateConfirm,
       // Sidebar
       activeTab, sidebarVisible, toggleSidebar, tabGridCols, showSummaryTab,
       // Transcription
-      transcription, transcriptionSegments, transcriptionStatus, seekToTime,
+      transcription, transcriptionSegments, transcriptionStatus, seekToTime, allTranscriptWords,
       transcriptContainer, segmentRefs, activeSegmentIndex,
       transcriptSearch, showTranscriptSearch, showExportMenu, filteredSegments,
       highlightSearch, exportTranscript,
@@ -3018,6 +3067,12 @@ export default {
 .fade-enter-active, .fade-leave-active { transition: opacity 0.2s ease; }
 .fade-enter-from, .fade-leave-to { opacity: 0; }
 
+/* Comment bar slide in from left */
+.comment-slide-enter-active { transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+.comment-slide-leave-active { transition: all 0.2s ease-in; }
+.comment-slide-enter-from { opacity: 0; transform: translateX(-20px); max-width: 0; }
+.comment-slide-leave-to { opacity: 0; transform: translateX(-20px); max-width: 0; }
+
 /* Controls panel: whole block slides up/down together */
 .controls-panel {
   transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
@@ -3039,10 +3094,12 @@ export default {
 
 /* Sidebar slide from right */
 .sidebar-panel {
-  transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+              margin 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.3s ease;
 }
 .sidebar-panel.sidebar-open { width: 380px; }
-.sidebar-panel.sidebar-closed { width: 0; border-left: none; }
+.sidebar-panel.sidebar-closed { width: 0; margin: 0; opacity: 0; box-shadow: none; }
 
 .toast-enter-active { transition: all 0.3s ease; }
 .toast-leave-active { transition: all 0.2s ease; }
@@ -3089,4 +3146,15 @@ input[type=range]::-webkit-slider-runnable-track {
 }
 .caption-active { color: #ffffff; }
 .caption-inactive { color: rgba(255, 255, 255, 0.45); }
+
+/* Flowing transcript word highlights */
+.transcript-word { color: #9ca3af; }
+.transcript-word-past { color: #374151; }
+.transcript-word-active {
+  color: #111827;
+  background: #fed7aa;
+  border-radius: 3px;
+  padding: 1px 2px;
+  margin: -1px -2px;
+}
 </style>

@@ -298,6 +298,22 @@ class VideoService {
   }
 
   /**
+   * Get commenters for @ mention autocomplete
+   */
+  async getCommenters(videoId) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/videos/${videoId}/commenters`, {
+        headers: getAuthHeaders()
+      })
+      if (!response.ok) return []
+      const data = await response.json()
+      return data.commenters || []
+    } catch (error) {
+      return []
+    }
+  }
+
+  /**
    * Delete a comment
    */
   async deleteComment(videoId, commentId) {
