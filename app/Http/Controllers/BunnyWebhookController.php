@@ -67,6 +67,17 @@ class BunnyWebhookController extends Controller
 
         $newStatus = $statusMap[$status] ?? 'unknown';
 
+        // Never regress from 'ready' — Bunny can send webhooks out of order
+        // (e.g. a delayed 'uploaded'/'transcoding' arriving after 'ready')
+        if ($video->bunny_status === 'ready' && $newStatus !== 'error') {
+            Log::info('Bunny webhook: ignoring regression from ready', [
+                'video_id' => $video->id,
+                'attempted_status' => $newStatus,
+            ]);
+
+            return response('OK', 200);
+        }
+
         // Update video status
         $updateData = [
             'bunny_status' => $newStatus,
