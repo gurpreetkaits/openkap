@@ -127,6 +127,7 @@ class VideoManager
     {
         return [
             'id' => $video->id,
+            'user_id' => $video->user_id,
             'title' => $video->title,
             'description' => $video->description,
             'duration' => $video->duration,
