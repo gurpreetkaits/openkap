@@ -50,6 +50,7 @@ class GoogleAuthController extends Controller
                     'email' => $googleUser->email,
                     'google_id' => $googleUser->id,
                     'avatar_url' => $googleUser->avatar,
+                    'username' => User::generateUniqueUsername($googleUser->email),
                     'password' => null, // No password for OAuth users
                     'email_verified_at' => now(),
                 ]);

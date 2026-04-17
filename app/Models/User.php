@@ -73,6 +73,31 @@ class User extends Authenticatable
     }
 
     /**
+     * Generate a unique username from an email address.
+     * Takes the part before @, strips non-alphanumeric chars,
+     * and appends a number if the base is already taken.
+     */
+    public static function generateUniqueUsername(string $email): string
+    {
+        $base = strtolower(explode('@', $email)[0]);
+        $base = preg_replace('/[^a-z0-9]/', '', $base);
+
+        if (empty($base)) {
+            $base = 'user';
+        }
+
+        $username = $base;
+        $suffix = 1;
+
+        while (static::where('username', $username)->exists()) {
+            $username = $base.$suffix;
+            $suffix++;
+        }
+
+        return $username;
+    }
+
+    /**
      * Check if user is an admin
      */
     public function isAdmin(): bool
