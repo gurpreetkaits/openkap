@@ -2370,14 +2370,23 @@ export default {
         }
 
         if (result.mode === 'redirect') {
-          const link = document.createElement('a')
-          link.href = result.url
-          link.download = result.fileName || `${video.value.title || 'video'}.mp4`
-          link.target = '_blank'
-          document.body.appendChild(link)
-          link.click()
-          document.body.removeChild(link)
-          showToast('Download started!')
+          showToast('Downloading...')
+          try {
+            const resp = await fetch(result.url)
+            const blob = await resp.blob()
+            const blobUrl = window.URL.createObjectURL(blob)
+            const link = document.createElement('a')
+            link.href = blobUrl
+            link.download = result.fileName || `${video.value.title || 'video'}.mp4`
+            document.body.appendChild(link)
+            link.click()
+            document.body.removeChild(link)
+            window.URL.revokeObjectURL(blobUrl)
+            showToast('Download complete!')
+          } catch (dlErr) {
+            console.error('Blob download failed, falling back:', dlErr)
+            window.open(result.url, '_blank')
+          }
           return
         }
 
@@ -2403,14 +2412,18 @@ export default {
           try {
             const downloadData = await videoService.getBunnySharedDownload(token.value)
             if (downloadData.url) {
+              showToast('Downloading...')
+              const resp = await fetch(downloadData.url)
+              const blob = await resp.blob()
+              const blobUrl = window.URL.createObjectURL(blob)
               const link = document.createElement('a')
-              link.href = downloadData.url
+              link.href = blobUrl
               link.download = downloadData.file_name || `${video.value.title || 'video'}.mp4`
-              link.target = '_blank'
               document.body.appendChild(link)
               link.click()
               document.body.removeChild(link)
-              showToast('Download started!')
+              window.URL.revokeObjectURL(blobUrl)
+              showToast('Download complete!')
               return
             }
           } catch (bunnyErr) {

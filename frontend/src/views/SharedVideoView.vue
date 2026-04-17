@@ -1687,14 +1687,18 @@ export default {
           try {
             const downloadData = await videoService.getBunnySharedDownload(token.value)
             if (downloadData.url) {
+              showToast('Downloading...')
+              const resp = await fetch(downloadData.url)
+              const blob = await resp.blob()
+              const blobUrl = window.URL.createObjectURL(blob)
               const link = document.createElement('a')
-              link.href = downloadData.url
+              link.href = blobUrl
               link.download = downloadData.file_name || `${video.value.title || 'video'}.mp4`
-              link.target = '_blank'
               document.body.appendChild(link)
               link.click()
               document.body.removeChild(link)
-              showToast('Download started!')
+              window.URL.revokeObjectURL(blobUrl)
+              showToast('Download complete!')
               return
             }
           } catch (bunnyErr) {
