@@ -1001,7 +1001,29 @@ class VideoManager
             ];
         }
 
-        // Convert local file to MP4 for download (works for both Bunny and local videos)
+        // Bunny CDN videos: redirect to signed MP4 download URL
+        if ($video->isBunnyVideo() && $video->bunny_video_id && $video->bunny_status === 'ready') {
+            // MP4 Fallback supports up to 1080p — cap resolution
+            $resolution = $video->bunny_resolution ?: '720p';
+            $resNum = (int) str_replace('p', '', $resolution);
+            if ($resNum > 1080) {
+                $resolution = '1080p';
+            }
+
+            $downloadUrl = $this->bunnyService->generateSignedDownloadUrl(
+                $video->bunny_video_id,
+                $resolution,
+                3600
+            );
+
+            return [
+                'mode' => 'redirect',
+                'url' => $downloadUrl,
+                'file_name' => ($video->title ?? 'video').'.mp4',
+            ];
+        }
+
+        // Local videos: convert to MP4
         $media = $video->getFirstMedia('videos');
         if (! $media) {
             throw new \Exception('Video file not found');

@@ -430,25 +430,30 @@ class BunnyVideoController extends Controller
             ], 410);
         }
 
-        if ($video->bunny_status && ! in_array($video->bunny_status, ['ready', 'error'])) {
+        if (! $video->bunny_video_id || ($video->bunny_status && ! in_array($video->bunny_status, ['ready', 'error']))) {
             return response()->json([
                 'error' => 'not_ready',
                 'message' => 'Video is not yet available for download',
             ], 400);
         }
 
-        // Serve local file for download
-        $media = $video->getFirstMedia('videos');
-        if (! $media || ! file_exists($media->getPath())) {
-            return response()->json([
-                'error' => 'not_found',
-                'message' => 'Video file not found',
-            ], 404);
+        // Cap resolution to 1080p (MP4 Fallback limit)
+        $resolution = $video->bunny_resolution ?: '720p';
+        $resNum = (int) str_replace('p', '', $resolution);
+        if ($resNum > 1080) {
+            $resolution = '1080p';
         }
 
-        $fileName = ($video->title ?? 'video').'.'.pathinfo($media->file_name, PATHINFO_EXTENSION);
+        $downloadUrl = app(BunnyStreamService::class)->generateSignedDownloadUrl(
+            $video->bunny_video_id,
+            $resolution,
+            3600
+        );
 
-        return response()->download($media->getPath(), $fileName);
+        return response()->json([
+            'url' => $downloadUrl,
+            'file_name' => ($video->title ?? 'video').'.mp4',
+        ]);
     }
 
     /**
