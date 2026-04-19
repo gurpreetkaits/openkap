@@ -1,15 +1,15 @@
 <template>
   <div class="w-full h-full flex items-center justify-center p-6 relative overflow-hidden">
-    <!-- Outer container: background + padding -->
+    <!-- Background container: background + padding + shadow -->
     <div
       class="relative flex items-center justify-center transition-all duration-300 max-w-full max-h-full"
-      :style="outerContainerStyle"
+      :style="backgroundStyle"
     >
-      <!-- Video wrapper — only this gets roundness -->
+      <!-- Video container: roundness applied here -->
       <div
         ref="videoWrapper"
-        class="relative overflow-hidden transition-all duration-300 shadow-lg"
-        :style="innerVideoStyle"
+        class="relative overflow-hidden transition-all duration-300"
+        :style="videoStyle"
       >
         <video
           ref="videoEl"
@@ -31,21 +31,24 @@
           @touchmove.prevent="canvas.onTouchMove"
           @touchend.prevent="canvas.onTouchEnd"
         ></canvas>
-      </div>
 
-      <!-- Camera overlay (inside the background container) -->
-      <div
-        v-if="video?.has_camera && video?.camera_url && cameraEnabled"
-        class="absolute transition-all duration-300"
-        :style="cameraOverlayStyle"
-      >
-        <div class="w-full h-full overflow-hidden shadow-lg ring-1 ring-white/20" :style="{ borderRadius: cameraRoundness + 'px' }">
-          <video
-            ref="cameraVideoEl"
-            :src="video.camera_url"
-            class="w-full h-full object-cover"
-            muted playsinline preload="metadata"
-          ></video>
+        <!-- Camera overlay (inside video container, draggable) -->
+        <div
+          v-if="video?.has_camera && video?.camera_url && cameraEnabled"
+          class="absolute transition-none cursor-grab active:cursor-grabbing"
+          :class="{ 'transition-all duration-300': !isDraggingCamera }"
+          :style="cameraOverlayStyle"
+          @mousedown.stop.prevent="startCameraDrag"
+          @touchstart.stop.prevent="startCameraDragTouch"
+        >
+          <div class="w-full h-full overflow-hidden shadow-lg ring-1 ring-white/20" :style="{ borderRadius: cameraRoundness + 'px' }">
+            <video
+              ref="cameraVideoEl"
+              :src="video.camera_url"
+              class="w-full h-full object-cover pointer-events-none"
+              muted playsinline preload="metadata"
+            ></video>
+          </div>
         </div>
       </div>
     </div>
@@ -72,15 +75,15 @@ const {
 const cameraVideoEl = ref(null)
 let hls = null
 
-// Background style for the outer container
-const outerContainerStyle = computed(() => {
+// Camera drag state
+const isDraggingCamera = ref(false)
+const cameraDragPos = ref({ x: null, y: null }) // percentage-based position (0-100)
+let dragStart = { mouseX: 0, mouseY: 0, startX: 0, startY: 0 }
+
+// Background container style
+const backgroundStyle = computed(() => {
   const bg = styleBackground.value
   const pad = stylePadding.value
-
-  // No background mode — just show video directly
-  if (bg.type === 'none' && pad === 0) {
-    return { maxWidth: '100%', maxHeight: '100%' }
-  }
 
   let background = 'transparent'
   if (bg.type === 'solid') {
@@ -107,46 +110,138 @@ const outerContainerStyle = computed(() => {
   return style
 })
 
-// Inner video container style (the actual video with roundness)
-const innerVideoStyle = computed(() => {
+// Video container style (roundness goes here)
+const videoStyle = computed(() => {
   const style = {
     borderRadius: styleRoundness.value + 'px',
     ...videoWrapperStyle.value,
   }
   if (styleShadow.value && stylePadding.value > 0) {
-    style.boxShadow = `0 4px 24px rgba(0,0,0,0.3)`
+    style.boxShadow = '0 4px 24px rgba(0,0,0,0.3)'
   }
   return style
 })
+
+// Get default position from quadrant preset
+function getDefaultCameraPos() {
+  const pos = cameraPosition.value
+  const margin = 3 // percent from edge
+  return {
+    x: pos.includes('right') ? 100 - cameraSize.value - margin : margin,
+    y: pos.includes('bottom') ? 100 - getCameraHeightPercent() - margin : margin,
+  }
+}
+
+function getCameraHeightPercent() {
+  const shape = cameraShape.value
+  const size = cameraSize.value
+  if (shape === 'circle' || shape === 'square') return size
+  // portrait 3:4 — height is size * (4/3) but capped
+  if (!videoWidth.value || !videoHeight.value) return size * 1.33
+  const ar = videoWidth.value / videoHeight.value
+  return size * (4 / 3) * ar
+}
 
 // Camera overlay positioning
 const cameraOverlayStyle = computed(() => {
-  const pad = stylePadding.value
   const size = cameraSize.value
-  const pos = cameraPosition.value
   const shape = cameraShape.value
 
-  // Width as percentage of the video area
-  const widthPx = size + '%'
   let aspectRatio = '3/4' // portrait
-  if (shape === 'circle') aspectRatio = '1/1'
-  if (shape === 'square') aspectRatio = '1/1'
+  if (shape === 'circle' || shape === 'square') aspectRatio = '1/1'
 
-  const margin = Math.max(pad + 8, 12) + 'px'
-  const style = {
-    width: widthPx,
+  // Use drag position if set, otherwise derive from quadrant
+  const pos = cameraDragPos.value.x !== null ? cameraDragPos.value : getDefaultCameraPos()
+
+  return {
+    width: size + '%',
     aspectRatio,
     zIndex: 20,
+    left: pos.x + '%',
+    top: pos.y + '%',
+  }
+})
+
+// Reset drag position when quadrant preset changes
+watch(cameraPosition, () => {
+  cameraDragPos.value = { x: null, y: null }
+})
+
+// Drag handlers
+function startCameraDrag(e) {
+  const wrapper = videoWrapper.value
+  if (!wrapper) return
+  isDraggingCamera.value = true
+
+  const rect = wrapper.getBoundingClientRect()
+  const currentPos = cameraDragPos.value.x !== null ? cameraDragPos.value : getDefaultCameraPos()
+
+  dragStart = {
+    mouseX: e.clientX,
+    mouseY: e.clientY,
+    startX: currentPos.x,
+    startY: currentPos.y,
+    width: rect.width,
+    height: rect.height,
   }
 
-  // Position based on quadrant
-  if (pos.includes('bottom')) style.bottom = margin
-  else style.top = margin
-  if (pos.includes('right')) style.right = margin
-  else style.left = margin
+  window.addEventListener('mousemove', onCameraDrag)
+  window.addEventListener('mouseup', stopCameraDrag)
+}
 
-  return style
-})
+function startCameraDragTouch(e) {
+  const touch = e.touches[0]
+  if (!touch) return
+  const wrapper = videoWrapper.value
+  if (!wrapper) return
+  isDraggingCamera.value = true
+
+  const rect = wrapper.getBoundingClientRect()
+  const currentPos = cameraDragPos.value.x !== null ? cameraDragPos.value : getDefaultCameraPos()
+
+  dragStart = {
+    mouseX: touch.clientX,
+    mouseY: touch.clientY,
+    startX: currentPos.x,
+    startY: currentPos.y,
+    width: rect.width,
+    height: rect.height,
+  }
+
+  window.addEventListener('touchmove', onCameraDragTouch, { passive: false })
+  window.addEventListener('touchend', stopCameraDrag)
+}
+
+function onCameraDrag(e) {
+  const dx = ((e.clientX - dragStart.mouseX) / dragStart.width) * 100
+  const dy = ((e.clientY - dragStart.mouseY) / dragStart.height) * 100
+  applyDragDelta(dx, dy)
+}
+
+function onCameraDragTouch(e) {
+  e.preventDefault()
+  const touch = e.touches[0]
+  if (!touch) return
+  const dx = ((touch.clientX - dragStart.mouseX) / dragStart.width) * 100
+  const dy = ((touch.clientY - dragStart.mouseY) / dragStart.height) * 100
+  applyDragDelta(dx, dy)
+}
+
+function applyDragDelta(dx, dy) {
+  const size = cameraSize.value
+  const heightPct = getCameraHeightPercent()
+  const x = Math.max(0, Math.min(100 - size, dragStart.startX + dx))
+  const y = Math.max(0, Math.min(100 - heightPct, dragStart.startY + dy))
+  cameraDragPos.value = { x, y }
+}
+
+function stopCameraDrag() {
+  isDraggingCamera.value = false
+  window.removeEventListener('mousemove', onCameraDrag)
+  window.removeEventListener('mouseup', stopCameraDrag)
+  window.removeEventListener('touchmove', onCameraDragTouch)
+  window.removeEventListener('touchend', stopCameraDrag)
+}
 
 // Sync camera video with main video
 watch(isPlaying, () => {
@@ -216,5 +311,6 @@ onBeforeUnmount(() => {
   }
   canvas.stopRenderLoop()
   window.removeEventListener('resize', onResize)
+  stopCameraDrag()
 })
 </script>

@@ -997,6 +997,7 @@ class VideoManager
             'text_overlays' => array_map(fn ($t) => $t->toArray(), $editData->text_overlays),
             'trim_start' => $editData->trim_start,
             'trim_end' => $editData->trim_end,
+            'style_settings' => $editData->style_settings,
             'merge_video_ids' => $editData->merge_video_ids,
             'main_video_position' => $editData->main_video_position,
             'status' => 'pending',
@@ -1007,32 +1008,19 @@ class VideoManager
             $videoEdit->addMedia($file)->toMediaCollection('overlays');
         }
 
-        $maxSyncDuration = 180; // 3 minutes
+        // Run processing in a background PHP process so the API returns immediately
+        // and the frontend can poll for progress updates
+        $artisanPath = base_path('artisan');
+        $cmd = sprintf(
+            'php %s video:process-edit %d > /dev/null 2>&1 &',
+            escapeshellarg($artisanPath),
+            $videoEdit->id
+        );
+        exec($cmd);
 
-        if (($video->duration ?? 0) <= $maxSyncDuration) {
-            // Sync processing for short videos
-            set_time_limit(300);
-            $job = new ApplyVideoEditsJob($videoEdit);
-            $job->handle();
-
-            $videoEdit->refresh();
-
-            return [
-                'message' => 'Video edits applied successfully.',
-                'mode' => 'sync',
-                'output_video_id' => $videoEdit->output_video_id,
-            ];
-        }
-
-        // Async processing for long videos
-        ApplyVideoEditsJob::dispatch($videoEdit)->delay(now()->addSeconds(2));
-
-        Log::info('Video edit job dispatched (async)', [
+        Log::info('Video edit processing started in background', [
             'video_id' => $video->id,
             'edit_id' => $videoEdit->id,
-            'blur_count' => count($editData->blur_regions),
-            'overlay_count' => count($editData->overlay_configs),
-            'text_count' => count($editData->text_overlays),
         ]);
 
         return [

@@ -31,8 +31,8 @@ export function createEditorState() {
 
   // Style state — background, padding, roundness
   const styleBackground = ref({ type: 'none', color: '#000000', gradientFrom: '#1e293b', gradientTo: '#0f172a', gradientDirection: 'br', imageUrl: '' })
-  const stylePadding = ref(0) // 0-120 px
-  const styleRoundness = ref(10) // 0-32 px border radius on the video
+  const stylePadding = ref(80) // 0-120 px
+  const styleRoundness = ref(11) // 0-32 px border radius on the video
   const styleShadow = ref(true)
 
   // Camera style state

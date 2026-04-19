@@ -11,6 +11,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
+use Symfony\Component\Process\Process;
 
 class ApplyVideoEditsJob implements ShouldQueue
 {
@@ -283,8 +284,57 @@ class ApplyVideoEditsJob implements ShouldQueue
                 $currentAudioLabel = $concatA;
             }
 
+            // --- Style settings (background, padding, roundness, shadow) ---
+            $style = $edit->style_settings;
+            $hasStyle = $style && (
+                ($style['padding'] ?? 0) > 0 ||
+                ($style['roundness'] ?? 0) > 0 ||
+                (($style['background_type'] ?? 'none') !== 'none')
+            );
+
+            if ($hasStyle) {
+                $pad = (int) ($style['padding'] ?? 0);
+                $bgType = $style['background_type'] ?? 'none';
+
+                $vidW = $dimensions['width'];
+                $vidH = $dimensions['height'];
+
+                // Scale down to max 1280px width to fit container memory limits
+                if ($vidW > 1280) {
+                    $scaleH = (int) round(1280 * $vidH / $vidW);
+                    $scaleH = $scaleH + ($scaleH % 2); // even
+                    $scaledLabel = "scaled_{$stepIndex}";
+                    $filterComplex[] = "[{$currentVideoLabel}]scale=1280:{$scaleH}[{$scaledLabel}]";
+                    $currentVideoLabel = $scaledLabel;
+                    $vidW = 1280;
+                    $vidH = $scaleH;
+                    $stepIndex++;
+                }
+
+                $outW = $vidW + ($pad * 2);
+                $outH = $vidH + ($pad * 2);
+                $outW = $outW + ($outW % 2);
+                $outH = $outH + ($outH % 2);
+
+                $bgColor = '000000';
+                if ($bgType === 'solid') {
+                    $bgColor = ltrim($style['background_color'] ?? '#000000', '#');
+                } elseif ($bgType === 'gradient') {
+                    $bgColor = ltrim($style['gradient_from'] ?? '#000000', '#');
+                }
+
+                if ($pad > 0 || $bgType !== 'none') {
+                    $paddedLabel = "padded_{$stepIndex}";
+                    $filterComplex[] = "[{$currentVideoLabel}]pad={$outW}:{$outH}:{$pad}:{$pad}:color=0x{$bgColor}[{$paddedLabel}]";
+                    $currentVideoLabel = $paddedLabel;
+                    $stepIndex++;
+                }
+            }
+
             if (empty($filterComplex)) {
-                throw new \Exception('No edits to apply');
+                if (! $hasStyle) {
+                    throw new \Exception('No edits to apply');
+                }
             }
 
             $filterString = implode(';', $filterComplex);
@@ -294,26 +344,56 @@ class ApplyVideoEditsJob implements ShouldQueue
                 ? sprintf('-map "[%s]"', $currentAudioLabel)
                 : '-map 0:a?';
 
-            $command = sprintf(
-                '%s -y %s -filter_complex %s -map "[%s]" %s -c:v libx264 -preset medium -crf 23 -c:a aac %s 2>&1',
-                escapeshellarg($ffmpegPath),
-                $inputArgs,
-                escapeshellarg($filterString),
-                $currentVideoLabel,
-                $audioMap,
-                escapeshellarg($outputPath)
+            // Build ffmpeg arguments array for Symfony Process
+            $audioMapArgs = ! empty($mergeInputIndices)
+                ? ['-map', "[{$currentAudioLabel}]"]
+                : ['-map', '0:a?'];
+
+            // Parse input args into array
+            $inputArgParts = [];
+            preg_match_all('/-i\s+\'([^\']+)\'/', $inputArgs, $matches);
+            foreach ($matches[1] as $file) {
+                $inputArgParts[] = '-i';
+                $inputArgParts[] = $file;
+            }
+            if (empty($inputArgParts)) {
+                $inputArgParts = ['-i', $inputPath];
+            }
+
+            $processArgs = array_merge(
+                [$ffmpegPath, '-y', '-progress', 'pipe:2', '-threads', '2'],
+                $inputArgParts,
+                ['-filter_complex', $filterString],
+                ['-map', "[{$currentVideoLabel}]"],
+                $audioMapArgs,
+                ['-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '26', '-threads', '1', '-c:a', 'aac'],
+                [$outputPath]
             );
 
-            Log::info('Running FFmpeg edits command', [
+            Log::info('Running FFmpeg edits via Process', [
                 'edit_id' => $edit->id,
-                'command' => $command,
+                'filter' => $filterString,
             ]);
 
-            $output = [];
-            $returnCode = 0;
-            exec($command, $output, $returnCode);
+            $process = new Process($processArgs);
+            $process->setTimeout($this->timeout);
 
-            $outputText = implode("\n", $output);
+            // Get video duration for progress calculation
+            $videoDuration = $video->duration ?: 60;
+
+            // Run with callback to track ffmpeg progress
+            $process->run(function ($type, $buffer) use ($edit, $videoDuration) {
+                // Parse ffmpeg output for time= progress
+                if (preg_match('/time=(\d{2}):(\d{2}):(\d{2})\.(\d{2})/', $buffer, $m)) {
+                    $currentSec = ($m[1] * 3600) + ($m[2] * 60) + $m[3] + ($m[4] / 100);
+                    // Map encoding progress to 40-90% range (setup is 0-40%, finalize is 90-100%)
+                    $pct = min(90, 40 + (int) (($currentSec / $videoDuration) * 50));
+                    $edit->update(['progress' => $pct]);
+                }
+            });
+
+            $returnCode = $process->getExitCode();
+            $outputText = $process->getErrorOutput();
 
             Log::info('FFmpeg edits output', [
                 'edit_id' => $edit->id,
@@ -321,7 +401,7 @@ class ApplyVideoEditsJob implements ShouldQueue
                 'output_length' => strlen($outputText),
             ]);
 
-            if ($returnCode !== 0) {
+            if (! $process->isSuccessful()) {
                 throw new \Exception("FFmpeg failed with code $returnCode: ".substr($outputText, -500));
             }
 

@@ -27,15 +27,24 @@
           <span class="text-sm font-semibold text-gray-800 truncate max-w-[300px]">{{ video?.title || 'Untitled' }}</span>
         </div>
         <div class="flex items-center gap-3">
-          <button @click="goBack" class="px-4 py-1.5 text-gray-500 hover:text-gray-700 text-sm font-medium transition-colors">Cancel</button>
+          <button v-if="!isApplying" @click="goBack" class="px-4 py-1.5 text-gray-500 hover:text-gray-700 text-sm font-medium transition-colors">Cancel</button>
           <button
+            v-if="!isApplying"
             @click="applyEdits"
-            :disabled="isApplying"
-            class="px-5 py-1.5 bg-gray-900 hover:bg-gray-800 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg text-sm font-semibold transition-colors flex items-center gap-2"
+            class="px-5 py-1.5 bg-gray-900 hover:bg-gray-800 text-white rounded-lg text-sm font-semibold transition-colors"
           >
-            <svg v-if="isApplying" class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-            {{ isApplying ? `${applyProgress}%` : 'Export' }}
+            Export
           </button>
+          <!-- Export progress indicator -->
+          <div v-if="isApplying" class="flex items-center gap-3">
+            <div class="flex items-center gap-2 px-4 py-1.5 bg-gray-100 rounded-lg">
+              <svg class="w-4 h-4 animate-spin text-orange-500" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+              <span class="text-sm font-medium text-gray-700">Exporting {{ applyProgress }}%</span>
+            </div>
+            <div class="w-32 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+              <div class="h-full bg-orange-500 rounded-full transition-all duration-500" :style="{ width: applyProgress + '%' }"></div>
+            </div>
+          </div>
         </div>
       </nav>
 
@@ -75,7 +84,7 @@
         </div>
 
         <!-- ─── Right Sidebar Card ─── -->
-        <div class="w-[280px] flex-shrink-0 bg-white rounded-xl shadow-sm border border-gray-200/50 hidden lg:flex flex-col min-h-0 overflow-hidden">
+        <div class="w-[380px] flex-shrink-0 bg-white rounded-xl shadow-sm border border-gray-200/50 hidden lg:flex flex-col min-h-0 overflow-hidden">
           <div class="flex-1 overflow-y-auto min-h-0">
             <EditorToolPanel />
           </div>
@@ -113,6 +122,7 @@ const {
   selectItem, deleteItem, getItemLabel, formatTime, togglePlay,
   trimEnabled, trimStart, trimEnd, mergeVideos, mainVideoIndex, addMergeVideo,
   videoReady,
+  styleBackground, stylePadding, styleRoundness, styleShadow,
 } = state
 
 const videoPreviewRef = ref(null)
@@ -159,16 +169,57 @@ onMounted(async () => {
 function handleMergeVideoSelect(v) { addMergeVideo(v) }
 
 async function applyEdits() {
-  if (isApplying.value || (!items.value.length && !trimEnabled.value && !mergeVideos.value.length)) return
+  // Build style settings
+  const bg = styleBackground.value
+  const hasStyleChanges = stylePadding.value > 0 || styleRoundness.value > 0 || bg.type !== 'none'
+  const hasEdits = items.value.length > 0 || trimEnabled.value || mergeVideos.value.length > 0 || hasStyleChanges
+
+  if (isApplying.value || !hasEdits) return
   isApplying.value = true; applyProgress.value = 0
   try {
     const blurRegions = items.value.filter(i => i.type === 'blur').map(i => ({ x: i.x, y: i.y, width: i.width, height: i.height, start_time: i.entireVideo ? null : i.start_time, end_time: i.entireVideo ? null : i.end_time }))
     const overlayConfigs = items.value.filter(i => i.type === 'overlay').map(i => ({ x: i.x, y: i.y, width: i.width, height: i.height, file_index: i.fileIndex, start_time: i.entireVideo ? null : i.start_time, end_time: i.entireVideo ? null : i.end_time }))
     const textOverlays = items.value.filter(i => i.type === 'text').map(i => ({ text: i.text || 'Text', x: i.x, y: i.y, font_size: i.font_size || 32, font_color: i.font_color || '#ffffff', background_color: i.has_background ? (i.background_color || '#000000') : null, start_time: i.entireVideo ? null : i.start_time, end_time: i.entireVideo ? null : i.end_time }))
-    const result = await videoService.applyEdits(video.value.id, blurRegions, overlayConfigs, overlayFiles.value, textOverlays, trimEnabled.value ? trimStart.value : null, trimEnabled.value ? trimEnd.value : null, mergeVideos.value.map(v => v.id), mainVideoIndex.value)
-    if (result?.mode === 'async') { processingMode.value = 'async'; return }
-    if (result?.mode === 'sync' && result?.output_video_id) { isApplying.value = false; toast.success('Video edits applied!'); router.push(`/video/${result.output_video_id}`); return }
-    pollTimer = setInterval(async () => { try { const s = await videoService.getEditStatus(video.value.id); applyProgress.value = s.progress || 0; if (s.status === 'completed') { clearInterval(pollTimer); pollTimer = null; isApplying.value = false; toast.success('Video edits applied!'); router.push(`/video/${s.output_video_id || video.value.id}`) } else if (s.status === 'failed') { clearInterval(pollTimer); pollTimer = null; isApplying.value = false; toast.error(s.error || 'Failed') } } catch {} }, 3000)
+
+    const styleSettingsPayload = hasStyleChanges ? {
+      background_type: bg.type,
+      background_color: bg.color,
+      gradient_from: bg.gradientFrom,
+      gradient_to: bg.gradientTo,
+      gradient_direction: bg.gradientDirection,
+      padding: stylePadding.value,
+      roundness: styleRoundness.value,
+      shadow: styleShadow.value,
+    } : null
+
+    const result = await videoService.applyEdits(video.value.id, blurRegions, overlayConfigs, overlayFiles.value, textOverlays, trimEnabled.value ? trimStart.value : null, trimEnabled.value ? trimEnd.value : null, mergeVideos.value.map(v => v.id), mainVideoIndex.value, styleSettingsPayload)
+
+    // If sync completed instantly (unlikely now but handle it)
+    if (result?.mode === 'sync' && result?.output_video_id) {
+      isApplying.value = false
+      toast.success('Video exported!')
+      router.push(`/video/${result.output_video_id}`)
+      return
+    }
+
+    // Poll for progress (background processing)
+    applyProgress.value = 5
+    pollTimer = setInterval(async () => {
+      try {
+        const s = await videoService.getEditStatus(video.value.id)
+        applyProgress.value = s.progress || applyProgress.value
+        if (s.status === 'completed') {
+          clearInterval(pollTimer); pollTimer = null
+          isApplying.value = false
+          toast.success('Video exported!')
+          router.push(`/video/${s.output_video_id || video.value.id}`)
+        } else if (s.status === 'failed') {
+          clearInterval(pollTimer); pollTimer = null
+          isApplying.value = false
+          toast.error(s.error || 'Export failed')
+        }
+      } catch {}
+    }, 2000)
   } catch (e) { isApplying.value = false; toast.error(e.message || 'Failed') }
 }
 

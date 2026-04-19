@@ -47,6 +47,16 @@ class ApplyVideoEditsRequest extends FormRequest
             'trim_start' => 'nullable|numeric|min:0',
             'trim_end' => 'nullable|numeric|gt:trim_start',
 
+            'style_settings' => 'nullable|array',
+            'style_settings.background_type' => 'nullable|string|in:none,solid,gradient,image',
+            'style_settings.background_color' => 'nullable|string|max:20',
+            'style_settings.gradient_from' => 'nullable|string|max:20',
+            'style_settings.gradient_to' => 'nullable|string|max:20',
+            'style_settings.gradient_direction' => 'nullable|string|in:b,br,r',
+            'style_settings.padding' => 'nullable|integer|min:0|max:200',
+            'style_settings.roundness' => 'nullable|integer|min:0|max:50',
+            'style_settings.shadow' => 'nullable|boolean',
+
             'merge_video_ids' => 'nullable|array|max:10',
             'merge_video_ids.*' => 'integer|exists:videos,id',
             'main_video_position' => 'nullable|integer|min:0',

@@ -971,7 +971,7 @@ class VideoService {
    * @param {Array} overlayConfigs - Array of overlay config objects
    * @param {File[]} overlayFiles - Array of overlay video files
    */
-  async applyEdits(id, blurRegions = [], overlayConfigs = [], overlayFiles = [], textOverlays = [], trimStart = null, trimEnd = null, mergeVideoIds = [], mainVideoPosition = 0) {
+  async applyEdits(id, blurRegions = [], overlayConfigs = [], overlayFiles = [], textOverlays = [], trimStart = null, trimEnd = null, mergeVideoIds = [], mainVideoPosition = 0, styleSettings = null) {
     try {
       const formData = new FormData()
 
@@ -1013,6 +1013,16 @@ class VideoService {
           formData.append(`merge_video_ids[${i}]`, vid)
         })
         formData.append('main_video_position', mainVideoPosition)
+      }
+
+      if (styleSettings) {
+        Object.entries(styleSettings).forEach(([key, value]) => {
+          if (value !== null && value !== undefined) {
+            // FormData sends everything as strings — convert booleans to 1/0
+            const v = typeof value === 'boolean' ? (value ? '1' : '0') : value
+            formData.append(`style_settings[${key}]`, v)
+          }
+        })
       }
 
       const token = getAuthToken()
