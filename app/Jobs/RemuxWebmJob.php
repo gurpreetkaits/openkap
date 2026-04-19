@@ -86,10 +86,12 @@ class RemuxWebmJob implements ShouldQueue
         try {
             $ffmpegPath = config('media-library.ffmpeg_path');
 
-            // Remux: copy all streams, no re-encoding — just fixes the container
-            // This adds Duration metadata and Cues (seek index) to the WebM
+            // Remux: copy all streams, no re-encoding — just fixes the container.
+            // This adds Duration metadata and Cues (seek index) to the WebM.
+            // -fflags +genpts regenerates timestamps to fix variable framerate
+            // issues from MediaRecorder's chunked output.
             $command = sprintf(
-                '%s -y -i %s -c copy %s 2>&1',
+                '%s -y -fflags +genpts -i %s -c copy %s 2>&1',
                 escapeshellarg($ffmpegPath),
                 escapeshellarg($inputPath),
                 escapeshellarg($outputPath)
