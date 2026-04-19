@@ -20,7 +20,7 @@ export function createEditorState() {
   // Editor state
   const loading = ref(true)
   const error = ref(null)
-  const activeTool = ref('blur')
+  const activeTool = ref('style')
   const showFlow = ref(true)
   const items = ref([])
   const selectedItemId = ref(null)
@@ -28,6 +28,56 @@ export function createEditorState() {
 
   // Overlay files
   const overlayFiles = ref([])
+
+  // Style state — background, padding, roundness
+  const styleBackground = ref({ type: 'none', color: '#000000', gradientFrom: '#1e293b', gradientTo: '#0f172a', gradientDirection: 'br', imageUrl: '' })
+  const stylePadding = ref(0) // 0-120 px
+  const styleRoundness = ref(10) // 0-32 px border radius on the video
+  const styleShadow = ref(true)
+
+  // Camera style state
+  const cameraEnabled = ref(true) // show/hide camera in editor preview
+  const cameraPosition = ref('bottom-left') // 'bottom-left', 'bottom-right', 'top-left', 'top-right'
+  const cameraSize = ref(25) // percentage of video width
+  const cameraRoundness = ref(18) // border radius
+  const cameraShape = ref('portrait') // 'portrait', 'circle', 'square'
+
+  // Preset backgrounds
+  // Presets from screenshot editor
+  const bgPresetColors = [
+    '#ffffff','#f1f5f9','#e2e8f0','#f8fafc',
+    '#1e293b','#0f172a','#111827','#000000',
+    '#6366f1','#2563eb','#f43f5e','#e91e63',
+    '#f59e0b','#ffd700','#10b981','#00bcd4',
+  ]
+  const bgPresetGradients = [
+    { from: '#f2b8ff', to: '#e9e4fe', dir: 'b' },
+    { from: '#3de5b3', to: '#fee899', dir: 'b' },
+    { from: '#9fbdd3', to: '#ebe6e2', dir: 'b' },
+    { from: '#f0e2cf', to: '#f4d5af', dir: 'b' },
+    { from: '#fbe0ff', to: '#92b4e9', dir: 'b' },
+    { from: '#01befc', to: '#fc7efc', dir: 'b' },
+    { from: '#b9fbc0', to: '#a3c4f3', dir: 'b' },
+    { from: '#adf285', to: '#5346bf', dir: 'b' },
+    { from: '#f5e7ff', to: '#ff94be', dir: 'br' },
+    { from: '#799aff', to: '#e8de90', dir: 'br' },
+    { from: '#925a9e', to: '#ff9696', dir: 'br' },
+    { from: '#b9fbc0', to: '#a3c4f3', dir: 'br' },
+  ]
+  const bgPresetImages = [
+    'https://pika.style/backgrounds/1-macos.svg',
+    'https://pika.style/backgrounds/5-macos.png',
+    'https://pika.style/backgrounds/1-art.jpg',
+    'https://pika.style/backgrounds/2-art.jpg',
+    'https://pika.style/backgrounds/5-abstract.png',
+    'https://pika.style/backgrounds/4-abstract.png',
+    'https://pika.style/backgrounds/3-abstract.png',
+    'https://pika.style/backgrounds/2-abstract.png',
+    'https://pika.style/backgrounds/8-abstract.jpg',
+    'https://pika.style/backgrounds/9-abstract.jpg',
+    'https://pika.style/backgrounds/maitris/7.png',
+    'https://pika.style/backgrounds/maitris/2.png',
+  ]
 
   // Trim state
   const trimEnabled = ref(false)
@@ -205,6 +255,19 @@ export function createEditorState() {
     isApplying,
     applyProgress,
     processingMode,
+    // Style state
+    styleBackground,
+    stylePadding,
+    styleRoundness,
+    styleShadow,
+    cameraEnabled,
+    cameraPosition,
+    cameraSize,
+    cameraRoundness,
+    cameraShape,
+    bgPresetColors,
+    bgPresetGradients,
+    bgPresetImages,
     // Computed
     selectedItem,
     seekPercent,

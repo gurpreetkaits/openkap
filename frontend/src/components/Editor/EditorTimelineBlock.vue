@@ -1,6 +1,6 @@
 <template>
   <div
-    class="absolute h-6 rounded cursor-pointer flex items-center overflow-hidden text-[10px] font-medium select-none group"
+    class="absolute h-8 rounded-md cursor-pointer flex items-center overflow-hidden text-[11px] font-medium select-none group border"
     :class="[
       isSelected ? 'ring-2 ring-orange-500 z-10' : 'z-0',
       colorClasses.bg,
@@ -47,9 +47,9 @@ const label = computed(() => getItemLabel(props.item))
 
 const colorClasses = computed(() => {
   const type = props.item.type
-  if (type === 'blur') return { bg: 'bg-blue-200', text: 'text-blue-800', handle: 'bg-blue-400' }
-  if (type === 'text') return { bg: 'bg-purple-200', text: 'text-purple-800', handle: 'bg-purple-400' }
-  return { bg: 'bg-green-200', text: 'text-green-800', handle: 'bg-green-400' }
+  if (type === 'blur') return { bg: 'bg-blue-100 border-blue-300', text: 'text-blue-700', handle: 'bg-blue-400' }
+  if (type === 'text') return { bg: 'bg-teal-100 border-teal-300', text: 'text-teal-700', handle: 'bg-teal-400' }
+  return { bg: 'bg-fuchsia-100 border-fuchsia-300', text: 'text-fuchsia-700', handle: 'bg-fuchsia-400' }
 })
 
 const blockStyle = computed(() => {

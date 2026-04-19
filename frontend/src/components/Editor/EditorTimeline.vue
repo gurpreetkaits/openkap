@@ -1,142 +1,107 @@
 <template>
-  <div class="bg-white border-t border-gray-200 flex-shrink-0">
-    <!-- Controls bar -->
-    <div class="h-9 flex items-center px-3 gap-2 border-b border-gray-100">
-      <button @click="togglePlay" class="text-gray-500 hover:text-orange-600 transition-colors flex-shrink-0">
-        <svg v-if="!isPlaying" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-        <svg v-else class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/></svg>
+  <div class="flex flex-col">
+
+    <!-- ─── Toolbar ─── -->
+    <div class="h-9 flex items-center px-3 gap-1.5 border-b border-gray-100">
+      <button class="tl-icon" title="Trim" @click="toggleTrim" :class="trimEnabled ? '!text-orange-600 bg-orange-50' : ''">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M14.121 14.121L19 19m-7-7l7-7m-7 7l-2.879 2.879M12 12L9.121 9.121m0 5.758a3 3 0 10-4.243 4.243 3 3 0 004.243-4.243zm0-5.758a3 3 0 10-4.243-4.243 3 3 0 004.243 4.243z"/></svg>
       </button>
-      <span class="text-[10px] text-gray-500 font-mono flex-shrink-0 w-8 text-center">{{ displayCurrentTime }}</span>
-      <span class="text-[10px] text-gray-400">/</span>
-      <span class="text-[10px] text-gray-500 font-mono flex-shrink-0 w-8 text-center">{{ displayDuration }}</span>
+      <button class="tl-icon" title="Split">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5"/></svg>
+      </button>
 
       <div class="flex-1"></div>
 
-      <!-- Trim toggle -->
-      <button
-        @click="toggleTrim"
-        :class="trimEnabled ? 'text-yellow-600 bg-yellow-50' : 'text-gray-400 hover:text-gray-600'"
-        class="px-2 py-1 rounded text-[10px] font-medium transition-colors flex items-center gap-1"
-        title="Toggle trim"
-      >
-        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.121 14.121L19 19m-7-7l7-7m-7 7l-2.879 2.879M12 12L9.121 9.121m0 5.758a3 3 0 10-4.243 4.243 3 3 0 004.243-4.243zm0-5.758a3 3 0 10-4.243-4.243 3 3 0 004.243 4.243z"/>
-        </svg>
-        Trim
-      </button>
-
-      <!-- Add Video -->
-      <button
-        @click="$emit('addVideo')"
-        class="px-2 py-1 rounded text-[10px] font-medium text-gray-400 hover:text-gray-600 transition-colors flex items-center gap-1"
-        title="Add video to merge"
-      >
-        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-        </svg>
-        Add Video
-      </button>
-
       <!-- Zoom -->
-      <div class="flex items-center gap-1 flex-shrink-0">
-        <button @click="timeline.zoomOut()" :disabled="timeline.zoom.value <= 1" class="w-5 h-5 flex items-center justify-center text-gray-400 hover:text-gray-600 disabled:opacity-30 transition-colors rounded">
-          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/></svg>
+      <div class="flex items-center gap-1">
+        <button @click="timeline.zoomOut()" :disabled="timeline.zoom.value <= 1" class="tl-icon !w-5 !h-5">
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" d="M5 12h14"/></svg>
         </button>
-        <span class="text-[10px] text-gray-400 w-6 text-center">{{ timeline.zoom.value }}x</span>
-        <button @click="timeline.zoomIn()" :disabled="timeline.zoom.value >= 20" class="w-5 h-5 flex items-center justify-center text-gray-400 hover:text-gray-600 disabled:opacity-30 transition-colors rounded">
-          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+        <input type="range" :min="1" :max="20" v-model.number="timeline.zoom.value" class="w-16 h-1 accent-gray-400 cursor-pointer" />
+        <button @click="timeline.zoomIn()" :disabled="timeline.zoom.value >= 20" class="tl-icon !w-5 !h-5">
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" d="M12 5v14M5 12h14"/></svg>
         </button>
       </div>
     </div>
 
-    <!-- Timeline scroll area -->
+    <!-- ─── Ruler + Track ─── -->
     <div
       ref="timelineContainer"
       class="overflow-x-auto relative"
-      style="min-height: 140px;"
-      @click="onRulerClick"
+      style="height: 90px;"
+      @click="onTimelineClick"
     >
-      <div :style="{ width: timeline.totalTimelineWidth.value + 'px', minWidth: '100%' }">
+      <div :style="{ width: timeline.totalTimelineWidth.value + 'px', minWidth: '100%' }" class="h-full flex flex-col">
+
         <!-- Ruler -->
-        <div class="h-5 border-b border-gray-100 relative">
+        <div class="h-5 relative flex-shrink-0">
           <template v-for="mark in timeline.generateRulerMarks()" :key="mark.time">
-            <div class="absolute top-0 bottom-0 border-l border-gray-200" :style="{ left: mark.position + 'px' }">
-              <span class="text-[9px] text-gray-400 pl-1 select-none">{{ mark.label }}</span>
+            <div class="absolute top-0 bottom-0" :style="{ left: mark.position + 'px' }">
+              <div class="w-px h-2.5 bg-gray-300/60"></div>
+              <span class="text-[9px] text-gray-400 font-mono pl-0.5 select-none leading-none">{{ mark.label }}</span>
             </div>
           </template>
         </div>
 
-        <!-- Tracks area (relative, for playhead + trim handles) -->
-        <div class="relative">
-          <!-- Video track -->
-          <div class="flex border-b border-gray-100">
-            <div class="w-16 flex-shrink-0 flex items-center px-2 bg-gray-50 border-r border-gray-100">
-              <span class="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Video</span>
+        <!-- Track area -->
+        <div class="flex-1 relative mx-0 my-1.5">
+
+          <!-- Video block -->
+          <div
+            v-for="(block, idx) in videoBlocks"
+            :key="block.isMain ? 'main' : block.id"
+            class="absolute top-0 bottom-0 rounded-xl overflow-hidden border-2 transition-all cursor-pointer group/vblock"
+            :class="block.isMain ? 'border-blue-400/60 bg-gray-200' : 'border-indigo-400/60 bg-indigo-100'"
+            :style="{ left: blockLeft(idx) + 'px', width: timeline.timeToPixels(block.duration) + 'px' }"
+            @mousedown.stop="mergeVideos.length ? onVideoBlockDragStart(idx, $event) : null"
+          >
+            <!-- Tick marks (visual filler like the reference) -->
+            <div class="absolute inset-0 flex items-center opacity-20 pointer-events-none">
+              <div v-for="n in Math.max(1, Math.floor(timeline.timeToPixels(block.duration) / 12))" :key="n" class="w-px h-full bg-gray-400 flex-shrink-0" :style="{ marginLeft: '12px' }"></div>
             </div>
-            <div class="flex-1 relative h-8 min-w-0">
-              <div
-                v-for="(block, idx) in videoBlocks"
-                :key="block.isMain ? 'main' : block.id"
-                :class="[
-                  'absolute h-6 rounded flex items-center px-2 text-[10px] font-medium top-1 overflow-hidden transition-all duration-200 group/block',
-                  mergeVideos.length ? 'cursor-grab active:cursor-grabbing' : '',
-                  block.isMain ? 'bg-gray-200 text-gray-600' : 'bg-indigo-200 text-indigo-700',
-                  dropTargetIdx === idx ? 'ring-2 ring-orange-400 z-10' : '',
-                ]"
-                :style="{ left: blockLeft(idx) + 'px', width: timeline.timeToPixels(block.duration) + 'px' }"
-                @mousedown.stop="mergeVideos.length ? onVideoBlockDragStart(idx, $event) : null"
-              >
-                <span class="truncate flex-1">{{ block.title }}</span>
-                <!-- Remove button for merge blocks -->
-                <button
-                  v-if="!block.isMain"
-                  @click.stop="removeMergeVideo(block.id)"
-                  class="hidden group-hover/block:flex items-center justify-center w-4 h-4 rounded-full bg-red-500 text-white flex-shrink-0 ml-1 hover:bg-red-600 transition-colors"
-                  title="Remove video"
-                >
-                  <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"/></svg>
-                </button>
-              </div>
+
+            <!-- Label -->
+            <div class="absolute inset-0 flex items-center justify-center pointer-events-none z-[1]">
+              <span class="text-[10px] font-medium text-gray-500 truncate px-6">{{ block.title }}</span>
             </div>
+
+            <!-- Left trim handle -->
+            <div
+              class="absolute left-0 top-0 bottom-0 w-2.5 bg-blue-500 cursor-ew-resize opacity-0 group-hover/vblock:opacity-100 transition-opacity flex items-center justify-center rounded-l-lg z-[2]"
+              @mousedown.stop="startTrimDrag('left', block, $event)"
+            >
+              <div class="w-0.5 h-5 bg-white/70 rounded-full"></div>
+            </div>
+
+            <!-- Right trim handle -->
+            <div
+              class="absolute right-0 top-0 bottom-0 w-2.5 bg-blue-500 cursor-ew-resize opacity-0 group-hover/vblock:opacity-100 transition-opacity flex items-center justify-center rounded-r-lg z-[2]"
+              @mousedown.stop="startTrimDrag('right', block, $event)"
+            >
+              <div class="w-0.5 h-5 bg-white/70 rounded-full"></div>
+            </div>
+
+            <!-- Remove -->
+            <button
+              v-if="!block.isMain"
+              @click.stop="removeMergeVideo(block.id)"
+              class="absolute top-1 right-1 hidden group-hover/vblock:flex items-center justify-center w-4 h-4 rounded-full bg-red-500 text-white hover:bg-red-600 z-[3]"
+            >
+              <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
           </div>
 
-          <!-- Blur track -->
-          <EditorTimelineTrack
-            type="blur"
-            label="Blur"
-            :pixelsPerSecond="timeline.pixelsPerSecond.value"
-            @select="selectItem"
-            @updateItem="handleUpdateItem"
-            @seek="timeline.seekToTime"
-          />
-
-          <!-- Text track -->
-          <EditorTimelineTrack
-            type="text"
-            label="Text"
-            :pixelsPerSecond="timeline.pixelsPerSecond.value"
-            @select="selectItem"
-            @updateItem="handleUpdateItem"
-            @seek="timeline.seekToTime"
-          />
-
-          <!-- Overlay track -->
-          <EditorTimelineTrack
-            type="overlay"
-            label="Overlay"
-            :pixelsPerSecond="timeline.pixelsPerSecond.value"
-            @select="selectItem"
-            @updateItem="handleUpdateItem"
-            @seek="timeline.seekToTime"
-          />
-
           <!-- Playhead -->
-          <EditorTimelinePlayhead
-            :pixelsPerSecond="timeline.pixelsPerSecond.value"
-            @seek="timeline.seekToTime"
-          />
+          <div
+            class="absolute top-0 bottom-0 z-20 pointer-events-auto cursor-col-resize"
+            :style="{ left: (playheadPosition - 0.5) + 'px' }"
+            @mousedown.stop="startPlayheadDrag"
+          >
+            <div class="w-px h-full bg-gray-900"></div>
+            <div class="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-gray-900 rounded-full border-2 border-white shadow-md"></div>
+          </div>
 
-          <!-- Trim handles -->
+          <!-- Trim overlays -->
           <EditorTrimHandles :pixelsPerSecond="timeline.pixelsPerSecond.value" />
         </div>
       </div>
@@ -148,8 +113,6 @@
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useEditorState } from '@/composables/useEditorState'
 import { useEditorTimeline } from '@/composables/useEditorTimeline'
-import EditorTimelineTrack from './EditorTimelineTrack.vue'
-import EditorTimelinePlayhead from './EditorTimelinePlayhead.vue'
 import EditorTrimHandles from './EditorTrimHandles.vue'
 
 defineEmits(['addVideo'])
@@ -163,126 +126,70 @@ const {
 } = state
 
 const timeline = useEditorTimeline()
-
 const timelineContainer = ref(null)
 const dragSourceIdx = ref(null)
 const dropTargetIdx = ref(null)
 
-// Build ordered array of all video blocks
 const videoBlocks = computed(() => {
   const mainBlock = { id: null, title: video.value?.title || 'Video', duration: duration.value, isMain: true }
   if (!mergeVideos.value.length) return [mainBlock]
-
-  const blocks = mergeVideos.value.map(v => ({
-    id: v.id, title: v.title, duration: v.duration || 10, isMain: false,
-  }))
-  const idx = Math.min(mainVideoIndex.value, blocks.length)
-  blocks.splice(idx, 0, mainBlock)
+  const blocks = mergeVideos.value.map(v => ({ id: v.id, title: v.title, duration: v.duration || 10, isMain: false }))
+  blocks.splice(Math.min(mainVideoIndex.value, blocks.length), 0, mainBlock)
   return blocks
 })
 
 function blockLeft(idx) {
   let left = 0
-  for (let i = 0; i < idx; i++) {
-    left += timeline.timeToPixels(videoBlocks.value[i].duration)
-  }
+  for (let i = 0; i < idx; i++) left += timeline.timeToPixels(videoBlocks.value[i].duration)
   return left
 }
 
-const displayCurrentTime = computed(() => {
-  if (!videoReady.value) return '--:--'
-  return formatTime(currentTime.value)
-})
-
-const displayDuration = computed(() => {
-  if (!videoReady.value && !video.value?.duration) return '--:--'
-  return formatTime(duration.value || video.value?.duration || 0)
-})
+const playheadPosition = computed(() => currentTime.value * timeline.pixelsPerSecond.value)
 
 function toggleTrim() {
   trimEnabled.value = !trimEnabled.value
-  if (trimEnabled.value) {
-    trimStart.value = 0
-    trimEnd.value = duration.value
-  }
+  if (trimEnabled.value) { trimStart.value = 0; trimEnd.value = duration.value }
 }
 
-function handleUpdateItem(updated) {
-  const idx = items.value.findIndex(i => i.id === updated.id)
-  if (idx !== -1) {
-    items.value[idx] = { ...items.value[idx], ...updated }
-  }
-}
-
-// --- Video block drag to reorder (N blocks) ---
-function onVideoBlockDragStart(sourceIdx, e) {
-  dragSourceIdx.value = sourceIdx
-  dropTargetIdx.value = null
-
-  const startX = e.clientX
-  let hasMoved = false
-
-  function onMove(ev) {
-    const dx = Math.abs(ev.clientX - startX)
-    if (dx > 20 && !hasMoved) hasMoved = true
-    if (!hasMoved) return
-
-    const container = timelineContainer.value
-    if (!container) return
-    const trackEl = container.querySelector('.relative.h-8')
-    if (!trackEl) return
-    const rect = trackEl.getBoundingClientRect()
-    const x = ev.clientX - rect.left + container.scrollLeft
-
-    // Find which index the mouse is over
-    let acc = 0
-    let targetIdx = videoBlocks.value.length - 1
-    for (let i = 0; i < videoBlocks.value.length; i++) {
-      const w = timeline.timeToPixels(videoBlocks.value[i].duration)
-      if (x < acc + w / 2) { targetIdx = i; break }
-      acc += w
-    }
-    dropTargetIdx.value = targetIdx !== sourceIdx ? targetIdx : null
-  }
-
-  function onUp() {
-    document.removeEventListener('mousemove', onMove)
-    document.removeEventListener('mouseup', onUp)
-    if (hasMoved && dropTargetIdx.value !== null && dropTargetIdx.value !== dragSourceIdx.value) {
-      const blocks = [...videoBlocks.value]
-      const [moved] = blocks.splice(dragSourceIdx.value, 1)
-      blocks.splice(dropTargetIdx.value, 0, moved)
-      reorderVideoBlocks(blocks)
-    }
-    dragSourceIdx.value = null
-    dropTargetIdx.value = null
-  }
-
-  document.addEventListener('mousemove', onMove)
-  document.addEventListener('mouseup', onUp)
-}
-
-function onRulerClick(e) {
-  if (e.target.closest('.absolute')) return
+function onTimelineClick(e) {
+  if (e.target.closest('.cursor-ew-resize') || e.target.closest('.cursor-col-resize') || e.target.closest('button')) return
   const container = timelineContainer.value
   if (!container) return
-  const rect = container.getBoundingClientRect()
-  const x = e.clientX - rect.left + container.scrollLeft
+  const x = e.clientX - container.getBoundingClientRect().left + container.scrollLeft
   timeline.seekToTime(timeline.pixelsToTime(x))
 }
 
-function updateContainerWidth() {
-  if (timelineContainer.value) {
-    timeline.containerWidth.value = timelineContainer.value.clientWidth
-  }
+function startPlayheadDrag(e) {
+  const startX = e.clientX, startTime = currentTime.value
+  const onMove = (ev) => { const dt = (ev.clientX - startX) / timeline.pixelsPerSecond.value; timeline.seekToTime(Math.max(0, Math.min(duration.value, startTime + dt))) }
+  const onUp = () => { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp) }
+  document.addEventListener('mousemove', onMove); document.addEventListener('mouseup', onUp)
 }
 
-onMounted(() => {
-  updateContainerWidth()
-  window.addEventListener('resize', updateContainerWidth)
-})
+function startTrimDrag(edge, block, e) {
+  if (!block.isMain) return
+  if (!trimEnabled.value) { trimEnabled.value = true; trimStart.value = 0; trimEnd.value = duration.value }
+  const startX = e.clientX, origStart = trimStart.value, origEnd = trimEnd.value
+  const onMove = (ev) => { const dt = (ev.clientX - startX) / timeline.pixelsPerSecond.value; if (edge === 'left') trimStart.value = Math.max(0, Math.min(origEnd - 0.5, origStart + dt)); else trimEnd.value = Math.min(duration.value, Math.max(origStart + 0.5, origEnd + dt)) }
+  const onUp = () => { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp) }
+  document.addEventListener('mousemove', onMove); document.addEventListener('mouseup', onUp)
+}
 
-onBeforeUnmount(() => {
-  window.removeEventListener('resize', updateContainerWidth)
-})
+function onVideoBlockDragStart(sourceIdx, e) {
+  dragSourceIdx.value = sourceIdx; dropTargetIdx.value = null
+  const startX = e.clientX; let hasMoved = false
+  const onMove = (ev) => { if (Math.abs(ev.clientX - startX) > 20 && !hasMoved) hasMoved = true; if (!hasMoved) return; const container = timelineContainer.value; if (!container) return; const x = ev.clientX - container.getBoundingClientRect().left + container.scrollLeft; let acc = 0, target = videoBlocks.value.length - 1; for (let i = 0; i < videoBlocks.value.length; i++) { const w = timeline.timeToPixels(videoBlocks.value[i].duration); if (x < acc + w / 2) { target = i; break }; acc += w }; dropTargetIdx.value = target !== sourceIdx ? target : null }
+  const onUp = () => { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); if (hasMoved && dropTargetIdx.value !== null) { const blocks = [...videoBlocks.value]; const [moved] = blocks.splice(dragSourceIdx.value, 1); blocks.splice(dropTargetIdx.value, 0, moved); reorderVideoBlocks(blocks) }; dragSourceIdx.value = null; dropTargetIdx.value = null }
+  document.addEventListener('mousemove', onMove); document.addEventListener('mouseup', onUp)
+}
+
+function updateContainerWidth() { if (timelineContainer.value) timeline.containerWidth.value = timelineContainer.value.clientWidth }
+onMounted(() => { updateContainerWidth(); window.addEventListener('resize', updateContainerWidth) })
+onBeforeUnmount(() => { window.removeEventListener('resize', updateContainerWidth) })
 </script>
+
+<style scoped>
+.tl-icon {
+  @apply w-7 h-7 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-30 disabled:cursor-not-allowed;
+}
+</style>

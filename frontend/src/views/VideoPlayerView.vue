@@ -451,6 +451,91 @@
               >
               </video>
 
+              <!-- Camera Overlay — portrait rounded rectangle -->
+              <transition name="camera-bubble">
+                <div
+                  v-if="hasCameraTrack && cameraVisible"
+                  class="absolute z-[15] group/cam select-none"
+                  :style="{
+                    left: cameraPosition.x + 'px',
+                    bottom: cameraPosition.y + 'px',
+                    width: cameraWidth + 'px',
+                    height: Math.round(cameraWidth / CAMERA_ASPECT) + 'px',
+                    cursor: cameraDragging ? 'grabbing' : 'grab',
+                  }"
+                  @mousedown.stop="startCameraDrag"
+                  @touchstart.stop="startCameraDrag"
+                  @wheel.stop="onCameraWheel"
+                >
+                  <!-- Glow border -->
+                  <div
+                    class="absolute -inset-[2px] rounded-[20px] opacity-50 group-hover/cam:opacity-80 transition-opacity duration-500"
+                    style="background: linear-gradient(135deg, rgba(255,255,255,0.25), rgba(255,255,255,0.08)); filter: blur(1px);"
+                  ></div>
+                  <!-- Camera video container -->
+                  <div class="relative w-full h-full overflow-hidden rounded-[18px] shadow-[0_8px_32px_rgba(0,0,0,0.5)] ring-1 ring-white/15">
+
+                    <!-- Ready: show camera video -->
+                    <video
+                      v-if="cameraReady"
+                      ref="cameraRef"
+                      :src="video.camera_url"
+                      class="w-full h-full object-cover"
+                      muted
+                      playsinline
+                      preload="metadata"
+                      @loadeddata="syncCamera"
+                      @error="onCameraError"
+                    ></video>
+
+                    <!-- Converting / Loading: progress indicator -->
+                    <div
+                      v-else
+                      class="w-full h-full bg-gray-900 flex flex-col items-center justify-center gap-3"
+                    >
+                      <!-- Camera icon -->
+                      <svg class="w-8 h-8 text-white/30" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5l4.72-4.72a.75.75 0 011.28.53v11.38a.75.75 0 01-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 002.25-2.25v-9a2.25 2.25 0 00-2.25-2.25h-9A2.25 2.25 0 002.25 7.5v9a2.25 2.25 0 002.25 2.25z" />
+                      </svg>
+
+                      <!-- Circular progress -->
+                      <div class="relative w-12 h-12">
+                        <svg class="w-12 h-12 -rotate-90" viewBox="0 0 48 48">
+                          <circle cx="24" cy="24" r="20" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="3" />
+                          <circle
+                            cx="24" cy="24" r="20" fill="none"
+                            stroke="#f97316" stroke-width="3" stroke-linecap="round"
+                            :stroke-dasharray="125.66"
+                            :stroke-dashoffset="125.66 - (125.66 * cameraConversionProgress / 100)"
+                            class="transition-all duration-500"
+                          />
+                        </svg>
+                        <span class="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-white/70">
+                          {{ cameraConversionProgress }}%
+                        </span>
+                      </div>
+
+                      <span class="text-[10px] text-white/40 font-medium">
+                        {{ cameraConversionStatus === 'failed' ? 'Failed' : 'Processing' }}
+                      </span>
+                    </div>
+                  </div>
+
+                  <!-- Toggle visibility button on hover -->
+                  <div class="absolute -top-2 -right-2 opacity-0 group-hover/cam:opacity-100 transition-opacity duration-200 z-10">
+                    <button
+                      @click.stop="toggleCameraOverlay"
+                      class="w-6 h-6 flex items-center justify-center rounded-full bg-black/70 text-white/80 hover:text-white hover:bg-black/90 backdrop-blur-sm transition-all cursor-pointer"
+                      title="Hide camera"
+                    >
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </transition>
+
               <!-- Buffering -->
               <div v-if="isBuffering" class="absolute inset-0 flex items-center justify-center bg-black/40 pointer-events-none">
                 <div class="w-14 h-14 border-4 border-white/20 border-t-orange-500 rounded-full animate-spin"></div>
@@ -679,6 +764,18 @@
                         </svg>
                         <div v-if="captionsEnabled" class="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-3 h-0.5 bg-orange-400 rounded-full"></div>
                       </button>
+                      <!-- Camera toggle -->
+                      <button
+                        v-if="hasCameraTrack"
+                        @click.stop="toggleCameraOverlay"
+                        class="ctrl-tip player-btn w-7 h-7 flex items-center justify-center rounded-full transition-all"
+                        :class="cameraVisible ? 'bg-orange-500/30 text-orange-300 hover:bg-orange-500/40' : 'bg-white/10 text-white/60 hover:bg-white/20 hover:text-white'"
+                        :data-tip="cameraVisible ? 'Hide camera' : 'Show camera'"
+                      >
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5l4.72-4.72a.75.75 0 011.28.53v11.38a.75.75 0 01-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 002.25-2.25v-9a2.25 2.25 0 00-2.25-2.25h-9A2.25 2.25 0 002.25 7.5v9a2.25 2.25 0 002.25 2.25z" />
+                        </svg>
+                      </button>
                       <!-- Fullscreen -->
                       <button @click.stop="toggleFullscreen" class="ctrl-tip player-btn w-7 h-7 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-all text-white/60 hover:text-white" :data-tip="isFullscreen ? 'Exit fullscreen' : 'Fullscreen'">
                         <svg v-if="!isFullscreen" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -769,6 +866,17 @@
               <div v-if="!showCommentBox" class="flex-1"></div>
 
               <!-- Right buttons -->
+              <!-- Edit button (owner only) -->
+              <button
+                v-if="isOwner && !showCommentBox"
+                @click="$router.push(`/video/${video.id}/edit`)"
+                class="flex items-center gap-1.5 px-3 py-2 bg-orange-50 hover:bg-orange-100 text-orange-600 text-xs font-semibold rounded-lg border border-orange-200 transition-colors flex-shrink-0"
+              >
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                </svg>
+                Edit
+              </button>
               <!-- Comment button (hidden when box is open) -->
               <button
                 v-if="!showCommentBox"
@@ -1367,6 +1475,22 @@ export default {
     const bufferedPercent = ref(0)
     const playbackSpeed = ref(1)
     const controlsVisible = ref(false)
+
+    // Camera overlay state
+    const cameraRef = ref(null)
+    const cameraVisible = ref(true)
+    const cameraWidth = ref(160) // px width — portrait aspect ratio
+    const cameraPosition = ref({ x: 20, y: 20 }) // bottom-left offset from container edge
+    const cameraDragging = ref(false)
+    const cameraDragStart = ref({ x: 0, y: 0, posX: 0, posY: 0 })
+    const cameraResizing = ref(false)
+    const CAMERA_MIN_WIDTH = 100
+    const CAMERA_MAX_WIDTH = 300
+    const CAMERA_ASPECT = 3 / 4 // width / height — portrait
+    const cameraConversionStatus = ref('completed')
+    const cameraConversionProgress = ref(100)
+    const cameraLoadError = ref(false)
+    let cameraStatusPollTimer = null
     const hoverTime = ref(null)
     const hoverPercent = ref(0)
     const showSpeedMenu = ref(false)
@@ -1927,6 +2051,7 @@ export default {
       }
 
       setTimeout(() => initHls(), 100)
+      initCameraStatus()
     }
 
     const fetchOwnerVideo = async () => {
@@ -1954,6 +2079,10 @@ export default {
         zoom_progress: fetchedVideo.zoom_progress,
         is_zoom_ready: fetchedVideo.is_zoom_ready,
         zoom_event_count: fetchedVideo.zoom_event_count,
+        has_camera: fetchedVideo.has_camera,
+        camera_url: fetchedVideo.camera_url,
+        camera_conversion_status: fetchedVideo.camera_conversion_status,
+        camera_conversion_progress: fetchedVideo.camera_conversion_progress,
       }
 
       if (fetchedVideo.storage_type === 'bunny') {
@@ -1983,6 +2112,7 @@ export default {
       }
 
       setTimeout(() => initHls(), 100)
+      initCameraStatus()
 
       if (fetchedVideo.duration && fetchedVideo.duration > 0) {
         duration.value = fetchedVideo.duration
@@ -2259,6 +2389,166 @@ export default {
           isFullscreen.value = false
         }
       } catch (err) {}
+    }
+
+    // ── Camera overlay ──────────────────────────────────────────────
+    const hasCameraTrack = computed(() => !!video.value?.has_camera)
+
+    const cameraReady = computed(() =>
+      cameraConversionStatus.value === 'completed' && video.value?.camera_url && !cameraLoadError.value
+    )
+
+    const cameraConverting = computed(() =>
+      cameraConversionStatus.value === 'processing' || cameraConversionStatus.value === 'pending'
+    )
+
+    // Sync conversion status from video data
+    const initCameraStatus = () => {
+      const v = video.value
+      if (!v?.has_camera) return
+      cameraConversionStatus.value = v.camera_conversion_status || 'completed'
+      cameraConversionProgress.value = v.camera_conversion_progress ?? 100
+      if (cameraConverting.value) {
+        startCameraStatusPoll()
+      }
+    }
+
+    const startCameraStatusPoll = () => {
+      if (cameraStatusPollTimer) return
+      cameraStatusPollTimer = setInterval(async () => {
+        try {
+          const id = video.value?.id
+          if (!id) return
+          const endpoint = isSharedMode.value
+            ? `${API_BASE_URL}/api/share/video/${token.value}`
+            : `${API_BASE_URL}/api/videos/${id}`
+          const headers = { 'Accept': 'application/json' }
+          if (!isSharedMode.value) {
+            const authToken = localStorage.getItem('auth_token')
+            if (authToken) headers['Authorization'] = `Bearer ${authToken}`
+          }
+          const res = await fetch(endpoint, { headers })
+          if (!res.ok) return
+          const data = await res.json()
+          const v = data.video || data
+          cameraConversionStatus.value = v.camera_conversion_status || 'completed'
+          cameraConversionProgress.value = v.camera_conversion_progress ?? 100
+          if (v.camera_url) video.value.camera_url = v.camera_url
+
+          if (cameraConversionStatus.value === 'completed') {
+            cameraLoadError.value = false // Reset so cameraReady flips to true
+            clearInterval(cameraStatusPollTimer)
+            cameraStatusPollTimer = null
+          } else if (cameraConversionStatus.value === 'failed') {
+            clearInterval(cameraStatusPollTimer)
+            cameraStatusPollTimer = null
+          }
+        } catch (e) {
+          // Polling failure is non-critical
+        }
+      }, 3000)
+    }
+
+    const onCameraError = () => {
+      cameraLoadError.value = true
+      // If the camera file isn't playable, start polling — it may still be converting
+      if (cameraConversionStatus.value !== 'failed') {
+        cameraConversionStatus.value = 'processing'
+        startCameraStatusPoll()
+      }
+    }
+
+    const toggleCameraOverlay = () => {
+      cameraVisible.value = !cameraVisible.value
+    }
+
+    const cameraHeight = computed(() => Math.round(cameraWidth.value / CAMERA_ASPECT))
+
+    // Sync camera playback with main video
+    const syncCamera = () => {
+      const cam = cameraRef.value
+      const vid = videoRef.value
+      if (!cam || !vid) return
+
+      // Sync time if drifted more than 0.3s
+      if (Math.abs(cam.currentTime - vid.currentTime) > 0.3) {
+        cam.currentTime = vid.currentTime
+      }
+
+      if (isPlaying.value && cam.paused) cam.play().catch(() => {})
+      if (!isPlaying.value && !cam.paused) cam.pause()
+
+      cam.playbackRate = vid.playbackRate
+    }
+
+    // Watch play state and time to keep camera in sync
+    watch(isPlaying, syncCamera)
+    watch(playbackSpeed, syncCamera)
+    watch(currentTime, () => {
+      // lightweight sync — only correct drift, don't set every frame
+      const cam = cameraRef.value
+      const vid = videoRef.value
+      if (!cam || !vid) return
+      if (Math.abs(cam.currentTime - vid.currentTime) > 0.5) {
+        cam.currentTime = vid.currentTime
+      }
+    })
+
+    // Drag to reposition camera bubble
+    const startCameraDrag = (e) => {
+      if (cameraResizing.value) return
+      e.preventDefault()
+      cameraDragging.value = true
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY
+      cameraDragStart.value = {
+        x: clientX,
+        y: clientY,
+        posX: cameraPosition.value.x,
+        posY: cameraPosition.value.y,
+      }
+
+      const onMove = (ev) => {
+        const cx = ev.touches ? ev.touches[0].clientX : ev.clientX
+        const cy = ev.touches ? ev.touches[0].clientY : ev.clientY
+        const dx = cx - cameraDragStart.value.x
+        const dy = cameraDragStart.value.y - cy // inverted: bottom-left origin
+
+        const container = playerContainer.value
+        if (!container) return
+        const bounds = container.getBoundingClientRect()
+
+        let newX = cameraDragStart.value.posX + dx
+        let newY = cameraDragStart.value.posY + dy
+
+        // Clamp within container
+        const maxX = bounds.width - cameraWidth.value - 8
+        const maxY = bounds.height - cameraHeight.value - 8
+        newX = Math.max(8, Math.min(newX, maxX))
+        newY = Math.max(8, Math.min(newY, maxY))
+
+        cameraPosition.value = { x: newX, y: newY }
+      }
+
+      const onUp = () => {
+        cameraDragging.value = false
+        document.removeEventListener('mousemove', onMove)
+        document.removeEventListener('mouseup', onUp)
+        document.removeEventListener('touchmove', onMove)
+        document.removeEventListener('touchend', onUp)
+      }
+
+      document.addEventListener('mousemove', onMove)
+      document.addEventListener('mouseup', onUp)
+      document.addEventListener('touchmove', onMove, { passive: false })
+      document.addEventListener('touchend', onUp)
+    }
+
+    // Scroll-wheel resize on camera overlay
+    const onCameraWheel = (e) => {
+      e.preventDefault()
+      const delta = e.deltaY > 0 ? -12 : 12
+      cameraWidth.value = Math.max(CAMERA_MIN_WIDTH, Math.min(CAMERA_MAX_WIDTH, cameraWidth.value + delta))
     }
 
     const showControls_fn = () => {
@@ -3065,6 +3355,7 @@ export default {
       stopTranscriptionPolling()
       destroyAudioAnalyser()
       destroyHls()
+      if (cameraStatusPollTimer) { clearInterval(cameraStatusPollTimer); cameraStatusPollTimer = null }
     })
 
     return {
@@ -3119,6 +3410,11 @@ export default {
       transcriptChatLoading, transcriptChatRemaining, askTranscriptQuestion,
       // Bunny
       isBunnyVideo, bunnyStatus, bunnyEncodeProgress, bunnyAvailableResolutions,
+      // Camera overlay
+      cameraRef, cameraVisible, cameraWidth, cameraHeight, cameraPosition, cameraDragging,
+      hasCameraTrack, cameraReady, cameraConverting, cameraConversionStatus, cameraConversionProgress, cameraLoadError,
+      toggleCameraOverlay, syncCamera, onCameraError, CAMERA_ASPECT,
+      startCameraDrag, onCameraWheel,
     }
   }
 }
@@ -3127,6 +3423,12 @@ export default {
 <style scoped>
 .fade-enter-active, .fade-leave-active { transition: opacity 0.2s ease; }
 .fade-enter-from, .fade-leave-to { opacity: 0; }
+
+/* Camera bubble transitions */
+.camera-bubble-enter-active { transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.camera-bubble-leave-active { transition: all 0.25s ease-in; }
+.camera-bubble-enter-from { opacity: 0; transform: scale(0.3); }
+.camera-bubble-leave-to { opacity: 0; transform: scale(0.3); }
 
 /* Comment bar slide in from left */
 .comment-slide-enter-active { transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); }

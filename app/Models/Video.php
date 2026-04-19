@@ -17,6 +17,9 @@ class Video extends Model implements HasMedia
         'description',
         'duration',
         'has_audio',
+        'has_camera',
+        'camera_conversion_status',
+        'camera_conversion_progress',
         'user_id',
         'user_ip',
         'folder_id',
@@ -71,6 +74,8 @@ class Video extends Model implements HasMedia
     protected $casts = [
         'duration' => 'integer',
         'has_audio' => 'boolean',
+        'has_camera' => 'boolean',
+        'camera_conversion_progress' => 'integer',
         'file_size_bytes' => 'integer',
         'is_public' => 'boolean',
         'is_favourite' => 'boolean',
@@ -328,6 +333,11 @@ class Video extends Model implements HasMedia
             ->singleFile()
             ->acceptsMimeTypes(['image/jpeg', 'image/png'])
             ->useDisk('public');
+
+        $this->addMediaCollection('camera')
+            ->singleFile()
+            ->acceptsMimeTypes(['video/webm', 'video/mp4'])
+            ->useDisk('public');
     }
 
     /**
@@ -404,6 +414,21 @@ class Video extends Model implements HasMedia
 
         // Fallback: return null (frontend can show placeholder)
         return null;
+    }
+
+    public function getCameraUrl(): ?string
+    {
+        if (! $this->has_camera) {
+            return null;
+        }
+
+        $camera = $this->getFirstMedia('camera');
+        if (! $camera) {
+            return null;
+        }
+
+        // Serve via API endpoint (handles CORS) rather than raw storage URL
+        return url("/api/share/video/{$this->share_token}/camera");
     }
 
     /**

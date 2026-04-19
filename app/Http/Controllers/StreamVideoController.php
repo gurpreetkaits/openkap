@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\ConvertCameraToMp4Job;
 use App\Jobs\GenerateThumbnailJob;
 use App\Jobs\GenerateTranscriptionJob;
 use App\Jobs\RemuxWebmJob;
@@ -40,6 +41,7 @@ class StreamVideoController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'mime_type' => 'nullable|string',
+            'has_camera' => 'nullable|boolean',
         ]);
 
         // Check if user can record video (subscription limit check)
@@ -69,6 +71,13 @@ class StreamVideoController extends Controller
         // Create empty video file that chunks will be appended to
         touch("{$sessionDir}/video.webm");
 
+        $hasCamera = (bool) $request->input('has_camera', false);
+
+        // Create empty camera file if camera is enabled
+        if ($hasCamera) {
+            touch("{$sessionDir}/camera.webm");
+        }
+
         // Store session metadata
         $metadata = [
             'user_id' => Auth::id(),
@@ -79,6 +88,11 @@ class StreamVideoController extends Controller
             'next_expected_chunk' => 0,
             'total_size' => 0,
             'pending_chunks' => [],
+            'has_camera' => $hasCamera,
+            'camera_chunks_received' => 0,
+            'camera_next_expected_chunk' => 0,
+            'camera_total_size' => 0,
+            'camera_pending_chunks' => [],
         ];
 
         file_put_contents("{$sessionDir}/metadata.json", json_encode($metadata));
@@ -107,11 +121,11 @@ class StreamVideoController extends Controller
         $request->validate([
             'chunk' => 'required|file|max:10240',
             'chunk_index' => 'required|integer|min:0',
+            'type' => 'nullable|string|in:video,camera',
         ]);
 
         $sessionDir = storage_path("app/temp/stream-uploads/{$sessionId}");
         $metadataPath = "{$sessionDir}/metadata.json";
-        $videoPath = "{$sessionDir}/video.webm";
 
         // Verify session exists
         if (! file_exists($metadataPath)) {
@@ -130,33 +144,61 @@ class StreamVideoController extends Controller
         $chunkIndex = (int) $request->chunk_index;
         $chunkFile = $request->file('chunk');
         $chunkSize = $chunkFile->getSize();
+        $chunkType = $request->input('type', 'video');
 
-        // If this is the expected next chunk, append directly to video file
-        if ($chunkIndex === $metadata['next_expected_chunk']) {
-            // Append this chunk to video file
-            $this->appendChunkToVideo($videoPath, $chunkFile->getRealPath());
-            $metadata['next_expected_chunk']++;
-            $metadata['total_size'] += $chunkSize;
+        // Camera chunks go to a separate file with separate tracking
+        if ($chunkType === 'camera') {
+            $targetPath = "{$sessionDir}/camera.webm";
+            $nextKey = 'camera_next_expected_chunk';
+            $sizeKey = 'camera_total_size';
+            $pendingKey = 'camera_pending_chunks';
+            $countKey = 'camera_chunks_received';
+            $pendingPrefix = 'camera_pending';
+        } else {
+            $targetPath = "{$sessionDir}/video.webm";
+            $nextKey = 'next_expected_chunk';
+            $sizeKey = 'total_size';
+            $pendingKey = 'pending_chunks';
+            $countKey = 'chunks_received';
+            $pendingPrefix = 'pending';
+        }
+
+        // Ensure target file exists (camera file may not exist for older sessions)
+        if (! file_exists($targetPath)) {
+            touch($targetPath);
+        }
+
+        // Initialize metadata keys if missing (backward compat with sessions started before camera support)
+        $metadata[$nextKey] = $metadata[$nextKey] ?? 0;
+        $metadata[$sizeKey] = $metadata[$sizeKey] ?? 0;
+        $metadata[$pendingKey] = $metadata[$pendingKey] ?? [];
+        $metadata[$countKey] = $metadata[$countKey] ?? 0;
+
+        // If this is the expected next chunk, append directly to target file
+        if ($chunkIndex === $metadata[$nextKey]) {
+            $this->appendChunkToVideo($targetPath, $chunkFile->getRealPath());
+            $metadata[$nextKey]++;
+            $metadata[$sizeKey] += $chunkSize;
 
             // Check if we have pending chunks that can now be appended
-            while (isset($metadata['pending_chunks'][$metadata['next_expected_chunk']])) {
-                $pendingPath = "{$sessionDir}/pending_{$metadata['next_expected_chunk']}.webm";
+            while (isset($metadata[$pendingKey][$metadata[$nextKey]])) {
+                $pendingPath = "{$sessionDir}/{$pendingPrefix}_{$metadata[$nextKey]}.webm";
                 if (file_exists($pendingPath)) {
-                    $this->appendChunkToVideo($videoPath, $pendingPath);
-                    $metadata['total_size'] += $metadata['pending_chunks'][$metadata['next_expected_chunk']];
+                    $this->appendChunkToVideo($targetPath, $pendingPath);
+                    $metadata[$sizeKey] += $metadata[$pendingKey][$metadata[$nextKey]];
                     unlink($pendingPath);
                 }
-                unset($metadata['pending_chunks'][$metadata['next_expected_chunk']]);
-                $metadata['next_expected_chunk']++;
+                unset($metadata[$pendingKey][$metadata[$nextKey]]);
+                $metadata[$nextKey]++;
             }
         } else {
             // Out of order chunk - save temporarily
-            $pendingPath = "{$sessionDir}/pending_{$chunkIndex}.webm";
-            $chunkFile->move($sessionDir, "pending_{$chunkIndex}.webm");
-            $metadata['pending_chunks'][$chunkIndex] = $chunkSize;
+            $pendingPath = "{$sessionDir}/{$pendingPrefix}_{$chunkIndex}.webm";
+            $chunkFile->move($sessionDir, "{$pendingPrefix}_{$chunkIndex}.webm");
+            $metadata[$pendingKey][$chunkIndex] = $chunkSize;
         }
 
-        $metadata['chunks_received']++;
+        $metadata[$countKey]++;
         $metadata['last_chunk_at'] = now()->toISOString();
 
         file_put_contents($metadataPath, json_encode($metadata));
@@ -165,8 +207,9 @@ class StreamVideoController extends Controller
             'message' => 'Chunk received',
             'chunk_index' => $chunkIndex,
             'chunk_size' => $chunkSize,
-            'total_size' => $metadata['total_size'],
-            'chunks_received' => $metadata['chunks_received'],
+            'total_size' => $metadata[$sizeKey],
+            'chunks_received' => $metadata[$countKey],
+            'type' => $chunkType,
         ]);
     }
 
@@ -196,6 +239,7 @@ class StreamVideoController extends Controller
         $request->validate([
             'duration' => 'nullable|integer|min:1',
             'title' => 'nullable|string|max:255',
+            'has_camera' => 'nullable|boolean',
             'zoom_enabled' => 'nullable|boolean',
             'zoom_level' => 'nullable|numeric|min:1.2|max:4',
             'zoom_duration_ms' => 'nullable|integer|min:100|max:2000',
@@ -265,7 +309,7 @@ class StreamVideoController extends Controller
             }
         }
 
-        // Append any remaining pending chunks
+        // Append any remaining pending chunks (video)
         if (! empty($metadata['pending_chunks'])) {
             ksort($metadata['pending_chunks']);
             foreach ($metadata['pending_chunks'] as $index => $size) {
@@ -276,6 +320,24 @@ class StreamVideoController extends Controller
                 }
             }
         }
+
+        // Append any remaining pending camera chunks
+        $cameraPath = "{$sessionDir}/camera.webm";
+        $cameraPendingChunks = $metadata['camera_pending_chunks'] ?? [];
+        if (! empty($cameraPendingChunks)) {
+            ksort($cameraPendingChunks);
+            foreach ($cameraPendingChunks as $index => $size) {
+                $pendingPath = "{$sessionDir}/camera_pending_{$index}.webm";
+                if (file_exists($pendingPath)) {
+                    $this->appendChunkToVideo($cameraPath, $pendingPath);
+                    unlink($pendingPath);
+                }
+            }
+        }
+
+        // Determine if this recording has a camera track
+        $hasCamera = (bool) ($request->input('has_camera') ?? $metadata['has_camera'] ?? false);
+        $hasCameraFile = $hasCamera && file_exists($cameraPath) && filesize($cameraPath) > 0;
 
         $user = User::find($userId);
 
@@ -294,6 +356,9 @@ class StreamVideoController extends Controller
             'duration' => (int) ($request->duration ?: 0),
             'is_public' => true,
             'storage_type' => $willUseBunny ? 'bunny' : 'local',
+            'has_camera' => $hasCameraFile,
+            'camera_conversion_status' => $hasCameraFile ? 'pending' : 'completed',
+            'camera_conversion_progress' => $hasCameraFile ? 0 : 100,
         ];
 
         if ($willUseBunny) {
@@ -331,6 +396,28 @@ class StreamVideoController extends Controller
             ->usingFileName("video_{$video->id}.webm")
             ->toMediaCollection('videos');
 
+        // Add camera track as separate media if available
+        // Remux first to fix WebM container headers (same issue as main video)
+        if ($hasCameraFile) {
+            $remuxedCameraPath = "{$sessionDir}/camera_remuxed.webm";
+            $ffmpegPath = config('media-library.ffmpeg_path');
+            $remuxCmd = sprintf(
+                '%s -y -i %s -c copy %s 2>&1',
+                escapeshellarg($ffmpegPath),
+                escapeshellarg($cameraPath),
+                escapeshellarg($remuxedCameraPath)
+            );
+            exec($remuxCmd, $remuxOutput, $remuxReturn);
+
+            $finalCameraPath = ($remuxReturn === 0 && file_exists($remuxedCameraPath) && filesize($remuxedCameraPath) > 1000)
+                ? $remuxedCameraPath
+                : $cameraPath;
+
+            $video->addMedia($finalCameraPath)
+                ->usingFileName("camera_{$video->id}.webm")
+                ->toMediaCollection('camera');
+        }
+
         // Increment user's video count
         $user = User::find($userId);
         if ($user) {
@@ -353,6 +440,8 @@ class StreamVideoController extends Controller
                 'share_token' => $video->share_token,
                 'is_public' => $video->is_public,
                 'storage_type' => $video->storage_type,
+                'has_camera' => $video->has_camera,
+                'camera_url' => $video->getCameraUrl(),
                 'created_at' => $video->created_at->toISOString(),
             ],
         ], 201);
@@ -391,6 +480,19 @@ class StreamVideoController extends Controller
                     'video_id' => $video->id,
                     'error' => $e->getMessage(),
                 ]);
+            }
+
+            // Convert camera WebM to MP4 in background
+            if ($video->has_camera) {
+                try {
+                    Log::info('Dispatching ConvertCameraToMp4Job', ['video_id' => $video->id]);
+                    ConvertCameraToMp4Job::dispatch($video)->delay(now()->addSeconds(5));
+                } catch (\Throwable $e) {
+                    Log::error('Failed to dispatch camera conversion job', [
+                        'video_id' => $video->id,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
             }
 
             try {

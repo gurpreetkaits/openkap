@@ -157,6 +157,11 @@ class VideoManager
             'storage_type' => $video->storage_type,
             'bunny_status' => $video->bunny_status,
             'bunny_video_id' => $video->bunny_video_id,
+            // Camera track
+            'has_camera' => (bool) $video->has_camera,
+            'camera_url' => $video->getCameraUrl(),
+            'camera_conversion_status' => $video->camera_conversion_status ?? 'completed',
+            'camera_conversion_progress' => $video->camera_conversion_progress ?? 100,
         ];
     }
 
@@ -396,6 +401,11 @@ class VideoManager
             'user_avatar' => $video->user?->avatar_url,
             // Owner branding
             'branding' => $branding,
+            // Camera track
+            'has_camera' => (bool) $video->has_camera,
+            'camera_url' => $video->getCameraUrl(),
+            'camera_conversion_status' => $video->camera_conversion_status ?? 'completed',
+            'camera_conversion_progress' => $video->camera_conversion_progress ?? 100,
         ];
     }
 

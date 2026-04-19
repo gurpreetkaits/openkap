@@ -1,8 +1,5 @@
 <template>
-  <div class="bg-[#FAFAFA] text-slate-900 h-screen flex flex-col overflow-hidden select-none selection:bg-orange-100 selection:text-orange-700">
-
-    <!-- Background Grid -->
-    <div class="fixed inset-0 z-0 pointer-events-none" style="background-image: radial-gradient(#e5e7eb 1px, transparent 1px); background-size: 32px 32px; opacity: 0.4;"></div>
+  <div class="bg-[#f0f0f0] text-gray-900 h-screen flex flex-col overflow-hidden select-none">
 
     <!-- Loading -->
     <div v-if="loading" class="flex items-center justify-center min-h-screen">
@@ -13,9 +10,7 @@
     <div v-else-if="error" class="flex items-center justify-center min-h-screen">
       <div class="text-center">
         <div class="w-20 h-20 mx-auto mb-6 bg-red-100 rounded-full flex items-center justify-center">
-          <svg class="w-10 h-10 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-          </svg>
+          <svg class="w-10 h-10 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
         </div>
         <h3 class="text-lg font-semibold text-gray-900 mb-3">{{ error }}</h3>
         <button @click="goBack" class="px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-medium transition-colors">Go Back</button>
@@ -23,111 +18,78 @@
     </div>
 
     <template v-else>
-      <!-- Nav -->
-      <nav class="h-14 border-b border-gray-200/60 bg-white/80 backdrop-blur-md flex items-center justify-between px-4 lg:px-6 z-50 relative">
+      <!-- ─── Top Nav ─── -->
+      <nav class="h-12 bg-white border-b border-gray-200/80 flex items-center justify-between px-5 z-50 flex-shrink-0">
         <div class="flex items-center gap-3">
           <button @click="goBack" class="text-gray-400 hover:text-gray-700 transition-colors">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
-            </svg>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
           </button>
-          <span class="text-sm font-semibold text-gray-900">Video Editor</span>
-          <span class="text-xs text-gray-400 truncate max-w-[200px] hidden sm:inline">{{ video?.title }}</span>
+          <span class="text-sm font-semibold text-gray-800 truncate max-w-[300px]">{{ video?.title || 'Untitled' }}</span>
         </div>
-        <div class="flex items-center gap-2">
-          <button @click="goBack" class="px-3 py-1.5 text-gray-500 hover:text-gray-700 text-xs font-medium transition-colors">Cancel</button>
+        <div class="flex items-center gap-3">
+          <button @click="goBack" class="px-4 py-1.5 text-gray-500 hover:text-gray-700 text-sm font-medium transition-colors">Cancel</button>
           <button
             @click="applyEdits"
-            :disabled="isApplying || (!items.length && !trimEnabled && !mergeVideos.length)"
-            class="px-4 py-1.5 bg-orange-600 hover:bg-orange-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg text-xs font-medium shadow-sm transition-colors flex items-center gap-2"
+            :disabled="isApplying"
+            class="px-5 py-1.5 bg-gray-900 hover:bg-gray-800 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg text-sm font-semibold transition-colors flex items-center gap-2"
           >
-            <svg v-if="isApplying" class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-            </svg>
-            {{ isApplying ? `Processing ${applyProgress}%` : 'Create New With Edits' }}
+            <svg v-if="isApplying" class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+            {{ isApplying ? `${applyProgress}%` : 'Export' }}
           </button>
         </div>
       </nav>
 
-      <!-- Main Area -->
-      <div class="flex flex-1 overflow-hidden relative z-10 gap-3 p-3 pt-0">
-        <!-- Left Sidebar: Flow (Transcript) — toggleable with motion -->
-        <div
-          v-if="showFlow"
-          v-motion
-          :initial="{ opacity: 0, x: -280, width: 0 }"
-          :enter="{ opacity: 1, x: 0, width: 280, transition: { type: 'spring', stiffness: 300, damping: 30 } }"
-          :leave="{ opacity: 0, x: -280, width: 0, transition: { type: 'spring', stiffness: 300, damping: 30 } }"
-          class="flex-col min-h-0 rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden hidden lg:flex flex-shrink-0"
-          style="width: 280px;"
-        >
-          <div class="shrink-0 px-3 pt-3 pb-2 flex items-center justify-between border-b border-gray-100">
-            <h2 class="text-xs font-medium text-gray-500 uppercase tracking-wider">Flow</h2>
-            <button @click="showFlow = false" class="h-6 w-6 flex items-center justify-center text-gray-400 hover:text-gray-700 rounded transition-colors" title="Hide transcript">
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h8m-8 6h16"/></svg>
+      <!-- ─── Main Area ─── -->
+      <div class="flex flex-1 min-h-0 overflow-hidden p-4 gap-4">
+
+        <!-- ─── Center Column: Video Card + Timeline Card ─── -->
+        <div class="flex-1 flex flex-col min-w-0 min-h-0 gap-3">
+
+          <!-- Video (independent, no card wrapper) -->
+          <div class="flex-1 min-h-0 overflow-hidden">
+            <EditorVideoPreview ref="videoPreviewRef" />
+          </div>
+
+          <!-- Playback Controls Card (separate, detached) -->
+          <div class="flex-shrink-0 flex items-center justify-center gap-2 bg-white rounded-xl shadow-sm border border-gray-200/50 px-4 h-10">
+            <span class="text-[11px] font-mono text-gray-400 tabular-nums">{{ displayCurrentTime }}</span>
+            <span class="text-[10px] text-gray-300 mx-0.5">/</span>
+            <span class="text-[11px] font-mono text-gray-300 tabular-nums">{{ displayDuration }}</span>
+            <div class="w-px h-4 bg-gray-200 mx-2"></div>
+            <button @click="skip(-5)" class="w-6 h-6 flex items-center justify-center rounded text-gray-400 hover:text-gray-600 transition-colors">
+              <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+            </button>
+            <button @click="togglePlay" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-900 hover:bg-gray-800 text-white transition-colors">
+              <svg v-if="!isPlaying" class="w-3.5 h-3.5 ml-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+              <svg v-else class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/></svg>
+            </button>
+            <button @click="skip(5)" class="w-6 h-6 flex items-center justify-center rounded text-gray-400 hover:text-gray-600 transition-colors">
+              <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M16 18h2V6h-2zM6 18l8.5-6L6 6z"/></svg>
             </button>
           </div>
-          <div class="flex-1 overflow-y-auto">
-            <EditorTranscriptionPanel />
+
+          <!-- Timeline Card -->
+          <div class="flex-shrink-0 bg-white rounded-xl shadow-sm border border-gray-200/50 overflow-hidden">
+            <EditorTimeline @addVideo="showAddVideoModal = true" />
           </div>
         </div>
 
-        <!-- Center: Video + Timeline -->
-        <div class="flex-1 flex flex-col min-w-0 min-h-0 relative">
-          <!-- Flow toggle button (shown when Flow panel is hidden) -->
-          <button
-            v-if="!showFlow"
-            v-motion
-            :initial="{ opacity: 0, scale: 0.8 }"
-            :enter="{ opacity: 1, scale: 1, transition: { type: 'spring', stiffness: 400, damping: 25, delay: 150 } }"
-            @click="showFlow = true"
-            class="absolute top-2 left-2 z-10 hidden lg:inline-flex items-center gap-1.5 h-7 px-2.5 text-xs font-medium text-white/80 hover:text-white bg-black/40 hover:bg-black/60 backdrop-blur-sm rounded-lg transition-colors"
-          >
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h8m-8 6h16"/></svg>
-            Flow
-          </button>
-
-          <!-- Mobile tools strip -->
-          <div class="lg:hidden flex items-center gap-2 px-3 py-2 bg-white border-b border-gray-100 overflow-x-auto rounded-xl mb-2">
-            <div class="flex items-center p-0.5 bg-gray-100 rounded-lg flex-shrink-0">
-              <button v-for="tool in ['blur', 'overlay', 'text']" :key="'m'+tool" @click="activeTool = tool"
-                :class="activeTool === tool ? 'text-gray-900 bg-white shadow-sm' : 'text-gray-500'"
-                class="px-3 py-1 rounded-md text-xs font-medium transition-all capitalize">{{ tool }}</button>
-            </div>
-            <button v-if="activeTool === 'text'" @click="addTextItem" class="flex-shrink-0 px-3 py-1 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">+ Text</button>
-            <label v-if="activeTool === 'overlay'" class="flex-shrink-0 px-3 py-1 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 cursor-pointer">
-              + Video <input type="file" accept="video/*" class="hidden" @change="addOverlayFile" />
-            </label>
-            <span class="text-[10px] text-gray-400 flex-shrink-0 ml-auto">{{ items.length }} items</span>
+        <!-- ─── Right Sidebar Card ─── -->
+        <div class="w-[280px] flex-shrink-0 bg-white rounded-xl shadow-sm border border-gray-200/50 hidden lg:flex flex-col min-h-0 overflow-hidden">
+          <div class="flex-1 overflow-y-auto min-h-0">
+            <EditorToolPanel />
           </div>
-
-          <!-- Video Preview -->
-          <EditorVideoPreview ref="videoPreviewRef" />
-
-          <!-- Timeline -->
-          <EditorTimeline @addVideo="showAddVideoModal = true" />
         </div>
-
-        <!-- Right Sidebar: Tools + Properties -->
-        <EditorToolPanel />
       </div>
     </template>
 
-    <!-- Processing Overlay -->
     <EditorProcessingOverlay @goBack="goBack" />
-
-    <!-- Add Video Modal -->
-    <EditorAddVideoModal
-      v-if="showAddVideoModal"
-      @close="showAddVideoModal = false"
-      @select="handleMergeVideoSelect"
-    />
+    <EditorAddVideoModal v-if="showAddVideoModal" @close="showAddVideoModal = false" @select="handleMergeVideoSelect" />
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick } from 'vue'
+import { ref, computed, onMounted, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import videoService from '@/services/videoService'
 import { useToast } from '@/services/toastService'
@@ -135,7 +97,6 @@ import { createEditorState } from '@/composables/useEditorState'
 
 import EditorVideoPreview from '@/components/Editor/EditorVideoPreview.vue'
 import EditorToolPanel from '@/components/Editor/EditorToolPanel.vue'
-import EditorTranscriptionPanel from '@/components/Editor/EditorTranscriptionPanel.vue'
 import EditorProcessingOverlay from '@/components/Editor/EditorProcessingOverlay.vue'
 import EditorTimeline from '@/components/Editor/EditorTimeline.vue'
 import EditorAddVideoModal from '@/components/Editor/EditorAddVideoModal.vue'
@@ -144,20 +105,41 @@ const route = useRoute()
 const router = useRouter()
 const toast = useToast()
 
-// Create and provide editor state
 const state = createEditorState()
 const {
-  loading, error, video, duration, items, overlayFiles,
-  isApplying, applyProgress, processingMode, activeTool, showFlow,
-  addTextItem, addOverlayFile,
+  loading, error, video, duration, currentTime, items, overlayFiles, isPlaying,
+  isApplying, applyProgress, processingMode,
+  addTextItem, addOverlayFile, selectedItem, selectedItemId,
+  selectItem, deleteItem, getItemLabel, formatTime, togglePlay,
   trimEnabled, trimStart, trimEnd, mergeVideos, mainVideoIndex, addMergeVideo,
+  videoReady,
 } = state
 
 const videoPreviewRef = ref(null)
 const showAddVideoModal = ref(false)
 let pollTimer = null
 
-// --- Lifecycle ---
+const displayCurrentTime = computed(() => {
+  if (!videoReady.value) return '00:00.00'
+  const t = currentTime.value
+  const m = Math.floor(t / 60)
+  const s = Math.floor(t % 60)
+  const ms = Math.floor((t % 1) * 100)
+  return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}.${String(ms).padStart(2,'0')}`
+})
+
+const displayDuration = computed(() => {
+  const d = duration.value || video.value?.duration || 0
+  const m = Math.floor(d / 60)
+  const s = Math.floor(d % 60)
+  const ms = Math.floor((d % 1) * 100)
+  return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}.${String(ms).padStart(2,'0')}`
+})
+
+function skip(seconds) {
+  const el = state.videoEl.value
+  if (el) el.currentTime = Math.max(0, Math.min(el.duration || 0, el.currentTime + seconds))
+}
 
 onMounted(async () => {
   try {
@@ -174,84 +156,21 @@ onMounted(async () => {
   }
 })
 
-// --- Merge ---
-
-function handleMergeVideoSelect(selectedVideo) {
-  addMergeVideo(selectedVideo)
-  // Modal stays open so user can add more
-}
-
-// --- Apply Edits ---
+function handleMergeVideoSelect(v) { addMergeVideo(v) }
 
 async function applyEdits() {
   if (isApplying.value || (!items.value.length && !trimEnabled.value && !mergeVideos.value.length)) return
-  isApplying.value = true
-  applyProgress.value = 0
-
+  isApplying.value = true; applyProgress.value = 0
   try {
-    const blurRegions = items.value.filter(i => i.type === 'blur').map(i => ({
-      x: i.x, y: i.y, width: i.width, height: i.height,
-      start_time: i.entireVideo ? null : i.start_time, end_time: i.entireVideo ? null : i.end_time,
-    }))
-
-    const overlayConfigs = items.value.filter(i => i.type === 'overlay').map(i => ({
-      x: i.x, y: i.y, width: i.width, height: i.height, file_index: i.fileIndex,
-      start_time: i.entireVideo ? null : i.start_time, end_time: i.entireVideo ? null : i.end_time,
-    }))
-
-    const textOverlays = items.value.filter(i => i.type === 'text').map(i => ({
-      text: i.text || 'Text', x: i.x, y: i.y, font_size: i.font_size || 32,
-      font_color: i.font_color || '#ffffff',
-      background_color: i.has_background ? (i.background_color || '#000000') : null,
-      start_time: i.entireVideo ? null : i.start_time, end_time: i.entireVideo ? null : i.end_time,
-    }))
-
-    const result = await videoService.applyEdits(
-      video.value.id, blurRegions, overlayConfigs, overlayFiles.value, textOverlays,
-      trimEnabled.value ? trimStart.value : null,
-      trimEnabled.value ? trimEnd.value : null,
-      mergeVideos.value.map(v => v.id),
-      mainVideoIndex.value
-    )
-
-    // Check processing mode
-    if (result?.mode === 'async') {
-      processingMode.value = 'async'
-      return
-    }
-
-    if (result?.mode === 'sync' && result?.output_video_id) {
-      // Sync: job already completed on server
-      isApplying.value = false
-      toast.success('Video edits applied! A new copy was created.')
-      router.push(`/video/${result.output_video_id}`)
-      return
-    }
-
-    // Fallback: poll for completion (legacy behavior)
-    pollTimer = setInterval(async () => {
-      try {
-        const status = await videoService.getEditStatus(video.value.id)
-        applyProgress.value = status.progress || 0
-        if (status.status === 'completed') {
-          clearInterval(pollTimer); pollTimer = null; isApplying.value = false
-          toast.success('Video edits applied! A new copy was created.')
-          router.push(`/video/${status.output_video_id || video.value.id}`)
-        } else if (status.status === 'failed') {
-          clearInterval(pollTimer); pollTimer = null; isApplying.value = false
-          toast.error(status.error || 'Processing failed')
-        }
-      } catch { /* polling error, ignore */ }
-    }, 3000)
-  } catch (e) {
-    isApplying.value = false
-    toast.error(e.message || 'Failed to apply edits')
-  }
+    const blurRegions = items.value.filter(i => i.type === 'blur').map(i => ({ x: i.x, y: i.y, width: i.width, height: i.height, start_time: i.entireVideo ? null : i.start_time, end_time: i.entireVideo ? null : i.end_time }))
+    const overlayConfigs = items.value.filter(i => i.type === 'overlay').map(i => ({ x: i.x, y: i.y, width: i.width, height: i.height, file_index: i.fileIndex, start_time: i.entireVideo ? null : i.start_time, end_time: i.entireVideo ? null : i.end_time }))
+    const textOverlays = items.value.filter(i => i.type === 'text').map(i => ({ text: i.text || 'Text', x: i.x, y: i.y, font_size: i.font_size || 32, font_color: i.font_color || '#ffffff', background_color: i.has_background ? (i.background_color || '#000000') : null, start_time: i.entireVideo ? null : i.start_time, end_time: i.entireVideo ? null : i.end_time }))
+    const result = await videoService.applyEdits(video.value.id, blurRegions, overlayConfigs, overlayFiles.value, textOverlays, trimEnabled.value ? trimStart.value : null, trimEnabled.value ? trimEnd.value : null, mergeVideos.value.map(v => v.id), mainVideoIndex.value)
+    if (result?.mode === 'async') { processingMode.value = 'async'; return }
+    if (result?.mode === 'sync' && result?.output_video_id) { isApplying.value = false; toast.success('Video edits applied!'); router.push(`/video/${result.output_video_id}`); return }
+    pollTimer = setInterval(async () => { try { const s = await videoService.getEditStatus(video.value.id); applyProgress.value = s.progress || 0; if (s.status === 'completed') { clearInterval(pollTimer); pollTimer = null; isApplying.value = false; toast.success('Video edits applied!'); router.push(`/video/${s.output_video_id || video.value.id}`) } else if (s.status === 'failed') { clearInterval(pollTimer); pollTimer = null; isApplying.value = false; toast.error(s.error || 'Failed') } } catch {} }, 3000)
+  } catch (e) { isApplying.value = false; toast.error(e.message || 'Failed') }
 }
 
-function goBack() {
-  if (pollTimer) clearInterval(pollTimer)
-  if (video.value?.id) router.push(`/video/${video.value.id}`)
-  else router.back()
-}
+function goBack() { if (pollTimer) clearInterval(pollTimer); if (video.value?.id) router.push(`/video/${video.value.id}`); else router.back() }
 </script>

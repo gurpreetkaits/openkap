@@ -75,6 +75,8 @@ Route::get('/share/video/{token}', [VideoController::class, 'viewShared'])
     ->middleware('throttle:60,1');
 Route::get('/share/video/{token}/stream', [VideoController::class, 'streamShared'])
     ->middleware('throttle:30,1');
+Route::get('/share/video/{token}/camera', [VideoController::class, 'streamSharedCamera'])
+    ->middleware('throttle:30,1');
 Route::get('/share/video/{token}/captions.vtt', [VideoController::class, 'sharedCaptions'])
     ->middleware('throttle:30,1');
 Route::get('/share/video/{token}/comments', [CommentController::class, 'indexByToken'])

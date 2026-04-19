@@ -456,6 +456,38 @@ class VideoController extends Controller
         return $this->buildStreamResponse($streamData);
     }
 
+    public function streamSharedCamera($token)
+    {
+        $video = $this->videoManager->findByShareTokenOrFail($token);
+
+        if (! $this->videoManager->canAccessSharedVideo($video, Auth::id())) {
+            return response()->json([
+                'message' => 'This video is no longer available for sharing',
+            ], 403);
+        }
+
+        if (! $video->has_camera) {
+            return response()->json(['message' => 'No camera track available'], 404);
+        }
+
+        $cameraMedia = $video->getFirstMedia('camera');
+        if (! $cameraMedia) {
+            return response()->json(['message' => 'Camera file not found'], 404);
+        }
+
+        $filePath = $cameraMedia->getPath();
+        if (! file_exists($filePath)) {
+            return response()->json(['message' => 'Camera file not found'], 404);
+        }
+
+        return response()->file($filePath, [
+            'Content-Type' => 'video/webm',
+            'Content-Disposition' => 'inline',
+            'Accept-Ranges' => 'bytes',
+            'Cache-Control' => 'public, max-age=31536000',
+        ]);
+    }
+
     public function sharedCaptions($token, CaptionService $captionService)
     {
         $video = $this->videoManager->findByShareTokenOrFail($token);
