@@ -41,6 +41,10 @@ export function createEditorState() {
   const cameraSize = ref(25) // percentage of video width
   const cameraRoundness = ref(18) // border radius
   const cameraShape = ref('portrait') // 'portrait', 'circle', 'square'
+  const cameraBorderBlur = ref(6) // px — soft feathered edge amount (0 = hard edge, 20 = very soft)
+  const cameraShadow = ref(30) // shadow opacity 0-60 (maps to rgba alpha)
+  const cameraDragX = ref(null) // percentage-based custom drag position (null = use quadrant preset)
+  const cameraDragY = ref(null)
 
   // Preset backgrounds
   // Presets from screenshot editor
@@ -78,6 +82,12 @@ export function createEditorState() {
     'https://pika.style/backgrounds/maitris/7.png',
     'https://pika.style/backgrounds/maitris/2.png',
   ]
+
+  // Zoom keyframes — each: { id, time, duration, scale, x, y }
+  // time = when zoom starts, duration = hold time, x/y = focus point (0-100%), scale = zoom multiplier
+  const zoomKeyframes = ref([])
+  const zoomPlacementMode = ref(false) // true when user is picking a point on the video
+  const selectedZoomId = ref(null) // currently selected zoom keyframe for editing
 
   // Trim state
   const trimEnabled = ref(false)
@@ -216,6 +226,71 @@ export function createEditorState() {
     mergeVideos.value = reordered
   }
 
+  const ZOOM_EASE = 0.4 // seconds for ease-in / ease-out transitions
+
+  function addZoomKeyframe(time, scale = 2, x = 50, y = 50, dur = 2) {
+    const id = getNextId()
+    zoomKeyframes.value.push({ id, time: Math.round(time * 100) / 100, duration: dur, scale, x, y })
+    zoomKeyframes.value.sort((a, b) => a.time - b.time)
+    selectedZoomId.value = id
+    return id
+  }
+
+  function updateZoomKeyframe(id, updates) {
+    const kf = zoomKeyframes.value.find(k => k.id === id)
+    if (kf) Object.assign(kf, updates)
+    zoomKeyframes.value.sort((a, b) => a.time - b.time)
+  }
+
+  function removeZoomKeyframe(id) {
+    zoomKeyframes.value = zoomKeyframes.value.filter(k => k.id !== id)
+    if (selectedZoomId.value === id) selectedZoomId.value = null
+  }
+
+  // Smoothstep helper
+  function smoothstep(p) { return p * p * (3 - 2 * p) }
+
+  // Get interpolated zoom at a given time — supports duration-based hold
+  function getZoomAt(t) {
+    const kfs = zoomKeyframes.value
+    if (!kfs.length) return { scale: 1, x: 50, y: 50 }
+
+    // Check each keyframe: ease-in → hold → ease-out
+    // If time falls within multiple ranges, use the one with highest scale (closest zoom)
+    let best = { scale: 1, x: 50, y: 50 }
+
+    for (const kf of kfs) {
+      const easeStart = kf.time - ZOOM_EASE
+      const holdEnd = kf.time + kf.duration
+      const easeEnd = holdEnd + ZOOM_EASE
+
+      let progress = 0
+      if (t >= kf.time && t <= holdEnd) {
+        // Fully zoomed in (hold phase)
+        progress = 1
+      } else if (t >= easeStart && t < kf.time) {
+        // Easing in
+        progress = smoothstep((t - easeStart) / ZOOM_EASE)
+      } else if (t > holdEnd && t <= easeEnd) {
+        // Easing out
+        progress = 1 - smoothstep((t - holdEnd) / ZOOM_EASE)
+      }
+
+      if (progress > 0) {
+        const scale = 1 + (kf.scale - 1) * progress
+        if (scale > best.scale) {
+          best = {
+            scale,
+            x: 50 + (kf.x - 50) * progress,
+            y: 50 + (kf.y - 50) * progress,
+          }
+        }
+      }
+    }
+
+    return best
+  }
+
   function togglePlay() {
     const el = videoEl.value
     if (!el) return
@@ -247,6 +322,10 @@ export function createEditorState() {
     items,
     selectedItemId,
     overlayFiles,
+    zoomKeyframes,
+    zoomPlacementMode,
+    selectedZoomId,
+    ZOOM_EASE,
     trimEnabled,
     trimStart,
     trimEnd,
@@ -265,6 +344,10 @@ export function createEditorState() {
     cameraSize,
     cameraRoundness,
     cameraShape,
+    cameraBorderBlur,
+    cameraShadow,
+    cameraDragX,
+    cameraDragY,
     bgPresetColors,
     bgPresetGradients,
     bgPresetImages,
@@ -283,6 +366,10 @@ export function createEditorState() {
     addMergeVideo,
     removeMergeVideo,
     reorderVideoBlocks,
+    addZoomKeyframe,
+    updateZoomKeyframe,
+    removeZoomKeyframe,
+    getZoomAt,
     togglePlay,
   }
 

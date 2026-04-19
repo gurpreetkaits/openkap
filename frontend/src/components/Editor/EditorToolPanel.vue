@@ -7,7 +7,7 @@
         <span>Background</span>
         <svg class="w-3.5 h-3.5 text-gray-400 transition-transform" :class="bgOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
       </button>
-      <div v-if="bgOpen" class="space-y-3 mt-2">
+      <div class="accordion-body" :class="bgOpen ? 'accordion-open' : ''"><div class="space-y-3 mt-2">
         <!-- Type pills -->
         <div class="flex p-0.5 bg-gray-100 rounded-lg">
           <button v-for="t in ['none','solid','gradient','image']" :key="t" @click="styleBackground.type = t"
@@ -67,7 +67,7 @@
             <input type="file" accept="image/*" class="hidden" @change="handleBgImageUpload" />
           </label>
         </div>
-      </div>
+      </div></div>
     </section>
 
     <!-- ─── Video Frame ─── -->
@@ -76,7 +76,7 @@
         <span>Video Frame</span>
         <svg class="w-3.5 h-3.5 text-gray-400 transition-transform" :class="frameOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
       </button>
-      <div v-if="frameOpen" class="space-y-3 mt-2">
+      <div class="accordion-body" :class="frameOpen ? 'accordion-open' : ''"><div class="space-y-3 mt-2">
         <div>
           <label class="slider-label"><span>Padding</span><span class="font-mono text-gray-500">{{ stylePadding }}px</span></label>
           <input type="range" v-model.number="stylePadding" min="0" max="120" step="4" class="slider" />
@@ -93,7 +93,86 @@
             <div class="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow peer-checked:translate-x-4 transition-transform"></div>
           </div>
         </label>
-      </div>
+      </div></div>
+    </section>
+
+    <!-- ─── Zoom ─── -->
+    <section class="bg-gray-50 rounded-xl p-3.5">
+      <button @click="zoomOpen = !zoomOpen" class="sec-header">
+        <span>Zoom</span>
+        <svg class="w-3.5 h-3.5 text-gray-400 transition-transform" :class="zoomOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+      </button>
+      <div class="accordion-body" :class="zoomOpen ? 'accordion-open' : ''"><div class="space-y-3 mt-2">
+
+        <!-- Placement mode banner -->
+        <div v-if="zoomPlacementMode" class="flex items-center gap-2 px-3 py-2.5 bg-orange-50 border border-orange-200 rounded-lg">
+          <svg class="w-4 h-4 text-orange-500 flex-shrink-0 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>
+          <span class="text-[11px] text-orange-700 font-medium flex-1">Click on the video to set zoom focus point</span>
+          <button @click="zoomPlacementMode = false" class="text-orange-400 hover:text-orange-600">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+
+        <!-- Add zoom button -->
+        <button
+          v-if="!zoomPlacementMode"
+          @click="handleAddZoom"
+          class="w-full flex items-center justify-center gap-2 px-3 py-2.5 bg-gray-900 hover:bg-gray-800 text-white rounded-lg text-[12px] font-semibold transition-colors"
+        >
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7"/></svg>
+          Add Zoom
+        </button>
+
+        <!-- Keyframe list -->
+        <div v-if="zoomKeyframes.length" class="space-y-1.5">
+          <div
+            v-for="kf in zoomKeyframes" :key="kf.id"
+            @click="selectZoom(kf)"
+            class="p-2.5 bg-white rounded-lg border transition-all cursor-pointer group"
+            :class="selectedZoomId === kf.id ? 'border-orange-400 ring-2 ring-orange-100' : 'border-gray-100 hover:border-gray-200'"
+          >
+            <!-- Header row: time + delete -->
+            <div class="flex items-center gap-2 mb-2">
+              <button @click.stop="seekTo(kf.time)" class="text-[11px] font-mono text-orange-600 hover:text-orange-700 font-medium">
+                {{ formatTime(kf.time) }}
+              </button>
+              <span class="text-[10px] text-gray-300">-</span>
+              <span class="text-[11px] font-mono text-gray-400">{{ formatTime(kf.time + kf.duration) }}</span>
+              <div class="flex-1"></div>
+              <button @click.stop="removeZoomKeyframe(kf.id)" class="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-400 transition-all">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+              </button>
+            </div>
+
+            <!-- Controls (shown when selected) -->
+            <div v-if="selectedZoomId === kf.id" class="space-y-2">
+              <div>
+                <label class="slider-label"><span>Zoom Level</span><span class="font-mono text-gray-500">{{ kf.scale.toFixed(1) }}x</span></label>
+                <input
+                  type="range" :value="kf.scale" @input="updateZoomKeyframe(kf.id, { scale: parseFloat($event.target.value) })"
+                  min="1.2" max="4" step="0.1" class="slider"
+                />
+              </div>
+              <div>
+                <label class="slider-label"><span>Duration</span><span class="font-mono text-gray-500">{{ kf.duration.toFixed(1) }}s</span></label>
+                <input
+                  type="range" :value="kf.duration" @input="updateZoomKeyframe(kf.id, { duration: parseFloat($event.target.value) })"
+                  min="0.5" max="10" step="0.1" class="slider"
+                />
+              </div>
+              <button
+                @click.stop="startRepositionZoom(kf.id)"
+                class="w-full flex items-center justify-center gap-1.5 px-3 py-1.5 text-[11px] font-medium text-gray-500 hover:text-gray-700 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>
+                Reposition Focus Point
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <p v-if="!zoomKeyframes.length && !zoomPlacementMode" class="text-[10px] text-gray-400 leading-relaxed">Add zoom points to focus on areas of your screen during playback. Works like Tella and Screen Studio.</p>
+      </div></div>
     </section>
 
     <!-- ─── Camera ─── -->
@@ -102,7 +181,7 @@
         <span>Camera</span>
         <svg class="w-3.5 h-3.5 text-gray-400 transition-transform" :class="camOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
       </button>
-      <div v-if="camOpen" class="space-y-3 mt-2">
+      <div class="accordion-body" :class="camOpen ? 'accordion-open' : ''"><div class="space-y-3 mt-2">
         <label class="flex items-center justify-between cursor-pointer py-1">
           <span class="text-xs text-gray-600 font-medium">Show Camera</span>
           <div class="relative">
@@ -140,8 +219,18 @@
             <label class="slider-label"><span>Roundness</span><span class="font-mono text-gray-500">{{ cameraRoundness }}px</span></label>
             <input type="range" v-model.number="cameraRoundness" min="0" max="50" step="1" class="slider" />
           </div>
+
+          <div>
+            <label class="slider-label"><span>Border Blur</span><span class="font-mono text-gray-500">{{ cameraBorderBlur }}px</span></label>
+            <input type="range" v-model.number="cameraBorderBlur" min="0" max="20" step="1" class="slider" />
+          </div>
+
+          <div>
+            <label class="slider-label"><span>Shadow</span><span class="font-mono text-gray-500">{{ cameraShadow }}%</span></label>
+            <input type="range" v-model.number="cameraShadow" min="0" max="60" step="1" class="slider" />
+          </div>
         </template>
-      </div>
+      </div></div>
     </section>
   </div>
 </template>
@@ -151,15 +240,39 @@ import { ref } from 'vue'
 import { useEditorState } from '@/composables/useEditorState'
 
 const {
-  video,
+  video, videoEl, currentTime,
   styleBackground, stylePadding, styleRoundness, styleShadow,
   cameraEnabled, cameraPosition, cameraSize, cameraRoundness, cameraShape,
+  cameraBorderBlur, cameraShadow,
   bgPresetColors, bgPresetGradients, bgPresetImages,
+  zoomKeyframes, zoomPlacementMode, selectedZoomId,
+  addZoomKeyframe, updateZoomKeyframe, removeZoomKeyframe,
+  formatTime,
 } = useEditorState()
 
 const bgOpen = ref(true)
 const frameOpen = ref(true)
 const camOpen = ref(true)
+const zoomOpen = ref(true)
+
+function handleAddZoom() {
+  selectedZoomId.value = null
+  zoomPlacementMode.value = true
+}
+
+function startRepositionZoom(id) {
+  selectedZoomId.value = id
+  zoomPlacementMode.value = true
+}
+
+function selectZoom(kf) {
+  selectedZoomId.value = selectedZoomId.value === kf.id ? null : kf.id
+}
+
+function seekTo(time) {
+  const el = videoEl.value
+  if (el) el.currentTime = time
+}
 
 function handleBgImageUpload(e) {
   const file = e.target.files?.[0]
@@ -183,5 +296,18 @@ function handleBgImageUpload(e) {
 }
 .slider {
   @apply w-full h-1.5 accent-orange-500 rounded-full appearance-none bg-gray-200 cursor-pointer;
+}
+.accordion-body {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.25s ease;
+  overflow: hidden;
+}
+.accordion-body > div {
+  overflow: hidden;
+  min-height: 0;
+}
+.accordion-body.accordion-open {
+  grid-template-rows: 1fr;
 }
 </style>

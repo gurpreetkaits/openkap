@@ -305,6 +305,110 @@ class ApplyVideoEditsJob implements ShouldQueue
                 $stepIndex++;
             }
 
+            // --- Zoom keyframes ---
+            // Each keyframe: { time, duration, scale, x, y }
+            // Phases per keyframe: ease-in (0.4s) → hold (duration) → ease-out (0.4s)
+            $zoomKeyframes = $style['zoom_keyframes'] ?? [];
+            // Ensure zoom_keyframes is a proper array of arrays (not a string from bad FormData encoding)
+            if (is_string($zoomKeyframes)) {
+                $zoomKeyframes = json_decode($zoomKeyframes, true) ?: [];
+            }
+            if (! is_array($zoomKeyframes)) {
+                $zoomKeyframes = [];
+            }
+            // Filter out invalid entries
+            $zoomKeyframes = array_filter($zoomKeyframes, fn ($kf) => is_array($kf) && isset($kf['time'], $kf['scale'], $kf['x'], $kf['y']));
+            if (! empty($zoomKeyframes)) {
+                usort($zoomKeyframes, fn ($a, $b) => (float) $a['time'] <=> (float) $b['time']);
+                $ease = 0.4;
+
+                // Build segments: for each keyframe → ease-in, hold, ease-out
+                $segments = [];
+                foreach ($zoomKeyframes as $kf) {
+                    $kfTime = (float) ($kf['time'] ?? 0);
+                    $kfDur = max(0.1, (float) ($kf['duration'] ?? 2));
+                    $kfScale = max(1.01, (float) ($kf['scale'] ?? 2));
+                    $kfX = max(0, min(100, (float) ($kf['x'] ?? 50)));
+                    $kfY = max(0, min(100, (float) ($kf['y'] ?? 50)));
+                    $holdEnd = $kfTime + $kfDur;
+
+                    // Ease in: 1x → full zoom
+                    $easeStart = max(0, $kfTime - $ease);
+                    if ($easeStart < $kfTime) {
+                        $segments[] = [
+                            'start' => $easeStart, 'end' => $kfTime,
+                            'fromScale' => 1, 'toScale' => $kfScale,
+                            'fromX' => 50, 'toX' => $kfX,
+                            'fromY' => 50, 'toY' => $kfY,
+                        ];
+                    }
+                    // Hold at full zoom
+                    $segments[] = [
+                        'start' => $kfTime, 'end' => $holdEnd,
+                        'fromScale' => $kfScale, 'toScale' => $kfScale,
+                        'fromX' => $kfX, 'toX' => $kfX,
+                        'fromY' => $kfY, 'toY' => $kfY,
+                    ];
+                    // Ease out: full zoom → 1x
+                    $segments[] = [
+                        'start' => $holdEnd, 'end' => $holdEnd + $ease,
+                        'fromScale' => $kfScale, 'toScale' => 1,
+                        'fromX' => $kfX, 'toX' => 50,
+                        'fromY' => $kfY, 'toY' => 50,
+                    ];
+                }
+
+                // Build nested if() expressions for crop w/h/x/y
+                // smoothstep: p*p*(3-2*p) where p = clip((t-start)/span, 0, 1)
+                $buildExpr = function ($segments, $vidDim, $dimType) {
+                    // Default: full size / zero offset
+                    $expr = (string) ($dimType === 'w' || $dimType === 'h' ? $vidDim : 0);
+
+                    for ($i = count($segments) - 1; $i >= 0; $i--) {
+                        $seg = $segments[$i];
+                        $s = $seg['start'];
+                        $e = $seg['end'];
+                        $span = max(0.001, $e - $s);
+
+                        if ($dimType === 'w' || $dimType === 'h') {
+                            $from = $vidDim / $seg['fromScale'];
+                            $to = $vidDim / $seg['toScale'];
+                        } elseif ($dimType === 'x') {
+                            $fromCropW = $vidDim / $seg['fromScale'];
+                            $toCropW = $vidDim / $seg['toScale'];
+                            $from = ($seg['fromX'] / 100) * ($vidDim - $fromCropW);
+                            $to = ($seg['toX'] / 100) * ($vidDim - $toCropW);
+                        } else { // y
+                            $fromCropH = $vidDim / $seg['fromScale'];
+                            $toCropH = $vidDim / $seg['toScale'];
+                            $from = ($seg['fromY'] / 100) * ($vidDim - $fromCropH);
+                            $to = ($seg['toY'] / 100) * ($vidDim - $toCropH);
+                        }
+
+                        $pExpr = "clip((t-{$s})/{$span}\\,0\\,1)";
+                        $smoothExpr = "{$pExpr}*{$pExpr}*(3-2*{$pExpr})";
+                        $lerpExpr = sprintf('%.1f+%.1f*%s', $from, $to - $from, $smoothExpr);
+
+                        $expr = sprintf(
+                            "if(between(t\\,%.3f\\,%.3f)\\,%s\\,%s)",
+                            $s, $e, $lerpExpr, $expr
+                        );
+                    }
+
+                    return $expr;
+                };
+
+                $cropW = $buildExpr($segments, $vidW, 'w');
+                $cropH = $buildExpr($segments, $vidH, 'h');
+                $cropX = $buildExpr($segments, $vidW, 'x');
+                $cropY = $buildExpr($segments, $vidH, 'y');
+
+                $zoomLabel = "zoomed_{$stepIndex}";
+                $filterComplex[] = "[{$currentVideoLabel}]crop=w='max(2\\,floor(({$cropW})/2)*2)':h='max(2\\,floor(({$cropH})/2)*2)':x='{$cropX}':y='{$cropY}',scale={$vidW}:{$vidH}[{$zoomLabel}]";
+                $currentVideoLabel = $zoomLabel;
+                $stepIndex++;
+            }
+
             // --- Camera PiP overlay ---
             if ($cameraEnabled) {
                 $cameraMedia = $video->getFirstMedia('camera');
@@ -326,37 +430,158 @@ class ApplyVideoEditsJob implements ShouldQueue
                         : (int) round($camW * 4 / 3); // portrait 3:4
                     $camH = $camH + ($camH % 2);
 
-                    // Camera position
-                    $camMargin = max(16, (int) round($vidW * 0.02));
-                    $camX = str_contains($camPosition, 'right') ? ($vidW - $camW - $camMargin) : $camMargin;
-                    $camY = str_contains($camPosition, 'top') ? $camMargin : ($vidH - $camH - $camMargin);
+                    // Camera position — use custom drag position if available, otherwise quadrant preset
+                    $camDragX = $style['camera_drag_x'] ?? null;
+                    $camDragY = $style['camera_drag_y'] ?? null;
 
+                    if ($camDragX !== null && $camDragY !== null) {
+                        $camX = (int) round($vidW * $camDragX / 100);
+                        $camY = (int) round($vidH * $camDragY / 100);
+                    } else {
+                        $camMargin = max(16, (int) round($vidW * 0.02));
+                        $camX = str_contains($camPosition, 'right') ? ($vidW - $camW - $camMargin) : $camMargin;
+                        $camY = str_contains($camPosition, 'top') ? $camMargin : ($vidH - $camH - $camMargin);
+                    }
+
+                    $camRoundness = (int) ($style['camera_roundness'] ?? 18);
+                    $camBorderBlur = (int) ($style['camera_border_blur'] ?? 6);
+                    $camShadowPct = (int) ($style['camera_shadow'] ?? 30);
                     $camScaledLabel = "cam_scaled_{$stepIndex}";
                     $camOutLabel = "cam_overlay_{$stepIndex}";
-                    $filterComplex[] = "[{$cameraInputIdx}:v]scale={$camW}:{$camH},setsar=1[{$camScaledLabel}]";
+
+                    // All values from frontend settings — nothing hardcoded
+                    // Feather: frontend uses cameraBorderBlur directly as px on the preview element.
+                    // In FFmpeg, scale proportionally: preview camera is ~25% of viewport width (~300px),
+                    // exported camera is $camW px. Scale feather to match visual appearance.
+                    $feather = $camBorderBlur > 0 ? max(1, (int) round($camBorderBlur * $camW / 300)) : 0;
+                    $feather = min($feather, min($camW, $camH) / 4);
+                    $camR = min($camRoundness, min($camW, $camH) / 2);
+
+                    // Camera shadow: frontend renders box-shadow: 0 8px 32px rgba(0,0,0,{shadow/100})
+                    // In FFmpeg: generate a blurred black rect behind camera with matching opacity
+                    $camShadowAlpha = round($camShadowPct / 100, 2);
+
+                    $needsAlpha = ($camR > 0 || $camShape === 'circle') && $feather > 0;
+
+                    if ($needsAlpha) {
+                        if ($camShape === 'circle') {
+                            $cx = $camW / 2;
+                            $cy = $camH / 2;
+                            $filterComplex[] = "[{$cameraInputIdx}:v]scale={$camW}:{$camH},setsar=1,format=yuva420p,geq=lum='lum(X\\,Y)':cb='cb(X\\,Y)':cr='cr(X\\,Y)':a='if(lt(hypot(X-{$cx}\\,Y-{$cy})\\,{$cx}-{$feather})\\,255\\,if(gt(hypot(X-{$cx}\\,Y-{$cy})\\,{$cx})\\,0\\,255*(({$cx}-hypot(X-{$cx}\\,Y-{$cy}))/{$feather})))'[{$camScaledLabel}]";
+                        } else {
+                            $filterComplex[] = "[{$cameraInputIdx}:v]scale={$camW}:{$camH},setsar=1,format=yuva420p,geq=lum='lum(X\\,Y)':cb='cb(X\\,Y)':cr='cr(X\\,Y)':a='if(gt(X\\,{$camR})*gt(X\\,W-{$camR}-1)+lt(X\\,{$camR}+1)*lt(X\\,{$camR}+1)+gt(Y\\,{$camR})*gt(Y\\,H-{$camR}-1)+lt(Y\\,{$camR}+1)*lt(Y\\,{$camR}+1)\\,if(lt(X\\,{$camR})*lt(Y\\,{$camR})*gt(hypot(X-{$camR}\\,Y-{$camR})\\,{$camR})+ lt(X\\,{$camR})*gt(Y\\,H-{$camR}-1)*gt(hypot(X-{$camR}\\,Y-H+{$camR}+1)\\,{$camR})+ gt(X\\,W-{$camR}-1)*lt(Y\\,{$camR})*gt(hypot(X-W+{$camR}+1\\,Y-{$camR})\\,{$camR})+ gt(X\\,W-{$camR}-1)*gt(Y\\,H-{$camR}-1)*gt(hypot(X-W+{$camR}+1\\,Y-H+{$camR}+1)\\,{$camR})\\,0\\,255)\\,255)'[{$camScaledLabel}]";
+                        }
+                    } else {
+                        $filterComplex[] = "[{$cameraInputIdx}:v]scale={$camW}:{$camH},setsar=1[{$camScaledLabel}]";
+                    }
+
+                    // Camera drop shadow — skip in FFmpeg to avoid OOM on constrained containers.
+                    // Camera shadow is a subtle visual polish that's handled by the player overlay.
+
+                    $camOutLabel = "cam_overlay_{$stepIndex}";
                     $filterComplex[] = "[{$currentVideoLabel}][{$camScaledLabel}]overlay={$camX}:{$camY}:shortest=1[{$camOutLabel}]";
                     $currentVideoLabel = $camOutLabel;
                     $stepIndex++;
                 }
             }
 
-            // --- Background padding ---
+            // --- Background padding + compositing ---
+            // Note: Video roundness and drop shadow use geq which is too memory-intensive
+            // for constrained Docker containers. These are visual polish applied in the
+            // player overlay. The export focuses on layout-accurate background/padding/camera.
             if ($pad > 0 || $bgType !== 'none') {
+                $hasShadow = false; // Disabled to prevent OOM — shadow is player-side only
                 $outW = $vidW + ($pad * 2);
                 $outH = $vidH + ($pad * 2);
                 $outW = $outW + ($outW % 2);
                 $outH = $outH + ($outH % 2);
 
-                if ($bgType === 'gradient') {
-                    // Generate a gradient background using ffmpeg gradients source
+                // Generate the background canvas label
+                $bgCanvasLabel = null;
+
+                if ($bgType === 'image') {
+                    $bgImageUrl = $style['background_image_url'] ?? '';
+                    $bgImagePath = null;
+
+                    if ($bgImageUrl) {
+                        $cacheDir = storage_path('app/bg-cache');
+                        if (! is_dir($cacheDir)) {
+                            mkdir($cacheDir, 0755, true);
+                        }
+                        $cacheKey = md5($bgImageUrl);
+                        $cachedPath = $cacheDir.'/'.$cacheKey.'.img';
+
+                        if (file_exists($cachedPath) && filesize($cachedPath) > 100) {
+                            $bgImagePath = $cachedPath;
+                        } else {
+                            $ctx = stream_context_create(['http' => ['timeout' => 15, 'user_agent' => 'OpenKap/1.0']]);
+                            $imageData = @file_get_contents($bgImageUrl, false, $ctx);
+                            if ($imageData && strlen($imageData) > 100) {
+                                file_put_contents($cachedPath, $imageData);
+                                $bgImagePath = $cachedPath;
+                            } else {
+                                Log::warning('Failed to download background image', ['url' => $bgImageUrl]);
+                            }
+                        }
+                    }
+
+                    if ($bgImagePath && file_exists($bgImagePath)) {
+                        $inputArgs .= ' -loop 1 -i '.escapeshellarg($bgImagePath);
+                        $bgInputIdx = $inputIndex;
+                        $inputIndex++;
+
+                        $bgCanvasLabel = "bg_canvas_{$stepIndex}";
+                        $filterComplex[] = "[{$bgInputIdx}:v]scale={$outW}:{$outH},setsar=1[{$bgCanvasLabel}]";
+                        $stepIndex++;
+                    }
+                } elseif ($bgType === 'gradient') {
                     $gFrom = ltrim($style['gradient_from'] ?? '#1e293b', '#');
                     $gTo = ltrim($style['gradient_to'] ?? '#0f172a', '#');
-                    $bgLabel = "grad_bg_{$stepIndex}";
-                    $composited = "grad_comp_{$stepIndex}";
-                    $filterComplex[] = "gradients=s={$outW}x{$outH}:c0=0x{$gFrom}:c1=0x{$gTo}:duration=1:speed=0[{$bgLabel}]";
-                    $filterComplex[] = "[{$bgLabel}][{$currentVideoLabel}]overlay={$pad}:{$pad}:shortest=1[{$composited}]";
+                    $gradDir = $style['gradient_direction'] ?? 'b';
+                    $bgCanvasLabel = "bg_canvas_{$stepIndex}";
+                    $gradDuration = max(300, (int) ($video->duration ?: 300));
+
+                    // Parse hex colors to RGB for geq
+                    $fromR = hexdec(substr($gFrom, 0, 2));
+                    $fromG = hexdec(substr($gFrom, 2, 2));
+                    $fromB = hexdec(substr($gFrom, 4, 2));
+                    $toR = hexdec(substr($gTo, 0, 2));
+                    $toG = hexdec(substr($gTo, 2, 2));
+                    $toB = hexdec(substr($gTo, 4, 2));
+
+                    // Gradient direction matching frontend:
+                    // 'b' = vertical (180deg: top→bottom), 'r' = horizontal (90deg: left→right)
+                    // 'br' = diagonal (135deg: top-left→bottom-right)
+                    if ($gradDir === 'r') {
+                        // Horizontal: interpolate based on X/W
+                        $pExpr = 'X/W';
+                    } elseif ($gradDir === 'br') {
+                        // Diagonal (135deg): interpolate based on (X+Y)/(W+H)
+                        $pExpr = '(X+Y)/(W+H)';
+                    } else {
+                        // Vertical (default): interpolate based on Y/H
+                        $pExpr = 'Y/H';
+                    }
+
+                    $rExpr = "{$fromR}+({$toR}-{$fromR})*({$pExpr})";
+                    $gExpr = "{$fromG}+({$toG}-{$fromG})*({$pExpr})";
+                    $bExpr = "{$fromB}+({$toB}-{$fromB})*({$pExpr})";
+
+                    // Generate 1 gradient frame, then loop — avoids per-frame geq overhead
+                    $gradRawLabel = "grad_raw_{$stepIndex}";
+                    $filterComplex[] = "color=c=black:s={$outW}x{$outH}:d=1:r=1,format=rgb24,geq=r='{$rExpr}':g='{$gExpr}':b='{$bExpr}'[{$gradRawLabel}]";
+                    $filterComplex[] = "[{$gradRawLabel}]loop=loop=-1:size=1:start=0[{$bgCanvasLabel}]";
+                    $stepIndex++;
+                }
+
+                if ($bgCanvasLabel) {
+                    // Image or gradient background — overlay video onto canvas
+                    $composited = "bg_comp_{$stepIndex}";
+                    $filterComplex[] = "[{$bgCanvasLabel}][{$currentVideoLabel}]overlay={$pad}:{$pad}:shortest=1[{$composited}]";
                     $currentVideoLabel = $composited;
+                    $stepIndex++;
                 } else {
+                    // Solid color or fallback — use simple pad filter
                     $bgColor = '000000';
                     if ($bgType === 'solid') {
                         $bgColor = ltrim($style['background_color'] ?? '#000000', '#');
@@ -364,8 +589,8 @@ class ApplyVideoEditsJob implements ShouldQueue
                     $paddedLabel = "padded_{$stepIndex}";
                     $filterComplex[] = "[{$currentVideoLabel}]pad={$outW}:{$outH}:{$pad}:{$pad}:color=0x{$bgColor}[{$paddedLabel}]";
                     $currentVideoLabel = $paddedLabel;
+                    $stepIndex++;
                 }
-                $stepIndex++;
             }
 
             // Always allow processing (style is always sent now)
@@ -387,19 +612,27 @@ class ApplyVideoEditsJob implements ShouldQueue
                 ? ['-map', "[{$currentAudioLabel}]"]
                 : ['-map', '0:a?'];
 
-            // Parse input args into array
+            // Parse input args string into array — supports flags before -i (e.g. -loop 1 -i 'file')
             $inputArgParts = [];
-            preg_match_all('/-i\s+\'([^\']+)\'/', $inputArgs, $matches);
-            foreach ($matches[1] as $file) {
+            // Match optional flags before each -i, then the file path
+            preg_match_all('/(?:(-loop\s+\d+)\s+)?-i\s+\'([^\']+)\'/', $inputArgs, $matches, PREG_SET_ORDER);
+            foreach ($matches as $m) {
+                if (! empty($m[1])) {
+                    // Add pre-input flags (e.g. -loop 1)
+                    $parts = preg_split('/\s+/', trim($m[1]));
+                    foreach ($parts as $p) {
+                        $inputArgParts[] = $p;
+                    }
+                }
                 $inputArgParts[] = '-i';
-                $inputArgParts[] = $file;
+                $inputArgParts[] = $m[2];
             }
             if (empty($inputArgParts)) {
                 $inputArgParts = ['-i', $inputPath];
             }
 
             $processArgs = array_merge(
-                [$ffmpegPath, '-y', '-progress', 'pipe:2', '-threads', '2'],
+                [$ffmpegPath, '-y', '-progress', 'pipe:2', '-threads', '1', '-filter_threads', '1'],
                 $inputArgParts,
                 ['-filter_complex', $filterString],
                 ['-map', "[{$currentVideoLabel}]"],
@@ -505,23 +738,24 @@ class ApplyVideoEditsJob implements ShouldQueue
                 'output_size' => $outputSize,
             ]);
 
-            // Clean up temp file
+            // Clean up temp files
             if (file_exists($outputPath)) {
                 @unlink($outputPath);
             }
+            // Note: background images are cached in bg-cache/, not deleted
 
             // Send notification for async edits
             try {
                 $notificationManager = app(NotificationManager::class);
                 $notificationManager->createEditCompleteNotification($newVideo, $video);
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 Log::warning('Failed to send edit complete notification', ['error' => $e->getMessage()]);
             }
 
             // Dispatch HLS conversion for the new video
             ProcessHlsConversionJob::dispatch($newVideo)->delay(now()->addSeconds(5));
 
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('Video edits application failed', [
                 'edit_id' => $edit->id,
                 'video_id' => $video->id,
@@ -531,6 +765,7 @@ class ApplyVideoEditsJob implements ShouldQueue
             if (isset($outputPath) && file_exists($outputPath)) {
                 @unlink($outputPath);
             }
+            // Note: background images are cached in bg-cache/, not deleted
 
             $this->markAsFailed($edit, $e->getMessage());
 

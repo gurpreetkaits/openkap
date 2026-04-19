@@ -1017,7 +1017,21 @@ class VideoService {
 
       if (styleSettings) {
         Object.entries(styleSettings).forEach(([key, value]) => {
-          if (value !== null && value !== undefined) {
+          if (value === null || value === undefined) return
+          if (Array.isArray(value)) {
+            // Nested arrays (e.g. zoom_keyframes) — serialize each item's fields
+            value.forEach((item, i) => {
+              if (typeof item === 'object' && item !== null) {
+                Object.entries(item).forEach(([k, v]) => {
+                  if (v !== null && v !== undefined) {
+                    formData.append(`style_settings[${key}][${i}][${k}]`, v)
+                  }
+                })
+              } else {
+                formData.append(`style_settings[${key}][${i}]`, item)
+              }
+            })
+          } else {
             // FormData sends everything as strings — convert booleans to 1/0
             const v = typeof value === 'boolean' ? (value ? '1' : '0') : value
             formData.append(`style_settings[${key}]`, v)

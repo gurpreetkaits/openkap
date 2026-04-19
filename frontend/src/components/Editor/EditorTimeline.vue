@@ -28,7 +28,7 @@
     <div
       ref="timelineContainer"
       class="overflow-x-auto relative"
-      style="height: 90px;"
+      :style="{ height: (90 + (zoomKeyframes.length ? 30 : 0) + (hasBg ? 20 : 0)) + 'px' }"
       @click="onTimelineClick"
     >
       <div :style="{ width: timeline.totalTimelineWidth.value + 'px', minWidth: '100%' }" class="h-full flex flex-col">
@@ -104,6 +104,57 @@
           <!-- Trim overlays -->
           <EditorTrimHandles :pixelsPerSecond="timeline.pixelsPerSecond.value" />
         </div>
+
+        <!-- ─── Background Track ─── -->
+        <div v-if="hasBg" class="h-4 relative mx-0 mb-1 flex-shrink-0">
+          <div class="absolute left-1 top-0 bottom-0 flex items-center z-10 pointer-events-none">
+            <span class="text-[8px] font-semibold text-gray-400 uppercase tracking-wider bg-white/80 px-1 rounded">BG</span>
+          </div>
+          <div
+            class="absolute top-0.5 bottom-0.5 left-0 rounded-md border border-gray-200/60 overflow-hidden"
+            :style="{ ...bgTrackStyle, width: timeline.timeToPixels(duration) + 'px' }"
+          ></div>
+        </div>
+
+        <!-- ─── Zoom Track ─── -->
+        <div v-if="zoomKeyframes.length" class="h-6 relative mx-0 mb-1.5 flex-shrink-0">
+          <!-- Label -->
+          <div class="absolute left-1 top-0 bottom-0 flex items-center z-10 pointer-events-none">
+            <span class="text-[8px] font-semibold text-orange-400 uppercase tracking-wider bg-white/80 px-1 rounded">Zoom</span>
+          </div>
+
+          <!-- Zoom blocks -->
+          <div
+            v-for="kf in zoomKeyframes" :key="'zt-' + kf.id"
+            class="absolute top-0.5 bottom-0.5 rounded-md cursor-pointer transition-colors group/zblock"
+            :class="selectedZoomId === kf.id
+              ? 'bg-orange-500 ring-2 ring-orange-300'
+              : 'bg-orange-400/70 hover:bg-orange-500/80'"
+            :style="{
+              left: timeline.timeToPixels(kf.time) + 'px',
+              width: Math.max(20, timeline.timeToPixels(kf.duration)) + 'px',
+            }"
+            @click.stop="selectZoomBlock(kf)"
+            @mousedown.stop="startZoomBlockDrag(kf, $event)"
+          >
+            <!-- Zoom label -->
+            <div class="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden">
+              <span class="text-[9px] font-bold text-white/90 drop-shadow-sm">{{ kf.scale.toFixed(1) }}x</span>
+            </div>
+
+            <!-- Left resize handle -->
+            <div
+              class="absolute left-0 top-0 bottom-0 w-1.5 cursor-ew-resize opacity-0 group-hover/zblock:opacity-100 transition-opacity rounded-l-md bg-orange-700/50 z-[2]"
+              @mousedown.stop="startZoomResize(kf, 'left', $event)"
+            ></div>
+
+            <!-- Right resize handle -->
+            <div
+              class="absolute right-0 top-0 bottom-0 w-1.5 cursor-ew-resize opacity-0 group-hover/zblock:opacity-100 transition-opacity rounded-r-md bg-orange-700/50 z-[2]"
+              @mousedown.stop="startZoomResize(kf, 'right', $event)"
+            ></div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -123,6 +174,8 @@ const {
   items, selectItem, togglePlay, formatTime,
   trimEnabled, trimStart, trimEnd,
   mergeVideos, mainVideoIndex, removeMergeVideo, reorderVideoBlocks,
+  zoomKeyframes, selectedZoomId, updateZoomKeyframe,
+  styleBackground, stylePadding,
 } = state
 
 const timeline = useEditorTimeline()
@@ -145,6 +198,18 @@ function blockLeft(idx) {
 }
 
 const playheadPosition = computed(() => currentTime.value * timeline.pixelsPerSecond.value)
+
+const hasBg = computed(() => styleBackground.value.type !== 'none' || stylePadding.value > 0)
+const bgTrackStyle = computed(() => {
+  const bg = styleBackground.value
+  if (bg.type === 'solid') return { background: bg.color }
+  if (bg.type === 'gradient') {
+    const dir = bg.gradientDirection === 'br' ? '135deg' : bg.gradientDirection === 'r' ? '90deg' : '180deg'
+    return { background: `linear-gradient(${dir}, ${bg.gradientFrom}, ${bg.gradientTo})` }
+  }
+  if (bg.type === 'image' && bg.imageUrl) return { background: `url(${bg.imageUrl}) center/cover no-repeat` }
+  return { background: '#e5e7eb' }
+})
 
 function toggleTrim() {
   trimEnabled.value = !trimEnabled.value
@@ -181,6 +246,56 @@ function onVideoBlockDragStart(sourceIdx, e) {
   const onMove = (ev) => { if (Math.abs(ev.clientX - startX) > 20 && !hasMoved) hasMoved = true; if (!hasMoved) return; const container = timelineContainer.value; if (!container) return; const x = ev.clientX - container.getBoundingClientRect().left + container.scrollLeft; let acc = 0, target = videoBlocks.value.length - 1; for (let i = 0; i < videoBlocks.value.length; i++) { const w = timeline.timeToPixels(videoBlocks.value[i].duration); if (x < acc + w / 2) { target = i; break }; acc += w }; dropTargetIdx.value = target !== sourceIdx ? target : null }
   const onUp = () => { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); if (hasMoved && dropTargetIdx.value !== null) { const blocks = [...videoBlocks.value]; const [moved] = blocks.splice(dragSourceIdx.value, 1); blocks.splice(dropTargetIdx.value, 0, moved); reorderVideoBlocks(blocks) }; dragSourceIdx.value = null; dropTargetIdx.value = null }
   document.addEventListener('mousemove', onMove); document.addEventListener('mouseup', onUp)
+}
+
+// --- Zoom block interactions ---
+function selectZoomBlock(kf) {
+  selectedZoomId.value = selectedZoomId.value === kf.id ? null : kf.id
+}
+
+function startZoomBlockDrag(kf, e) {
+  if (e.target.closest('.cursor-ew-resize')) return // let resize handle instead
+  const startX = e.clientX
+  const origTime = kf.time
+  let moved = false
+
+  const onMove = (ev) => {
+    const dt = (ev.clientX - startX) / timeline.pixelsPerSecond.value
+    if (!moved && Math.abs(dt) < 0.05) return
+    moved = true
+    const newTime = Math.max(0, Math.min(duration.value - kf.duration, origTime + dt))
+    updateZoomKeyframe(kf.id, { time: Math.round(newTime * 100) / 100 })
+  }
+  const onUp = () => {
+    document.removeEventListener('mousemove', onMove)
+    document.removeEventListener('mouseup', onUp)
+  }
+  document.addEventListener('mousemove', onMove)
+  document.addEventListener('mouseup', onUp)
+}
+
+function startZoomResize(kf, edge, e) {
+  const startX = e.clientX
+  const origTime = kf.time
+  const origDuration = kf.duration
+
+  const onMove = (ev) => {
+    const dt = (ev.clientX - startX) / timeline.pixelsPerSecond.value
+    if (edge === 'left') {
+      const newTime = Math.max(0, Math.min(origTime + origDuration - 0.3, origTime + dt))
+      const newDur = origDuration - (newTime - origTime)
+      updateZoomKeyframe(kf.id, { time: Math.round(newTime * 100) / 100, duration: Math.round(newDur * 100) / 100 })
+    } else {
+      const newDur = Math.max(0.3, Math.min(duration.value - origTime, origDuration + dt))
+      updateZoomKeyframe(kf.id, { duration: Math.round(newDur * 100) / 100 })
+    }
+  }
+  const onUp = () => {
+    document.removeEventListener('mousemove', onMove)
+    document.removeEventListener('mouseup', onUp)
+  }
+  document.addEventListener('mousemove', onMove)
+  document.addEventListener('mouseup', onUp)
 }
 
 function updateContainerWidth() { if (timelineContainer.value) timeline.containerWidth.value = timelineContainer.value.clientWidth }

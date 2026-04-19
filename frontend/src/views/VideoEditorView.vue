@@ -30,6 +30,14 @@
           <button v-if="!isApplying" @click="goBack" class="px-4 py-1.5 text-gray-500 hover:text-gray-700 text-sm font-medium transition-colors">Cancel</button>
           <button
             v-if="!isApplying"
+            @click="saveNow"
+            :disabled="isSaving"
+            class="px-4 py-1.5 text-gray-700 hover:text-gray-900 border border-gray-200 hover:border-gray-300 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+          >
+            {{ isSaving ? 'Saving...' : saveLabel }}
+          </button>
+          <button
+            v-if="!isApplying"
             @click="applyEdits"
             class="px-5 py-1.5 bg-gray-900 hover:bg-gray-800 text-white rounded-lg text-sm font-semibold transition-colors"
           >
@@ -98,7 +106,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, nextTick, watch } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, nextTick, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import videoService from '@/services/videoService'
 import { useToast } from '@/services/toastService'
@@ -124,6 +132,9 @@ const {
   videoReady,
   styleBackground, stylePadding, styleRoundness, styleShadow,
   cameraEnabled, cameraPosition, cameraSize, cameraRoundness, cameraShape,
+  cameraBorderBlur, cameraShadow,
+  cameraDragX, cameraDragY,
+  zoomKeyframes, selectedZoomId, removeZoomKeyframe, zoomPlacementMode,
 } = state
 
 const videoPreviewRef = ref(null)
@@ -166,6 +177,20 @@ function loadEditorSettings(saved) {
   if (saved.camera_size !== undefined) cameraSize.value = saved.camera_size
   if (saved.camera_shape) cameraShape.value = saved.camera_shape
   if (saved.camera_roundness !== undefined) cameraRoundness.value = saved.camera_roundness
+  if (saved.camera_border_blur !== undefined) cameraBorderBlur.value = saved.camera_border_blur
+  if (saved.camera_shadow !== undefined) cameraShadow.value = saved.camera_shadow
+  if (saved.camera_drag_x !== undefined) cameraDragX.value = saved.camera_drag_x
+  if (saved.camera_drag_y !== undefined) cameraDragY.value = saved.camera_drag_y
+  if (saved.zoom_keyframes) {
+    zoomKeyframes.value = saved.zoom_keyframes.map(k => ({
+      id: state.getNextId(),
+      time: k.time,
+      duration: k.duration ?? 2,
+      scale: k.scale,
+      x: k.x,
+      y: k.y,
+    }))
+  }
 }
 
 // Build settings object for saving
@@ -180,6 +205,11 @@ function buildEditorSettings() {
     camera_size: cameraSize.value,
     camera_shape: cameraShape.value,
     camera_roundness: cameraRoundness.value,
+    camera_border_blur: cameraBorderBlur.value,
+    camera_shadow: cameraShadow.value,
+    camera_drag_x: cameraDragX.value,
+    camera_drag_y: cameraDragY.value,
+    zoom_keyframes: zoomKeyframes.value.map(k => ({ time: k.time, duration: k.duration, scale: k.scale, x: k.x, y: k.y })),
   }
 }
 
@@ -195,9 +225,10 @@ function scheduleSave() {
 }
 
 // Watch all style refs for auto-save
-watch([styleBackground, stylePadding, styleRoundness, styleShadow, cameraEnabled, cameraPosition, cameraSize, cameraShape, cameraRoundness], scheduleSave, { deep: true })
+watch([styleBackground, stylePadding, styleRoundness, styleShadow, cameraEnabled, cameraPosition, cameraSize, cameraShape, cameraRoundness, cameraBorderBlur, cameraShadow, cameraDragX, cameraDragY, zoomKeyframes], scheduleSave, { deep: true })
 
 onMounted(async () => {
+  window.addEventListener('keydown', onKeyDown)
   try {
     const data = await videoService.getVideo(route.params.id)
     if (!data) { error.value = 'Video not found'; return }
@@ -216,6 +247,55 @@ onMounted(async () => {
     loading.value = false
   }
 })
+
+// Manual save
+const isSaving = ref(false)
+const saveLabel = ref('Save')
+async function saveNow() {
+  if (isSaving.value || !video.value?.id) return
+  isSaving.value = true
+  try {
+    await videoService.saveEditorSettings(video.value.id, buildEditorSettings())
+    saveLabel.value = 'Saved'
+    setTimeout(() => { saveLabel.value = 'Save' }, 2000)
+  } catch {
+    toast.error('Failed to save')
+  } finally {
+    isSaving.value = false
+  }
+}
+
+// Map raw backend errors to user-friendly messages
+function friendlyExportError(raw) {
+  if (!raw) return 'Export failed. Please try again.'
+  const r = raw.toLowerCase()
+  if (r.includes('no media') || r.includes('not found')) return 'The original video file could not be found. It may have been deleted.'
+  if (r.includes('ffmpeg failed') || r.includes('exit code')) return 'Video processing failed. Try reducing the video quality or removing some effects.'
+  if (r.includes('disk') || r.includes('space') || r.includes('no space')) return 'Server ran out of storage space. Please try again later.'
+  if (r.includes('timeout') || r.includes('timed out')) return 'Export took too long. Try a shorter video or fewer effects.'
+  if (r.includes('memory') || r.includes('oom') || r.includes('signal') || r.includes('signal "9"')) return 'Server ran out of memory processing this video. Try removing some effects (zoom, background image) and export again.'
+  if (r.includes('network') || r.includes('fetch')) return 'Network error during export. Please check your connection and try again.'
+  if (r.includes('background_image') || r.includes('image download')) return 'Failed to download the background image. Try a different background.'
+  return 'Export failed. Please try again or contact support if the issue persists.'
+}
+
+// Keyboard shortcuts
+function onKeyDown(e) {
+  // Don't intercept when typing in inputs
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) return
+
+  if (e.code === 'Space') {
+    e.preventDefault()
+    togglePlay()
+  }
+  if ((e.code === 'Delete' || e.code === 'Backspace') && selectedZoomId.value) {
+    e.preventDefault()
+    removeZoomKeyframe(selectedZoomId.value)
+  }
+  if (e.code === 'Escape' && zoomPlacementMode.value) {
+    zoomPlacementMode.value = false
+  }
+}
 
 function handleMergeVideoSelect(v) { addMergeVideo(v) }
 
@@ -246,6 +326,11 @@ async function applyEdits() {
       camera_size: cameraSize.value,
       camera_shape: cameraShape.value,
       camera_roundness: cameraRoundness.value,
+      camera_border_blur: cameraBorderBlur.value,
+      camera_shadow: cameraShadow.value,
+      camera_drag_x: cameraDragX.value,
+      camera_drag_y: cameraDragY.value,
+      zoom_keyframes: zoomKeyframes.value.map(k => ({ time: k.time, duration: k.duration, scale: k.scale, x: k.x, y: k.y })),
     }
 
     const result = await videoService.applyEdits(video.value.id, blurRegions, overlayConfigs, overlayFiles.value, textOverlays, trimEnabled.value ? trimStart.value : null, trimEnabled.value ? trimEnd.value : null, mergeVideos.value.map(v => v.id), mainVideoIndex.value, styleSettingsPayload)
@@ -260,6 +345,8 @@ async function applyEdits() {
 
     // Poll for progress (background processing)
     applyProgress.value = 5
+    let lastProgress = 0
+    let stallCount = 0
     pollTimer = setInterval(async () => {
       try {
         const s = await videoService.getEditStatus(video.value.id)
@@ -272,12 +359,26 @@ async function applyEdits() {
         } else if (s.status === 'failed') {
           clearInterval(pollTimer); pollTimer = null
           isApplying.value = false
-          toast.error(s.error || 'Export failed')
+          toast.error(friendlyExportError(s.error))
+        } else {
+          // Detect stalled processing — if progress hasn't changed in 60s, assume failure
+          if (s.progress === lastProgress) stallCount++
+          else { stallCount = 0; lastProgress = s.progress }
+          if (stallCount >= 30) { // 30 polls * 2s = 60s stalled
+            clearInterval(pollTimer); pollTimer = null
+            isApplying.value = false
+            toast.error('Export appears to have stalled. Please try again.')
+          }
         }
       } catch {}
     }, 2000)
-  } catch (e) { isApplying.value = false; toast.error(e.message || 'Failed') }
+  } catch (e) { isApplying.value = false; toast.error(friendlyExportError(e.message)) }
 }
+
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', onKeyDown)
+  if (pollTimer) clearInterval(pollTimer)
+})
 
 function goBack() { if (pollTimer) clearInterval(pollTimer); if (video.value?.id) router.push(`/video/${video.value.id}`); else router.back() }
 </script>

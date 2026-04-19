@@ -33,8 +33,8 @@ services:
       timeout: 3s
       retries: 3
       start_period: 5s
-    mem_limit: 384m
-    cpus: 0.75
+    mem_limit: 1024m
+    cpus: 1.5
 
   # Nginx
   nginx:
@@ -127,8 +127,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-    mem_limit: 320m
-    cpus: 0.75
+    mem_limit: 1024m
+    cpus: 1.5
 
   # Frontend dev server
   frontend:
