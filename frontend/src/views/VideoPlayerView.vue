@@ -2394,12 +2394,18 @@ export default {
     // ── Camera overlay ──────────────────────────────────────────────
     const hasCameraTrack = computed(() => !!video.value?.has_camera)
 
-    const cameraReady = computed(() =>
-      cameraConversionStatus.value === 'completed' && video.value?.camera_url && !cameraLoadError.value
-    )
+    const cameraReady = computed(() => {
+      // Show camera if we have a URL and it hasn't errored out
+      if (!video.value?.camera_url || cameraLoadError.value) return false
+      // If status is completed or pending-with-url (remuxed WebM is playable), show it
+      if (cameraConversionStatus.value === 'completed') return true
+      // Even if pending/processing, try to show if URL exists — the remuxed file is already playable
+      if (cameraConversionStatus.value === 'pending' && video.value?.camera_url) return true
+      return false
+    })
 
     const cameraConverting = computed(() =>
-      cameraConversionStatus.value === 'processing' || cameraConversionStatus.value === 'pending'
+      cameraConversionStatus.value === 'processing'
     )
 
     // Sync conversion status from video data
@@ -2408,7 +2414,8 @@ export default {
       if (!v?.has_camera) return
       cameraConversionStatus.value = v.camera_conversion_status || 'completed'
       cameraConversionProgress.value = v.camera_conversion_progress ?? 100
-      if (cameraConverting.value) {
+      // Only poll if actively processing (not pending — pending with URL means playable)
+      if (cameraConversionStatus.value === 'processing') {
         startCameraStatusPoll()
       }
     }
@@ -2450,10 +2457,10 @@ export default {
     }
 
     const onCameraError = () => {
+      console.warn('[Player] Camera video load error, status:', cameraConversionStatus.value)
       cameraLoadError.value = true
-      // If the camera file isn't playable, start polling — it may still be converting
-      if (cameraConversionStatus.value !== 'failed') {
-        cameraConversionStatus.value = 'processing'
+      // If still converting, start polling for completion
+      if (cameraConversionStatus.value !== 'failed' && cameraConversionStatus.value !== 'completed') {
         startCameraStatusPoll()
       }
     }
@@ -3047,6 +3054,8 @@ export default {
     const seekToTime = (seconds) => {
       if (videoRef.value) {
         videoRef.value.currentTime = seconds
+        // Force camera sync on seek
+        if (cameraRef.value) cameraRef.value.currentTime = seconds
         if (!isPlaying.value) {
           togglePlay()
         }
@@ -3317,6 +3326,19 @@ export default {
     const handleFullscreenChange = () => {
       isFullscreen.value = !!document.fullscreenElement
     }
+
+    // Re-fetch video when route params change (e.g. navigating between /video/16 and /video/17)
+    watch(() => isSharedMode.value ? route.params.token : route.params.id, async (newVal, oldVal) => {
+      if (oldVal && newVal !== oldVal) {
+        // Reset state for new video
+        destroyHls()
+        video.value = {}
+        loading.value = true
+        error.value = null
+        cameraLoadError.value = false
+        await fetchVideo()
+      }
+    })
 
     onMounted(async () => {
       if (!isSharedMode.value && !branding.loaded.value) {
