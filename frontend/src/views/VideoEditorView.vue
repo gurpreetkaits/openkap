@@ -98,7 +98,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, nextTick } from 'vue'
+import { ref, computed, onMounted, nextTick, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import videoService from '@/services/videoService'
 import { useToast } from '@/services/toastService'
@@ -123,6 +123,7 @@ const {
   trimEnabled, trimStart, trimEnd, mergeVideos, mainVideoIndex, addMergeVideo,
   videoReady,
   styleBackground, stylePadding, styleRoundness, styleShadow,
+  cameraEnabled, cameraPosition, cameraSize, cameraRoundness, cameraShape,
 } = state
 
 const videoPreviewRef = ref(null)
@@ -151,12 +152,62 @@ function skip(seconds) {
   if (el) el.currentTime = Math.max(0, Math.min(el.duration || 0, el.currentTime + seconds))
 }
 
+// Load saved editor settings into state
+function loadEditorSettings(saved) {
+  if (!saved) return
+  if (saved.background) {
+    styleBackground.value = { ...styleBackground.value, ...saved.background }
+  }
+  if (saved.padding !== undefined) stylePadding.value = saved.padding
+  if (saved.roundness !== undefined) styleRoundness.value = saved.roundness
+  if (saved.shadow !== undefined) styleShadow.value = saved.shadow
+  if (saved.camera_enabled !== undefined) cameraEnabled.value = saved.camera_enabled
+  if (saved.camera_position) cameraPosition.value = saved.camera_position
+  if (saved.camera_size !== undefined) cameraSize.value = saved.camera_size
+  if (saved.camera_shape) cameraShape.value = saved.camera_shape
+  if (saved.camera_roundness !== undefined) cameraRoundness.value = saved.camera_roundness
+}
+
+// Build settings object for saving
+function buildEditorSettings() {
+  return {
+    background: { ...styleBackground.value },
+    padding: stylePadding.value,
+    roundness: styleRoundness.value,
+    shadow: styleShadow.value,
+    camera_enabled: cameraEnabled.value,
+    camera_position: cameraPosition.value,
+    camera_size: cameraSize.value,
+    camera_shape: cameraShape.value,
+    camera_roundness: cameraRoundness.value,
+  }
+}
+
+// Auto-save with debounce
+let saveTimer = null
+function scheduleSave() {
+  if (saveTimer) clearTimeout(saveTimer)
+  saveTimer = setTimeout(() => {
+    if (video.value?.id) {
+      videoService.saveEditorSettings(video.value.id, buildEditorSettings()).catch(() => {})
+    }
+  }, 1500)
+}
+
+// Watch all style refs for auto-save
+watch([styleBackground, stylePadding, styleRoundness, styleShadow, cameraEnabled, cameraPosition, cameraSize, cameraShape, cameraRoundness], scheduleSave, { deep: true })
+
 onMounted(async () => {
   try {
     const data = await videoService.getVideo(route.params.id)
     if (!data) { error.value = 'Video not found'; return }
     video.value = data
     if (data.duration) duration.value = data.duration
+
+    // Load saved editor settings
+    const saved = await videoService.getEditorSettings(route.params.id)
+    if (saved) loadEditorSettings(saved)
+
     loading.value = false
     await nextTick()
     videoPreviewRef.value?.initVideo()
@@ -171,26 +222,31 @@ function handleMergeVideoSelect(v) { addMergeVideo(v) }
 async function applyEdits() {
   // Build style settings
   const bg = styleBackground.value
-  const hasStyleChanges = stylePadding.value > 0 || styleRoundness.value > 0 || bg.type !== 'none'
-  const hasEdits = items.value.length > 0 || trimEnabled.value || mergeVideos.value.length > 0 || hasStyleChanges
-
-  if (isApplying.value || !hasEdits) return
+  // Always allow export — style settings are always applied
+  if (isApplying.value) return
   isApplying.value = true; applyProgress.value = 0
   try {
     const blurRegions = items.value.filter(i => i.type === 'blur').map(i => ({ x: i.x, y: i.y, width: i.width, height: i.height, start_time: i.entireVideo ? null : i.start_time, end_time: i.entireVideo ? null : i.end_time }))
     const overlayConfigs = items.value.filter(i => i.type === 'overlay').map(i => ({ x: i.x, y: i.y, width: i.width, height: i.height, file_index: i.fileIndex, start_time: i.entireVideo ? null : i.start_time, end_time: i.entireVideo ? null : i.end_time }))
     const textOverlays = items.value.filter(i => i.type === 'text').map(i => ({ text: i.text || 'Text', x: i.x, y: i.y, font_size: i.font_size || 32, font_color: i.font_color || '#ffffff', background_color: i.has_background ? (i.background_color || '#000000') : null, start_time: i.entireVideo ? null : i.start_time, end_time: i.entireVideo ? null : i.end_time }))
 
-    const styleSettingsPayload = hasStyleChanges ? {
+    const styleSettingsPayload = {
       background_type: bg.type,
       background_color: bg.color,
       gradient_from: bg.gradientFrom,
       gradient_to: bg.gradientTo,
       gradient_direction: bg.gradientDirection,
+      background_image_url: bg.imageUrl || '',
       padding: stylePadding.value,
       roundness: styleRoundness.value,
       shadow: styleShadow.value,
-    } : null
+      // Camera settings
+      camera_enabled: cameraEnabled.value && !!video.value?.has_camera,
+      camera_position: cameraPosition.value,
+      camera_size: cameraSize.value,
+      camera_shape: cameraShape.value,
+      camera_roundness: cameraRoundness.value,
+    }
 
     const result = await videoService.applyEdits(video.value.id, blurRegions, overlayConfigs, overlayFiles.value, textOverlays, trimEnabled.value ? trimStart.value : null, trimEnabled.value ? trimEnd.value : null, mergeVideos.value.map(v => v.id), mainVideoIndex.value, styleSettingsPayload)
 

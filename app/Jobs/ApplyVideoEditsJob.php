@@ -284,57 +284,95 @@ class ApplyVideoEditsJob implements ShouldQueue
                 $currentAudioLabel = $concatA;
             }
 
-            // --- Style settings (background, padding, roundness, shadow) ---
-            $style = $edit->style_settings;
-            $hasStyle = $style && (
-                ($style['padding'] ?? 0) > 0 ||
-                ($style['roundness'] ?? 0) > 0 ||
-                (($style['background_type'] ?? 'none') !== 'none')
-            );
+            // --- Style settings (background, padding, roundness, shadow, camera) ---
+            $style = $edit->style_settings ?? [];
+            $pad = (int) ($style['padding'] ?? 0);
+            $bgType = $style['background_type'] ?? 'none';
+            $cameraEnabled = filter_var($style['camera_enabled'] ?? false, FILTER_VALIDATE_BOOLEAN);
 
-            if ($hasStyle) {
-                $pad = (int) ($style['padding'] ?? 0);
-                $bgType = $style['background_type'] ?? 'none';
+            $vidW = $dimensions['width'];
+            $vidH = $dimensions['height'];
 
-                $vidW = $dimensions['width'];
-                $vidH = $dimensions['height'];
+            // Scale down to max 1280px width to fit container memory limits
+            if ($vidW > 1280) {
+                $scaleH = (int) round(1280 * $vidH / $vidW);
+                $scaleH = $scaleH + ($scaleH % 2);
+                $scaledLabel = "scaled_{$stepIndex}";
+                $filterComplex[] = "[{$currentVideoLabel}]scale=1280:{$scaleH}[{$scaledLabel}]";
+                $currentVideoLabel = $scaledLabel;
+                $vidW = 1280;
+                $vidH = $scaleH;
+                $stepIndex++;
+            }
 
-                // Scale down to max 1280px width to fit container memory limits
-                if ($vidW > 1280) {
-                    $scaleH = (int) round(1280 * $vidH / $vidW);
-                    $scaleH = $scaleH + ($scaleH % 2); // even
-                    $scaledLabel = "scaled_{$stepIndex}";
-                    $filterComplex[] = "[{$currentVideoLabel}]scale=1280:{$scaleH}[{$scaledLabel}]";
-                    $currentVideoLabel = $scaledLabel;
-                    $vidW = 1280;
-                    $vidH = $scaleH;
+            // --- Camera PiP overlay ---
+            if ($cameraEnabled) {
+                $cameraMedia = $video->getFirstMedia('camera');
+                if ($cameraMedia && file_exists($cameraMedia->getPath())) {
+                    $cameraPath = $cameraMedia->getPath();
+                    $inputArgs .= ' -i '.escapeshellarg($cameraPath);
+                    $cameraInputIdx = $inputIndex;
+                    $inputIndex++;
+
+                    $camSize = (int) ($style['camera_size'] ?? 25);
+                    $camPosition = $style['camera_position'] ?? 'bottom-left';
+                    $camShape = $style['camera_shape'] ?? 'portrait';
+
+                    // Camera dimensions
+                    $camW = (int) round($vidW * $camSize / 100);
+                    $camW = $camW + ($camW % 2);
+                    $camH = $camShape === 'circle' || $camShape === 'square'
+                        ? $camW
+                        : (int) round($camW * 4 / 3); // portrait 3:4
+                    $camH = $camH + ($camH % 2);
+
+                    // Camera position
+                    $camMargin = max(16, (int) round($vidW * 0.02));
+                    $camX = str_contains($camPosition, 'right') ? ($vidW - $camW - $camMargin) : $camMargin;
+                    $camY = str_contains($camPosition, 'top') ? $camMargin : ($vidH - $camH - $camMargin);
+
+                    $camScaledLabel = "cam_scaled_{$stepIndex}";
+                    $camOutLabel = "cam_overlay_{$stepIndex}";
+                    $filterComplex[] = "[{$cameraInputIdx}:v]scale={$camW}:{$camH},setsar=1[{$camScaledLabel}]";
+                    $filterComplex[] = "[{$currentVideoLabel}][{$camScaledLabel}]overlay={$camX}:{$camY}:shortest=1[{$camOutLabel}]";
+                    $currentVideoLabel = $camOutLabel;
                     $stepIndex++;
                 }
+            }
 
+            // --- Background padding ---
+            if ($pad > 0 || $bgType !== 'none') {
                 $outW = $vidW + ($pad * 2);
                 $outH = $vidH + ($pad * 2);
                 $outW = $outW + ($outW % 2);
                 $outH = $outH + ($outH % 2);
 
-                $bgColor = '000000';
-                if ($bgType === 'solid') {
-                    $bgColor = ltrim($style['background_color'] ?? '#000000', '#');
-                } elseif ($bgType === 'gradient') {
-                    $bgColor = ltrim($style['gradient_from'] ?? '#000000', '#');
-                }
-
-                if ($pad > 0 || $bgType !== 'none') {
+                if ($bgType === 'gradient') {
+                    // Generate a gradient background using ffmpeg gradients source
+                    $gFrom = ltrim($style['gradient_from'] ?? '#1e293b', '#');
+                    $gTo = ltrim($style['gradient_to'] ?? '#0f172a', '#');
+                    $bgLabel = "grad_bg_{$stepIndex}";
+                    $composited = "grad_comp_{$stepIndex}";
+                    $filterComplex[] = "gradients=s={$outW}x{$outH}:c0=0x{$gFrom}:c1=0x{$gTo}:duration=1:speed=0[{$bgLabel}]";
+                    $filterComplex[] = "[{$bgLabel}][{$currentVideoLabel}]overlay={$pad}:{$pad}:shortest=1[{$composited}]";
+                    $currentVideoLabel = $composited;
+                } else {
+                    $bgColor = '000000';
+                    if ($bgType === 'solid') {
+                        $bgColor = ltrim($style['background_color'] ?? '#000000', '#');
+                    }
                     $paddedLabel = "padded_{$stepIndex}";
                     $filterComplex[] = "[{$currentVideoLabel}]pad={$outW}:{$outH}:{$pad}:{$pad}:color=0x{$bgColor}[{$paddedLabel}]";
                     $currentVideoLabel = $paddedLabel;
-                    $stepIndex++;
                 }
+                $stepIndex++;
             }
 
+            // Always allow processing (style is always sent now)
             if (empty($filterComplex)) {
-                if (! $hasStyle) {
-                    throw new \Exception('No edits to apply');
-                }
+                // No filters needed — just copy
+                $filterComplex[] = "[0:v]null[passthrough]";
+                $currentVideoLabel = 'passthrough';
             }
 
             $filterString = implode(';', $filterComplex);

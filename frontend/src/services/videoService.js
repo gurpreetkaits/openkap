@@ -1104,6 +1104,26 @@ class VideoService {
     }
   }
 
+  async saveEditorSettings(id, settings) {
+    const response = await fetch(`${API_BASE_URL}/api/videos/${id}/editor-settings`, {
+      method: 'PUT',
+      headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ settings })
+    })
+    if (!response.ok) throw new Error('Failed to save settings')
+    return response.json()
+  }
+
+  async getEditorSettings(id) {
+    const response = await fetch(`${API_BASE_URL}/api/videos/${id}/editor-settings`, {
+      method: 'GET',
+      headers: getAuthHeaders()
+    })
+    if (!response.ok) return null
+    const data = await response.json()
+    return data.settings
+  }
+
   /**
    * Get blur status for a video
    */

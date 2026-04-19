@@ -790,6 +790,28 @@ class VideoController extends Controller
         return response()->json($this->videoManager->getEditStatus($video));
     }
 
+    public function saveEditorSettings(Request $request, $id)
+    {
+        $video = $this->videoManager->findVideoOrFail($id);
+        if ($video->user_id !== Auth::id()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $video->update(['editor_settings' => $request->input('settings')]);
+
+        return response()->json(['message' => 'Settings saved']);
+    }
+
+    public function getEditorSettings($id)
+    {
+        $video = $this->videoManager->findVideoOrFail($id);
+        if ($video->user_id !== Auth::id()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        return response()->json(['settings' => $video->editor_settings]);
+    }
+
     public function updateTranscription(Request $request, $id)
     {
         $video = $this->videoManager->findVideoOrFail($id);

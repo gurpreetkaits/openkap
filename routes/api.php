@@ -264,6 +264,8 @@ Route::middleware('auth:sanctum')->group(function () {
         // Video editor
         Route::post('/{id}/apply-edits', [VideoController::class, 'applyEdits']);
         Route::get('/{id}/edit-status', [VideoController::class, 'editStatus']);
+        Route::put('/{id}/editor-settings', [VideoController::class, 'saveEditorSettings']);
+        Route::get('/{id}/editor-settings', [VideoController::class, 'getEditorSettings']);
 
         // MP4 download
         Route::post('/{id}/request-download-mp4', [VideoController::class, 'requestDownloadMp4']);
