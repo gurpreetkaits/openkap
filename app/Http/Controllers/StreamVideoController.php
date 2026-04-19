@@ -399,10 +399,14 @@ class StreamVideoController extends Controller
         // Add camera track as separate media if available
         // Remux first to fix WebM container headers (same issue as main video)
         if ($hasCameraFile) {
-            $remuxedCameraPath = "{$sessionDir}/camera_remuxed.webm";
             $ffmpegPath = config('media-library.ffmpeg_path');
+
+            // Remux WebM to fix container headers from chunked recording.
+            // Use -fflags +genpts to regenerate timestamps (MediaRecorder
+            // produces variable framerate WebM that causes glitchy playback).
+            $remuxedCameraPath = "{$sessionDir}/camera_remuxed.webm";
             $remuxCmd = sprintf(
-                '%s -y -i %s -c copy %s 2>&1',
+                '%s -y -fflags +genpts -i %s -c copy %s 2>&1',
                 escapeshellarg($ffmpegPath),
                 escapeshellarg($cameraPath),
                 escapeshellarg($remuxedCameraPath)
@@ -416,6 +420,12 @@ class StreamVideoController extends Controller
             $video->addMedia($finalCameraPath)
                 ->usingFileName("camera_{$video->id}.webm")
                 ->toMediaCollection('camera');
+
+            // Camera WebM is playable immediately after remux
+            $video->update([
+                'camera_conversion_status' => 'completed',
+                'camera_conversion_progress' => 100,
+            ]);
         }
 
         // Increment user's video count

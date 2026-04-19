@@ -80,14 +80,20 @@ class ConvertCameraToMp4Job implements ShouldQueue
 
             $video->update(['camera_conversion_progress' => 30]);
 
+            // WebM from MediaRecorder has variable framerate which causes
+            // glitchy playback when converted to MP4. Force constant framerate
+            // and use vsync to fix timestamp issues.
             $process = new Process([
                 $ffmpegPath,
                 '-y',
+                '-fflags', '+genpts',
                 '-i', $inputPath,
                 '-c:v', 'libx264',
                 '-preset', 'fast',
                 '-crf', '23',
                 '-pix_fmt', 'yuv420p',
+                '-r', '30',
+                '-vsync', 'cfr',
                 '-an',
                 '-movflags', '+faststart',
                 $outputPath,
