@@ -53,10 +53,10 @@
             <svg v-if="item.status === 'done'" class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
             </svg>
-            <svg v-else-if="item.status === 'error'" class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg v-else-if="item.status === 'error' || item.status === 'rejected'" class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
             </svg>
-            <svg v-else-if="item.status === 'uploading'" class="w-4 h-4 text-orange-500 animate-spin" fill="none" viewBox="0 0 24 24">
+            <svg v-else-if="item.status === 'uploading' || item.status === 'probing'" class="w-4 h-4 text-orange-500 animate-spin" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
             </svg>
@@ -69,6 +69,7 @@
             <div class="flex items-baseline gap-2">
               <p class="text-sm font-medium text-gray-800 truncate">{{ item.file.name }}</p>
               <span class="text-xs text-gray-400 flex-shrink-0">{{ formatBytes(item.file.size) }}</span>
+              <span v-if="item.duration > 0" class="text-xs text-gray-400 flex-shrink-0">· {{ formatDuration(item.duration) }}</span>
             </div>
 
             <!-- Progress bar -->
@@ -81,13 +82,16 @@
             </div>
 
             <!-- Status text -->
-            <p v-if="item.status === 'uploading'" class="mt-1 text-[11px] text-gray-500">
+            <p v-if="item.status === 'probing'" class="mt-1 text-[11px] text-gray-500">
+              Reading duration…
+            </p>
+            <p v-else-if="item.status === 'uploading'" class="mt-1 text-[11px] text-gray-500">
               {{ item.progress }}%
             </p>
             <p v-else-if="item.status === 'done'" class="mt-1 text-[11px] text-green-600">
               Uploaded
             </p>
-            <p v-else-if="item.status === 'error'" class="mt-1 text-[11px] text-red-600 truncate" :title="item.error">
+            <p v-else-if="item.status === 'error' || item.status === 'rejected'" class="mt-1 text-[11px] text-red-600 break-words" :title="item.error">
               {{ item.error || 'Upload failed' }}
             </p>
             <p v-else-if="item.status === 'skipped'" class="mt-1 text-[11px] text-amber-600">
@@ -96,7 +100,7 @@
           </div>
 
           <button
-            v-if="item.status === 'queued' || item.status === 'error' || item.status === 'skipped'"
+            v-if="['queued', 'error', 'skipped', 'rejected'].includes(item.status)"
             @click="removeFile(idx)"
             class="flex-shrink-0 p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors"
             title="Remove"
@@ -144,6 +148,9 @@
           <template v-if="isUploading">
             Uploading {{ doneCount + 1 }} of {{ uploadableCount }}…
           </template>
+          <template v-else-if="isProbing">
+            Reading video metadata…
+          </template>
           <template v-else-if="allFinished && files.length > 0">
             {{ doneCount }} uploaded<span v-if="errorCount"> · {{ errorCount }} failed</span><span v-if="skippedCount"> · {{ skippedCount }} skipped</span>
           </template>
@@ -165,11 +172,11 @@
             :disabled="!canStart"
             class="inline-flex items-center gap-1.5 px-3.5 py-2 text-sm font-semibold text-white bg-orange-500 hover:bg-orange-600 rounded-lg shadow-sm shadow-orange-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
           >
-            <svg v-if="isUploading" class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+            <svg v-if="isUploading || isProbing" class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
             </svg>
-            {{ isUploading ? 'Uploading…' : (uploadableCount > 1 ? `Upload ${uploadableCount} videos` : 'Upload') }}
+            {{ uploadButtonLabel }}
           </button>
         </div>
       </div>
@@ -204,12 +211,18 @@ const files = ref([])
 let nextId = 0
 
 const isUploading = computed(() => files.value.some(f => f.status === 'uploading'))
+const isProbing = computed(() => files.value.some(f => f.status === 'probing'))
 const uploadableCount = computed(() => files.value.filter(f => f.status === 'queued' || f.status === 'uploading').length)
 const doneCount = computed(() => files.value.filter(f => f.status === 'done').length)
-const errorCount = computed(() => files.value.filter(f => f.status === 'error').length)
+const errorCount = computed(() => files.value.filter(f => ['error', 'rejected'].includes(f.status)).length)
 const skippedCount = computed(() => files.value.filter(f => f.status === 'skipped').length)
-const allFinished = computed(() => files.value.length > 0 && files.value.every(f => ['done', 'error', 'skipped'].includes(f.status)))
-const canStart = computed(() => !isUploading.value && uploadableCount.value > 0)
+const allFinished = computed(() => files.value.length > 0 && files.value.every(f => ['done', 'error', 'skipped', 'rejected'].includes(f.status)))
+const canStart = computed(() => !isUploading.value && !isProbing.value && uploadableCount.value > 0)
+const uploadButtonLabel = computed(() => {
+  if (isProbing.value) return 'Reading metadata…'
+  if (isUploading.value) return 'Uploading…'
+  return uploadableCount.value > 1 ? `Upload ${uploadableCount.value} videos` : 'Upload'
+})
 
 const quotaLine = computed(() => {
   if (props.remainingQuota === null || props.remainingQuota === undefined) return 'Unlimited uploads on your plan'
@@ -253,16 +266,68 @@ function onDrop(e) {
 
 function addFiles(incoming) {
   for (const f of incoming) {
-    if (!isAllowedFile(f)) continue
-    files.value.push({
+    const item = {
       id: ++nextId,
       file: f,
-      status: 'queued', // queued | uploading | done | error | skipped
+      // probing | queued | uploading | done | error | skipped | rejected
+      status: isAllowedFile(f) ? 'probing' : 'rejected',
       progress: 0,
-      error: '',
+      duration: 0,
+      error: isAllowedFile(f) ? '' : 'Unsupported file type — MP4, WebM, or MOV only',
       xhr: null,
-    })
+    }
+    files.value.push(item)
+    if (item.status === 'probing') {
+      probeDuration(item)
+    }
   }
+}
+
+/**
+ * Read the video's duration via a hidden HTMLVideoElement so we can submit it
+ * with the upload — the backend's videos.duration column is NOT NULL.
+ */
+function probeDuration(item) {
+  const url = URL.createObjectURL(item.file)
+  const video = document.createElement('video')
+  video.preload = 'metadata'
+  video.muted = true
+
+  const cleanup = () => {
+    URL.revokeObjectURL(url)
+    video.removeAttribute('src')
+    video.load?.()
+  }
+
+  const timeout = setTimeout(() => {
+    cleanup()
+    if (item.status === 'probing') {
+      item.status = 'rejected'
+      item.error = 'Could not read duration — file may be corrupted'
+    }
+  }, 15000)
+
+  video.addEventListener('loadedmetadata', () => {
+    clearTimeout(timeout)
+    const d = Number.isFinite(video.duration) ? Math.max(1, Math.round(video.duration)) : 0
+    cleanup()
+    if (d <= 0) {
+      item.status = 'rejected'
+      item.error = 'Could not read duration — file may be corrupted'
+      return
+    }
+    item.duration = d
+    item.status = 'queued'
+  })
+
+  video.addEventListener('error', () => {
+    clearTimeout(timeout)
+    cleanup()
+    item.status = 'rejected'
+    item.error = 'Unreadable video file'
+  })
+
+  video.src = url
 }
 
 function removeFile(idx) {
@@ -284,6 +349,30 @@ function formatBytes(bytes) {
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
   if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
   return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`
+}
+
+function formatDuration(seconds) {
+  const s = Math.max(0, Math.round(seconds))
+  const m = Math.floor(s / 60)
+  const r = s % 60
+  return `${m}:${r.toString().padStart(2, '0')}`
+}
+
+function extractErrorMessage(xhr) {
+  let data = null
+  try { data = JSON.parse(xhr.responseText) } catch (_) { /* not JSON */ }
+  if (data) {
+    if (data.errors && typeof data.errors === 'object') {
+      const firstField = Object.keys(data.errors)[0]
+      const firstMsg = firstField && Array.isArray(data.errors[firstField]) ? data.errors[firstField][0] : null
+      if (firstMsg) return firstMsg
+    }
+    if (data.message) return data.message
+    if (data.error) return data.error
+  }
+  if (xhr.status === 0) return 'Network error — check your connection'
+  if (xhr.status >= 500) return `Server error (${xhr.status}) — please try again`
+  return `Upload failed (${xhr.status})`
 }
 
 async function startUpload() {
@@ -330,11 +419,15 @@ function uploadOne(item) {
     const formData = new FormData()
     formData.append('video', item.file)
     formData.append('title', title)
+    if (item.duration > 0) {
+      formData.append('duration', String(item.duration))
+    }
 
     const xhr = new XMLHttpRequest()
     item.xhr = xhr
     item.status = 'uploading'
     item.progress = 0
+    item.error = ''
 
     xhr.upload.addEventListener('progress', (e) => {
       if (e.lengthComputable) {
@@ -347,25 +440,22 @@ function uploadOne(item) {
         item.progress = 100
         item.status = 'done'
         resolve()
-      } else {
-        let msg = `Upload failed (${xhr.status})`
-        try {
-          const data = JSON.parse(xhr.responseText)
-          msg = data.message || data.error || msg
-          if (data.error === 'video_limit_reached') {
-            item.quotaExceeded = true
-          }
-        } catch (_) { /* ignore */ }
-        item.status = 'error'
-        item.error = msg
-        reject(new Error(msg))
+        return
       }
+      const msg = extractErrorMessage(xhr)
+      try {
+        const data = JSON.parse(xhr.responseText)
+        if (data?.error === 'video_limit_reached') item.quotaExceeded = true
+      } catch (_) { /* ignore */ }
+      item.status = 'error'
+      item.error = msg
+      reject(new Error(msg))
     })
 
     xhr.addEventListener('error', () => {
       item.status = 'error'
-      item.error = 'Network error'
-      reject(new Error('Network error'))
+      item.error = 'Network error — check your connection'
+      reject(new Error(item.error))
     })
 
     xhr.addEventListener('abort', () => {
