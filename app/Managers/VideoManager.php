@@ -8,6 +8,7 @@ use App\Jobs\ConvertVideoToMp4ForDownloadJob;
 use App\Jobs\GenerateSummaryJob;
 use App\Jobs\GenerateTranscriptionJob;
 use App\Jobs\RemuxWebmJob;
+use App\Jobs\UploadToBunnyJob;
 use App\Models\Reaction;
 use App\Models\User;
 use App\Models\Video;
@@ -108,11 +109,22 @@ class VideoManager
 
         $video->generateThumbnailFromMidpoint();
 
-        // Remux WebM to fix missing Duration and Cues (seek index)
-        RemuxWebmJob::dispatch($video);
+        if ($this->bunnyService->isConfigured()) {
+            // Bunny handles encoding — skip local remux, mark conversion complete
+            // so transcription can start from the raw file.
+            $this->videos->updateVideo($video, [
+                'storage_type' => 'bunny',
+                'conversion_status' => 'completed',
+                'conversion_progress' => 100,
+            ]);
+            $video->refresh();
 
-        // TODO: MP4/HLS conversion skipped — serve remuxed WebM directly.
-        // Revisit with Cloudflare Stream or Bunny CDN once we reach 10-15 users.
+            Log::info('Dispatching UploadToBunnyJob', ['video_id' => $video->id]);
+            UploadToBunnyJob::dispatch($video);
+        } else {
+            // Local-only: remux WebM to fix missing Duration and Cues (seek index)
+            RemuxWebmJob::dispatch($video);
+        }
 
         // Auto-transcribe (has built-in rescheduling that waits for conversion)
         Log::info('Dispatching GenerateTranscriptionJob', ['video_id' => $video->id]);
