@@ -34,6 +34,8 @@ jobs:
         run: cp .env.example .env
 
       - name: Install Composer Dependencies
+        env:
+          COMPOSER_AUTH: ''
         run: composer install --prefer-dist --no-progress --no-interaction
 
       - name: Generate App Key
