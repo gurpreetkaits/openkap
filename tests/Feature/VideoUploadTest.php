@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Jobs\GenerateThumbnailJob;
 use App\Jobs\GenerateTranscriptionJob;
 use App\Jobs\RemuxWebmJob;
 use App\Jobs\UploadToBunnyJob;
@@ -124,6 +125,9 @@ class VideoUploadTest extends TestCase
         Queue::assertPushed(UploadToBunnyJob::class, fn ($job) => $job->video->id === $video->id);
         Queue::assertNotPushed(RemuxWebmJob::class);
         Queue::assertPushed(GenerateTranscriptionJob::class, fn ($job) => $job->video->id === $video->id);
+        // Thumbnail must be dispatched as a job, not generated synchronously
+        // (otherwise the request blocks on FFmpeg for the whole video).
+        Queue::assertPushed(GenerateThumbnailJob::class, fn ($job) => $job->video->id === $video->id);
     }
 
     #[Test]

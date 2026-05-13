@@ -6,6 +6,7 @@ use App\Data\VideoEditData;
 use App\Jobs\ApplyVideoEditsJob;
 use App\Jobs\ConvertVideoToMp4ForDownloadJob;
 use App\Jobs\GenerateSummaryJob;
+use App\Jobs\GenerateThumbnailJob;
 use App\Jobs\GenerateTranscriptionJob;
 use App\Jobs\RemuxWebmJob;
 use App\Jobs\UploadToBunnyJob;
@@ -107,7 +108,9 @@ class VideoManager
             $this->videos->updateVideo($video, ['duration' => $data['duration']]);
         }
 
-        $video->generateThumbnailFromMidpoint();
+        // Defer all encoding/thumbnail/transcription work to background jobs so
+        // the upload request returns immediately once the bytes are persisted.
+        GenerateThumbnailJob::dispatch($video);
 
         if ($this->bunnyService->isConfigured()) {
             // Bunny handles encoding — skip local remux, mark conversion complete

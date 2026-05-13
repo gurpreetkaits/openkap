@@ -1687,7 +1687,9 @@ export default {
     }
 
     const handleUploadsCompleted = async (count) => {
-      toast.success(`${count > 1 ? count + ' videos' : 'Video'} uploaded successfully!`)
+      const noun = count > 1 ? `${count} videos are` : 'Your video is'
+      toast.success(`${noun} queued — track progress in the bell. We'll notify you when ready.`)
+      showUploadModal.value = false
       await Promise.all([
         fetchVideos(),
         auth.fetchSubscription?.(),

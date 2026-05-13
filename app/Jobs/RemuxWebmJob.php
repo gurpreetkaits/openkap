@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Managers\NotificationManager;
 use App\Models\Video;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -164,6 +165,17 @@ class RemuxWebmJob implements ShouldQueue
                 'remuxed_size' => $outputSize,
                 'duration' => $duration,
             ]);
+
+            // Local-storage path: this is the moment the video is playable, so
+            // notify the owner. (Bunny path is notified from the webhook.)
+            try {
+                app(NotificationManager::class)->createVideoProcessedNotification($video);
+            } catch (\Throwable $e) {
+                Log::warning('Failed to create video-ready notification', [
+                    'video_id' => $video->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
 
         } catch (\Exception $e) {
             Log::error('RemuxWebmJob: Failed', [

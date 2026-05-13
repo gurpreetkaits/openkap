@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Notification;
 use App\Models\User;
 use App\Models\Video;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -149,6 +150,44 @@ class BunnyWebhookTest extends TestCase
         $this->assertEquals(120, $video->duration);
         $this->assertEquals('1080p', $video->bunny_resolution);
         $this->assertEquals(50000000, $video->bunny_file_size);
+    }
+
+    #[Test]
+    public function webhook_creates_processed_notification_on_first_ready(): void
+    {
+        $video = Video::factory()->bunnyProcessing()->create([
+            'user_id' => $this->user->id,
+            'bunny_video_id' => 'notify-guid',
+            'duration' => 60,
+        ]);
+
+        $this->assertSame(0, Notification::where('user_id', $this->user->id)->count());
+
+        $this->postJson('/api/webhooks/bunny', [
+            'VideoGuid' => 'notify-guid',
+            'Status' => 4,
+            'Length' => 60,
+            'Width' => 1280,
+            'Height' => 720,
+        ])->assertStatus(200);
+
+        $notif = Notification::where('user_id', $this->user->id)
+            ->where('notifiable_id', $video->id)
+            ->first();
+        $this->assertNotNull($notif, 'Owner should receive a notification when Bunny marks the video ready');
+        $this->assertStringContainsString('ready', $notif->message);
+
+        // A second ready webhook (e.g. retry) must not duplicate the notification.
+        $this->postJson('/api/webhooks/bunny', [
+            'VideoGuid' => 'notify-guid',
+            'Status' => 4,
+        ])->assertStatus(200);
+
+        $this->assertSame(
+            1,
+            Notification::where('user_id', $this->user->id)->count(),
+            'Notification should not be duplicated when ready webhook fires twice'
+        );
     }
 
     #[Test]

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Managers\NotificationManager;
 use App\Models\Video;
 use App\Repositories\WorkspaceRepository;
 use Illuminate\Http\Request;
@@ -116,6 +117,7 @@ class BunnyWebhookController extends Controller
             ]);
         }
 
+        $wasReadyBefore = $video->bunny_status === 'ready';
         $video->update($updateData);
 
         // Recalculate workspace storage if video belongs to a workspace
@@ -123,6 +125,19 @@ class BunnyWebhookController extends Controller
             $video->load('workspace');
             if ($video->workspace) {
                 app(WorkspaceRepository::class)->recalculateStorage($video->workspace);
+            }
+        }
+
+        // Notify the owner the first time the video reaches the ready state
+        // so the notification bell flips to "your video is ready".
+        if ($status === 4 && ! $wasReadyBefore) {
+            try {
+                app(NotificationManager::class)->createVideoProcessedNotification($video);
+            } catch (\Throwable $e) {
+                Log::warning('Failed to create video-ready notification', [
+                    'video_id' => $video->id,
+                    'error' => $e->getMessage(),
+                ]);
             }
         }
 
