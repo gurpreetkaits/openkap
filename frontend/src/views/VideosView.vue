@@ -7,16 +7,11 @@
         v-if="activeTab !== 'screenshots'"
         @click="handleUpload"
         class="inline-flex items-center gap-1.5 px-3.5 py-2 text-sm font-semibold text-white bg-orange-500 hover:bg-orange-600 rounded-lg shadow-sm shadow-orange-200 transition-all"
-        :disabled="uploading"
       >
-        <svg v-if="!uploading" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
         </svg>
-        <svg v-else class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
-          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-        </svg>
-        {{ uploading ? 'Uploading...' : 'Upload Video' }}
+        Upload Video
       </button>
 
       <!-- Upload Screenshot Button -->
@@ -36,8 +31,6 @@
         {{ uploadingScreenshot ? 'Uploading...' : 'Upload Screenshot' }}
       </button>
 
-      <!-- Hidden file input for video upload -->
-      <input ref="fileInput" type="file" accept="video/*" class="hidden" @change="onFileSelected" />
       <!-- Hidden file input for screenshot upload -->
       <input ref="screenshotFileInput" type="file" accept="image/png,image/jpeg,image/webp" class="hidden" @change="onScreenshotFileSelected" />
     </div>
@@ -970,6 +963,15 @@
       @cancel="showBulkDeleteModal = false"
     />
 
+    <!-- Upload Video Modal -->
+    <SBUploadVideoModal
+      :show="showUploadModal"
+      :remaining-quota="uploadRemainingQuota"
+      @close="showUploadModal = false"
+      @uploaded="handleUploadsCompleted"
+      @quota-exceeded="handleUploadQuotaExceeded"
+    />
+
     <!-- Upgrade Modal -->
     <SBUpgradeModal
       :show="showUpgradeModal"
@@ -1316,10 +1318,10 @@ import playlistService from '@/services/playlistService'
 import folderService from '@/services/folderService'
 import screenshotService from '@/services/screenshotService'
 import toast from '@/services/toastService'
-const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8888'
 import SBDeleteModal from '@/components/Global/SBDeleteModal.vue'
 import SBUpgradeModal from '@/components/Global/SBUpgradeModal.vue'
 import SBModal from '@/components/Global/SBModal.vue'
+import SBUploadVideoModal from '@/components/Global/SBUploadVideoModal.vue'
 import { useDownloadTracker } from '@/composables/useDownloadTracker'
 
 export default {
@@ -1327,7 +1329,8 @@ export default {
   components: {
     SBDeleteModal,
     SBUpgradeModal,
-    SBModal
+    SBModal,
+    SBUploadVideoModal
   },
   setup() {
     const auth = useAuth()
@@ -1383,8 +1386,13 @@ export default {
 
     // Action bar state
     const showNewFolderModal = ref(false)
-    const uploading = ref(false)
-    const fileInput = ref(null)
+    const showUploadModal = ref(false)
+    const uploadRemainingQuota = computed(() => {
+      const sub = subscription.value
+      if (!sub) return null
+      if (sub.is_active) return null
+      return typeof sub.remaining_quota === 'number' ? sub.remaining_quota : null
+    })
 
     // Folder state
     const folders = ref([])
@@ -1671,53 +1679,24 @@ export default {
     }
 
     const handleUpload = () => {
-      // Check if user can still upload (quota not exceeded)
       if (subscription.value?.can_record === false) {
         showUpgradeModal.value = true
         return
       }
-      fileInput.value?.click()
+      showUploadModal.value = true
     }
 
-    const onFileSelected = async (event) => {
-      const file = event.target.files?.[0]
-      if (!file) return
+    const handleUploadsCompleted = async (count) => {
+      toast.success(`${count > 1 ? count + ' videos' : 'Video'} uploaded successfully!`)
+      await Promise.all([
+        fetchVideos(),
+        auth.fetchSubscription?.(),
+      ].filter(Boolean))
+    }
 
-      uploading.value = true
-      try {
-        // Generate title from filename (remove extension)
-        const title = file.name.replace(/\.[^/.]+$/, '') || `Upload ${new Date().toLocaleString()}`
-
-        const formData = new FormData()
-        formData.append('video', file)
-        formData.append('title', title)
-
-        const response = await fetch(`${API_BASE_URL}/api/videos`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
-          },
-          body: formData
-        })
-
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}))
-          throw new Error(errorData.message || 'Upload failed')
-        }
-
-        toast.success('Video uploaded successfully!')
-        // Refresh videos list
-        await fetchVideos()
-      } catch (err) {
-        console.error('Upload failed:', err)
-        toast.error(err.message || 'Failed to upload video. Please try again.')
-      } finally {
-        uploading.value = false
-        // Reset file input
-        if (fileInput.value) {
-          fileInput.value.value = ''
-        }
-      }
+    const handleUploadQuotaExceeded = () => {
+      showUploadModal.value = false
+      showUpgradeModal.value = true
     }
 
     // Folder methods
@@ -2799,11 +2778,12 @@ export default {
       canRecord,
       // Action bar
       showNewFolderModal,
-      uploading,
-      fileInput,
+      showUploadModal,
+      uploadRemainingQuota,
       openRecording,
       handleUpload,
-      onFileSelected,
+      handleUploadsCompleted,
+      handleUploadQuotaExceeded,
       // Folders
       folders,
       fetchFolders,
