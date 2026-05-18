@@ -28,15 +28,21 @@ class CheckSubscriptionLimit
         if (! $user->canRecordVideo()) {
             $subscription = $user->subscription();
             $currentPlan = $subscription && $subscription->active() ? 'pro' : 'free';
+            $minutesCapped = $user->hasExceededMonthlyRecordingMinutes();
 
             return response()->json([
-                'error' => 'video_limit_reached',
+                'error' => $minutesCapped ? 'monthly_minutes_limit_reached' : 'video_limit_reached',
                 'message' => 'Limit Reached',
-                'detail' => 'You have reached your video limit. Upgrade to Pro to continue recording.',
+                'detail' => $minutesCapped
+                    ? 'You have used all of your monthly recording minutes. They will reset at the start of next month.'
+                    : 'You have reached your video limit. Upgrade to Pro to continue recording.',
                 'current_plan' => $currentPlan,
                 'is_active' => $user->hasActiveSubscription(),
                 'videos_count' => $user->getVideosCount(),
                 'remaining_quota' => $user->getRemainingVideoQuota(),
+                'monthly_recording_minutes_used' => $user->getMonthlyRecordingMinutesUsed(),
+                'monthly_recording_minutes_limit' => $user->getMonthlyRecordingMinutesLimit(),
+                'remaining_monthly_recording_minutes' => $user->getRemainingMonthlyRecordingMinutes(),
                 'upgrade_url' => config('services.frontend.url').'/subscription',
             ], 403);
         }

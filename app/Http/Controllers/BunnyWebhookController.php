@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Managers\NotificationManager;
 use App\Models\Video;
+use App\Repositories\UserRepository;
 use App\Repositories\WorkspaceRepository;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -138,6 +139,24 @@ class BunnyWebhookController extends Controller
                     'video_id' => $video->id,
                     'error' => $e->getMessage(),
                 ]);
+            }
+
+            // Charge the user's monthly recording-minutes counter exactly once,
+            // using Bunny's authoritative duration.
+            $duration = (int) ($updateData['duration'] ?? $video->duration ?? 0);
+            if ($duration > 0 && $video->user_id) {
+                try {
+                    $video->loadMissing('user');
+                    if ($video->user) {
+                        app(UserRepository::class)
+                            ->incrementMonthlyRecordingSeconds($video->user, $duration);
+                    }
+                } catch (\Throwable $e) {
+                    Log::warning('Failed to increment monthly recording minutes', [
+                        'video_id' => $video->id,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
             }
         }
 

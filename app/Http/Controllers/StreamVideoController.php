@@ -428,7 +428,11 @@ class StreamVideoController extends Controller
             ]);
         }
 
-        // Increment user's video count
+        // Increment user's video count. Monthly recording minutes are
+        // credited downstream using a server-probed duration:
+        //   - Bunny path:  BunnyWebhookController on `ready`
+        //   - Local path:  RemuxWebmJob after ffprobe
+        // We never trust the client-supplied duration to charge the cap.
         $user = User::find($userId);
         if ($user) {
             $user->increment('videos_count');

@@ -271,6 +271,38 @@
       </div>
     </section>
 
+    <!-- Pricing -->
+    <section class="pricing" id="pricing">
+      <div class="section-header">
+        <div class="section-tag">Pricing</div>
+        <h2 class="section-title">Simple, <span class="gradient-text">honest pricing</span></h2>
+        <p class="section-sub">Free forever for personal use. Upgrade when you outgrow it.</p>
+      </div>
+      <div class="pricing-grid">
+        <SBPricingCard
+          plan-key="free"
+          plan-name="Free"
+          tagline="For trying things out"
+          :monthly-price="0"
+          :features="freeFeatures"
+          cta-label="Get started"
+          @checkout="goToSignup"
+        />
+        <SBPricingCard
+          plan-key="pro"
+          plan-name="Pro"
+          tagline="For individuals & creators"
+          :monthly-price="pricing.monthly_price"
+          :yearly-price="pricing.yearly_price"
+          :yearly-savings-percent="pricing.yearly_savings_percent"
+          :features="proFeatures"
+          cta-label="Upgrade to Pro"
+          highlight
+          @checkout="goToSignup"
+        />
+      </div>
+    </section>
+
     <!-- CTA -->
     <section class="cta-section">
       <div class="cta-box">
@@ -331,6 +363,44 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { useRouter } from 'vue-router'
+import { SBPricingCard } from '@/components/Global'
+import settingsService from '@/services/settingsService'
+
+const router = useRouter()
+
+function goToSignup() {
+  router.push('/login')
+}
+
+const pricing = ref(settingsService.getDefaults().subscription)
+
+const freePlanLimits = ref(settingsService.getDefaults().free_plan)
+
+const freeFeatures = computed(() => {
+  const videos = pricing.value.free_video_limit ?? 5
+  const maxMin = (pricing.value.free_recording_duration_limit ?? 300) / 60
+  const monthlyMin = pricing.value.free_monthly_recording_minutes_limit ?? 25
+  return [
+    `${videos} videos`,
+    `${maxMin} min recording length`,
+    `${monthlyMin} recording minutes / month`,
+    'Public share links',
+    'Community support',
+  ]
+})
+
+const proFeatures = computed(() => {
+  const cap = pricing.value.pro_monthly_recording_minutes_limit ?? 500
+  return [
+    'Unlimited videos',
+    'Unlimited recording length',
+    `${cap} recording minutes / month`,
+    'HLS streaming',
+    'Priority support',
+    'No watermarks',
+  ]
+})
 
 const scrolled = ref(false)
 const heroVisible = ref(false)
@@ -390,8 +460,17 @@ function onScroll() {
   scrolled.value = window.scrollY > 40
 }
 
-onMounted(() => {
+onMounted(async () => {
   window.addEventListener('scroll', onScroll, { passive: true })
+
+  // Pull live pricing/limits so the cards reflect admin-tuned values.
+  try {
+    const data = await settingsService.getSettings()
+    if (data?.subscription) pricing.value = { ...pricing.value, ...data.subscription }
+    if (data?.free_plan) freePlanLimits.value = { ...freePlanLimits.value, ...data.free_plan }
+  } catch (e) {
+    // Defaults already loaded — no-op.
+  }
 
   // Hero entrance
   requestAnimationFrame(() => {
@@ -1270,6 +1349,22 @@ onUnmounted(() => {
   font-size: 0.82rem;
   color: #78716c;
   font-weight: 500;
+}
+
+/* ── Pricing ──────────────────────────────────────────── */
+.pricing {
+  position: relative;
+  z-index: 1;
+  padding: 6rem 2rem 4rem;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.25rem;
+  max-width: 720px;
+  margin: 3rem auto 0;
 }
 
 /* ── CTA ──────────────────────────────────────────────── */

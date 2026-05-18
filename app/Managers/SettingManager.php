@@ -52,6 +52,9 @@ class SettingManager
         return [
             'free_video_limit' => Setting::getFreeVideoLimit(),
             'free_recording_duration_limit' => Setting::getFreeRecordingDurationLimit(),
+            'free_monthly_recording_minutes_limit' => Setting::getFreeMonthlyRecordingMinutesLimit(),
+            'pro_monthly_recording_minutes_limit' => Setting::getProMonthlyRecordingMinutesLimit(),
+            'teams_monthly_recording_minutes_limit' => Setting::getTeamsMonthlyRecordingMinutesLimit(),
             'monthly_price' => Setting::getMonthlyPrice(),
             'yearly_price' => Setting::getYearlyPrice(),
             'yearly_monthly_price' => round(Setting::getYearlyPrice() / 12, 2),

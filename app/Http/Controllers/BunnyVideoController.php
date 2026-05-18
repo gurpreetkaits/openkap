@@ -34,11 +34,18 @@ class BunnyVideoController extends Controller
 
         // Check user quota
         if (! $user->canRecordVideo()) {
+            $minutesCapped = $user->hasExceededMonthlyRecordingMinutes();
+
             return response()->json([
-                'error' => 'video_limit_reached',
-                'message' => 'You have reached your video limit. Upgrade to Pro to continue recording.',
+                'error' => $minutesCapped ? 'monthly_minutes_limit_reached' : 'video_limit_reached',
+                'message' => $minutesCapped
+                    ? 'You have used all of your monthly recording minutes. They will reset at the start of next month.'
+                    : 'You have reached your video limit. Upgrade to Pro to continue recording.',
                 'videos_count' => $user->getVideosCount(),
                 'remaining_quota' => $user->getRemainingVideoQuota(),
+                'monthly_recording_minutes_used' => $user->getMonthlyRecordingMinutesUsed(),
+                'monthly_recording_minutes_limit' => $user->getMonthlyRecordingMinutesLimit(),
+                'remaining_monthly_recording_minutes' => $user->getRemainingMonthlyRecordingMinutes(),
                 'upgrade_url' => config('services.frontend.url').'/subscription',
             ], 403);
         }

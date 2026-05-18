@@ -63,7 +63,8 @@ class AdminDashboardRepository
 
     public function getRecentSignups(int $limit = 10): array
     {
-        return User::orderBy('created_at', 'desc')
+        return User::withCount('videos')
+            ->orderBy('created_at', 'desc')
             ->limit($limit)
             ->get()
             ->map(function ($user) {
@@ -73,6 +74,9 @@ class AdminDashboardRepository
                     'email' => $user->email,
                     'avatar' => $user->avatar_url ?? $user->avatar,
                     'plan_type' => $user->getPlanType(),
+                    'videos_count' => $user->videos_count,
+                    'monthly_recording_minutes_used' => $user->getMonthlyRecordingMinutesUsed(),
+                    'monthly_recording_minutes_limit' => $user->getMonthlyRecordingMinutesLimit(),
                     'created_at' => $user->created_at->toISOString(),
                 ];
             })

@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Managers\NotificationManager;
 use App\Models\Video;
+use App\Repositories\UserRepository;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -153,11 +154,24 @@ class RemuxWebmJob implements ShouldQueue
                 'file_size_bytes' => $outputSize,
             ];
 
+            $previousDuration = (int) ($video->duration ?? 0);
             if ($duration && (! $video->duration || $video->duration === 0)) {
                 $updateData['duration'] = round($duration);
             }
 
             $video->update($updateData);
+
+            // Credit the uploader's monthly recording minutes using the
+            // server-probed duration (never trust the client). Only credit
+            // once: if a duration was previously recorded by something else,
+            // skip — assume already counted (or the Bunny path will do it).
+            if ($duration && $previousDuration === 0 && $video->user_id) {
+                $video->loadMissing('user');
+                if ($video->user) {
+                    app(UserRepository::class)
+                        ->incrementMonthlyRecordingSeconds($video->user, (int) round($duration));
+                }
+            }
 
             Log::info('RemuxWebmJob: WebM remuxed successfully', [
                 'video_id' => $video->id,

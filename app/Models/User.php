@@ -69,6 +69,8 @@ class User extends Authenticatable
             'subscription_expires_at' => 'datetime',
             'subscription_canceled_at' => 'datetime',
             'videos_count' => 'integer',
+            'monthly_recording_seconds_used' => 'integer',
+            'monthly_recording_period_start' => 'datetime',
         ];
     }
 
@@ -126,7 +128,11 @@ class User extends Authenticatable
      */
     public function canRecordVideo(): bool
     {
-        // Paid users have unlimited recording
+        if ($this->hasExceededMonthlyRecordingMinutes()) {
+            return false;
+        }
+
+        // Paid users have unlimited recording (subject to monthly minute cap above)
         if ($this->hasActiveSubscription()) {
             return true;
         }
@@ -473,5 +479,72 @@ class User extends Authenticatable
         }
 
         return $this->hasActiveSubscription();
+    }
+
+    /**
+     * Get the monthly recording minutes limit for this user based on plan.
+     * Returns null for unlimited (e.g. Teams plan when no limit is configured).
+     */
+    public function getMonthlyRecordingMinutesLimit(): ?int
+    {
+        return match ($this->getPlanType()) {
+            'teams' => Setting::getTeamsMonthlyRecordingMinutesLimit(),
+            'pro' => Setting::getProMonthlyRecordingMinutesLimit(),
+            default => Setting::getFreeMonthlyRecordingMinutesLimit(),
+        };
+    }
+
+    /**
+     * Get minutes recorded this period (rounds seconds up to whole minutes).
+     * Returns 0 when the stored period has rolled into a new calendar month.
+     */
+    public function getMonthlyRecordingMinutesUsed(): int
+    {
+        if ($this->isMonthlyRecordingPeriodExpired()) {
+            return 0;
+        }
+
+        return (int) ceil(((int) $this->monthly_recording_seconds_used) / 60);
+    }
+
+    /**
+     * Remaining minutes for this period. Null = unlimited.
+     */
+    public function getRemainingMonthlyRecordingMinutes(): ?int
+    {
+        $limit = $this->getMonthlyRecordingMinutesLimit();
+
+        if ($limit === null) {
+            return null;
+        }
+
+        return max(0, $limit - $this->getMonthlyRecordingMinutesUsed());
+    }
+
+    /**
+     * Whether the user is at/over their monthly minutes cap.
+     */
+    public function hasExceededMonthlyRecordingMinutes(): bool
+    {
+        $remaining = $this->getRemainingMonthlyRecordingMinutes();
+
+        if ($remaining === null) {
+            return false;
+        }
+
+        return $remaining <= 0;
+    }
+
+    /**
+     * True if no period is set yet, or the stored period started before the
+     * current calendar month. Caller should reset the counter when true.
+     */
+    public function isMonthlyRecordingPeriodExpired(): bool
+    {
+        if (! $this->monthly_recording_period_start) {
+            return true;
+        }
+
+        return $this->monthly_recording_period_start->lt(now()->startOfMonth());
     }
 }

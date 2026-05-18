@@ -114,180 +114,41 @@
             ></div>
           </div>
         </div>
-      </div>
-
-      <!-- Row 3: Choose Your Plan — Single Card -->
-      <div class="bg-white rounded-xl border border-gray-100 p-6 mb-8">
-        <!-- Header + Switch -->
-        <div class="flex items-center justify-between mb-6">
-          <h2 class="text-sm font-semibold text-gray-900">Choose Your Plan</h2>
-          <div class="flex items-center gap-0.5 bg-gray-100 rounded-lg p-0.5">
-            <button
-              @click="selectedPlan = 'free'"
-              class="px-3 py-1.5 text-xs font-medium rounded-md transition-all"
-              :class="selectedPlan === 'free' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'"
-            >
-              Free
-            </button>
-            <button
-              @click="selectedPlan = 'pro'"
-              class="px-3 py-1.5 text-xs font-medium rounded-md transition-all"
-              :class="selectedPlan === 'pro' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'"
-            >
-              Pro
-            </button>
+        <!-- Monthly recording minutes usage (all plans with a cap) -->
+        <div v-if="subscription?.monthly_recording_minutes_limit" class="mt-4 pt-4 border-t border-gray-100">
+          <div class="flex items-center justify-between text-xs text-gray-500 mb-1.5">
+            <span>Recording minutes this month</span>
+            <span class="font-medium text-gray-900">
+              {{ subscription?.monthly_recording_minutes_used || 0 }} / {{ subscription?.monthly_recording_minutes_limit }} min
+            </span>
+          </div>
+          <div class="w-full bg-gray-100 h-1.5 rounded-full overflow-hidden">
+            <div
+              class="bg-orange-500 h-full rounded-full transition-all duration-500"
+              :style="{ width: Math.min(((subscription?.monthly_recording_minutes_used || 0) / subscription.monthly_recording_minutes_limit) * 100, 100) + '%' }"
+            ></div>
           </div>
         </div>
+      </div>
 
-        <!-- Row 2: Plan Title + Price (centered) -->
-        <div class="text-center py-6">
-          <!-- Free -->
-          <template v-if="selectedPlan === 'free'">
-            <h3 class="text-lg font-bold text-gray-900 mb-1">Free</h3>
-            <p class="text-xs text-gray-400 mb-4">For getting started</p>
-            <div>
-              <span class="text-4xl font-bold text-gray-900">$0</span>
-              <span class="text-gray-400 text-sm">/mo</span>
-            </div>
-          </template>
-
-          <!-- Pro -->
-          <template v-else-if="selectedPlan === 'pro'">
-            <h3 class="text-lg font-bold text-gray-900 mb-1">Pro</h3>
-            <p class="text-xs text-gray-400 mb-3">For individuals & creators</p>
-            <!-- Billing cycle toggle -->
-            <div class="flex items-center justify-center mb-4">
-              <div class="flex items-center gap-0.5 bg-gray-100 rounded-md p-0.5">
-                <button
-                  @click="billingCycle = 'monthly'"
-                  class="px-2.5 py-1 text-[11px] font-medium rounded transition-all"
-                  :class="billingCycle === 'monthly' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'"
-                >
-                  Monthly
-                </button>
-                <button
-                  @click="billingCycle = 'yearly'"
-                  class="px-2.5 py-1 text-[11px] font-medium rounded transition-all"
-                  :class="billingCycle === 'yearly' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'"
-                >
-                  Yearly
-                </button>
-              </div>
-            </div>
-            <div>
-              <template v-if="billingCycle === 'yearly'">
-                <span class="text-4xl font-bold text-gray-900">${{ settings.subscription?.yearly_price || 80 }}</span>
-                <span class="text-gray-400 text-sm">/yr</span>
-                <div class="mt-1.5">
-                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-100 text-green-700 text-[10px] font-medium">
-                    Save {{ settings.subscription?.yearly_savings_percent || 17 }}%
-                  </span>
-                </div>
-              </template>
-              <template v-else>
-                <span class="text-4xl font-bold text-gray-900">${{ settings.subscription?.monthly_price || 8 }}</span>
-                <span class="text-gray-400 text-sm">/mo</span>
-              </template>
-            </div>
-          </template>
-        </div>
-
-        <!-- Row 3: What's Included -->
-        <div class="py-5">
-
-          <!-- Free benefits -->
-          <ul v-if="selectedPlan === 'free'" class="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-3 text-sm text-gray-700">
-            <li class="flex items-center gap-2">
-              <svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-              5 videos
-            </li>
-            <li class="flex items-center gap-2">
-              <svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-              5 min per recording
-            </li>
-            <li class="flex items-center gap-2">
-              <svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-              No watermarks
-            </li>
-            <li class="flex items-center gap-2">
-              <svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-              Shareable links
-            </li>
-          </ul>
-
-          <!-- Pro benefits -->
-          <ul v-else-if="selectedPlan === 'pro'" class="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-3 text-sm text-gray-700">
-            <li class="flex items-center gap-2">
-              <svg class="w-4 h-4 text-orange-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-              Unlimited videos
-            </li>
-            <li class="flex items-center gap-2">
-              <svg class="w-4 h-4 text-orange-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-              Unlimited recording
-            </li>
-            <li class="flex items-center gap-2">
-              <svg class="w-4 h-4 text-orange-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-              HLS streaming
-            </li>
-            <li class="flex items-center gap-2">
-              <svg class="w-4 h-4 text-orange-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-              Priority support
-            </li>
-            <li class="flex items-center gap-2">
-              <svg class="w-4 h-4 text-orange-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-              No watermarks
-            </li>
-          </ul>
-
-        </div>
-
-        <!-- Row 4: Action Button -->
-        <div class="pt-5 flex justify-center">
-          <!-- Free -->
-          <template v-if="selectedPlan === 'free'">
-            <button
-              v-if="subscription?.plan_type === 'free'"
-              class="w-full max-w-sm py-2.5 rounded-lg border border-gray-100 text-xs font-medium text-gray-500 bg-gray-50 cursor-default"
-            >
-              Current Plan
-            </button>
-            <button
-              v-else
-              @click="cancelSubscription"
-              :disabled="canceling || subscription?.is_in_grace_period"
-              class="w-full max-w-sm py-2.5 rounded-lg border border-gray-100 text-xs font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {{ canceling ? 'Processing...' : subscription?.is_in_grace_period ? 'Cancellation Pending' : 'Downgrade to Free' }}
-            </button>
-          </template>
-
-          <!-- Pro -->
-          <template v-else-if="selectedPlan === 'pro'">
-            <button
-              v-if="subscription?.plan_type === 'pro' && !subscription?.is_in_grace_period"
-              class="w-full max-w-sm py-2.5 rounded-lg bg-green-600 text-xs font-medium text-white flex items-center justify-center gap-1.5 cursor-default"
-            >
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-              Current Plan
-            </button>
-            <button
-              v-else
-              @click="startCheckout('pro')"
-              :disabled="checkingOut"
-              class="w-full max-w-sm py-2.5 rounded-lg bg-orange-600 hover:bg-orange-500 text-xs font-medium text-white transition-all flex items-center justify-center gap-1.5 group disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <template v-if="checkingOut === 'pro'">
-                <div class="animate-spin rounded-full h-3.5 w-3.5 border-2 border-white border-t-transparent"></div>
-                Redirecting...
-              </template>
-              <template v-else>
-                {{ subscription?.is_in_grace_period ? 'Resubscribe' : 'Upgrade to Pro' }}
-                <svg class="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
-              </template>
-            </button>
-          </template>
-
-        </div>
+      <!-- Row 3: Choose Your Plan -->
+      <div class="mb-8">
+        <h2 class="text-sm font-semibold text-gray-900 mb-3">Choose Your Plan</h2>
+        <SBPricingCard
+          plan-key="pro"
+          plan-name="Pro"
+          tagline="For individuals & creators"
+          :monthly-price="settings.subscription?.monthly_price || 8"
+          :yearly-price="settings.subscription?.yearly_price || 80"
+          :yearly-savings-percent="settings.subscription?.yearly_savings_percent || 17"
+          :features="proFeatures"
+          :is-current-plan="subscription?.plan_type === 'pro' && !subscription?.is_in_grace_period"
+          :checking-out="checkingOut"
+          :cta-label="subscription?.is_in_grace_period ? 'Resubscribe' : 'Upgrade to Pro'"
+          :default-billing-cycle="billingCycle"
+          highlight
+          @checkout="onCheckout"
+        />
       </div>
 
       <!-- Enterprise Contact -->
@@ -344,6 +205,7 @@ import { useAuth } from '@/stores/auth'
 import toast from '@/services/toastService'
 import settingsService from '@/services/settingsService'
 import confetti from 'canvas-confetti/dist/confetti.module.mjs'
+import { SBPricingCard } from '@/components/Global'
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || ''
 
@@ -360,7 +222,18 @@ const canceling = ref(false)
 const loadingPortal = ref(false)
 const showSuccessAlert = ref(false)
 const billingCycle = ref('monthly')
-const selectedPlan = ref('free')
+const selectedPlan = ref('pro')
+
+const proFeatures = computed(() => {
+  const cap = settings.value.subscription?.pro_monthly_recording_minutes_limit ?? 500
+  return [
+    'Unlimited videos',
+    `${cap} recording minutes / month`,
+    'HLS streaming',
+    'Priority support',
+    'No watermarks',
+  ]
+})
 
 // Settings from backend
 const settings = ref({
@@ -399,7 +272,7 @@ async function loadSubscription() {
   try {
     const sub = await auth.fetchSubscription()
     subscription.value = sub
-    selectedPlan.value = sub?.plan_type || 'free'
+    selectedPlan.value = 'pro'
     await fetchHistory()
   } catch (e) {
     console.error('Error loading subscription:', e)
@@ -524,12 +397,17 @@ async function openBillingPortal() {
   }
 }
 
-async function startCheckout(planType) {
+function onCheckout({ plan, billingCycle: cycle }) {
+  // The card emits the plan key (e.g. 'pro') and selected billing cycle.
+  return startCheckout(plan, cycle)
+}
+
+async function startCheckout(planType, cycle) {
   checkingOut.value = planType
 
   try {
     // Determine the plan to send to backend
-    const plan = billingCycle.value // 'monthly' or 'yearly'
+    const plan = cycle || billingCycle.value // 'monthly' or 'yearly'
 
     const response = await fetch(`${API_BASE_URL}/api/subscription/checkout`, {
       method: 'POST',

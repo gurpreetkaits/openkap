@@ -118,21 +118,6 @@
       </router-link>
 
       <router-link
-        to="/feedback"
-        class="group flex items-center rounded-lg transition-all font-medium text-sm"
-        :class="[
-          sidebarCollapsed ? 'justify-center px-2 py-2.5' : 'gap-3 px-3 py-2',
-          isActive('/feedback') ? 'text-orange-700 bg-orange-50 font-semibold' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-        ]"
-        :title="sidebarCollapsed ? 'Feedback' : ''"
-      >
-        <svg class="w-4 h-4 flex-shrink-0 transition-colors" :class="isActive('/feedback') ? 'text-orange-500' : 'text-gray-400 group-hover:text-gray-600'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
-        </svg>
-        <span v-show="!sidebarCollapsed" class="whitespace-nowrap overflow-hidden">Feedback</span>
-      </router-link>
-
-      <router-link
         to="/subscription"
         class="group flex items-center rounded-lg transition-all font-medium text-sm"
         :class="[
@@ -187,6 +172,30 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
           </svg>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Monthly recording minutes usage (any plan with a cap) -->
+  <div
+    v-if="isAuthenticated && subscription?.monthly_recording_minutes_limit && !sidebarCollapsed"
+    class="px-3 pb-3"
+  >
+    <div
+      @click="router.push('/subscription')"
+      class="bg-white border border-gray-200 rounded-lg p-2.5 cursor-pointer transition-colors hover:border-gray-300"
+      :title="`${minutesUsed} of ${minutesLimit} recording minutes used this month`"
+    >
+      <div class="flex items-center justify-between mb-1.5">
+        <span class="text-[10px] font-semibold text-gray-700 uppercase tracking-wide">Recording minutes</span>
+        <span class="text-[10px] font-medium text-gray-500">{{ minutesUsed }} / {{ minutesLimit }}</span>
+      </div>
+      <div class="w-full bg-gray-100 h-1 rounded-full overflow-hidden">
+        <div
+          class="h-full rounded-full transition-all duration-500"
+          :class="minutesUsagePercent >= 90 ? 'bg-red-500' : 'bg-orange-500'"
+          :style="{ width: minutesUsagePercent + '%' }"
+        ></div>
       </div>
     </div>
   </div>
@@ -388,18 +397,6 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
               </svg>
               Playlists
-            </router-link>
-
-            <router-link
-              to="/feedback"
-              @click="sidebarOpen = false"
-              class="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all group"
-              :class="isActive('/feedback') ? 'text-gray-900 bg-gray-50' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'"
-            >
-              <svg class="w-4 h-4 transition-colors" :class="isActive('/feedback') ? 'text-orange-600' : 'text-gray-400 group-hover:text-gray-600'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
-              </svg>
-              Feedback
             </router-link>
 
             <router-link
@@ -607,6 +604,13 @@ export default {
       return Math.min((used / max) * 100, 100)
     })
 
+    const minutesUsed = computed(() => subscription.value?.monthly_recording_minutes_used || 0)
+    const minutesLimit = computed(() => subscription.value?.monthly_recording_minutes_limit || 0)
+    const minutesUsagePercent = computed(() => {
+      if (!minutesLimit.value) return 0
+      return Math.min((minutesUsed.value / minutesLimit.value) * 100, 100)
+    })
+
     // Use auth store for user info
     const userInfo = computed(() => ({
       name: auth.user.value?.name || 'Guest',
@@ -634,7 +638,6 @@ export default {
         '/playlists': 'Playlists',
         '/profile': 'Profile',
         '/subscription': 'Plans & Billing',
-        '/feedback': 'Feedback',
         '/settings': 'Settings',
         '/admin/dashboard': 'Admin Dashboard'
       }
@@ -713,6 +716,9 @@ export default {
       userInfo,
       subscription,
       subscriptionUsagePercent,
+      minutesUsed,
+      minutesLimit,
+      minutesUsagePercent,
       isAuthenticated,
       isAdmin,
       isActive,

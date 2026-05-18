@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class UserRepository extends BaseRepository
@@ -50,5 +51,67 @@ class UserRepository extends BaseRepository
         if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
             Storage::disk('public')->delete($user->avatar);
         }
+    }
+
+    /**
+     * Reset the user's monthly recording counter if the stored period has expired.
+     * Returns true when a reset was performed.
+     */
+    public function resetMonthlyRecordingPeriodIfDue(User $user): bool
+    {
+        if (! $user->isMonthlyRecordingPeriodExpired()) {
+            return false;
+        }
+
+        // Conditional UPDATE so two concurrent callers can't both reset and
+        // each then increment their own seconds — only the first wins, the
+        // second falls through to `incrementMonthlyRecordingSeconds`.
+        $startOfMonth = now()->startOfMonth();
+        User::whereKey($user->id)
+            ->where(function ($q) use ($startOfMonth) {
+                $q->whereNull('monthly_recording_period_start')
+                    ->orWhere('monthly_recording_period_start', '<', $startOfMonth);
+            })
+            ->update([
+                'monthly_recording_seconds_used' => 0,
+                'monthly_recording_period_start' => $startOfMonth,
+            ]);
+
+        $user->refresh();
+
+        return true;
+    }
+
+    /**
+     * Atomically add seconds to the user's monthly recording counter, rolling
+     * the period over in the same statement when it has expired. Single
+     * conditional UPDATE → safe under concurrent webhooks for the same user.
+     */
+    public function incrementMonthlyRecordingSeconds(User $user, int $seconds): void
+    {
+        if ($seconds <= 0) {
+            return;
+        }
+
+        $startOfMonth = now()->startOfMonth();
+
+        // CASE-based update: if the stored period is in a prior month (or NULL),
+        // reset the counter to $seconds and set period_start to this month;
+        // otherwise add $seconds to the existing counter.
+        User::whereKey($user->id)->update([
+            'monthly_recording_seconds_used' => DB::raw(sprintf(
+                "CASE WHEN monthly_recording_period_start IS NULL OR monthly_recording_period_start < %s THEN %d ELSE monthly_recording_seconds_used + %d END",
+                DB::connection()->getPdo()->quote($startOfMonth->toDateTimeString()),
+                $seconds,
+                $seconds,
+            )),
+            'monthly_recording_period_start' => DB::raw(sprintf(
+                "CASE WHEN monthly_recording_period_start IS NULL OR monthly_recording_period_start < %s THEN %s ELSE monthly_recording_period_start END",
+                DB::connection()->getPdo()->quote($startOfMonth->toDateTimeString()),
+                DB::connection()->getPdo()->quote($startOfMonth->toDateTimeString()),
+            )),
+        ]);
+
+        $user->refresh();
     }
 }

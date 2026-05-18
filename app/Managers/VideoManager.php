@@ -124,8 +124,12 @@ class VideoManager
 
             Log::info('Dispatching UploadToBunnyJob', ['video_id' => $video->id]);
             UploadToBunnyJob::dispatch($video);
+            // Minutes are credited by BunnyWebhookController when the video
+            // reaches `ready` (single source of truth, uses Bunny's duration).
         } else {
-            // Local-only: remux WebM to fix missing Duration and Cues (seek index)
+            // Local-only: remux WebM to fix missing Duration and Cues (seek index).
+            // Minutes are credited inside RemuxWebmJob using the server-probed
+            // duration — we never trust the client-supplied value.
             RemuxWebmJob::dispatch($video);
         }
 

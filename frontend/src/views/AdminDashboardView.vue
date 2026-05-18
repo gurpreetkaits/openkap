@@ -121,6 +121,8 @@
                 <th class="text-left py-2 pr-4 text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
                 <th class="text-left py-2 pr-4 text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
                 <th class="text-left py-2 pr-4 text-xs font-medium text-gray-500 uppercase tracking-wider">Plan</th>
+                <th class="text-right py-2 pr-4 text-xs font-medium text-gray-500 uppercase tracking-wider">Videos</th>
+                <th class="text-right py-2 pr-4 text-xs font-medium text-gray-500 uppercase tracking-wider">Minutes / mo</th>
                 <th class="text-left py-2 text-xs font-medium text-gray-500 uppercase tracking-wider">Joined</th>
               </tr>
             </thead>
@@ -140,6 +142,10 @@
                   <span class="text-xs font-medium px-2 py-0.5 rounded-full" :class="planBadgeClass(user.plan_type)">
                     {{ user.plan_type }}
                   </span>
+                </td>
+                <td class="py-2.5 pr-4 text-right tabular-nums text-gray-900">{{ user.videos_count ?? 0 }}</td>
+                <td class="py-2.5 pr-4 text-right tabular-nums text-gray-900">
+                  {{ user.monthly_recording_minutes_used ?? 0 }}<span class="text-gray-400">{{ user.monthly_recording_minutes_limit != null ? ` / ${user.monthly_recording_minutes_limit}` : '' }}</span>
                 </td>
                 <td class="py-2.5 text-gray-500">{{ formatDate(user.created_at) }}</td>
               </tr>

@@ -138,4 +138,21 @@ class Setting extends Model
     {
         return (int) self::getValue('yearly_price', 80);
     }
+
+    public static function getFreeMonthlyRecordingMinutesLimit(): int
+    {
+        return (int) self::getValue('free_monthly_recording_minutes_limit', 25);
+    }
+
+    public static function getProMonthlyRecordingMinutesLimit(): int
+    {
+        return (int) self::getValue('pro_monthly_recording_minutes_limit', 500);
+    }
+
+    public static function getTeamsMonthlyRecordingMinutesLimit(): ?int
+    {
+        $value = self::getValue('teams_monthly_recording_minutes_limit', null);
+
+        return $value === null ? null : (int) $value;
+    }
 }
