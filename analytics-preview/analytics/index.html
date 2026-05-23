@@ -1,0 +1,632 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Analytics · OpenKap (Paid Preview)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    html, body { font-family: 'Inter', system-ui, sans-serif; }
+    .ring-pop { box-shadow: 0 0 0 4px rgb(249 115 22 / 0.08); }
+    .card { background: white; border: 1px solid rgb(243 244 246); border-radius: 14px; box-shadow: 0 1px 2px rgb(0 0 0 / 0.03); }
+    .delta-up { color: #16a34a; background: #dcfce7; }
+    .delta-down { color: #dc2626; background: #fee2e2; }
+    .grid-bg {
+      background-image: radial-gradient(circle at 1px 1px, rgb(229 231 235) 1px, transparent 0);
+      background-size: 24px 24px;
+    }
+    .scrollbar-thin::-webkit-scrollbar { width: 6px; height: 6px; }
+    .scrollbar-thin::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 999px; }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-900">
+
+<!-- Top bar (mock app frame) -->
+<header class="bg-white border-b border-gray-100">
+  <div class="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-lg bg-orange-500 flex items-center justify-center text-white font-bold">O</div>
+      <span class="font-semibold tracking-tight">OpenKap</span>
+      <span class="hidden sm:inline-flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wide text-orange-600 bg-orange-50 border border-orange-100 rounded-full px-2 py-0.5">
+        <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M10 1.5l2.598 5.262 5.804.844-4.2 4.094.99 5.78L10 14.747l-5.192 2.733.99-5.78-4.2-4.094 5.804-.844L10 1.5z"/></svg>
+        Pro plan
+      </span>
+    </div>
+    <nav class="hidden md:flex items-center gap-1 text-sm text-gray-500">
+      <a class="px-3 py-1.5 rounded-md hover:bg-gray-50">Videos</a>
+      <a class="px-3 py-1.5 rounded-md hover:bg-gray-50">Playlists</a>
+      <a class="px-3 py-1.5 rounded-md hover:bg-gray-50">Workspaces</a>
+      <a class="px-3 py-1.5 rounded-md bg-orange-50 text-orange-700 font-semibold">Analytics</a>
+      <a class="px-3 py-1.5 rounded-md hover:bg-gray-50">Integrations</a>
+    </nav>
+    <div class="flex items-center gap-3">
+      <button class="text-sm text-gray-500 hover:text-gray-700">Help</button>
+      <div class="w-8 h-8 rounded-full bg-gradient-to-br from-orange-400 to-pink-500"></div>
+    </div>
+  </div>
+</header>
+
+<main class="max-w-7xl mx-auto px-6 py-8 space-y-8">
+
+  <!-- Page header -->
+  <section class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+    <div>
+      <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-orange-600 mb-2">
+        <span class="w-1.5 h-1.5 rounded-full bg-orange-500"></span>
+        Analytics · Paid preview
+      </div>
+      <h1 class="text-3xl font-bold tracking-tight text-gray-900">Know who's watching, and what's working.</h1>
+      <p class="text-gray-500 mt-2 max-w-2xl">Turn every video you share into a feedback loop — see who opened it, how far they got, what they reacted to, and which ones drive replies.</p>
+    </div>
+    <div class="flex flex-wrap items-center gap-2">
+      <div class="inline-flex bg-white border border-gray-200 rounded-lg overflow-hidden text-sm">
+        <button class="px-3 py-1.5 text-gray-500 hover:bg-gray-50">7d</button>
+        <button class="px-3 py-1.5 bg-gray-900 text-white font-medium">30d</button>
+        <button class="px-3 py-1.5 text-gray-500 hover:bg-gray-50">90d</button>
+        <button class="px-3 py-1.5 text-gray-500 hover:bg-gray-50">12m</button>
+        <button class="px-3 py-1.5 text-gray-500 hover:bg-gray-50">All</button>
+      </div>
+      <button class="inline-flex items-center gap-1.5 bg-white border border-gray-200 rounded-lg px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+        Export CSV
+      </button>
+    </div>
+  </section>
+
+  <!-- KPI grid -->
+  <section class="grid grid-cols-2 lg:grid-cols-6 gap-4">
+    <!-- Total Views -->
+    <div class="card p-5 lg:col-span-1 col-span-1">
+      <div class="flex items-center justify-between mb-3">
+        <span class="text-[11px] font-semibold uppercase tracking-wider text-gray-500">Total views</span>
+        <div class="w-7 h-7 rounded-lg bg-orange-100 flex items-center justify-center">
+          <svg class="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+        </div>
+      </div>
+      <div class="text-2xl font-bold">12,847</div>
+      <div class="mt-1 flex items-center gap-1.5">
+        <span class="delta-up text-[11px] font-semibold rounded px-1.5 py-0.5">↑ 24%</span>
+        <span class="text-[11px] text-gray-400">vs last 30d</span>
+      </div>
+    </div>
+
+    <!-- Unique viewers -->
+    <div class="card p-5">
+      <div class="flex items-center justify-between mb-3">
+        <span class="text-[11px] font-semibold uppercase tracking-wider text-gray-500">Unique viewers</span>
+        <div class="w-7 h-7 rounded-lg bg-blue-100 flex items-center justify-center">
+          <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        </div>
+      </div>
+      <div class="text-2xl font-bold">3,219</div>
+      <div class="mt-1 flex items-center gap-1.5">
+        <span class="delta-up text-[11px] font-semibold rounded px-1.5 py-0.5">↑ 11%</span>
+        <span class="text-[11px] text-gray-400">vs last 30d</span>
+      </div>
+    </div>
+
+    <!-- Watch time -->
+    <div class="card p-5">
+      <div class="flex items-center justify-between mb-3">
+        <span class="text-[11px] font-semibold uppercase tracking-wider text-gray-500">Watch time</span>
+        <div class="w-7 h-7 rounded-lg bg-green-100 flex items-center justify-center">
+          <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        </div>
+      </div>
+      <div class="text-2xl font-bold">486 <span class="text-base text-gray-400 font-medium">hrs</span></div>
+      <div class="mt-1 flex items-center gap-1.5">
+        <span class="delta-up text-[11px] font-semibold rounded px-1.5 py-0.5">↑ 18%</span>
+        <span class="text-[11px] text-gray-400">vs last 30d</span>
+      </div>
+    </div>
+
+    <!-- Engagement -->
+    <div class="card p-5">
+      <div class="flex items-center justify-between mb-3">
+        <span class="text-[11px] font-semibold uppercase tracking-wider text-gray-500">Engagement</span>
+        <div class="w-7 h-7 rounded-lg bg-purple-100 flex items-center justify-center">
+          <svg class="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+        </div>
+      </div>
+      <div class="text-2xl font-bold">68<span class="text-base text-gray-400 font-medium">%</span></div>
+      <div class="mt-1 flex items-center gap-1.5">
+        <span class="delta-up text-[11px] font-semibold rounded px-1.5 py-0.5">↑ 4 pts</span>
+        <span class="text-[11px] text-gray-400">avg % watched</span>
+      </div>
+    </div>
+
+    <!-- Reactions -->
+    <div class="card p-5">
+      <div class="flex items-center justify-between mb-3">
+        <span class="text-[11px] font-semibold uppercase tracking-wider text-gray-500">Reactions</span>
+        <div class="w-7 h-7 rounded-lg bg-pink-100 flex items-center justify-center">
+          <svg class="w-4 h-4 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+        </div>
+      </div>
+      <div class="text-2xl font-bold">842</div>
+      <div class="mt-1 flex items-center gap-1.5">
+        <span class="delta-down text-[11px] font-semibold rounded px-1.5 py-0.5">↓ 3%</span>
+        <span class="text-[11px] text-gray-400">likes + emojis</span>
+      </div>
+    </div>
+
+    <!-- CTAs / Replies -->
+    <div class="card p-5">
+      <div class="flex items-center justify-between mb-3">
+        <span class="text-[11px] font-semibold uppercase tracking-wider text-gray-500">Replies</span>
+        <div class="w-7 h-7 rounded-lg bg-amber-100 flex items-center justify-center">
+          <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+        </div>
+      </div>
+      <div class="text-2xl font-bold">231</div>
+      <div class="mt-1 flex items-center gap-1.5">
+        <span class="delta-up text-[11px] font-semibold rounded px-1.5 py-0.5">↑ 32%</span>
+        <span class="text-[11px] text-gray-400">comments + video replies</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Views over time -->
+  <section class="card p-6">
+    <div class="flex items-center justify-between mb-4">
+      <div>
+        <h2 class="text-sm font-semibold uppercase tracking-wide text-gray-900">Views over time</h2>
+        <p class="text-xs text-gray-400 mt-0.5">Solid = this period · Dashed = previous period</p>
+      </div>
+      <div class="flex items-center gap-4 text-xs">
+        <span class="flex items-center gap-1.5 text-gray-600"><span class="w-3 h-0.5 bg-orange-500 rounded"></span>This period</span>
+        <span class="flex items-center gap-1.5 text-gray-400"><span class="w-3 h-0.5 border-t-2 border-dashed border-gray-300"></span>Previous</span>
+      </div>
+    </div>
+
+    <svg viewBox="0 0 800 240" class="w-full" style="height:240px;">
+      <defs>
+        <linearGradient id="areaG" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#f97316" stop-opacity="0.22"/>
+          <stop offset="100%" stop-color="#f97316" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      <!-- Grid -->
+      <g stroke="#f3f4f6" stroke-width="1">
+        <line x1="40" y1="40"  x2="780" y2="40"/>
+        <line x1="40" y1="90"  x2="780" y2="90"/>
+        <line x1="40" y1="140" x2="780" y2="140"/>
+        <line x1="40" y1="190" x2="780" y2="190"/>
+      </g>
+      <!-- Y labels -->
+      <g fill="#9ca3af" font-size="10" text-anchor="end">
+        <text x="34" y="44">800</text>
+        <text x="34" y="94">600</text>
+        <text x="34" y="144">400</text>
+        <text x="34" y="194">200</text>
+      </g>
+      <!-- X labels -->
+      <g fill="#9ca3af" font-size="10" text-anchor="middle">
+        <text x="80"  y="220">Apr 24</text>
+        <text x="220" y="220">May 1</text>
+        <text x="360" y="220">May 8</text>
+        <text x="500" y="220">May 15</text>
+        <text x="640" y="220">May 22</text>
+        <text x="760" y="220">May 23</text>
+      </g>
+
+      <!-- Previous period dashed -->
+      <path d="M 40 175 C 80 170, 140 160, 200 168 S 320 150, 400 158 S 540 140, 620 142 S 740 130, 780 135"
+            fill="none" stroke="#d1d5db" stroke-width="2" stroke-dasharray="4 4"/>
+
+      <!-- Current period area + line -->
+      <path d="M 40 160 C 90 150, 160 130, 220 140 S 360 90, 420 105 S 540 70, 620 60 S 740 40, 780 50 L 780 200 L 40 200 Z" fill="url(#areaG)"/>
+      <path d="M 40 160 C 90 150, 160 130, 220 140 S 360 90, 420 105 S 540 70, 620 60 S 740 40, 780 50" fill="none" stroke="#f97316" stroke-width="2.5"/>
+
+      <!-- Highlight today -->
+      <circle cx="780" cy="50" r="5" fill="#f97316" stroke="white" stroke-width="2"/>
+      <line x1="780" y1="40" x2="780" y2="200" stroke="#f97316" stroke-width="1" stroke-dasharray="3 3" opacity="0.5"/>
+      <g transform="translate(720,18)">
+        <rect width="78" height="22" rx="6" fill="#111827"/>
+        <text x="39" y="15" fill="#fff" font-size="11" text-anchor="middle" font-weight="600">812 views</text>
+      </g>
+    </svg>
+  </section>
+
+  <!-- Retention + Funnel side-by-side -->
+  <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+    <!-- Audience retention -->
+    <div class="card p-6 lg:col-span-2">
+      <div class="flex items-center justify-between mb-1">
+        <h2 class="text-sm font-semibold uppercase tracking-wide text-gray-900">Audience retention</h2>
+        <span class="text-xs text-gray-400">Avg across all videos</span>
+      </div>
+      <p class="text-xs text-gray-500 mb-4">% of viewers still watching at each moment. Spot drop-off cliffs so you can rerecord stronger intros and trim long sections.</p>
+
+      <svg viewBox="0 0 700 200" class="w-full" style="height:200px;">
+        <defs>
+          <linearGradient id="retG" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#a855f7" stop-opacity="0.25"/>
+            <stop offset="100%" stop-color="#a855f7" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <g stroke="#f3f4f6" stroke-width="1">
+          <line x1="40" y1="30"  x2="690" y2="30"/>
+          <line x1="40" y1="80"  x2="690" y2="80"/>
+          <line x1="40" y1="130" x2="690" y2="130"/>
+          <line x1="40" y1="170" x2="690" y2="170"/>
+        </g>
+        <g fill="#9ca3af" font-size="10" text-anchor="end">
+          <text x="34" y="34">100%</text>
+          <text x="34" y="84">75%</text>
+          <text x="34" y="134">50%</text>
+          <text x="34" y="174">25%</text>
+        </g>
+        <g fill="#9ca3af" font-size="10" text-anchor="middle">
+          <text x="40"  y="195">0:00</text>
+          <text x="170" y="195">1:00</text>
+          <text x="300" y="195">2:00</text>
+          <text x="430" y="195">3:00</text>
+          <text x="560" y="195">4:00</text>
+          <text x="690" y="195">5:00</text>
+        </g>
+
+        <!-- Retention curve (with sharp drop around intro) -->
+        <path d="M 40 30 L 70 45 L 110 95 L 140 92 L 220 100 L 320 110 L 380 132 L 440 138 L 520 152 L 600 160 L 690 168 L 690 200 L 40 200 Z" fill="url(#retG)"/>
+        <path d="M 40 30 L 70 45 L 110 95 L 140 92 L 220 100 L 320 110 L 380 132 L 440 138 L 520 152 L 600 160 L 690 168"
+              fill="none" stroke="#a855f7" stroke-width="2.5"/>
+
+        <!-- Drop-off marker -->
+        <line x1="110" y1="30" x2="110" y2="170" stroke="#ef4444" stroke-width="1" stroke-dasharray="3 3" opacity="0.6"/>
+        <g transform="translate(115,30)">
+          <rect width="130" height="22" rx="6" fill="#fef2f2" stroke="#fecaca"/>
+          <text x="8" y="15" fill="#b91c1c" font-size="11" font-weight="600">⚠ 38% drop at 0:18</text>
+        </g>
+      </svg>
+    </div>
+
+    <!-- Funnel -->
+    <div class="card p-6">
+      <h2 class="text-sm font-semibold uppercase tracking-wide text-gray-900 mb-1">Viewer funnel</h2>
+      <p class="text-xs text-gray-500 mb-5">Where viewers fall out of the journey.</p>
+
+      <div class="space-y-3">
+        <div>
+          <div class="flex justify-between text-xs text-gray-500 mb-1"><span>Shared</span><span class="font-semibold text-gray-700">5,400</span></div>
+          <div class="h-2 rounded-full bg-gray-100 overflow-hidden"><div class="h-full bg-gray-900" style="width:100%"></div></div>
+        </div>
+        <div>
+          <div class="flex justify-between text-xs text-gray-500 mb-1"><span>Opened</span><span class="font-semibold text-gray-700">3,820 · 71%</span></div>
+          <div class="h-2 rounded-full bg-gray-100 overflow-hidden"><div class="h-full bg-orange-500" style="width:71%"></div></div>
+        </div>
+        <div>
+          <div class="flex justify-between text-xs text-gray-500 mb-1"><span>Watched 25%+</span><span class="font-semibold text-gray-700">2,941 · 54%</span></div>
+          <div class="h-2 rounded-full bg-gray-100 overflow-hidden"><div class="h-full bg-orange-400" style="width:54%"></div></div>
+        </div>
+        <div>
+          <div class="flex justify-between text-xs text-gray-500 mb-1"><span>Watched 75%+</span><span class="font-semibold text-gray-700">1,724 · 32%</span></div>
+          <div class="h-2 rounded-full bg-gray-100 overflow-hidden"><div class="h-full bg-orange-300" style="width:32%"></div></div>
+        </div>
+        <div>
+          <div class="flex justify-between text-xs text-gray-500 mb-1"><span>Replied / clicked CTA</span><span class="font-semibold text-gray-700">231 · 4.3%</span></div>
+          <div class="h-2 rounded-full bg-gray-100 overflow-hidden"><div class="h-full bg-emerald-500" style="width:4.3%"></div></div>
+        </div>
+      </div>
+
+      <div class="mt-5 p-3 rounded-lg bg-emerald-50 text-emerald-700 text-xs leading-relaxed">
+        <span class="font-semibold">💡 Tip:</span> Videos under 3 min get <span class="font-semibold">2.4× the reply rate</span>. Try trimming next time.
+      </div>
+    </div>
+  </section>
+
+  <!-- Top Videos + Top Countries -->
+  <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+    <!-- Top videos -->
+    <div class="card p-6 lg:col-span-2">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-sm font-semibold uppercase tracking-wide text-gray-900">Top performing videos</h2>
+        <button class="text-xs text-orange-600 font-semibold hover:underline">View all →</button>
+      </div>
+
+      <table class="w-full">
+        <thead>
+          <tr class="text-[11px] uppercase tracking-wider text-gray-400">
+            <th class="text-left pb-2 font-semibold">Video</th>
+            <th class="text-right pb-2 font-semibold">Views</th>
+            <th class="text-right pb-2 font-semibold">Avg watch</th>
+            <th class="text-right pb-2 font-semibold">Engagement</th>
+            <th class="text-right pb-2 font-semibold">Replies</th>
+          </tr>
+        </thead>
+        <tbody class="text-sm">
+          <tr class="border-t border-gray-100">
+            <td class="py-3">
+              <div class="flex items-center gap-3">
+                <div class="w-14 h-9 rounded-md bg-gradient-to-br from-indigo-400 to-purple-500 flex-shrink-0"></div>
+                <div>
+                  <div class="font-medium text-gray-900">Onboarding walkthrough — Q2 release</div>
+                  <div class="text-xs text-gray-400">3:42 · Shared in 14 workspaces</div>
+                </div>
+              </div>
+            </td>
+            <td class="text-right font-semibold">2,341</td>
+            <td class="text-right text-gray-600">2:51</td>
+            <td class="text-right"><span class="inline-flex items-center text-xs font-semibold text-emerald-700 bg-emerald-50 rounded px-1.5 py-0.5">82%</span></td>
+            <td class="text-right text-gray-700">87</td>
+          </tr>
+          <tr class="border-t border-gray-100">
+            <td class="py-3">
+              <div class="flex items-center gap-3">
+                <div class="w-14 h-9 rounded-md bg-gradient-to-br from-pink-400 to-orange-500 flex-shrink-0"></div>
+                <div>
+                  <div class="font-medium text-gray-900">Bug repro: dashboard chart freeze</div>
+                  <div class="text-xs text-gray-400">1:18 · 6 viewers from eng team</div>
+                </div>
+              </div>
+            </td>
+            <td class="text-right font-semibold">1,802</td>
+            <td class="text-right text-gray-600">1:09</td>
+            <td class="text-right"><span class="inline-flex items-center text-xs font-semibold text-emerald-700 bg-emerald-50 rounded px-1.5 py-0.5">91%</span></td>
+            <td class="text-right text-gray-700">42</td>
+          </tr>
+          <tr class="border-t border-gray-100">
+            <td class="py-3">
+              <div class="flex items-center gap-3">
+                <div class="w-14 h-9 rounded-md bg-gradient-to-br from-teal-400 to-cyan-500 flex-shrink-0"></div>
+                <div>
+                  <div class="font-medium text-gray-900">Sales demo — Acme deal recap</div>
+                  <div class="text-xs text-gray-400">5:21 · Sent to 3 stakeholders</div>
+                </div>
+              </div>
+            </td>
+            <td class="text-right font-semibold">1,217</td>
+            <td class="text-right text-gray-600">3:48</td>
+            <td class="text-right"><span class="inline-flex items-center text-xs font-semibold text-amber-700 bg-amber-50 rounded px-1.5 py-0.5">71%</span></td>
+            <td class="text-right text-gray-700">31</td>
+          </tr>
+          <tr class="border-t border-gray-100">
+            <td class="py-3">
+              <div class="flex items-center gap-3">
+                <div class="w-14 h-9 rounded-md bg-gradient-to-br from-amber-400 to-red-500 flex-shrink-0"></div>
+                <div>
+                  <div class="font-medium text-gray-900">Weekly team update — May 20</div>
+                  <div class="text-xs text-gray-400">7:04 · Internal share</div>
+                </div>
+              </div>
+            </td>
+            <td class="text-right font-semibold">984</td>
+            <td class="text-right text-gray-600">2:13</td>
+            <td class="text-right"><span class="inline-flex items-center text-xs font-semibold text-red-700 bg-red-50 rounded px-1.5 py-0.5">32%</span></td>
+            <td class="text-right text-gray-700">9</td>
+          </tr>
+          <tr class="border-t border-gray-100">
+            <td class="py-3">
+              <div class="flex items-center gap-3">
+                <div class="w-14 h-9 rounded-md bg-gradient-to-br from-fuchsia-500 to-violet-600 flex-shrink-0"></div>
+                <div>
+                  <div class="font-medium text-gray-900">Customer feedback session — Lana T.</div>
+                  <div class="text-xs text-gray-400">12:09 · Private link</div>
+                </div>
+              </div>
+            </td>
+            <td class="text-right font-semibold">621</td>
+            <td class="text-right text-gray-600">8:42</td>
+            <td class="text-right"><span class="inline-flex items-center text-xs font-semibold text-emerald-700 bg-emerald-50 rounded px-1.5 py-0.5">88%</span></td>
+            <td class="text-right text-gray-700">14</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Audience -->
+    <div class="card p-6">
+      <h2 class="text-sm font-semibold uppercase tracking-wide text-gray-900 mb-4">Where viewers are</h2>
+      <div class="space-y-3">
+        <div>
+          <div class="flex justify-between text-sm mb-1"><span class="flex items-center gap-2">🇺🇸 United States</span><span class="text-gray-500 text-xs">5,412 · 42%</span></div>
+          <div class="h-1.5 bg-gray-100 rounded-full overflow-hidden"><div class="h-full bg-orange-500" style="width:42%"></div></div>
+        </div>
+        <div>
+          <div class="flex justify-between text-sm mb-1"><span class="flex items-center gap-2">🇬🇧 United Kingdom</span><span class="text-gray-500 text-xs">1,807 · 14%</span></div>
+          <div class="h-1.5 bg-gray-100 rounded-full overflow-hidden"><div class="h-full bg-orange-500" style="width:14%"></div></div>
+        </div>
+        <div>
+          <div class="flex justify-between text-sm mb-1"><span class="flex items-center gap-2">🇩🇪 Germany</span><span class="text-gray-500 text-xs">1,156 · 9%</span></div>
+          <div class="h-1.5 bg-gray-100 rounded-full overflow-hidden"><div class="h-full bg-orange-500" style="width:9%"></div></div>
+        </div>
+        <div>
+          <div class="flex justify-between text-sm mb-1"><span class="flex items-center gap-2">🇮🇳 India</span><span class="text-gray-500 text-xs">962 · 7%</span></div>
+          <div class="h-1.5 bg-gray-100 rounded-full overflow-hidden"><div class="h-full bg-orange-500" style="width:7%"></div></div>
+        </div>
+        <div>
+          <div class="flex justify-between text-sm mb-1"><span class="flex items-center gap-2">🇨🇦 Canada</span><span class="text-gray-500 text-xs">684 · 5%</span></div>
+          <div class="h-1.5 bg-gray-100 rounded-full overflow-hidden"><div class="h-full bg-orange-500" style="width:5%"></div></div>
+        </div>
+        <div>
+          <div class="flex justify-between text-sm mb-1"><span class="flex items-center gap-2">🇫🇷 France</span><span class="text-gray-500 text-xs">512 · 4%</span></div>
+          <div class="h-1.5 bg-gray-100 rounded-full overflow-hidden"><div class="h-full bg-orange-500" style="width:4%"></div></div>
+        </div>
+      </div>
+
+      <hr class="my-5 border-gray-100"/>
+      <h3 class="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-3">Devices</h3>
+      <div class="flex items-end gap-2 h-24">
+        <div class="flex-1 flex flex-col items-center justify-end gap-1">
+          <div class="w-full bg-orange-500 rounded-t" style="height:80%"></div>
+          <span class="text-[10px] text-gray-500">Desktop</span>
+          <span class="text-[10px] text-gray-400">62%</span>
+        </div>
+        <div class="flex-1 flex flex-col items-center justify-end gap-1">
+          <div class="w-full bg-orange-300 rounded-t" style="height:40%"></div>
+          <span class="text-[10px] text-gray-500">Mobile</span>
+          <span class="text-[10px] text-gray-400">31%</span>
+        </div>
+        <div class="flex-1 flex flex-col items-center justify-end gap-1">
+          <div class="w-full bg-orange-200 rounded-t" style="height:12%"></div>
+          <span class="text-[10px] text-gray-500">Tablet</span>
+          <span class="text-[10px] text-gray-400">7%</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Recent viewers + Referrers -->
+  <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+    <!-- Recent activity -->
+    <div class="card p-6 lg:col-span-2">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-sm font-semibold uppercase tracking-wide text-gray-900">Recent viewers</h2>
+        <span class="text-xs text-gray-400">Real-time · last 24h</span>
+      </div>
+      <div class="divide-y divide-gray-100 text-sm">
+
+        <div class="flex items-center gap-3 py-2.5">
+          <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center text-white text-xs font-semibold">SM</div>
+          <div class="flex-1 min-w-0">
+            <div class="text-gray-900"><span class="font-semibold">Sarah M.</span> watched <span class="font-medium">"Onboarding walkthrough — Q2 release"</span></div>
+            <div class="text-xs text-gray-400">🇺🇸 San Francisco · finished 94%</div>
+          </div>
+          <span class="text-xs text-gray-400">2m ago</span>
+        </div>
+
+        <div class="flex items-center gap-3 py-2.5">
+          <div class="w-8 h-8 rounded-full bg-gradient-to-br from-pink-400 to-rose-500 flex items-center justify-center text-white text-xs font-semibold">JK</div>
+          <div class="flex-1 min-w-0">
+            <div class="text-gray-900"><span class="font-semibold">Jamal K.</span> reacted 🎉 to <span class="font-medium">"Bug repro: dashboard chart freeze"</span></div>
+            <div class="text-xs text-gray-400">🇬🇧 London · finished 100%</div>
+          </div>
+          <span class="text-xs text-gray-400">11m ago</span>
+        </div>
+
+        <div class="flex items-center gap-3 py-2.5">
+          <div class="w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white text-xs font-semibold">AR</div>
+          <div class="flex-1 min-w-0">
+            <div class="text-gray-900"><span class="font-semibold">Alex R.</span> commented on <span class="font-medium">"Sales demo — Acme deal recap"</span></div>
+            <div class="text-xs text-gray-400">🇨🇦 Toronto · "Looks great, will share with the team"</div>
+          </div>
+          <span class="text-xs text-gray-400">38m ago</span>
+        </div>
+
+        <div class="flex items-center gap-3 py-2.5">
+          <div class="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white text-xs font-semibold">??</div>
+          <div class="flex-1 min-w-0">
+            <div class="text-gray-900"><span class="font-semibold">Anonymous viewer</span> watched <span class="font-medium">"Customer feedback session — Lana T."</span></div>
+            <div class="text-xs text-gray-400">🇩🇪 Berlin · finished 67%</div>
+          </div>
+          <span class="text-xs text-gray-400">1h ago</span>
+        </div>
+
+        <div class="flex items-center gap-3 py-2.5">
+          <div class="w-8 h-8 rounded-full bg-gradient-to-br from-violet-400 to-purple-500 flex items-center justify-center text-white text-xs font-semibold">PV</div>
+          <div class="flex-1 min-w-0">
+            <div class="text-gray-900"><span class="font-semibold">Priya V.</span> replied with a video to <span class="font-medium">"Weekly team update — May 20"</span></div>
+            <div class="text-xs text-gray-400">🇮🇳 Bangalore · 1:42 reply</div>
+          </div>
+          <span class="text-xs text-gray-400">3h ago</span>
+        </div>
+
+        <div class="flex items-center gap-3 py-2.5">
+          <div class="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-400 to-sky-500 flex items-center justify-center text-white text-xs font-semibold">TN</div>
+          <div class="flex-1 min-w-0">
+            <div class="text-gray-900"><span class="font-semibold">Tom N.</span> opened <span class="font-medium">"Onboarding walkthrough — Q2 release"</span> for the 3rd time</div>
+            <div class="text-xs text-gray-400">🇫🇷 Paris · re-watched intro</div>
+          </div>
+          <span class="text-xs text-gray-400">5h ago</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Referrers / share sources -->
+    <div class="card p-6">
+      <h2 class="text-sm font-semibold uppercase tracking-wide text-gray-900 mb-4">How they got there</h2>
+      <ul class="space-y-3 text-sm">
+        <li class="flex items-center justify-between">
+          <span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-orange-500"></span> Direct link</span>
+          <span class="text-gray-500 text-xs">48%</span>
+        </li>
+        <li class="flex items-center justify-between">
+          <span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-blue-500"></span> Email</span>
+          <span class="text-gray-500 text-xs">22%</span>
+        </li>
+        <li class="flex items-center justify-between">
+          <span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-violet-500"></span> Slack</span>
+          <span class="text-gray-500 text-xs">14%</span>
+        </li>
+        <li class="flex items-center justify-between">
+          <span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> Notion / Docs</span>
+          <span class="text-gray-500 text-xs">8%</span>
+        </li>
+        <li class="flex items-center justify-between">
+          <span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-pink-500"></span> Embedded</span>
+          <span class="text-gray-500 text-xs">5%</span>
+        </li>
+        <li class="flex items-center justify-between">
+          <span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-gray-400"></span> Other</span>
+          <span class="text-gray-500 text-xs">3%</span>
+        </li>
+      </ul>
+
+      <hr class="my-5 border-gray-100"/>
+
+      <h3 class="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-3">Best time to share</h3>
+      <div class="grid grid-cols-7 gap-1 text-[10px] text-gray-500">
+        <div class="text-center">Mon</div><div class="text-center">Tue</div><div class="text-center">Wed</div><div class="text-center">Thu</div><div class="text-center">Fri</div><div class="text-center">Sat</div><div class="text-center">Sun</div>
+        <div class="h-5 rounded bg-orange-100"></div>
+        <div class="h-5 rounded bg-orange-200"></div>
+        <div class="h-5 rounded bg-orange-400"></div>
+        <div class="h-5 rounded bg-orange-500"></div>
+        <div class="h-5 rounded bg-orange-300"></div>
+        <div class="h-5 rounded bg-orange-50"></div>
+        <div class="h-5 rounded bg-gray-50"></div>
+      </div>
+      <p class="text-[11px] text-gray-400 mt-2">Thursday between 9–11am gets <span class="font-semibold text-gray-700">2.1×</span> the open rate.</p>
+    </div>
+  </section>
+
+  <!-- What you can do with this (value section) -->
+  <section class="card p-6 grid-bg">
+    <h2 class="text-sm font-semibold uppercase tracking-wide text-gray-900 mb-1">What analytics unlock</h2>
+    <p class="text-sm text-gray-500 mb-5">Why this view exists — and how to use it.</p>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+
+      <div class="bg-white border border-gray-100 rounded-xl p-5">
+        <div class="w-9 h-9 rounded-lg bg-orange-100 flex items-center justify-center mb-3">
+          <svg class="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        </div>
+        <div class="font-semibold text-gray-900">Know if it landed</div>
+        <p class="text-sm text-gray-500 mt-1">Stop wondering if a client watched your demo. See exactly who opened it, how far they got, and what they reacted to.</p>
+      </div>
+
+      <div class="bg-white border border-gray-100 rounded-xl p-5">
+        <div class="w-9 h-9 rounded-lg bg-purple-100 flex items-center justify-center mb-3">
+          <svg class="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"/></svg>
+        </div>
+        <div class="font-semibold text-gray-900">Spot the drop-off</div>
+        <p class="text-sm text-gray-500 mt-1">Retention curves show the exact moment viewers leave — so you can trim, restructure, or re-record the part that lost them.</p>
+      </div>
+
+      <div class="bg-white border border-gray-100 rounded-xl p-5">
+        <div class="w-9 h-9 rounded-lg bg-emerald-100 flex items-center justify-center mb-3">
+          <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+        </div>
+        <div class="font-semibold text-gray-900">Double down on what works</div>
+        <p class="text-sm text-gray-500 mt-1">Rank every video by engagement and replies. Use that to template winning formats for your team.</p>
+      </div>
+
+      <div class="bg-white border border-gray-100 rounded-xl p-5">
+        <div class="w-9 h-9 rounded-lg bg-blue-100 flex items-center justify-center mb-3">
+          <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+        </div>
+        <div class="font-semibold text-gray-900">Follow up at the right moment</div>
+        <p class="text-sm text-gray-500 mt-1">Real-time viewer feed lets you reach out the second someone finishes watching. Strike while it's warm.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <footer class="text-center text-xs text-gray-400 py-6">
+    Preview rendered at <code class="bg-gray-100 px-1.5 py-0.5 rounded text-gray-600">localhost:3333/analytics</code> · OpenKap paid plan
+  </footer>
+</main>
+
+</body>
+</html>

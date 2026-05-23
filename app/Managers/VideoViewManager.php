@@ -7,6 +7,7 @@ use App\Models\Video;
 use App\Models\VideoView;
 use App\Repositories\VideoRepository;
 use App\Repositories\VideoViewRepository;
+use App\Support\AnalyticsEnricher;
 
 class VideoViewManager
 {
@@ -16,81 +17,140 @@ class VideoViewManager
         protected NotificationManager $notificationManager
     ) {}
 
+    /**
+     * @param  array{referrer?: string|null, timezone?: string|null, session_id?: string|null}  $tracking
+     */
     public function recordView(
         Video $video,
         ?int $userId,
         ?string $ipAddress,
         ?string $userAgent,
         int $watchDuration = 0,
-        bool $completed = false
+        bool $completed = false,
+        array $tracking = []
     ): ?array {
-        // Don't record view if owner is viewing their own video
         if ($userId && $userId === $video->user_id) {
             return ['message' => 'Own video view not recorded', 'view' => null];
         }
 
-        // Check if this view already exists (within last hour to prevent spam)
-        $existingView = $this->viewRepository->findRecentView($video->id, $userId, $ipAddress);
+        $sessionId = $tracking['session_id'] ?? null;
+        $existingView = $this->viewRepository->findRecentView($video->id, $userId, $ipAddress, $sessionId);
 
         if ($existingView) {
             $this->viewRepository->updateView($existingView, [
                 'watch_duration' => max($existingView->watch_duration, $watchDuration),
+                'progress_max_seconds' => max($existingView->progress_max_seconds, $watchDuration),
                 'completed' => $completed || $existingView->completed,
             ]);
 
             return ['message' => 'View updated', 'view' => $existingView];
         }
 
-        // Create new view
-        $view = $this->viewRepository->createView([
-            'video_id' => $video->id,
-            'user_id' => $userId,
-            'ip_address' => $userId ? null : $ipAddress, // Only store IP for anonymous users
-            'user_agent' => $userAgent,
-            'watch_duration' => $watchDuration,
-            'completed' => $completed,
-            'viewed_at' => now(),
-        ]);
+        $view = $this->viewRepository->createView(
+            $this->buildViewPayload($video, $userId, $ipAddress, $userAgent, $watchDuration, $completed, $tracking)
+        );
 
-        // Send notification to video owner if viewer is authenticated and different from owner
         $this->notifyVideoOwnerIfNeeded($video, $userId, $view);
 
         return ['message' => 'View recorded', 'view' => $view, 'created' => true];
     }
 
+    /**
+     * @param  array{referrer?: string|null, timezone?: string|null, session_id?: string|null}  $tracking
+     */
     public function recordSharedView(
         Video $video,
         ?int $userId,
         ?string $ipAddress,
-        ?string $userAgent
+        ?string $userAgent,
+        array $tracking = []
     ): ?array {
-        // Don't record view if owner is viewing their own video
         if ($userId && $userId === $video->user_id) {
             return ['message' => 'Own video view not recorded', 'view' => null];
         }
 
-        // Check if this view already exists (within last hour to prevent spam)
-        $existingView = $this->viewRepository->findRecentView($video->id, $userId, $ipAddress);
+        $sessionId = $tracking['session_id'] ?? null;
+        $existingView = $this->viewRepository->findRecentView($video->id, $userId, $ipAddress, $sessionId);
 
         if ($existingView) {
-            return ['message' => 'View already recorded'];
+            return ['message' => 'View already recorded', 'view' => $existingView];
         }
 
-        // Create new view
-        $view = $this->viewRepository->createView([
+        $view = $this->viewRepository->createView(
+            $this->buildViewPayload($video, $userId, $ipAddress, $userAgent, 0, false, $tracking)
+        );
+
+        $this->notifyVideoOwnerIfNeeded($video, $userId, $view);
+
+        return ['message' => 'View recorded', 'view' => $view, 'created' => true];
+    }
+
+    /**
+     * Heartbeat from the player — updates progress on the most recent view in the session.
+     * Returns null if no matching session view is found.
+     */
+    public function recordProgress(
+        Video $video,
+        ?int $userId,
+        ?string $ipAddress,
+        string $sessionId,
+        int $progressSeconds,
+        int $watchDuration,
+        bool $completed
+    ): ?VideoView {
+        if ($userId && $userId === $video->user_id) {
+            return null;
+        }
+
+        $view = $this->viewRepository->findBySessionId($video->id, $sessionId);
+
+        if (! $view) {
+            return null;
+        }
+
+        $this->viewRepository->updateView($view, [
+            'watch_duration' => max($view->watch_duration, $watchDuration),
+            'progress_max_seconds' => max($view->progress_max_seconds, $progressSeconds),
+            'completed' => $completed || $view->completed,
+        ]);
+
+        return $view->refresh();
+    }
+
+    /**
+     * @param  array{referrer?: string|null, timezone?: string|null, session_id?: string|null}  $tracking
+     */
+    protected function buildViewPayload(
+        Video $video,
+        ?int $userId,
+        ?string $ipAddress,
+        ?string $userAgent,
+        int $watchDuration,
+        bool $completed,
+        array $tracking
+    ): array {
+        $ua = AnalyticsEnricher::parseUserAgent($userAgent);
+        $ref = AnalyticsEnricher::classifyReferrer($tracking['referrer'] ?? null);
+        $country = AnalyticsEnricher::countryFromTimezone($tracking['timezone'] ?? null);
+
+        return [
             'video_id' => $video->id,
             'user_id' => $userId,
             'ip_address' => $userId ? null : $ipAddress,
             'user_agent' => $userAgent,
-            'watch_duration' => 0,
-            'completed' => false,
+            'country_code' => $country[0] ?? null,
+            'country' => $country[1] ?? null,
+            'device_type' => $ua['device_type'],
+            'browser' => $ua['browser'],
+            'os' => $ua['os'],
+            'referrer_source' => $ref['referrer_source'],
+            'referrer_url' => $ref['referrer_url'],
+            'session_id' => $tracking['session_id'] ?? null,
+            'watch_duration' => $watchDuration,
+            'progress_max_seconds' => $watchDuration,
+            'completed' => $completed,
             'viewed_at' => now(),
-        ]);
-
-        // Send notification to video owner if viewer is authenticated and different from owner
-        $this->notifyVideoOwnerIfNeeded($video, $userId, $view);
-
-        return ['message' => 'View recorded', 'view' => $view, 'created' => true];
+        ];
     }
 
     public function getVideoStats(Video $video): array
@@ -126,7 +186,6 @@ class VideoViewManager
             return;
         }
 
-        // Check if this is the first time this user views this video
         $hasPreviousViews = $this->viewRepository->userHasPreviousViews($video->id, $userId, $view->id);
 
         if (! $hasPreviousViews) {

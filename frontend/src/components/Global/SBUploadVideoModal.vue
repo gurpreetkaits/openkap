@@ -56,7 +56,7 @@
             <svg v-else-if="item.status === 'error' || item.status === 'rejected'" class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
             </svg>
-            <svg v-else-if="item.status === 'uploading' || item.status === 'probing'" class="w-4 h-4 text-orange-500 animate-spin" fill="none" viewBox="0 0 24 24">
+            <svg v-else-if="item.status === 'uploading'" class="w-4 h-4 text-orange-500 animate-spin" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
             </svg>
@@ -82,10 +82,7 @@
             </div>
 
             <!-- Status text -->
-            <p v-if="item.status === 'probing'" class="mt-1 text-[11px] text-gray-500">
-              Reading duration…
-            </p>
-            <p v-else-if="item.status === 'uploading'" class="mt-1 text-[11px] text-gray-500">
+            <p v-if="item.status === 'uploading'" class="mt-1 text-[11px] text-gray-500">
               {{ item.progress }}%
             </p>
             <p v-else-if="item.status === 'done'" class="mt-1 text-[11px] text-green-600">
@@ -148,9 +145,6 @@
           <template v-if="isUploading">
             Uploading {{ doneCount + 1 }} of {{ uploadableCount }}…
           </template>
-          <template v-else-if="isProbing">
-            Reading video metadata…
-          </template>
           <template v-else-if="allFinished && files.length > 0">
             {{ doneCount }} uploaded<span v-if="errorCount"> · {{ errorCount }} failed</span><span v-if="skippedCount"> · {{ skippedCount }} skipped</span>
           </template>
@@ -172,7 +166,7 @@
             :disabled="!canStart"
             class="inline-flex items-center gap-1.5 px-3.5 py-2 text-sm font-semibold text-white bg-orange-500 hover:bg-orange-600 rounded-lg shadow-sm shadow-orange-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
           >
-            <svg v-if="isUploading || isProbing" class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+            <svg v-if="isUploading" class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
             </svg>
@@ -211,15 +205,13 @@ const files = ref([])
 let nextId = 0
 
 const isUploading = computed(() => files.value.some(f => f.status === 'uploading'))
-const isProbing = computed(() => files.value.some(f => f.status === 'probing'))
 const uploadableCount = computed(() => files.value.filter(f => f.status === 'queued' || f.status === 'uploading').length)
 const doneCount = computed(() => files.value.filter(f => f.status === 'done').length)
 const errorCount = computed(() => files.value.filter(f => ['error', 'rejected'].includes(f.status)).length)
 const skippedCount = computed(() => files.value.filter(f => f.status === 'skipped').length)
 const allFinished = computed(() => files.value.length > 0 && files.value.every(f => ['done', 'error', 'skipped', 'rejected'].includes(f.status)))
-const canStart = computed(() => !isUploading.value && !isProbing.value && uploadableCount.value > 0)
+const canStart = computed(() => !isUploading.value && uploadableCount.value > 0)
 const uploadButtonLabel = computed(() => {
-  if (isProbing.value) return 'Reading metadata…'
   if (isUploading.value) return 'Uploading…'
   return uploadableCount.value > 1 ? `Upload ${uploadableCount.value} videos` : 'Upload'
 })
@@ -269,65 +261,15 @@ function addFiles(incoming) {
     const item = {
       id: ++nextId,
       file: f,
-      // probing | queued | uploading | done | error | skipped | rejected
-      status: isAllowedFile(f) ? 'probing' : 'rejected',
+      // queued | uploading | done | error | skipped | rejected
+      status: isAllowedFile(f) ? 'queued' : 'rejected',
       progress: 0,
       duration: 0,
       error: isAllowedFile(f) ? '' : 'Unsupported file type — MP4, WebM, or MOV only',
       xhr: null,
     }
     files.value.push(item)
-    if (item.status === 'probing') {
-      probeDuration(item)
-    }
   }
-}
-
-/**
- * Read the video's duration via a hidden HTMLVideoElement so we can submit it
- * with the upload — the backend's videos.duration column is NOT NULL.
- */
-function probeDuration(item) {
-  const url = URL.createObjectURL(item.file)
-  const video = document.createElement('video')
-  video.preload = 'metadata'
-  video.muted = true
-
-  const cleanup = () => {
-    URL.revokeObjectURL(url)
-    video.removeAttribute('src')
-    video.load?.()
-  }
-
-  const timeout = setTimeout(() => {
-    cleanup()
-    if (item.status === 'probing') {
-      item.status = 'rejected'
-      item.error = 'Could not read duration — file may be corrupted'
-    }
-  }, 15000)
-
-  video.addEventListener('loadedmetadata', () => {
-    clearTimeout(timeout)
-    const d = Number.isFinite(video.duration) ? Math.max(1, Math.round(video.duration)) : 0
-    cleanup()
-    if (d <= 0) {
-      item.status = 'rejected'
-      item.error = 'Could not read duration — file may be corrupted'
-      return
-    }
-    item.duration = d
-    item.status = 'queued'
-  })
-
-  video.addEventListener('error', () => {
-    clearTimeout(timeout)
-    cleanup()
-    item.status = 'rejected'
-    item.error = 'Unreadable video file'
-  })
-
-  video.src = url
 }
 
 function removeFile(idx) {
@@ -419,9 +361,6 @@ function uploadOne(item) {
     const formData = new FormData()
     formData.append('video', item.file)
     formData.append('title', title)
-    if (item.duration > 0) {
-      formData.append('duration', String(item.duration))
-    }
 
     const xhr = new XMLHttpRequest()
     item.xhr = xhr
@@ -439,6 +378,12 @@ function uploadOne(item) {
       if (xhr.status >= 200 && xhr.status < 300) {
         item.progress = 100
         item.status = 'done'
+        try {
+          const data = JSON.parse(xhr.responseText)
+          if (data?.video?.duration > 0) {
+            item.duration = data.video.duration
+          }
+        } catch (_) { /* ignore */ }
         resolve()
         return
       }

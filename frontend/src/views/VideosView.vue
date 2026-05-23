@@ -1,7 +1,19 @@
 <template>
   <div class="animate-fade-in">
     <!-- Action Bar -->
-    <div class="flex items-center gap-2 mb-5">
+    <div class="flex items-center justify-end gap-2 mb-5">
+      <!-- New Folder Button -->
+      <button
+        v-if="activeTab !== 'screenshots'"
+        @click="showNewFolderModal = true"
+        class="group inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-dashed border-gray-300 rounded-lg text-sm text-gray-500 hover:border-orange-300 hover:text-orange-500 hover:bg-orange-50 transition-all"
+      >
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+        </svg>
+        <span class="font-medium">New folder</span>
+      </button>
+
       <!-- Upload Video Button -->
       <button
         v-if="activeTab !== 'screenshots'"
@@ -33,16 +45,6 @@
 
       <!-- Hidden file input for screenshot upload -->
       <input ref="screenshotFileInput" type="file" accept="image/png,image/jpeg,image/webp" class="hidden" @change="onScreenshotFileSelected" />
-    </div>
-
-    <!-- Stats context line -->
-    <div v-if="!loading && videos.length > 0 && activeTab === 'videos'" class="flex items-center gap-2 mb-4 text-sm">
-      <span class="font-semibold text-gray-800">{{ videos.length }}</span>
-      <span class="text-gray-400">recording{{ videos.length !== 1 ? 's' : '' }}</span>
-      <template v-if="filteredVideos.length !== videos.length">
-        <span class="text-gray-200">·</span>
-        <span class="text-gray-500">{{ filteredVideos.length }} shown</span>
-      </template>
     </div>
 
     <!-- Folders Section -->
@@ -81,28 +83,17 @@
           </button>
         </div>
 
-        <!-- New Folder inline chip -->
-        <button
-          v-if="activeTab !== 'screenshots'"
-          @click="showNewFolderModal = true"
-          class="group flex items-center gap-1.5 px-3 py-2 bg-white border border-dashed border-gray-300 rounded-xl text-sm text-gray-400 hover:border-orange-300 hover:text-orange-500 hover:bg-orange-50 transition-all"
-        >
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-          </svg>
-          <span class="font-medium">New folder</span>
-        </button>
       </div>
     </div>
 
     <!-- Library Toolbar -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
       <!-- Modern Segmented Tab Switch -->
-      <div class="relative grid grid-cols-3 bg-gray-100 rounded-xl p-1 self-start" style="min-width: 280px;">
+      <div class="relative grid grid-cols-3 bg-gray-100 rounded-xl p-1 self-start" style="min-width: 320px;">
         <!-- Animated sliding pill -->
         <div
           class="absolute top-1 bottom-1 bg-white rounded-[10px] shadow-sm pointer-events-none transition-all duration-200 ease-out"
-          :style="{ width: 'calc(33.33% - 3px)', left: `calc(${tabIndexMap[activeTab]} * 33.33% + 1px)` }"
+          :style="{ width: 'calc((100% - 8px) / 3)', left: `calc(4px + ${tabIndexMap[activeTab]} * ((100% - 8px) / 3))` }"
         ></div>
         <!-- Videos tab -->
         <button
@@ -125,16 +116,17 @@
           Starred
           <span v-if="favouriteCount > 0" class="text-[11px] font-semibold px-1.5 py-0.5 rounded-full leading-none" :class="activeTab === 'favourites' ? 'bg-orange-100 text-orange-600' : 'bg-gray-200/80 text-gray-500'">{{ favouriteCount }}</span>
         </button>
-        <!-- Screenshots tab -->
+        <!-- Archived tab -->
         <button
-          @click="activeTab = 'screenshots'"
+          @click="activeTab = 'archived'"
           class="relative z-10 flex items-center justify-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg transition-colors duration-150 whitespace-nowrap"
-          :class="activeTab === 'screenshots' ? 'text-gray-900' : 'text-gray-500 hover:text-gray-700'"
+          :class="activeTab === 'archived' ? 'text-gray-900' : 'text-gray-500 hover:text-gray-700'"
         >
           <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 8h14M5 8a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v1a2 2 0 01-2 2M5 8v11a2 2 0 002 2h10a2 2 0 002-2V8M10 12h4"/>
           </svg>
-          Shots
+          Archived
+          <span v-if="archivedCount > 0" class="text-[11px] font-semibold px-1.5 py-0.5 rounded-full leading-none" :class="activeTab === 'archived' ? 'bg-orange-100 text-orange-600' : 'bg-gray-200/80 text-gray-500'">{{ archivedCount }}</span>
         </button>
       </div>
 
@@ -404,7 +396,7 @@
         v-for="video in paginatedVideos"
         :key="video.id"
         :data-video-id="video.id"
-        class="group"
+        class="group bg-white border border-gray-100 rounded-xl overflow-hidden hover:border-gray-200 hover:shadow-sm transition-all"
         :class="selectedVideos.includes(video.id) ? 'ring-2 ring-orange-500 ring-offset-2' : ''"
         :draggable="folders.length > 0"
         @dragstart="handleVideoDragStart($event, video)"
@@ -413,7 +405,7 @@
       >
         <!-- Thumbnail Container -->
         <div
-          class="relative w-full cursor-pointer overflow-hidden rounded-xl"
+          class="relative w-full cursor-pointer overflow-hidden"
           style="aspect-ratio: 16/9;"
           @click="handleVideoClick(video.id)"
         >
@@ -891,6 +883,49 @@
       @cancel="showDeleteModal = false"
     />
 
+    <!-- Archive Video Modal -->
+    <SBModal
+      v-model="showArchiveModal"
+      title="Archive Video"
+      size="sm"
+      @close="showArchiveModal = false"
+    >
+      <div class="flex gap-4">
+        <div class="flex-shrink-0 w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center">
+          <svg class="h-5 w-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 8h14M5 8a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v1a2 2 0 01-2 2M5 8v11a2 2 0 002 2h10a2 2 0 002-2V8M10 12h4"/>
+          </svg>
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="text-sm text-gray-600 leading-relaxed">
+            Archive <span class="font-semibold text-gray-900">"{{ videoToArchive?.title }}"</span>? It will be moved to the Archived tab and removed from your main list. You can restore it from there at any time.
+          </p>
+        </div>
+      </div>
+      <template #footer>
+        <div class="flex justify-end gap-3">
+          <button
+            @click="showArchiveModal = false"
+            :disabled="isArchiving"
+            class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+          >
+            Cancel
+          </button>
+          <button
+            @click="confirmArchiveVideo"
+            :disabled="isArchiving"
+            class="px-4 py-2 text-sm font-medium text-white bg-amber-600 hover:bg-amber-700 rounded-lg transition-colors disabled:opacity-50 inline-flex items-center gap-2"
+          >
+            <svg v-if="isArchiving" class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            {{ isArchiving ? 'Archiving...' : 'Archive' }}
+          </button>
+        </div>
+      </template>
+    </SBModal>
+
     <!-- Delete Screenshot Modal -->
     <SBDeleteModal
       v-model="showDeleteScreenshotModal"
@@ -1351,6 +1386,9 @@ export default {
     const screenshots = ref([])
     const screenshotsLoading = ref(false)
     const screenshotsFetched = ref(false)
+    const archivedVideos = ref([])
+    const archivedLoading = ref(false)
+    const archivedFetched = ref(false)
     const viewMode = ref('grid')
     const loading = ref(false)
     const error = ref(null)
@@ -1360,6 +1398,11 @@ export default {
     const showDeleteModal = ref(false)
     const videoToDelete = ref(null)
     const isDeleting = ref(false)
+
+    // Archive modal state
+    const showArchiveModal = ref(false)
+    const videoToArchive = ref(null)
+    const isArchiving = ref(false)
 
     // Selection state
     const selectedVideos = ref([])
@@ -1476,7 +1519,10 @@ export default {
 
     // Filtered and sorted videos
     const filteredVideos = computed(() => {
-      let result = [...videos.value]
+      // Archived tab uses a separate dataset (not in main videos.value)
+      let result = activeTab.value === 'archived'
+        ? [...archivedVideos.value]
+        : [...videos.value]
 
       // Apply tab filter (favourites)
       if (activeTab.value === 'favourites') {
@@ -2051,10 +2097,45 @@ export default {
       }
     }
 
-    // Watch for tab changes to fetch screenshots when needed
+    const fetchArchivedVideos = async () => {
+      archivedLoading.value = true
+      try {
+        const fetched = await videoService.getArchivedVideos()
+        archivedVideos.value = fetched.map(video => ({
+          id: video.id,
+          title: video.title,
+          duration: video.duration,
+          createdAt: new Date(video.created_at),
+          archivedAt: video.archived_at ? new Date(video.archived_at) : null,
+          thumbnail: video.thumbnail || null,
+          views_count: video.views_count || 0,
+          comments_count: video.comments_count || 0,
+          reactions_count: video.reactions_count || 0,
+          url: video.url,
+          isPublic: video.is_public,
+          is_favourite: video.is_favourite || false,
+          shareUrl: video.share_url,
+          conversion_status: video.conversion_status,
+          storage_type: video.storage_type,
+          bunny_status: video.bunny_status
+        }))
+        archivedFetched.value = true
+      } catch (err) {
+        console.error('Failed to fetch archived videos:', err)
+        toast.error('Failed to load archived videos')
+        archivedVideos.value = []
+      } finally {
+        archivedLoading.value = false
+      }
+    }
+
+    // Watch for tab changes to fetch screenshots or archived as needed
     watch(activeTab, (newTab) => {
       if (newTab === 'screenshots' && !screenshotsFetched.value) {
         fetchScreenshots()
+      }
+      if (newTab === 'archived' && !archivedFetched.value) {
+        fetchArchivedVideos()
       }
     })
 
@@ -2112,6 +2193,7 @@ export default {
     onMounted(() => {
       fetchVideos()
       fetchFolders()
+      fetchArchivedVideos() // Populate the Archived tab badge count
       auth.fetchSubscription() // Fetch subscription status
       document.addEventListener('click', handleClickOutside)
       document.addEventListener('keydown', handleKeyDown)
@@ -2205,15 +2287,29 @@ export default {
       }
     }
 
-    // Archive video
-    const archiveVideo = async (video) => {
+    // Archive video — open confirmation modal first
+    const archiveVideo = (video) => {
+      videoToArchive.value = video
+      showArchiveModal.value = true
+    }
+
+    const confirmArchiveVideo = async () => {
+      if (!videoToArchive.value) return
+
+      isArchiving.value = true
       try {
-        await videoService.updateVideo(video.id, { is_archived: true })
-        videos.value = videos.value.filter(v => v.id !== video.id)
-        toast.success('Video archived!')
+        await videoService.updateVideo(videoToArchive.value.id, { archived: true })
+        videos.value = videos.value.filter(v => v.id !== videoToArchive.value.id)
+        // Refresh archived list so badge count + tab content are current
+        await fetchArchivedVideos()
+        toast.success('Video archived')
+        showArchiveModal.value = false
+        videoToArchive.value = null
       } catch (err) {
         console.error('Failed to archive:', err)
         toast.error('Failed to archive video. Please try again.')
+      } finally {
+        isArchiving.value = false
       }
     }
 
@@ -2609,10 +2705,13 @@ export default {
     }
 
     // Tab index mapping for sliding pill indicator
-    const tabIndexMap = { videos: 0, favourites: 1, screenshots: 2 }
+    const tabIndexMap = { videos: 0, favourites: 1, archived: 2 }
 
     // Favourite count for tab badge
     const favouriteCount = computed(() => videos.value.filter(v => v.is_favourite).length)
+
+    // Archived count for tab badge (from separately fetched archived list)
+    const archivedCount = computed(() => archivedVideos.value.length)
 
     // Open context menu at a specific position (used by button clicks)
     const openContextMenuAt = (clientX, clientY, type, target) => {
@@ -2897,6 +2996,11 @@ export default {
       showDeleteModal,
       videoToDelete,
       isDeleting,
+      // Archive modal
+      showArchiveModal,
+      videoToArchive,
+      isArchiving,
+      confirmArchiveVideo,
       // Selection and bulk actions
       selectedVideos,
       showBulkDeleteModal,
@@ -2916,6 +3020,9 @@ export default {
       // Tab control
       tabIndexMap,
       favouriteCount,
+      archivedCount,
+      archivedVideos,
+      archivedLoading,
       // Video menu
       activeVideoMenu,
       toggleVideoMenu,

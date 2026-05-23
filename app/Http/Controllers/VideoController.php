@@ -12,6 +12,7 @@ use App\Http\Requests\BulkFavouriteVideosRequest;
 use App\Managers\VideoManager;
 use App\Services\CaptionService;
 use App\Services\ChatService;
+use App\Services\VideoProbeService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -20,7 +21,8 @@ use Illuminate\Support\Facades\Log;
 class VideoController extends Controller
 {
     public function __construct(
-        protected VideoManager $videoManager
+        protected VideoManager $videoManager,
+        protected VideoProbeService $videoProbe,
     ) {}
 
     public function index(Request $request)
@@ -35,6 +37,15 @@ class VideoController extends Controller
     public function favourites(Request $request)
     {
         $videos = $this->videoManager->getFavouriteVideos(Auth::id());
+
+        return response()->json([
+            'videos' => $videos,
+        ]);
+    }
+
+    public function archived(Request $request)
+    {
+        $videos = $this->videoManager->getArchivedVideos(Auth::id());
 
         return response()->json([
             'videos' => $videos,
@@ -77,14 +88,18 @@ class VideoController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'duration' => 'nullable|integer|min:1',
             'video' => 'required|file|mimes:webm,mp4,mov|max:10240000',
             'is_public' => 'nullable|boolean',
         ]);
 
-        // Duration enforcement for free users
+        // Extract duration server-side via ffprobe. Returns null if probing
+        // fails — the async pipeline (Bunny webhook / RemuxWebmJob) will
+        // backfill duration in that case.
         $user = Auth::user();
-        $duration = $request->duration ?: null;
+        $duration = $this->videoProbe->probeDurationSeconds(
+            $request->file('video')->getPathname()
+        );
+
         if ($duration !== null && ! $user->hasActiveSubscription()) {
             $minDuration = $user->getMinRecordingSeconds();
             $maxDuration = $user->getMaxRecordingSeconds();
@@ -104,9 +119,12 @@ class VideoController extends Controller
             }
         }
 
+        $payload = $request->only(['title', 'description', 'is_public']);
+        $payload['duration'] = $duration;
+
         $video = $this->videoManager->createVideo(
             Auth::user(),
-            $request->only(['title', 'description', 'duration', 'is_public']),
+            $payload,
             $request->file('video')
         );
 

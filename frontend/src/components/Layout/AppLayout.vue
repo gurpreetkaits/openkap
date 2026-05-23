@@ -1,328 +1,235 @@
 <template>
-  <div class="flex h-screen bg-white text-gray-600 overflow-hidden selection:bg-orange-100 selection:text-orange-700">
-    <!-- Sidebar - Hidden on mobile/tablet, shown on desktop (lg and up) -->
-    <aside
-  class="hidden lg:flex flex-col flex-shrink-0 h-full z-30 relative bg-white border-r border-gray-100 transition-all duration-300 ease-in-out"
-  :class="sidebarCollapsed ? 'w-16' : 'w-56'"
->
-  <!-- Collapse Toggle -->
-  <button
-    @click="toggleSidebarCollapsed"
-    class="absolute -right-3 top-[52px] z-50 w-6 h-6 bg-white border border-gray-200 rounded-full shadow-sm flex items-center justify-center text-gray-400 hover:text-gray-600 hover:shadow-md transition-all"
-    :title="sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'"
-  >
-    <svg class="w-3 h-3 transition-transform duration-300" :class="sidebarCollapsed ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/>
-    </svg>
-  </button>
-
-  <!-- Logo -->
-  <div class="h-14 flex items-center border-b border-gray-100 flex-shrink-0 overflow-hidden" :class="sidebarCollapsed ? 'justify-center px-3' : 'px-4'">
-    <router-link to="/videos" class="flex items-center gap-2.5 group cursor-pointer min-w-0" :class="sidebarCollapsed ? 'justify-center' : ''">
-      <img :src="branding.logoUrl.value || '/logo.png'" alt="OpenKap" class="w-7 h-7 rounded-lg shadow-sm flex-shrink-0" />
-      <span v-show="!sidebarCollapsed" class="text-gray-900 font-bold text-sm tracking-tight whitespace-nowrap">OpenKap</span>
-      <span
-        v-if="isAuthenticated && !sidebarCollapsed"
-        class="ml-auto text-[10px] font-semibold px-1.5 py-0.5 rounded-full flex-shrink-0"
-        :class="subscription?.is_active ? 'bg-orange-100 text-orange-600' : 'bg-gray-100 text-gray-500'"
-      >
-        {{ subscription?.is_active ? 'Pro' : 'Free' }}
-      </span>
-    </router-link>
-  </div>
-
-  <!-- Navigation Scroll Area -->
-  <div class="flex-1 overflow-y-auto py-4 overflow-x-hidden" :class="sidebarCollapsed ? 'px-2' : 'px-3'">
-    <!-- Record CTA Button -->
-    <button
-      v-if="!sidebarCollapsed"
-      @click="handleNewRecording"
-      class="flex items-center gap-2 w-full px-3 py-2.5 mb-5 bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium rounded-lg shadow-sm shadow-orange-100 transition-all cursor-pointer"
+  <div class="flex flex-col h-screen bg-white text-gray-600 overflow-hidden selection:bg-orange-100 selection:text-orange-700">
+    <!-- Top Navigation Header (replaces left sidebar) -->
+    <header
+      v-if="!isFullWidthRoute"
+      class="h-14 grid grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 lg:px-6 border-b border-gray-200 bg-white/90 backdrop-blur-md sticky top-0 z-30 flex-shrink-0"
     >
-      <div class="w-4 h-4 rounded-full bg-white/25 flex items-center justify-center flex-shrink-0">
-        <svg class="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 10 10"><circle cx="5" cy="5" r="4"/></svg>
-      </div>
-      New Recording
-    </button>
-    <button
-      v-else
-      @click="handleNewRecording"
-      class="w-full p-2.5 mb-5 bg-orange-500 hover:bg-orange-600 text-white rounded-lg flex items-center justify-center transition-all cursor-pointer shadow-sm shadow-orange-100"
-      title="New Recording"
-    >
-      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><circle cx="10" cy="10" r="6"/></svg>
-    </button>
-
-    <nav class="space-y-0.5">
-      <!-- Admin Dashboard -->
-      <router-link
-        v-if="isAdmin"
-        to="/admin/dashboard"
-        class="group flex items-center rounded-lg transition-all font-medium text-sm"
-        :class="[
-          sidebarCollapsed ? 'justify-center px-2 py-2.5' : 'gap-3 px-3 py-2',
-          isActive('/admin/dashboard') ? 'text-orange-700 bg-orange-50 font-semibold' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-        ]"
-        :title="sidebarCollapsed ? 'Dashboard' : ''"
-      >
-        <svg class="w-4 h-4 flex-shrink-0 transition-colors" :class="isActive('/admin/dashboard') ? 'text-orange-500' : 'text-gray-400 group-hover:text-gray-600'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-        </svg>
-        <span v-show="!sidebarCollapsed" class="whitespace-nowrap overflow-hidden flex-1">Dashboard</span>
-        <span v-show="!sidebarCollapsed" class="ml-auto text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-orange-100 text-orange-700 flex-shrink-0">Admin</span>
-      </router-link>
-
-      <router-link
-        to="/videos"
-        class="group flex items-center rounded-lg transition-all font-medium text-sm"
-        :class="[
-          sidebarCollapsed ? 'justify-center px-2 py-2.5' : 'gap-3 px-3 py-2',
-          isActive('/videos') ? 'text-orange-700 bg-orange-50 font-semibold' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-        ]"
-        :title="sidebarCollapsed ? 'Library' : ''"
-      >
-        <svg class="w-4 h-4 flex-shrink-0 transition-colors" :class="isActive('/videos') ? 'text-orange-500' : 'text-gray-400 group-hover:text-gray-600'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
-        </svg>
-        <span v-show="!sidebarCollapsed" class="whitespace-nowrap overflow-hidden">Library</span>
-      </router-link>
-
-      <router-link
-        to="/analytics"
-        class="group flex items-center rounded-lg transition-all font-medium text-sm"
-        :class="[
-          sidebarCollapsed ? 'justify-center px-2 py-2.5' : 'gap-3 px-3 py-2',
-          isActive('/analytics') ? 'text-orange-700 bg-orange-50 font-semibold' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-        ]"
-        :title="sidebarCollapsed ? 'Analytics' : ''"
-      >
-        <svg class="w-4 h-4 flex-shrink-0 transition-colors" :class="isActive('/analytics') ? 'text-orange-500' : 'text-gray-400 group-hover:text-gray-600'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-        </svg>
-        <span v-show="!sidebarCollapsed" class="whitespace-nowrap overflow-hidden">Analytics</span>
-      </router-link>
-
-      <router-link
-        to="/playlists"
-        class="group flex items-center rounded-lg transition-all font-medium text-sm"
-        :class="[
-          sidebarCollapsed ? 'justify-center px-2 py-2.5' : 'gap-3 px-3 py-2',
-          isActive('/playlists') || route.path.startsWith('/playlist/') ? 'text-orange-700 bg-orange-50 font-semibold' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-        ]"
-        :title="sidebarCollapsed ? 'Playlists' : ''"
-      >
-        <svg class="w-4 h-4 flex-shrink-0 transition-colors" :class="isActive('/playlists') || route.path.startsWith('/playlist/') ? 'text-orange-500' : 'text-gray-400 group-hover:text-gray-600'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
-        </svg>
-        <span v-show="!sidebarCollapsed" class="whitespace-nowrap overflow-hidden">Playlists</span>
-      </router-link>
-
-      <router-link
-        to="/subscription"
-        class="group flex items-center rounded-lg transition-all font-medium text-sm"
-        :class="[
-          sidebarCollapsed ? 'justify-center px-2 py-2.5' : 'gap-3 px-3 py-2',
-          isActive('/subscription') ? 'text-orange-700 bg-orange-50 font-semibold' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-        ]"
-        :title="sidebarCollapsed ? 'Billing' : ''"
-      >
-        <svg class="w-4 h-4 flex-shrink-0 transition-colors" :class="isActive('/subscription') ? 'text-orange-500' : 'text-gray-400 group-hover:text-gray-600'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
-        </svg>
-        <span v-show="!sidebarCollapsed" class="whitespace-nowrap overflow-hidden">Billing</span>
-      </router-link>
-
-      <router-link
-        to="/settings"
-        class="group flex items-center rounded-lg transition-all font-medium text-sm"
-        :class="[
-          sidebarCollapsed ? 'justify-center px-2 py-2.5' : 'gap-3 px-3 py-2',
-          isActive('/settings') ? 'text-orange-700 bg-orange-50 font-semibold' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-        ]"
-        :title="sidebarCollapsed ? 'Settings' : ''"
-      >
-        <svg class="w-4 h-4 flex-shrink-0 transition-colors" :class="isActive('/settings') ? 'text-orange-500' : 'text-gray-400 group-hover:text-gray-600'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-        </svg>
-        <span v-show="!sidebarCollapsed" class="whitespace-nowrap overflow-hidden">Settings</span>
-      </router-link>
-    </nav>
-  </div>
-
-  <!-- Upgrade Badge (free plan) -->
-  <div v-if="isAuthenticated && subscription && !subscription.is_active && !sidebarCollapsed" class="px-3 pb-3">
-    <div
-      @click="router.push('/subscription')"
-      class="bg-gradient-to-r from-orange-50 to-orange-100/80 border border-orange-200/60 rounded-lg p-2.5 relative overflow-hidden group cursor-pointer transition-all hover:shadow-sm hover:border-orange-300"
-    >
-      <div class="relative z-10">
-        <div class="mb-1.5">
-          <span class="text-[10px] font-bold text-orange-900 uppercase tracking-wide">Free Plan</span>
-        </div>
-        <div class="w-full bg-orange-200/50 h-1 rounded-full overflow-hidden mb-1.5">
-          <div
-            class="bg-gradient-to-r from-orange-500 to-orange-600 h-full rounded-full transition-all duration-500"
-            :style="{ width: subscriptionUsagePercent + '%' }"
-          ></div>
-        </div>
-        <div class="flex items-center justify-between">
-          <p class="text-[9px] text-orange-800 font-medium">{{ subscription?.videos_count || 0 }} / {{ subscription?.max_videos || 1 }} videos</p>
-          <svg class="w-2.5 h-2.5 text-orange-600 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-          </svg>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Monthly recording minutes usage (any plan with a cap) -->
-  <div
-    v-if="isAuthenticated && subscription?.monthly_recording_minutes_limit && !sidebarCollapsed"
-    class="px-3 pb-3"
-  >
-    <div
-      @click="router.push('/subscription')"
-      class="bg-white border border-gray-200 rounded-lg p-2.5 cursor-pointer transition-colors hover:border-gray-300"
-      :title="`${minutesUsed} of ${minutesLimit} recording minutes used this month`"
-    >
-      <div class="flex items-center justify-between mb-1.5">
-        <span class="text-[10px] font-semibold text-gray-700 uppercase tracking-wide">Recording minutes</span>
-        <span class="text-[10px] font-medium text-gray-500">{{ minutesUsed }} / {{ minutesLimit }}</span>
-      </div>
-      <div class="w-full bg-gray-100 h-1 rounded-full overflow-hidden">
-        <div
-          class="h-full rounded-full transition-all duration-500"
-          :class="minutesUsagePercent >= 90 ? 'bg-red-500' : 'bg-orange-500'"
-          :style="{ width: minutesUsagePercent + '%' }"
-        ></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- User Footer -->
-  <div v-if="isAuthenticated" class="p-3 border-t border-gray-100 flex-shrink-0 relative" ref="userDropdownRef">
-    <button
-      @click="showUserDropdown = !showUserDropdown"
-      class="w-full flex items-center rounded-lg hover:bg-gray-50 transition-all text-left group"
-      :class="sidebarCollapsed ? 'justify-center p-2' : 'gap-2.5 p-2'"
-      :title="sidebarCollapsed ? userInfo.name : ''"
-    >
-      <div class="relative flex-shrink-0">
-        <img
-          v-if="userInfo.avatar"
-          :src="userInfo.avatar"
-          :alt="userInfo.name"
-          class="w-8 h-8 rounded-full bg-gray-200 object-cover ring-2 ring-white ring-offset-1"
-        />
-        <div v-else class="w-8 h-8 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center ring-2 ring-white">
-          <span class="text-xs font-bold text-white">{{ userInfo.initial }}</span>
-        </div>
-        <div class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-400 rounded-full border-2 border-white"></div>
-      </div>
-      <div v-show="!sidebarCollapsed" class="flex-1 min-w-0">
-        <p class="text-sm font-medium text-gray-900 truncate leading-tight">{{ userInfo.name }}</p>
-        <p class="text-xs text-gray-500 truncate leading-tight">{{ subscription?.is_active ? 'Pro Plan' : 'Free Plan' }}</p>
-      </div>
-      <svg v-show="!sidebarCollapsed" class="w-3 h-3 text-gray-400 group-hover:text-gray-600 flex-shrink-0 transition-transform" :class="{ 'rotate-180': showUserDropdown }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
-      </svg>
-    </button>
-
-    <!-- User Dropdown Menu -->
-    <Transition name="dropdown">
-      <div
-        v-show="showUserDropdown"
-        class="absolute bottom-full left-2 right-2 mb-1.5 bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-50"
-      >
-        <router-link
-          to="/profile"
-          @click="showUserDropdown = false"
-          class="flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors rounded-lg mx-1"
-        >
-          <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-          </svg>
-          Profile
-        </router-link>
-        <div class="border-t border-gray-100 my-1 mx-2"></div>
-        <button
-          @click="showUserDropdown = false; showLogoutModal = true"
-          class="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors rounded-lg mx-1"
-          style="width: calc(100% - 8px);"
-        >
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
-          </svg>
-          Logout
-        </button>
-      </div>
-    </Transition>
-  </div>
-
-  <!-- Sign In Button (when not authenticated) -->
-  <div v-else class="px-3 py-3 border-t border-gray-100">
-    <button
-      v-if="!sidebarCollapsed"
-      @click="handleLogin"
-      class="flex items-center justify-center w-full px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-    >
-      <svg class="w-4 h-4 mr-2" viewBox="0 0 24 24">
-        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-      </svg>
-      Sign in with Google
-    </button>
-    <button
-      v-else
-      @click="handleLogin"
-      class="w-full p-2 text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center"
-      title="Sign in with Google"
-    >
-      <svg class="w-4 h-4" viewBox="0 0 24 24">
-        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-      </svg>
-    </button>
-  </div>
-</aside>
-
-    <!-- Main Content Area -->
-    <main class="flex-1 flex flex-col h-full overflow-hidden relative bg-[#F9FAFB]">
-      <!-- Top Bar / Header -->
-      <header v-if="!isFullWidthRoute" class="h-14 flex items-center justify-between px-4 lg:px-6 border-b border-gray-200 bg-white/80 backdrop-blur-md sticky top-0 z-20 flex-shrink-0">
+      <!-- Left: Mobile menu + Logo -->
+      <div class="flex items-center gap-3 min-w-0">
         <!-- Mobile Menu Button -->
         <button
           @click="sidebarOpen = true"
-          class="lg:hidden p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none"
+          class="lg:hidden p-2 -ml-2 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100 focus:outline-none"
         >
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
           </svg>
         </button>
 
-        <!-- Page Title (Desktop) -->
-        <div class="hidden lg:flex items-center gap-2">
-          <span class="text-sm text-gray-900 font-semibold">{{ currentPageName }}</span>
-        </div>
+        <!-- Logo -->
+        <router-link to="/videos" class="flex items-center gap-2.5 group cursor-pointer flex-shrink-0">
+          <img :src="branding.logoUrl.value || '/logo.png'" alt="OpenKap" class="w-7 h-7 rounded-lg shadow-sm" />
+          <span class="text-gray-900 font-bold text-sm tracking-tight">OpenKap</span>
+          <span
+            v-if="isAuthenticated"
+            class="text-[10px] font-semibold px-1.5 py-0.5 rounded-full"
+            :class="subscription?.is_active ? 'bg-orange-100 text-orange-600' : 'bg-gray-100 text-gray-500'"
+          >
+            {{ subscription?.is_active ? 'Pro' : 'Free' }}
+          </span>
+        </router-link>
+      </div>
 
-        <!-- Mobile Logo -->
-        <router-link to="/videos" class="lg:hidden flex items-center gap-2.5">
-          <img :src="branding.logoUrl.value || '/logo.png'" alt="OpenKap" class="w-7 h-7 rounded-lg" />
-          <span class="text-gray-900 font-semibold tracking-tight text-[15px]">OpenKap</span>
+      <!-- Center: Horizontal Nav (desktop only) -->
+      <nav
+        v-motion
+        :initial="{ opacity: 0, y: -4 }"
+        :enter="{ opacity: 1, y: 0, transition: { duration: 350, ease: 'easeOut' } }"
+        class="hidden lg:flex items-center gap-1 justify-self-center"
+      >
+        <router-link
+          v-if="isAdmin"
+          to="/admin/dashboard"
+          class="nav-item group flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-colors"
+          :class="isActive('/admin/dashboard') ? 'text-orange-700 bg-orange-50' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'"
+        >
+          <svg class="w-4 h-4 nav-icon" :class="isActive('/admin/dashboard') ? 'text-orange-500' : 'text-gray-400 group-hover:text-gray-600'" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+            <rect class="ico-dashboard-cell ico-dashboard-cell-1" x="3" y="3" width="7" height="9" rx="1.5"/>
+            <rect class="ico-dashboard-cell ico-dashboard-cell-2" x="14" y="3" width="7" height="5" rx="1.5"/>
+            <rect class="ico-dashboard-cell ico-dashboard-cell-3" x="14" y="12" width="7" height="9" rx="1.5"/>
+            <rect class="ico-dashboard-cell ico-dashboard-cell-4" x="3" y="16" width="7" height="5" rx="1.5"/>
+          </svg>
+          Dashboard
         </router-link>
 
-        <!-- Global Search & Actions -->
-        <div class="flex items-center gap-3">
-          <!-- Notifications -->
-          <NotificationBell />
-        </div>
-      </header>
+        <router-link
+          to="/videos"
+          class="nav-item group flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-colors"
+          :class="isActive('/videos') ? 'text-orange-700 bg-orange-50' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'"
+        >
+          <svg class="w-4 h-4 nav-icon" :class="isActive('/videos') ? 'text-orange-500' : 'text-gray-400 group-hover:text-gray-600'" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+            <rect class="ico-library-tile ico-library-tile-1" x="3" y="3" width="7" height="7" rx="1.5"/>
+            <rect class="ico-library-tile ico-library-tile-2" x="14" y="3" width="7" height="7" rx="1.5"/>
+            <rect class="ico-library-tile ico-library-tile-3" x="3" y="14" width="7" height="7" rx="1.5"/>
+            <rect class="ico-library-tile ico-library-tile-4" x="14" y="14" width="7" height="7" rx="1.5"/>
+          </svg>
+          Library
+        </router-link>
 
+        <router-link
+          to="/analytics"
+          class="nav-item group flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-colors"
+          :class="isActive('/analytics') ? 'text-orange-700 bg-orange-50' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'"
+        >
+          <svg class="w-4 h-4 nav-icon" :class="isActive('/analytics') ? 'text-orange-500' : 'text-gray-400 group-hover:text-gray-600'" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+            <path d="M3 3v17a1 1 0 0 0 1 1h17"/>
+            <line class="ico-chart-bar ico-chart-bar-1" x1="7" y1="18" x2="7" y2="13"/>
+            <line class="ico-chart-bar ico-chart-bar-2" x1="12" y1="18" x2="12" y2="9"/>
+            <line class="ico-chart-bar ico-chart-bar-3" x1="17" y1="18" x2="17" y2="5"/>
+          </svg>
+          Analytics
+        </router-link>
+
+        <router-link
+          to="/playlists"
+          class="nav-item group flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-colors"
+          :class="isActive('/playlists') || route.path.startsWith('/playlist/') ? 'text-orange-700 bg-orange-50' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'"
+        >
+          <svg class="w-4 h-4 nav-icon" :class="isActive('/playlists') || route.path.startsWith('/playlist/') ? 'text-orange-500' : 'text-gray-400 group-hover:text-gray-600'" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+            <line class="ico-playlist-line ico-playlist-line-1" x1="4" y1="6" x2="16" y2="6"/>
+            <line class="ico-playlist-line ico-playlist-line-2" x1="4" y1="12" x2="16" y2="12"/>
+            <line class="ico-playlist-line ico-playlist-line-3" x1="4" y1="18" x2="11" y2="18"/>
+            <polygon class="ico-playlist-play" points="16,15 21,18 16,21"/>
+          </svg>
+          Playlists
+        </router-link>
+
+        <router-link
+          to="/subscription"
+          class="nav-item group flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-colors"
+          :class="isActive('/subscription') ? 'text-orange-700 bg-orange-50' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'"
+        >
+          <svg class="w-4 h-4 nav-icon" :class="isActive('/subscription') ? 'text-orange-500' : 'text-gray-400 group-hover:text-gray-600'" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+            <g class="ico-billing-card">
+              <rect x="2" y="6" width="20" height="14" rx="2"/>
+              <line x1="2" y1="10" x2="22" y2="10"/>
+              <line x1="6" y1="15" x2="9" y2="15"/>
+            </g>
+          </svg>
+          Billing
+        </router-link>
+
+        <router-link
+          to="/settings"
+          class="nav-item group flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-colors"
+          :class="isActive('/settings') ? 'text-orange-700 bg-orange-50' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'"
+        >
+          <svg class="w-4 h-4 nav-icon" :class="isActive('/settings') ? 'text-orange-500' : 'text-gray-400 group-hover:text-gray-600'" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+            <g class="ico-settings-gear" style="transform-origin: 12px 12px;">
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.01a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.01a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </g>
+          </svg>
+          Settings
+        </router-link>
+      </nav>
+
+      <!-- Right: CTA + Bell + User -->
+      <div class="flex items-center gap-2 flex-shrink-0 justify-self-end">
+        <!-- Free plan: Upgrade pill -->
+        <button
+          v-if="isAuthenticated && subscription && !subscription.is_active"
+          @click="router.push('/subscription')"
+          class="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1.5 text-[12px] font-medium text-orange-700 bg-orange-50 hover:bg-orange-100 border border-orange-200/60 rounded-lg transition-colors"
+          :title="`${minutesUsed} / ${minutesLimit} min this month — click to upgrade`"
+        >
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+          </svg>
+          {{ minutesUsed }}/{{ minutesLimit }} min
+        </button>
+
+        <!-- New Recording -->
+        <button
+          v-if="isAuthenticated"
+          @click="handleNewRecording"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium rounded-lg shadow-sm shadow-orange-100 transition-all"
+        >
+          <div class="w-3.5 h-3.5 rounded-full bg-white/25 flex items-center justify-center">
+            <svg class="w-2 h-2" fill="currentColor" viewBox="0 0 10 10"><circle cx="5" cy="5" r="4"/></svg>
+          </div>
+          <span class="hidden sm:inline">New Recording</span>
+        </button>
+
+        <!-- Notifications -->
+        <NotificationBell v-if="isAuthenticated" />
+
+        <!-- User avatar / dropdown -->
+        <div v-if="isAuthenticated" class="relative" ref="userDropdownRef">
+          <button
+            @click="showUserDropdown = !showUserDropdown"
+            class="flex items-center gap-1.5 p-1 pr-1.5 rounded-full hover:bg-gray-100 transition-colors"
+            :title="userInfo.name"
+          >
+            <div class="relative">
+              <img
+                v-if="userInfo.avatar"
+                :src="userInfo.avatar"
+                :alt="userInfo.name"
+                class="w-7 h-7 rounded-full bg-gray-200 object-cover"
+              />
+              <div v-else class="w-7 h-7 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center">
+                <span class="text-xs font-bold text-white">{{ userInfo.initial }}</span>
+              </div>
+            </div>
+            <svg class="w-3 h-3 text-gray-400 transition-transform" :class="{ 'rotate-180': showUserDropdown }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+
+          <Transition name="dropdown">
+            <div
+              v-show="showUserDropdown"
+              class="absolute right-0 top-full mt-1.5 w-56 bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-50"
+            >
+              <div class="px-3 py-2 border-b border-gray-100">
+                <p class="text-sm font-medium text-gray-900 truncate">{{ userInfo.name }}</p>
+                <p class="text-xs text-gray-500 truncate">{{ subscription?.is_active ? 'Pro Plan' : 'Free Plan' }}</p>
+              </div>
+              <router-link
+                to="/profile"
+                @click="showUserDropdown = false"
+                class="flex items-center gap-2.5 px-3 py-2 mx-1 mt-1 text-sm text-gray-700 hover:bg-gray-50 transition-colors rounded-lg"
+              >
+                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                </svg>
+                Profile
+              </router-link>
+              <div class="border-t border-gray-100 my-1 mx-2"></div>
+              <button
+                @click="showUserDropdown = false; showLogoutModal = true"
+                class="w-[calc(100%-8px)] flex items-center gap-2.5 px-3 py-2 mx-1 text-sm text-red-600 hover:bg-red-50 transition-colors rounded-lg"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                </svg>
+                Logout
+              </button>
+            </div>
+          </Transition>
+        </div>
+
+        <!-- Sign in (unauthenticated) -->
+        <button
+          v-else
+          @click="handleLogin"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+        >
+          <svg class="w-4 h-4" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+          </svg>
+          Sign in
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 flex flex-col h-full overflow-hidden relative bg-[#F9FAFB]">
       <!-- Page Content -->
       <div class="flex-1 overflow-hidden scroll-smooth" :class="isFullWidthRoute ? 'bg-[#FAFAFA]' : 'overflow-y-auto overflow-x-hidden bg-white'">
         <div :class="isFullWidthRoute ? 'h-full' : 'p-6 lg:p-8'">
@@ -580,11 +487,6 @@ export default {
     const recording = useRecording()
     const branding = useBranding()
     const sidebarOpen = ref(false)
-    const sidebarCollapsed = ref(localStorage.getItem('sidebar_collapsed') === 'true')
-    const toggleSidebarCollapsed = () => {
-      sidebarCollapsed.value = !sidebarCollapsed.value
-      localStorage.setItem('sidebar_collapsed', String(sidebarCollapsed.value))
-    }
     const showLogoutModal = ref(false)
     const logoutLoading = ref(false)
     const showUserDropdown = ref(false)
@@ -628,26 +530,6 @@ export default {
 
     const isFullWidthRoute = computed(() => {
       return route.path.startsWith('/video/')
-    })
-
-    // Current page name for header
-    const currentPageName = computed(() => {
-      const pathMap = {
-        '/videos': 'Library',
-        '/workspaces': 'Workspaces',
-        '/playlists': 'Playlists',
-        '/profile': 'Profile',
-        '/subscription': 'Plans & Billing',
-        '/settings': 'Settings',
-        '/admin/dashboard': 'Admin Dashboard'
-      }
-      if (route.path.startsWith('/workspace/')) {
-        return 'Workspace'
-      }
-      if (route.path.startsWith('/folder/')) {
-        return 'Folder'
-      }
-      return pathMap[route.path] || 'Library'
     })
 
     const handleNewRecording = () => {
@@ -723,14 +605,11 @@ export default {
       isAdmin,
       isActive,
       isFullWidthRoute,
-      currentPageName,
       handleNewRecording,
       showExtensionModal,
       extensionStoreUrl,
       handleLogin,
-      handleLogout,
-      sidebarCollapsed,
-      toggleSidebarCollapsed
+      handleLogout
     }
   }
 }
@@ -775,5 +654,84 @@ export default {
 
 .notification-message a:hover {
   text-decoration: underline;
+}
+
+/* ============================================================== */
+/* Animated nav icons — slim lucide strokes, hover-only animation. */
+/* Each .nav-item is a `group`, so hovering anywhere on the menu   */
+/* button triggers the keyframes via group-hover.                  */
+/* ============================================================== */
+
+.nav-icon { transition: transform 0.2s ease; }
+.nav-icon * { transition: transform 0.2s ease, opacity 0.2s ease; }
+
+/* --- Dashboard (4 layout cells) ----------------------------------- */
+.ico-dashboard-cell { transform-origin: center; }
+.nav-item:hover .ico-dashboard-cell-1 { animation: dashCellPulse 0.6s ease 0s; }
+.nav-item:hover .ico-dashboard-cell-2 { animation: dashCellPulse 0.6s ease 0.06s; }
+.nav-item:hover .ico-dashboard-cell-3 { animation: dashCellPulse 0.6s ease 0.12s; }
+.nav-item:hover .ico-dashboard-cell-4 { animation: dashCellPulse 0.6s ease 0.18s; }
+@keyframes dashCellPulse {
+  0%, 100% { opacity: 1; }
+  40%      { opacity: 0.35; }
+}
+
+/* --- Library (2x2 tiles, stagger fade) ---------------------------- */
+.ico-library-tile { transform-origin: center; }
+.nav-item:hover .ico-library-tile-1 { animation: tileFlip 0.5s ease 0s; }
+.nav-item:hover .ico-library-tile-2 { animation: tileFlip 0.5s ease 0.08s; }
+.nav-item:hover .ico-library-tile-3 { animation: tileFlip 0.5s ease 0.16s; }
+.nav-item:hover .ico-library-tile-4 { animation: tileFlip 0.5s ease 0.24s; }
+@keyframes tileFlip {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(0.6); }
+  100% { transform: scale(1); }
+}
+
+/* --- Analytics (3 bars rising) ------------------------------------ */
+.ico-chart-bar { transform-origin: center bottom; }
+.nav-item:hover .ico-chart-bar-1 { animation: barGrow 0.55s ease 0s; }
+.nav-item:hover .ico-chart-bar-2 { animation: barGrow 0.55s ease 0.08s; }
+.nav-item:hover .ico-chart-bar-3 { animation: barGrow 0.55s ease 0.16s; }
+@keyframes barGrow {
+  0%   { transform: scaleY(0.1); }
+  100% { transform: scaleY(1); }
+}
+
+/* --- Playlists (lines slide right, play pulses) ------------------- */
+.ico-playlist-line { transform-origin: left center; }
+.nav-item:hover .ico-playlist-line-1 { animation: lineSlide 0.45s ease 0s; }
+.nav-item:hover .ico-playlist-line-2 { animation: lineSlide 0.45s ease 0.07s; }
+.nav-item:hover .ico-playlist-line-3 { animation: lineSlide 0.45s ease 0.14s; }
+.nav-item:hover .ico-playlist-play  { animation: playPop  0.45s ease 0.2s;  transform-origin: 18px 18px; }
+@keyframes lineSlide {
+  0%   { transform: translateX(-3px); opacity: 0.3; }
+  100% { transform: translateX(0);    opacity: 1; }
+}
+@keyframes playPop {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.25); }
+}
+
+/* --- Billing (card tilt + swipe) ---------------------------------- */
+.ico-billing-card { transform-origin: 12px 13px; }
+.nav-item:hover .ico-billing-card { animation: cardTilt 0.6s ease; }
+@keyframes cardTilt {
+  0%   { transform: rotate(0) translateX(0); }
+  40%  { transform: rotate(-6deg) translateX(-1px); }
+  100% { transform: rotate(0) translateX(0); }
+}
+
+/* --- Settings (gear rotate) --------------------------------------- */
+.nav-item:hover .ico-settings-gear { animation: gearSpin 0.7s ease; }
+@keyframes gearSpin {
+  0%   { transform: rotate(0); }
+  100% { transform: rotate(90deg); }
+}
+
+/* Slow down all icon animations and disable on reduced-motion users */
+@media (prefers-reduced-motion: reduce) {
+  .nav-item:hover .nav-icon *,
+  .nav-item:hover .nav-icon { animation: none !important; }
 }
 </style>

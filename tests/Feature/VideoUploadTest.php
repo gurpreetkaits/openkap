@@ -9,8 +9,11 @@ use App\Jobs\UploadToBunnyJob;
 use App\Models\Setting;
 use App\Models\User;
 use App\Models\Video;
+use App\Models\Workspace;
+use App\Services\VideoProbeService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
@@ -210,6 +213,57 @@ class VideoUploadTest extends TestCase
 
         Queue::assertNotPushed(UploadToBunnyJob::class);
         Queue::assertNotPushed(RemuxWebmJob::class);
+    }
+
+    #[Test]
+    public function upload_stores_file_size_and_credits_workspace_storage(): void
+    {
+        $this->configureBunny(true);
+
+        $workspace = Workspace::factory()->create(['owner_id' => $this->user->id]);
+        $startingStorage = (int) $workspace->fresh()->storage_used_bytes;
+
+        $this->actingAs($this->user)
+            ->postJson('/api/videos', $this->uploadPayload('Storage check'))
+            ->assertCreated();
+
+        $video = Video::where('user_id', $this->user->id)->firstOrFail();
+        $this->assertGreaterThan(0, (int) $video->file_size_bytes, 'file_size_bytes must be set from the uploaded file');
+        $this->assertSame(
+            $startingStorage + (int) $video->file_size_bytes,
+            (int) $workspace->fresh()->storage_used_bytes,
+            'workspace storage_used_bytes must grow by the uploaded file size',
+        );
+    }
+
+    #[Test]
+    public function upload_credits_monthly_recording_seconds_with_probed_duration(): void
+    {
+        $this->configureBunny(true);
+
+        // Stub the probe service so we don't depend on a real ffprobe binary.
+        $this->instance(VideoProbeService::class, new class extends VideoProbeService
+        {
+            public function probeDurationSeconds(string $filePath): ?int
+            {
+                return 42;
+            }
+        });
+
+        $user = User::factory()->create([
+            'monthly_recording_seconds_used' => 0,
+            'monthly_recording_period_start' => Carbon::now()->startOfMonth(),
+        ]);
+
+        $this->actingAs($user)
+            ->postJson('/api/videos', $this->uploadPayload('With duration'))
+            ->assertCreated();
+
+        $user->refresh();
+        $this->assertSame(42, (int) $user->monthly_recording_seconds_used);
+
+        $video = Video::where('user_id', $user->id)->firstOrFail();
+        $this->assertSame(42, (int) $video->duration);
     }
 
     #[Test]

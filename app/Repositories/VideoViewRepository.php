@@ -12,17 +12,27 @@ class VideoViewRepository extends BaseRepository
         parent::__construct(new VideoView);
     }
 
-    public function findRecentView(int $videoId, ?int $userId, ?string $ipAddress): ?VideoView
+    public function findRecentView(int $videoId, ?int $userId, ?string $ipAddress, ?string $sessionId = null): ?VideoView
     {
         return VideoView::where('video_id', $videoId)
-            ->where(function ($query) use ($userId, $ipAddress) {
-                if ($userId) {
+            ->where(function ($query) use ($userId, $ipAddress, $sessionId) {
+                if ($sessionId) {
+                    $query->where('session_id', $sessionId);
+                } elseif ($userId) {
                     $query->where('user_id', $userId);
                 } else {
                     $query->where('ip_address', $ipAddress);
                 }
             })
             ->where('viewed_at', '>', now()->subHour())
+            ->first();
+    }
+
+    public function findBySessionId(int $videoId, string $sessionId): ?VideoView
+    {
+        return VideoView::where('video_id', $videoId)
+            ->where('session_id', $sessionId)
+            ->orderByDesc('viewed_at')
             ->first();
     }
 

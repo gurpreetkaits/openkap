@@ -3,7 +3,6 @@
 namespace App\Managers;
 
 use App\Data\VideoEditData;
-use App\Jobs\ApplyVideoEditsJob;
 use App\Jobs\ConvertVideoToMp4ForDownloadJob;
 use App\Jobs\GenerateSummaryJob;
 use App\Jobs\GenerateThumbnailJob;
@@ -13,6 +12,7 @@ use App\Jobs\UploadToBunnyJob;
 use App\Models\Reaction;
 use App\Models\User;
 use App\Models\Video;
+use App\Repositories\UserRepository;
 use App\Repositories\UserSettingRepository;
 use App\Repositories\VideoEditRepository;
 use App\Repositories\VideoRepository;
@@ -20,6 +20,7 @@ use App\Repositories\VideoZoomSettingRepository;
 use App\Repositories\WorkspaceRepository;
 use App\Services\BunnyStreamService;
 use App\Services\CaptionService;
+use App\Services\VideoProbeService;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Log;
 
@@ -32,7 +33,9 @@ class VideoManager
         protected UserSettingRepository $userSettings,
         protected WorkspaceRepository $workspaces,
         protected VideoEditRepository $videoEdits,
-        protected CaptionService $captionService
+        protected CaptionService $captionService,
+        protected VideoProbeService $videoProbe,
+        protected UserRepository $users,
     ) {}
 
     public function getUserVideos(int $userId): array
@@ -103,9 +106,38 @@ class VideoManager
         $video->addMedia($videoFile)->toMediaCollection('videos');
 
         $media = $video->getFirstMedia('videos');
-        $originalExtension = pathinfo($media->file_name, PATHINFO_EXTENSION);
-        if ($data['duration'] ?? null) {
-            $this->videos->updateVideo($video, ['duration' => $data['duration']]);
+
+        // Duration was probed by the controller before this manager was called.
+        // If probing failed there (null), fall back to probing the persisted
+        // media file — same outcome, just slower because the file has now
+        // moved off the temp upload path.
+        $duration = $data['duration'] ?? null;
+        if ($duration === null && $media) {
+            $duration = $this->videoProbe->probeDurationSeconds($media->getPath());
+        }
+
+        $fileSize = $media ? (int) $media->size : 0;
+
+        $updateFields = ['file_size_bytes' => $fileSize];
+        if ($duration !== null) {
+            $updateFields['duration'] = $duration;
+        }
+        $this->videos->updateVideo($video, $updateFields);
+        $video->refresh();
+
+        // Charge the uploader's monthly recording counter immediately using
+        // the server-probed duration. Async paths (Bunny webhook,
+        // RemuxWebmJob) skip crediting when duration is already > 0, so
+        // there is no double-counting.
+        if ($duration && $duration > 0) {
+            $this->users->incrementMonthlyRecordingSeconds($user, $duration);
+        }
+
+        // Reserve workspace storage right away so quota usage reflects this
+        // upload — the Bunny webhook re-runs recalculateStorage() once
+        // Bunny reports its final encoded size, which is the source of truth.
+        if ($workspace && $fileSize > 0) {
+            $this->workspaces->incrementStorage($workspace, $fileSize);
         }
 
         // Defer all encoding/thumbnail/transcription work to background jobs so
@@ -124,12 +156,8 @@ class VideoManager
 
             Log::info('Dispatching UploadToBunnyJob', ['video_id' => $video->id]);
             UploadToBunnyJob::dispatch($video);
-            // Minutes are credited by BunnyWebhookController when the video
-            // reaches `ready` (single source of truth, uses Bunny's duration).
         } else {
             // Local-only: remux WebM to fix missing Duration and Cues (seek index).
-            // Minutes are credited inside RemuxWebmJob using the server-probed
-            // duration — we never trust the client-supplied value.
             RemuxWebmJob::dispatch($video);
         }
 
@@ -238,7 +266,7 @@ class VideoManager
     public function duplicateVideo(Video $video, User $user): Video
     {
         $newVideo = $this->videos->createVideo([
-            'title' => $video->title . ' (copy)',
+            'title' => $video->title.' (copy)',
             'description' => $video->description,
             'duration' => $video->duration,
             'has_audio' => $video->has_audio,
@@ -670,6 +698,49 @@ class VideoManager
                 'created_at' => $video->created_at->toISOString(),
                 'updated_at' => $video->updated_at->toISOString(),
                 // Bunny Stream fields
+                'storage_type' => $video->storage_type,
+                'bunny_status' => $video->bunny_status,
+                'bunny_video_id' => $video->bunny_video_id,
+            ];
+        })->toArray();
+    }
+
+    public function getArchivedVideos(int $userId): array
+    {
+        $videos = $this->videos->findArchivedByUserId($userId);
+
+        return $videos->map(function ($video) {
+            $thumbnail = $video->media->where('collection_name', 'thumbnails')->first();
+            $thumbnailUrl = $thumbnail ? $thumbnail->getUrl() : null;
+
+            return [
+                'id' => $video->id,
+                'title' => $video->title,
+                'description' => $video->description,
+                'duration' => $video->duration,
+                'url' => url("/api/share/video/{$video->share_token}/stream"),
+                'hls_url' => $video->getHlsUrl(),
+                'thumbnail' => $thumbnailUrl,
+                'share_url' => $video->getShareUrl(),
+                'is_public' => $video->is_public,
+                'is_favourite' => $video->is_favourite ?? false,
+                'views_count' => $video->views_count ?? 0,
+                'comments_count' => $video->comments_count ?? 0,
+                'reactions_count' => $video->reactions_count ?? 0,
+                'conversion_status' => $video->conversion_status,
+                'conversion_progress' => $video->conversion_progress,
+                'is_converting' => in_array($video->conversion_status, ['pending', 'processing']),
+                'hls_status' => $video->hls_status ?? 'pending',
+                'hls_progress' => $video->hls_progress ?? 0,
+                'is_hls_ready' => $video->isReadyForPlayback(),
+                'transcription_status' => $video->transcription_status ?? 'pending',
+                'transcription_progress' => $video->transcription_progress ?? 0,
+                'is_transcription_ready' => $video->isTranscriptionReady(),
+                'summary_status' => $video->summary_status ?? 'pending',
+                'is_summary_ready' => $video->isSummaryReady(),
+                'created_at' => $video->created_at->toISOString(),
+                'updated_at' => $video->updated_at->toISOString(),
+                'archived_at' => $video->archived_at?->toISOString(),
                 'storage_type' => $video->storage_type,
                 'bunny_status' => $video->bunny_status,
                 'bunny_video_id' => $video->bunny_video_id,

@@ -63,8 +63,8 @@
                 </span>
               </div>
               <p class="text-xs text-gray-500 mt-0.5">
-                <template v-if="subscription?.plan_type === 'free'">
-                  {{ subscription?.videos_count || 0 }} / {{ subscription?.max_videos || settings.free_plan?.max_videos || 5 }} videos used
+                <template v-if="subscription?.plan_type === 'free' && subscription?.monthly_recording_minutes_limit">
+                  {{ subscription?.monthly_recording_minutes_used || 0 }} / {{ subscription?.monthly_recording_minutes_limit }} minutes used this month
                 </template>
                 <template v-else-if="subscription?.is_in_grace_period">
                   Cancels on {{ formatDate(subscription.expires_at) }}
@@ -99,19 +99,6 @@
             >
               {{ canceling ? 'Processing...' : 'Cancel Plan' }}
             </button>
-          </div>
-        </div>
-        <!-- Usage bar for free plan -->
-        <div v-if="subscription?.plan_type === 'free'" class="mt-4 pt-4 border-t border-gray-100">
-          <div class="flex items-center justify-between text-xs text-gray-500 mb-1.5">
-            <span>Videos used</span>
-            <span class="font-medium text-gray-900">{{ subscription?.videos_count || 0 }} / {{ subscription?.max_videos || settings.free_plan?.max_videos || 5 }}</span>
-          </div>
-          <div class="w-full bg-gray-100 h-1.5 rounded-full overflow-hidden">
-            <div
-              class="bg-orange-500 h-full rounded-full transition-all duration-500"
-              :style="{ width: Math.min(((subscription?.videos_count || 0) / (subscription?.max_videos || settings.free_plan?.max_videos || 5)) * 100, 100) + '%' }"
-            ></div>
           </div>
         </div>
         <!-- Monthly recording minutes usage (all plans with a cap) -->
@@ -228,6 +215,7 @@ const proFeatures = computed(() => {
   const cap = settings.value.subscription?.pro_monthly_recording_minutes_limit ?? 500
   return [
     'Unlimited videos',
+    'Unlimited recording length',
     `${cap} recording minutes / month`,
     'HLS streaming',
     'Priority support',

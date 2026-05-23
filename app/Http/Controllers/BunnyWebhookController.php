@@ -119,6 +119,7 @@ class BunnyWebhookController extends Controller
         }
 
         $wasReadyBefore = $video->bunny_status === 'ready';
+        $priorDuration = (int) ($video->duration ?? 0);
         $video->update($updateData);
 
         // Recalculate workspace storage if video belongs to a workspace
@@ -142,9 +143,11 @@ class BunnyWebhookController extends Controller
             }
 
             // Charge the user's monthly recording-minutes counter exactly once,
-            // using Bunny's authoritative duration.
+            // using Bunny's authoritative duration. Skip if duration was
+            // already credited at upload time (VideoManager::createVideo
+            // probes via ffprobe and increments synchronously when known).
             $duration = (int) ($updateData['duration'] ?? $video->duration ?? 0);
-            if ($duration > 0 && $video->user_id) {
+            if ($duration > 0 && $priorDuration === 0 && $video->user_id) {
                 try {
                     $video->loadMissing('user');
                     if ($video->user) {

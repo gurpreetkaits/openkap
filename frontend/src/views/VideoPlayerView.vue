@@ -440,8 +440,8 @@
                 @seeking="isBuffering = true"
                 @seeked="isBuffering = false"
                 @waiting="isBuffering = true"
-                @play="isPlaying = true"
-                @pause="isPlaying = false"
+                @play="onVideoPlay"
+                @pause="onVideoPause"
                 @error="onVideoError"
                 playsinline
               >
@@ -1357,6 +1357,7 @@ import { useAuth } from '@/stores/auth'
 import { useBranding } from '@/composables/useBranding'
 import videoService from '@/services/videoService'
 import integrationService from '@/services/integrationService'
+import { createTracker, buildViewPayload } from '@/services/analyticsTracker'
 import SBConfirmModal from '@/components/Global/SBConfirmModal.vue'
 import VideoShareIntegrations from '@/components/VideoShareIntegrations.vue'
 import NotificationBell from '@/components/Global/NotificationBell.vue'
@@ -2185,6 +2186,17 @@ export default {
       }
     }
 
+    // Analytics tracker — set up in onMounted, stopped in onUnmounted.
+    let analyticsTracker = null
+    const onVideoPlay = () => {
+      isPlaying.value = true
+      analyticsTracker?.start()
+    }
+    const onVideoPause = () => {
+      isPlaying.value = false
+      analyticsTracker?.flush()
+    }
+
     const updateProgress = () => {
       if (!videoRef.value) return
       currentTime.value = videoRef.value.currentTime
@@ -2226,6 +2238,7 @@ export default {
     const onVideoEnded = () => {
       isPlaying.value = false
       showBigPlayButton.value = true
+      analyticsTracker?.flush()
     }
 
     const seekToPosition = (clientX) => {
@@ -3284,19 +3297,27 @@ export default {
 
       await fetchVideo()
 
+      const trackingPayload = buildViewPayload()
+
       if (isSharedMode.value) {
-        // Record view for shared
         if (token.value) {
-          videoService.recordSharedView(token.value).catch(() => {})
+          videoService.recordSharedView(token.value, trackingPayload).catch(() => {})
+          analyticsTracker = createTracker({
+            shareToken: token.value,
+            getVideoEl: () => videoRef.value,
+          })
         }
       } else {
-        // Owner mode: load comments, transcription, check Jira
         await loadComments()
         await loadTranscriptionData()
         checkJiraConnectivity()
 
         if (video.value.id) {
-          videoService.recordView(video.value.id).catch(() => {})
+          videoService.recordView(video.value.id, 0, false, trackingPayload).catch(() => {})
+          analyticsTracker = createTracker({
+            videoId: video.value.id,
+            getVideoEl: () => videoRef.value,
+          })
         }
       }
 
@@ -3315,6 +3336,8 @@ export default {
       destroyAudioAnalyser()
       destroyHls()
       if (cameraStatusPollTimer) { clearInterval(cameraStatusPollTimer); cameraStatusPollTimer = null }
+      analyticsTracker?.stop()
+      analyticsTracker = null
     })
 
     return {
@@ -3329,7 +3352,7 @@ export default {
       speedOptions, toggleSpeedMenu,
       availableQualities, currentQuality, showQualityMenu, qualityMenuRef,
       setQuality, toggleQualityMenu, getCurrentQualityLabel,
-      togglePlay, updateProgress, onVideoLoaded, onVideoError, onVideoEnded, seek, startSeeking, updateHoverTime,
+      togglePlay, updateProgress, onVideoLoaded, onVideoError, onVideoEnded, onVideoPlay, onVideoPause, seek, startSeeking, updateHoverTime,
       skip, toggleMute, updateVolume, setPlaybackSpeed, toggleFullscreen,
       showControls: showControls_fn, hideControlsDelayed, formatTime, formatTimeAgo, formatCommentTime,
       copyShareLink, copyEmbedCode, shareUrl,

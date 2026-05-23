@@ -1,8 +1,9 @@
 <?php
 
 use App\Http\Controllers\AdminDashboardController;
-use App\Http\Controllers\BunnyVideoController;
+use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\Auth\GoogleAuthController;
+use App\Http\Controllers\BunnyVideoController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\ClipForgeController;
 use App\Http\Controllers\CommentController;
@@ -12,6 +13,7 @@ use App\Http\Controllers\HlsController;
 use App\Http\Controllers\IntegrationController;
 use App\Http\Controllers\MarkdownBlogController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\PlaylistController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReactionController;
@@ -21,7 +23,6 @@ use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\VideoController;
 use App\Http\Controllers\VideoViewController;
-use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\WorkspaceController;
 use App\Http\Controllers\WorkspaceInvitationController;
 use App\Http\Controllers\WorkspaceMemberController;
@@ -83,6 +84,8 @@ Route::get('/share/video/{token}/comments', [CommentController::class, 'indexByT
     ->middleware('throttle:60,1');
 Route::get('/share/video/{token}/commenters', [CommentController::class, 'commentersByToken'])
     ->middleware('throttle:60,1');
+Route::post('/share/video/{token}/progress', [VideoViewController::class, 'recordSharedProgress'])
+    ->middleware('throttle:120,1');
 Route::post('/share/video/{token}/view', [VideoViewController::class, 'recordSharedView'])
     ->middleware([OptionalSanctumAuthMiddleware::class, 'throttle:30,1']);
 
@@ -123,6 +126,9 @@ Route::get('/share/screenshot/{token}', [ScreenshotController::class, 'viewShare
 // ============================================
 
 Route::middleware('auth:sanctum')->group(function () {
+    // Analytics dashboard
+    Route::get('/analytics', [AnalyticsController::class, 'index']);
+
     // Onboarding
     Route::post('/onboarding/complete', [OnboardingController::class, 'complete']);
 
@@ -203,6 +209,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('videos')->group(function () {
         Route::get('/', [VideoController::class, 'index']);
         Route::get('/favourites', [VideoController::class, 'favourites']);
+        Route::get('/archived', [VideoController::class, 'archived']);
 
         // Video upload requires subscription limit check
         Route::post('/', [VideoController::class, 'store'])
@@ -240,6 +247,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // Views tracking
         Route::post('/{id}/view', [VideoViewController::class, 'recordView']);
+        Route::post('/{id}/progress', [VideoViewController::class, 'recordProgress'])->middleware('throttle:120,1');
         Route::get('/{id}/stats', [VideoViewController::class, 'getStats']);
 
         // Transcription and summary

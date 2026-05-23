@@ -60,6 +60,30 @@ class VideoService {
   }
 
   /**
+   * Fetch archived videos for the current user
+   */
+  async getArchivedVideos() {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/videos/archived`, {
+        method: 'GET',
+        headers: getAuthHeaders()
+      })
+
+      if (handleUnauthorized(response)) return []
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch archived videos: ${response.statusText}`)
+      }
+
+      const data = await response.json()
+      return data.videos || []
+    } catch (error) {
+      console.error('Error fetching archived videos:', error)
+      throw error
+    }
+  }
+
+  /**
    * Get a specific video by ID
    */
   async getVideo(id) {
@@ -361,53 +385,53 @@ class VideoService {
   }
 
   /**
-   * Record a video view
+   * Record a video view (owner / auth context).
+   * tracking: { referrer, timezone, session_id }
    */
-  async recordView(videoId, watchDuration = 0, completed = false) {
+  async recordView(videoId, watchDuration = 0, completed = false, tracking = {}) {
     try {
       const response = await fetch(`${API_BASE_URL}/api/videos/${videoId}/view`, {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify({
           watch_duration: watchDuration,
-          completed
+          completed,
+          ...tracking,
         })
       })
 
       if (handleUnauthorized(response)) return null
 
       if (!response.ok) {
-        // Failed to record view
         return null
       }
 
       const data = await response.json()
       return data
     } catch (error) {
-      // Error recording view
       return null
     }
   }
 
   /**
-   * Record a view for a shared video
+   * Record a view for a shared video.
+   * tracking: { referrer, timezone, session_id }
    */
-  async recordSharedView(shareToken) {
+  async recordSharedView(shareToken, tracking = {}) {
     try {
       const response = await fetch(`${API_BASE_URL}/api/share/video/${shareToken}/view`, {
         method: 'POST',
-        headers: getAuthHeaders()
+        headers: getAuthHeaders(),
+        body: JSON.stringify(tracking),
       })
 
       if (!response.ok) {
-        // Failed to record shared view
         return null
       }
 
       const data = await response.json()
       return data
     } catch (error) {
-      // Error recording shared view
       return null
     }
   }

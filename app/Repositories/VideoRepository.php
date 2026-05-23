@@ -110,7 +110,18 @@ class VideoRepository extends BaseRepository
         return Video::with('media')
             ->where('user_id', $userId)
             ->where('is_favourite', true)
+            ->whereNull('archived_at')
             ->latest()
+            ->withCount(['views', 'comments', 'reactions'])
+            ->get();
+    }
+
+    public function findArchivedByUserId(int $userId): Collection
+    {
+        return Video::with('media')
+            ->where('user_id', $userId)
+            ->whereNotNull('archived_at')
+            ->latest('archived_at')
             ->withCount(['views', 'comments', 'reactions'])
             ->get();
     }
