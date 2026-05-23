@@ -97,6 +97,12 @@ const routes = [
         component: () => import("../views/AdminDashboardView.vue"),
         meta: { requiresAdmin: true }
       },
+      {
+        path: "admin/support",
+        name: "AdminSupport",
+        component: () => import("../views/AdminSupportView.vue"),
+        meta: { requiresAdmin: true }
+      },
     ]
   },
   {

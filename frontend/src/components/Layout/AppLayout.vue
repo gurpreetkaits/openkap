@@ -54,6 +54,18 @@
         </router-link>
 
         <router-link
+          v-if="isAdmin"
+          to="/admin/support"
+          class="nav-item group flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-colors"
+          :class="isActive('/admin/support') ? 'text-orange-700 bg-orange-50' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'"
+        >
+          <svg class="w-4 h-4 nav-icon" :class="isActive('/admin/support') ? 'text-orange-500' : 'text-gray-400 group-hover:text-gray-600'" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+          </svg>
+          Support
+        </router-link>
+
+        <router-link
           to="/videos"
           class="nav-item group flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-colors"
           :class="isActive('/videos') ? 'text-orange-700 bg-orange-50' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'"
@@ -282,6 +294,21 @@
               <span class="ml-auto text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-orange-100 text-orange-700">Admin</span>
             </router-link>
 
+            <!-- Admin Support (Mobile) -->
+            <router-link
+              v-if="isAdmin"
+              to="/admin/support"
+              @click="sidebarOpen = false"
+              class="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all group"
+              :class="isActive('/admin/support') ? 'text-gray-900 bg-gray-50' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'"
+            >
+              <svg class="w-4 h-4 transition-colors" :class="isActive('/admin/support') ? 'text-orange-600' : 'text-gray-400 group-hover:text-gray-600'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+              </svg>
+              Support
+              <span class="ml-auto text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-orange-100 text-orange-700">Admin</span>
+            </router-link>
+
             <router-link
               to="/videos"
               @click="sidebarOpen = false"
@@ -458,6 +485,9 @@
 
     <!-- AI Chat Widget (hidden for now) -->
     <!-- <ChatbotWidget /> -->
+
+    <!-- Support Chat Widget (hidden for admins; they use the admin inbox) -->
+    <SupportChatWidget v-if="isAuthenticated && !isAdmin" />
   </div>
 </template>
 
@@ -468,6 +498,7 @@ import { SBLogoutModal } from '../Global'
 import RecordingSetupPanel from '../Global/RecordingSetupPanel.vue'
 import ChatbotWidget from '../Global/ChatbotWidget.vue'
 import NotificationBell from '../Global/NotificationBell.vue'
+import SupportChatWidget from '../SupportChatWidget.vue'
 import { useAuth } from '@/stores/auth'
 import { useRecording } from '@/composables/useRecording'
 import { useBranding } from '@/composables/useBranding'
@@ -478,7 +509,8 @@ export default {
     SBLogoutModal,
     RecordingSetupPanel,
     ChatbotWidget,
-    NotificationBell
+    NotificationBell,
+    SupportChatWidget
   },
   setup() {
     const route = useRoute()

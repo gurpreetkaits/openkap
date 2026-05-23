@@ -52,81 +52,6 @@
       </div>
     </div>
 
-    <!-- Paywall (free users) -->
-    <div v-else-if="analytics && analytics.paywall" class="flex justify-center pt-4 sm:pt-12">
-      <div class="relative w-full max-w-md bg-white rounded-2xl border border-gray-200 shadow-sm p-8 text-center overflow-hidden">
-
-        <!-- Soft gradient backdrop -->
-        <div class="absolute -top-20 -right-16 w-56 h-56 rounded-full bg-orange-100/60 blur-3xl pointer-events-none"></div>
-        <div class="absolute -bottom-24 -left-12 w-56 h-56 rounded-full bg-amber-100/40 blur-3xl pointer-events-none"></div>
-
-        <!-- Faux chart preview, blurred -->
-        <div class="relative h-24 mb-6 select-none" aria-hidden="true">
-          <svg viewBox="0 0 320 96" class="w-full h-full opacity-60" style="filter: blur(2px);">
-            <defs>
-              <linearGradient id="paywallG" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="#f97316" stop-opacity="0.35"/>
-                <stop offset="100%" stop-color="#f97316" stop-opacity="0"/>
-              </linearGradient>
-            </defs>
-            <path d="M 0 70 C 40 65, 80 50, 120 55 S 200 30, 240 22 S 300 10, 320 18 L 320 96 L 0 96 Z" fill="url(#paywallG)"/>
-            <path d="M 0 70 C 40 65, 80 50, 120 55 S 200 30, 240 22 S 300 10, 320 18"
-              fill="none" stroke="#f97316" stroke-width="2.5" stroke-linecap="round"/>
-          </svg>
-          <div class="absolute inset-0 flex items-center justify-center">
-            <div class="w-12 h-12 rounded-full bg-white shadow-md ring-1 ring-gray-200 flex items-center justify-center">
-              <svg class="w-6 h-6 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-              </svg>
-            </div>
-          </div>
-        </div>
-
-        <div class="relative">
-          <div class="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-orange-600 bg-orange-50 border border-orange-100 rounded-full px-2.5 py-1 mb-3">
-            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M10 1.5l2.598 5.262 5.804.844-4.2 4.094.99 5.78L10 14.747l-5.192 2.733.99-5.78-4.2-4.094 5.804-.844L10 1.5z"/></svg>
-            Pro feature
-          </div>
-
-          <h2 class="text-xl font-bold text-gray-900 mb-2 leading-tight">
-            Curious who's actually watching?
-          </h2>
-          <p class="text-sm text-gray-500 leading-relaxed mb-6">
-            Analytics is a Pro thing. Upgrade and we'll show you who opened your videos, where they dropped off, and what made people hit reply.
-          </p>
-
-          <ul class="text-left text-sm text-gray-700 space-y-2.5 mb-7">
-            <li class="flex items-start gap-2.5">
-              <svg class="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-              <span>See exactly who watched, how far they got, and from where</span>
-            </li>
-            <li class="flex items-start gap-2.5">
-              <svg class="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-              <span>Spot the moments where viewers drop off</span>
-            </li>
-            <li class="flex items-start gap-2.5">
-              <svg class="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-              <span>Track replies, reactions, and which videos actually drive action</span>
-            </li>
-            <li class="flex items-start gap-2.5">
-              <svg class="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-              <span>Real-time viewer feed so you can follow up while it's warm</span>
-            </li>
-          </ul>
-
-          <router-link
-            :to="{ name: 'Subscription' }"
-            class="inline-flex w-full items-center justify-center gap-2 px-5 py-3 bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold rounded-lg transition-colors shadow-sm"
-          >
-            Upgrade to Pro
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
-          </router-link>
-
-          <p class="text-[11px] text-gray-400 mt-3">No commitment — cancel anytime.</p>
-        </div>
-      </div>
-    </div>
-
     <!-- Empty state -->
     <div v-else-if="isEmpty" class="bg-white rounded-xl border border-gray-100 shadow-sm p-16 text-center">
       <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-orange-50 mb-4">
@@ -138,46 +63,55 @@
       <p class="text-sm text-gray-500 max-w-xs mx-auto">Share your videos and analytics will appear here once viewers start watching.</p>
     </div>
 
-    <!-- Content -->
-    <template v-else-if="analytics">
+    <!-- Content (real dashboard for paid, blurred mock for free with overlay) -->
+    <div v-else-if="analytics" class="relative">
+
+      <!-- Blurred dashboard wrapper (visual only when paywalled) -->
+      <div
+        :class="[
+          'space-y-6 transition-all',
+          isPaywall ? 'pointer-events-none select-none [filter:blur(6px)] opacity-70' : ''
+        ]"
+        :aria-hidden="isPaywall ? 'true' : null"
+      >
 
       <!-- KPI grid -->
       <div class="grid grid-cols-2 lg:grid-cols-6 gap-3">
         <KpiCard
           label="Total views"
-          :value="formatNumber(analytics.overview.total_views)"
-          :delta="analytics.overview.total_views_delta"
+          :value="formatNumber(view.overview.total_views)"
+          :delta="view.overview.total_views_delta"
           icon-bg="bg-orange-100" icon-color="text-orange-500" :icon="iconEye"
         />
         <KpiCard
           label="Unique viewers"
-          :value="formatNumber(analytics.overview.unique_viewers)"
-          :delta="analytics.overview.unique_viewers_delta"
+          :value="formatNumber(view.overview.unique_viewers)"
+          :delta="view.overview.unique_viewers_delta"
           icon-bg="bg-blue-100" icon-color="text-blue-500" :icon="iconUsers"
         />
         <KpiCard
           label="Watch time"
-          :value="formatHours(analytics.overview.watch_time_seconds)"
-          :delta="analytics.overview.watch_time_delta"
+          :value="formatHours(view.overview.watch_time_seconds)"
+          :delta="view.overview.watch_time_delta"
           icon-bg="bg-green-100" icon-color="text-green-600" :icon="iconClock"
         />
         <KpiCard
           label="Engagement"
-          :value="`${analytics.overview.engagement_rate}%`"
-          :delta="analytics.overview.engagement_rate_delta"
+          :value="`${view.overview.engagement_rate}%`"
+          :delta="view.overview.engagement_rate_delta"
           delta-unit="pts"
           icon-bg="bg-purple-100" icon-color="text-purple-500" :icon="iconBolt"
         />
         <KpiCard
           label="Reactions"
-          :value="formatNumber(analytics.overview.reactions)"
-          :delta="analytics.overview.reactions_delta"
+          :value="formatNumber(view.overview.reactions)"
+          :delta="view.overview.reactions_delta"
           icon-bg="bg-pink-100" icon-color="text-pink-500" :icon="iconHeart"
         />
         <KpiCard
           label="Replies"
-          :value="formatNumber(analytics.overview.replies)"
-          :delta="analytics.overview.replies_delta"
+          :value="formatNumber(view.overview.replies)"
+          :delta="view.overview.replies_delta"
           icon-bg="bg-amber-100" icon-color="text-amber-500" :icon="iconChat"
         />
       </div>
@@ -270,7 +204,7 @@
               <g :transform="`translate(${Math.min(biggestDropX + 5, 540)}, 30)`">
                 <rect width="140" height="22" rx="6" fill="#fef2f2" stroke="#fecaca"/>
                 <text x="8" y="15" fill="#b91c1c" font-size="11" font-weight="600">
-                  ⚠ {{ analytics.retention.biggest_drop.drop_pct }}% drop at {{ formatTime(analytics.retention.biggest_drop.at_seconds) }}
+                  ⚠ {{ view.retention.biggest_drop.drop_pct }}% drop at {{ formatTime(view.retention.biggest_drop.at_seconds) }}
                 </text>
               </g>
             </g>
@@ -282,8 +216,8 @@
           <h2 class="text-sm font-semibold uppercase tracking-wide text-gray-900 mb-1">Viewer funnel</h2>
           <p class="text-xs text-gray-500 mb-4">Where viewers drop out.</p>
 
-          <div class="space-y-3" v-if="analytics.funnel && analytics.funnel.length">
-            <div v-for="(step, i) in analytics.funnel" :key="i">
+          <div class="space-y-3" v-if="view.funnel && view.funnel.length">
+            <div v-for="(step, i) in view.funnel" :key="i">
               <div class="flex justify-between text-xs text-gray-500 mb-1">
                 <span>{{ step.label }}</span>
                 <span class="font-semibold text-gray-700">{{ formatNumber(step.count) }} <span v-if="i > 0" class="text-gray-400 font-normal">· {{ step.percent }}%</span></span>
@@ -302,7 +236,7 @@
         <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5 lg:col-span-2">
           <h2 class="text-sm font-semibold uppercase tracking-wide text-gray-900 mb-4">Top performing videos</h2>
 
-          <div v-if="!analytics.top_videos || !analytics.top_videos.length" class="text-sm text-gray-400 italic py-6">No videos in this period yet.</div>
+          <div v-if="!view.top_videos || !view.top_videos.length" class="text-sm text-gray-400 italic py-6">No videos in this period yet.</div>
           <table v-else class="w-full">
             <thead>
               <tr class="text-[11px] uppercase tracking-wider text-gray-400">
@@ -314,7 +248,7 @@
               </tr>
             </thead>
             <tbody class="text-sm">
-              <tr v-for="(video, idx) in analytics.top_videos" :key="video.id" class="border-t border-gray-100">
+              <tr v-for="(video, idx) in view.top_videos" :key="video.id" class="border-t border-gray-100">
                 <td class="py-3">
                   <div class="flex items-center gap-3 min-w-0">
                     <span class="text-xs font-semibold text-gray-300 w-4 text-center flex-shrink-0">{{ idx + 1 }}</span>
@@ -340,9 +274,9 @@
 
         <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
           <h2 class="text-sm font-semibold uppercase tracking-wide text-gray-900 mb-4">Where viewers are</h2>
-          <div v-if="!analytics.top_countries.length" class="text-sm text-gray-400 italic">No location data yet.</div>
+          <div v-if="!view.top_countries.length" class="text-sm text-gray-400 italic">No location data yet.</div>
           <div v-else class="space-y-3">
-            <div v-for="c in analytics.top_countries" :key="c.country_code">
+            <div v-for="c in view.top_countries" :key="c.country_code">
               <div class="flex justify-between text-sm mb-1">
                 <span class="flex items-center gap-2 min-w-0 truncate">{{ countryFlag(c.country_code) }} {{ c.country }}</span>
                 <span class="text-gray-500 text-xs flex-shrink-0 ml-2">{{ formatNumber(c.views) }} · {{ c.percentage }}%</span>
@@ -353,9 +287,9 @@
             </div>
           </div>
 
-          <hr v-if="analytics.devices.length" class="my-4 border-gray-100"/>
-          <h3 v-if="analytics.devices.length" class="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-3">Devices</h3>
-          <div v-if="analytics.devices.length" class="flex items-end gap-2 h-20">
+          <hr v-if="view.devices.length" class="my-4 border-gray-100"/>
+          <h3 v-if="view.devices.length" class="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-3">Devices</h3>
+          <div v-if="view.devices.length" class="flex items-end gap-2 h-20">
             <div v-for="d in deviceBars" :key="d.device" class="flex-1 flex flex-col items-center justify-end gap-1">
               <div class="w-full rounded-t" :class="d.color" :style="{ height: `${Math.max(4, d.percentage)}%` }"></div>
               <span class="text-[10px] text-gray-500 capitalize">{{ d.device }}</span>
@@ -372,9 +306,9 @@
             <h2 class="text-sm font-semibold uppercase tracking-wide text-gray-900">Recent activity</h2>
             <span class="text-xs text-gray-400">Real-time</span>
           </div>
-          <div v-if="!analytics.recent_activity.length" class="text-sm text-gray-400 italic">No activity yet.</div>
+          <div v-if="!view.recent_activity.length" class="text-sm text-gray-400 italic">No activity yet.</div>
           <div v-else class="divide-y divide-gray-100 text-sm">
-            <div v-for="(a, i) in analytics.recent_activity" :key="i" class="flex items-center gap-3 py-2.5">
+            <div v-for="(a, i) in view.recent_activity" :key="i" class="flex items-center gap-3 py-2.5">
               <div class="w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-semibold text-white"
                 :class="activityAvatarClass(a)">
                 {{ activityAvatarLabel(a) }}
@@ -398,9 +332,9 @@
 
         <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
           <h2 class="text-sm font-semibold uppercase tracking-wide text-gray-900 mb-4">How they got there</h2>
-          <div v-if="!analytics.referrers.length" class="text-sm text-gray-400 italic">No referrer data yet.</div>
+          <div v-if="!view.referrers.length" class="text-sm text-gray-400 italic">No referrer data yet.</div>
           <ul v-else class="space-y-3 text-sm">
-            <li v-for="r in analytics.referrers" :key="r.source" class="flex items-center justify-between">
+            <li v-for="r in view.referrers" :key="r.source" class="flex items-center justify-between">
               <span class="flex items-center gap-2 capitalize">
                 <span class="w-2 h-2 rounded-full" :class="referrerDotClass(r.source)"></span>
                 {{ referrerLabel(r.source) }}
@@ -411,7 +345,69 @@
         </div>
       </div>
 
-    </template>
+      </div><!-- /blurred wrapper -->
+
+      <!-- Paywall overlay card -->
+      <div
+        v-if="isPaywall"
+        class="absolute inset-0 flex items-start justify-center pt-8 sm:pt-16 px-4"
+      >
+        <div class="pointer-events-auto relative w-full max-w-md bg-white rounded-2xl border border-gray-200 shadow-xl p-8 text-center overflow-hidden">
+          <div class="absolute -top-20 -right-16 w-56 h-56 rounded-full bg-orange-100/60 blur-3xl pointer-events-none"></div>
+          <div class="absolute -bottom-24 -left-12 w-56 h-56 rounded-full bg-amber-100/40 blur-3xl pointer-events-none"></div>
+
+          <div class="relative">
+            <div class="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-orange-600 bg-orange-50 border border-orange-100 rounded-full px-2.5 py-1 mb-4">
+              <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M10 1.5l2.598 5.262 5.804.844-4.2 4.094.99 5.78L10 14.747l-5.192 2.733.99-5.78-4.2-4.094 5.804-.844L10 1.5z"/></svg>
+              Pro feature
+            </div>
+
+            <div class="mx-auto w-14 h-14 rounded-2xl bg-gradient-to-br from-orange-100 to-amber-100 flex items-center justify-center mb-4 ring-1 ring-orange-200/50">
+              <svg class="w-7 h-7 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+              </svg>
+            </div>
+
+            <h2 class="text-xl font-bold text-gray-900 mb-2 leading-tight">
+              Curious who's actually watching?
+            </h2>
+            <p class="text-sm text-gray-500 leading-relaxed mb-6">
+              Analytics is a Pro thing. Upgrade and we'll show you who opened your videos, where they dropped off, and what made people hit reply.
+            </p>
+
+            <ul class="text-left text-sm text-gray-700 space-y-2.5 mb-7">
+              <li class="flex items-start gap-2.5">
+                <svg class="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                <span>See exactly who watched, how far they got, and from where</span>
+              </li>
+              <li class="flex items-start gap-2.5">
+                <svg class="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                <span>Spot the moments where viewers drop off</span>
+              </li>
+              <li class="flex items-start gap-2.5">
+                <svg class="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                <span>Track replies, reactions, and which videos actually drive action</span>
+              </li>
+              <li class="flex items-start gap-2.5">
+                <svg class="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                <span>Real-time viewer feed so you can follow up while it's warm</span>
+              </li>
+            </ul>
+
+            <router-link
+              :to="{ name: 'Subscription' }"
+              class="inline-flex w-full items-center justify-center gap-2 px-5 py-3 bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold rounded-lg transition-colors shadow-sm"
+            >
+              Upgrade to Pro
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+            </router-link>
+
+            <p class="text-[11px] text-gray-400 mt-3">No commitment — cancel anytime.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
   </div>
 </template>
 
@@ -465,13 +461,90 @@ const periodOptions = [
   { label: '12m', value: 365 },
 ]
 
+// Realistic-looking dummy payload shown behind the paywall card so free
+// users can see what's on offer at a glance — same shape as the paid API.
+const mockAnalytics = {
+  plan: 'pro',
+  is_paid: true,
+  overview: {
+    total_views: 12847, total_views_delta: 24,
+    unique_viewers: 3219, unique_viewers_delta: 11,
+    watch_time_seconds: 486 * 3600, watch_time_delta: 18,
+    engagement_rate: 68, engagement_rate_delta: 4,
+    reactions: 842, reactions_delta: -3,
+    replies: 231, replies_delta: 32,
+    total_videos: 18,
+  },
+  views_over_time: Array.from({ length: 31 }, (_, i) => {
+    const base = 200 + Math.round(150 * Math.sin(i / 4) + i * 12)
+    return {
+      date: new Date(Date.now() - (30 - i) * 86400000).toISOString().slice(0, 10),
+      views: Math.max(50, base + Math.round(Math.random() * 60)),
+      previous_views: Math.max(40, base - 120 + Math.round(Math.random() * 60)),
+    }
+  }),
+  retention: {
+    buckets: Array.from({ length: 21 }, (_, i) => ({
+      time_seconds: i * 12,
+      percent_remaining: Math.max(20, Math.round(100 - i * 4 - (i === 2 ? 18 : 0))),
+    })),
+    biggest_drop: { at_seconds: 24, drop_pct: 22 },
+  },
+  funnel: [
+    { label: 'Shared', count: 5400, percent: 100 },
+    { label: 'Opened', count: 3820, percent: 71 },
+    { label: 'Watched 25%+', count: 2941, percent: 54 },
+    { label: 'Watched 75%+', count: 1724, percent: 32 },
+    { label: 'Replied', count: 231, percent: 4.3 },
+  ],
+  top_videos: [
+    { id: 1, title: 'Onboarding walkthrough — Q2 release', duration: 222, views_count: 2341, avg_watch_seconds: 171, engagement_rate: 82, replies: 87 },
+    { id: 2, title: 'Bug repro: dashboard chart freeze', duration: 78, views_count: 1802, avg_watch_seconds: 69, engagement_rate: 91, replies: 42 },
+    { id: 3, title: 'Sales demo — Acme deal recap', duration: 321, views_count: 1217, avg_watch_seconds: 228, engagement_rate: 71, replies: 31 },
+    { id: 4, title: 'Weekly team update — May 20', duration: 424, views_count: 984, avg_watch_seconds: 133, engagement_rate: 32, replies: 9 },
+    { id: 5, title: 'Customer feedback — Lana T.', duration: 729, views_count: 621, avg_watch_seconds: 522, engagement_rate: 88, replies: 14 },
+  ],
+  top_countries: [
+    { country_code: 'US', country: 'United States', views: 5412, percentage: 42 },
+    { country_code: 'GB', country: 'United Kingdom', views: 1807, percentage: 14 },
+    { country_code: 'DE', country: 'Germany', views: 1156, percentage: 9 },
+    { country_code: 'IN', country: 'India', views: 962, percentage: 7 },
+    { country_code: 'CA', country: 'Canada', views: 684, percentage: 5 },
+    { country_code: 'FR', country: 'France', views: 512, percentage: 4 },
+  ],
+  devices: [
+    { device: 'desktop', views: 7965, percentage: 62 },
+    { device: 'mobile', views: 3982, percentage: 31 },
+    { device: 'tablet', views: 900, percentage: 7 },
+  ],
+  referrers: [
+    { source: 'direct', views: 6166, percentage: 48 },
+    { source: 'email', views: 2826, percentage: 22 },
+    { source: 'slack', views: 1798, percentage: 14 },
+    { source: 'docs', views: 1027, percentage: 8 },
+    { source: 'embed', views: 642, percentage: 5 },
+    { source: 'other', views: 388, percentage: 3 },
+  ],
+  recent_activity: [
+    { type: 'view', at: new Date(Date.now() - 2 * 60000).toISOString(), video_title: 'Onboarding walkthrough', actor_name: 'Sarah M.', country_code: 'US', country: 'United States', progress_pct: 94, completed: false },
+    { type: 'reaction', at: new Date(Date.now() - 11 * 60000).toISOString(), video_title: 'Bug repro: dashboard freeze', actor_name: 'Jamal K.', emoji: '🎉' },
+    { type: 'comment', at: new Date(Date.now() - 38 * 60000).toISOString(), video_title: 'Sales demo — Acme', actor_name: 'Alex R.', content: 'Looks great, will share with the team' },
+    { type: 'view', at: new Date(Date.now() - 60 * 60000).toISOString(), video_title: 'Customer feedback', actor_name: null, country_code: 'DE', country: 'Germany', progress_pct: 67, completed: false },
+    { type: 'view', at: new Date(Date.now() - 3 * 3600000).toISOString(), video_title: 'Weekly team update', actor_name: 'Priya V.', country_code: 'IN', country: 'India', progress_pct: 100, completed: true },
+    { type: 'view', at: new Date(Date.now() - 5 * 3600000).toISOString(), video_title: 'Onboarding walkthrough', actor_name: 'Tom N.', country_code: 'FR', country: 'France', progress_pct: 38, completed: false },
+  ],
+}
+
+const isPaywall = computed(() => analytics.value?.paywall === true)
+const view = computed(() => (isPaywall.value ? mockAnalytics : analytics.value))
+
 // Chart geometry
 const chartWidth = 800
 const chartHeight = 240
 const chartPadding = { top: 16, right: 16, bottom: 28, left: 42 }
 
-const seriesCurrent = computed(() => (analytics.value?.views_over_time || []).map(p => p.views))
-const seriesPrevious = computed(() => (analytics.value?.views_over_time || []).map(p => p.previous_views))
+const seriesCurrent = computed(() => (view.value?.views_over_time || []).map(p => p.views))
+const seriesPrevious = computed(() => (view.value?.views_over_time || []).map(p => p.previous_views))
 
 const yMax = computed(() => {
   const all = [...seriesCurrent.value, ...seriesPrevious.value, 1]
@@ -485,7 +558,7 @@ const yTicks = computed(() => {
 })
 
 const xAxisLabels = computed(() => {
-  const points = analytics.value?.views_over_time || []
+  const points = view.value?.views_over_time || []
   if (!points.length) return []
   const stride = Math.max(1, Math.floor(points.length / 6))
   const labels = []
@@ -497,7 +570,7 @@ const xAxisLabels = computed(() => {
 })
 
 function xScale(index) {
-  const n = Math.max(1, (analytics.value?.views_over_time?.length || 1) - 1)
+  const n = Math.max(1, (view.value?.views_over_time?.length || 1) - 1)
   const range = chartWidth - chartPadding.left - chartPadding.right
   return chartPadding.left + (index / n) * range
 }
@@ -544,7 +617,7 @@ const lastPoint = computed(() => {
 })
 
 // Retention
-const retentionBuckets = computed(() => analytics.value?.retention?.buckets || [])
+const retentionBuckets = computed(() => view.value?.retention?.buckets || [])
 const retentionPath = computed(() => {
   const buckets = retentionBuckets.value
   if (!buckets.length) return ''
@@ -569,7 +642,7 @@ const retentionAreaPath = computed(() => {
   return d
 })
 const biggestDropX = computed(() => {
-  const drop = analytics.value?.retention?.biggest_drop
+  const drop = view.value?.retention?.biggest_drop
   const buckets = retentionBuckets.value
   if (!drop || !buckets.length) return null
   const maxT = buckets[buckets.length - 1].time_seconds || 1
@@ -580,7 +653,7 @@ const biggestDropX = computed(() => {
 // Devices — ensure ordered desktop/mobile/tablet
 const deviceBars = computed(() => {
   const map = { desktop: 'bg-orange-500', mobile: 'bg-orange-300', tablet: 'bg-orange-200' }
-  return (analytics.value?.devices || [])
+  return (view.value?.devices || [])
     .filter(d => map[d.device])
     .map(d => ({ ...d, color: map[d.device] }))
 })
@@ -610,6 +683,11 @@ async function fetchAnalytics() {
     }
     const data = await response.json()
     analytics.value = data
+    // Paywalled response has no real data — fall through to the blurred mock view.
+    if (data.paywall) {
+      isEmpty.value = false
+      return
+    }
     const ov = data.overview || {}
     const hasData =
       (ov.total_views || 0) > 0 ||

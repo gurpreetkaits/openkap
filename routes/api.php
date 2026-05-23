@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\SupportAdminController;
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\Auth\GoogleAuthController;
@@ -21,6 +22,7 @@ use App\Http\Controllers\ScreenshotController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\SubscriptionController;
+use App\Http\Controllers\SupportChatController;
 use App\Http\Controllers\VideoController;
 use App\Http\Controllers\VideoViewController;
 use App\Http\Controllers\WorkspaceController;
@@ -346,7 +348,24 @@ Route::middleware(['auth:sanctum', AdminMiddleware::class])
     ->prefix('admin')
     ->group(function () {
         Route::get('/dashboard', [AdminDashboardController::class, 'index']);
+
+        // Support inbox (admins)
+        Route::prefix('support')->group(function () {
+            Route::get('/conversations', [SupportAdminController::class, 'index']);
+            Route::get('/conversations/{conversation}', [SupportAdminController::class, 'show']);
+            Route::post('/conversations/{conversation}/messages', [SupportAdminController::class, 'reply']);
+            Route::post('/conversations/{conversation}/mark-read', [SupportAdminController::class, 'markRead']);
+        });
     });
+
+// ============================================
+// SUPPORT CHAT (Authenticated users)
+// ============================================
+Route::middleware('auth:sanctum')->prefix('support')->group(function () {
+    Route::get('/conversation', [SupportChatController::class, 'show']);
+    Route::post('/messages', [SupportChatController::class, 'store']);
+    Route::post('/conversation/mark-read', [SupportChatController::class, 'markRead']);
+});
 
 // Legacy recording routes (deprecated - use /videos instead)
 Route::prefix('recordings')->middleware('auth:sanctum')->group(function () {
