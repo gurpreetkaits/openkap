@@ -132,6 +132,9 @@
           :is-current-plan="subscription?.plan_type === 'pro' && !subscription?.is_in_grace_period"
           :checking-out="checkingOut"
           :cta-label="subscription?.is_in_grace_period ? 'Resubscribe' : 'Upgrade to Pro'"
+          :disabled="billingEnabled === false"
+          disabled-label="Billing unavailable"
+          disabled-message="Billing isn't configured on this instance yet."
           :default-billing-cycle="billingCycle"
           highlight
           @checkout="onCheckout"
@@ -240,6 +243,8 @@ const settings = ref({
 const hasActiveSubscription = computed(() => {
   return subscription.value?.is_active === true
 })
+
+const billingEnabled = computed(() => settings.value.subscription?.billing_enabled !== false)
 
 const currentPlanBadge = computed(() => {
   const plan = subscription.value?.plan_type

@@ -61,7 +61,7 @@
     <button
       v-else
       @click="$emit('checkout', { plan: planKey, billingCycle })"
-      :disabled="isCheckingOut"
+      :disabled="isCheckingOut || disabled"
       class="w-full py-2 rounded-lg text-xs font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
       :class="highlight
         ? 'bg-orange-600 hover:bg-orange-500 text-white'
@@ -71,10 +71,16 @@
         <div class="animate-spin rounded-full h-3 w-3 border-2 border-white border-t-transparent"></div>
         Redirecting…
       </template>
+      <template v-else-if="disabled">
+        {{ disabledLabel || ctaLabel }}
+      </template>
       <template v-else>
         {{ ctaLabel }}
       </template>
     </button>
+    <p v-if="disabled && disabledMessage" class="mt-2 text-[11px] text-gray-500 text-center">
+      {{ disabledMessage }}
+    </p>
   </div>
 </template>
 
@@ -93,6 +99,9 @@ const props = defineProps({
   // boolean OR a plan-key string for matched loading state
   checkingOut: { type: [Boolean, String], default: false },
   ctaLabel: { type: String, default: 'Upgrade' },
+  disabled: { type: Boolean, default: false },
+  disabledLabel: { type: String, default: '' },
+  disabledMessage: { type: String, default: '' },
   defaultBillingCycle: {
     type: String,
     default: 'monthly',

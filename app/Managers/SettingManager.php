@@ -59,7 +59,19 @@ class SettingManager
             'yearly_price' => Setting::getYearlyPrice(),
             'yearly_monthly_price' => round(Setting::getYearlyPrice() / 12, 2),
             'yearly_savings_percent' => $this->calculateYearlySavings(),
+            'billing_enabled' => $this->isBillingEnabled(),
         ];
+    }
+
+    /**
+     * Whether the Polar billing integration is configured enough to start a checkout.
+     * Used by the frontend to disable the Upgrade button when self-hosted instances
+     * haven't set up Polar yet.
+     */
+    private function isBillingEnabled(): bool
+    {
+        return ! empty(config('services.polar.api_key'))
+            && ! empty(config('services.polar.product_id_monthly'));
     }
 
     /**

@@ -32,16 +32,38 @@ class SubscriptionController extends Controller
             'plan' => 'sometimes|in:monthly,yearly,teams_monthly',
         ]);
 
+        $plan = $request->input('plan', 'monthly');
+
+        // Surface a clean 503 instead of a raw 500 when billing isn't configured
+        // on this instance (e.g. self-hosted without Polar credentials).
+        if (! $this->isBillingConfigured($plan)) {
+            return response()->json([
+                'error' => 'Billing is not configured on this instance. Please contact the administrator.',
+            ], 503);
+        }
+
         try {
-            $result = $this->subscriptionManager->createCheckout(
-                $request->user(),
-                $request->input('plan', 'monthly')
-            );
+            $result = $this->subscriptionManager->createCheckout($request->user(), $plan);
 
             return response()->json($result);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
+    }
+
+    private function isBillingConfigured(string $plan): bool
+    {
+        if (empty(config('services.polar.api_key'))) {
+            return false;
+        }
+
+        $productKey = match ($plan) {
+            'yearly' => 'services.polar.product_id_yearly',
+            'teams_monthly' => 'services.polar.product_id_teams_monthly',
+            default => 'services.polar.product_id_monthly',
+        };
+
+        return ! empty(config($productKey));
     }
 
     public function getCheckoutUrl(Request $request): JsonResponse

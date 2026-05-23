@@ -367,6 +367,14 @@ Route::middleware('auth:sanctum')->prefix('support')->group(function () {
     Route::post('/conversation/mark-read', [SupportChatController::class, 'markRead']);
 });
 
+// ============================================
+// ACCOUNT DATA EXPORT (Authenticated users)
+// ============================================
+Route::middleware('auth:sanctum')->prefix('account/export')->group(function () {
+    Route::get('/recordings', [\App\Http\Controllers\AccountExportController::class, 'recordings']);
+    Route::get('/metadata', [\App\Http\Controllers\AccountExportController::class, 'metadata']);
+});
+
 // Legacy recording routes (deprecated - use /videos instead)
 Route::prefix('recordings')->middleware('auth:sanctum')->group(function () {
     Route::get('/', function () {

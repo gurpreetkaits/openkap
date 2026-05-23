@@ -75,7 +75,7 @@
                   @keydown.arrow-down.prevent="highlightedIndex = Math.min(highlightedIndex + 1, filteredOrgs.length - 1)"
                   @keydown.arrow-up.prevent="highlightedIndex = Math.max(highlightedIndex - 1, 0)"
                   placeholder="e.g. Acme Corp, Google, your own name…"
-                  class="flex-1 text-sm text-stone-800 outline-none placeholder:text-stone-400 bg-transparent"
+                  class="flex-1 text-sm text-stone-800 border-0 outline-none focus:ring-0 focus:outline-none placeholder:text-stone-400 bg-transparent"
                   autocomplete="off"
                 />
                 <button v-if="orgSearch" @click="orgSearch = ''; form.organizationName = ''" class="text-stone-300 hover:text-stone-500">
@@ -315,7 +315,7 @@ async function submit() {
     savedUser.is_new_user = false
     localStorage.setItem('auth_user', JSON.stringify(savedUser))
 
-    router.push(`/workspace/${data.workspace.slug}`)
+    router.push('/app/videos')
   } catch (e) {
     error.value = 'Network error. Please try again.'
   } finally {

@@ -297,6 +297,9 @@
           :yearly-savings-percent="pricing.yearly_savings_percent"
           :features="proFeatures"
           cta-label="Upgrade to Pro"
+          :disabled="pricing.billing_enabled === false"
+          disabled-label="Billing unavailable"
+          disabled-message="Billing isn't configured on this instance yet."
           highlight
           @checkout="goToSignup"
         />
