@@ -562,11 +562,22 @@ function getInitials(name) {
 }
 
 // ---- Profile editing ----
+function resolveAvatarUrl(raw) {
+  if (!raw) return null
+  if (/^https?:\/\//i.test(raw)) return raw
+  if (raw.startsWith('/')) return `${API_BASE_URL}${raw}`
+  return `${API_BASE_URL}/storage/${raw}`
+}
+
 function syncProfileFromUser() {
   const u = user.value
+  // /api/auth/me returns `avatar` (Google URL or storage path), /api/profile/update returns `avatar` too.
+  // Fall back to legacy `avatar_url` just in case.
+  const raw = u?.avatar ?? u?.avatar_url ?? null
+  const resolved = resolveAvatarUrl(raw)
   profileForm.value.name = u?.name || ''
-  initialProfile.value = { name: u?.name || '', avatar_url: u?.avatar_url || null }
-  avatarPreview.value = u?.avatar_url || null
+  initialProfile.value = { name: u?.name || '', avatar_url: resolved }
+  avatarPreview.value = resolved
   pendingAvatarFile.value = null
 }
 

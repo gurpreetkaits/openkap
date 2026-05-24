@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Managers\SubscriptionManager;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Polar\Models\Errors\APIException as PolarAPIException;
 
 class SubscriptionController extends Controller
 {
@@ -46,8 +48,32 @@ class SubscriptionController extends Controller
             $result = $this->subscriptionManager->createCheckout($request->user(), $plan);
 
             return response()->json($result);
+        } catch (PolarAPIException $e) {
+            // Polar SDK swallows the response body inside a generic "API error occurred"
+            // message — log the real status + body so we don't have to tinker to diagnose.
+            Log::error('Polar checkout failed', [
+                'user_id' => $request->user()?->id,
+                'plan' => $plan,
+                'status' => $e->statusCode ?? null,
+                'body' => $e->body ?? null,
+                'message' => $e->getMessage(),
+            ]);
+
+            $isAuthError = ($e->statusCode ?? null) === 401;
+
+            return response()->json([
+                'error' => $isAuthError
+                    ? 'Billing service is temporarily unavailable. Please try again later or contact support.'
+                    : 'We couldn\'t start your checkout. Please try again in a moment.',
+            ], 502);
         } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
+            Log::error('Checkout failed', [
+                'user_id' => $request->user()?->id,
+                'plan' => $plan,
+                'exception' => $e,
+            ]);
+
+            return response()->json(['error' => 'We couldn\'t start your checkout. Please try again in a moment.'], 500);
         }
     }
 

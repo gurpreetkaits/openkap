@@ -278,16 +278,7 @@
         <h2 class="section-title">Simple, <span class="gradient-text">honest pricing</span></h2>
         <p class="section-sub">Free forever for personal use. Upgrade when you outgrow it.</p>
       </div>
-      <div class="pricing-grid">
-        <SBPricingCard
-          plan-key="free"
-          plan-name="Free"
-          tagline="For trying things out"
-          :monthly-price="0"
-          :features="freeFeatures"
-          cta-label="Get started"
-          @checkout="goToSignup"
-        />
+      <div class="pricing-grid pricing-grid--single">
         <SBPricingCard
           plan-key="pro"
           plan-name="Pro"
@@ -379,19 +370,6 @@ function goToSignup() {
 const pricing = ref(settingsService.getDefaults().subscription)
 
 const freePlanLimits = ref(settingsService.getDefaults().free_plan)
-
-const freeFeatures = computed(() => {
-  const videos = pricing.value.free_video_limit ?? 5
-  const maxMin = (pricing.value.free_recording_duration_limit ?? 300) / 60
-  const monthlyMin = pricing.value.free_monthly_recording_minutes_limit ?? 25
-  return [
-    `${videos} videos`,
-    `${maxMin} min recording length`,
-    `${monthlyMin} recording minutes / month`,
-    'Public share links',
-    'Community support',
-  ]
-})
 
 const proFeatures = computed(() => {
   const cap = pricing.value.pro_monthly_recording_minutes_limit ?? 500
@@ -1368,6 +1346,9 @@ onUnmounted(() => {
   gap: 1.25rem;
   max-width: 720px;
   margin: 3rem auto 0;
+}
+.pricing-grid--single {
+  max-width: 420px;
 }
 
 /* ── CTA ──────────────────────────────────────────────── */

@@ -361,17 +361,6 @@
             </a>
         </div>
 
-        <div style="display:flex;align-items:center;gap:.75rem">
-            <div style="display:flex">
-                @foreach([['AK','#E05C2A'],['MR','#2A7EE0'],['SL','#29A06A'],['JP','#8B5CF6']] as $i => $av)
-                <div style="width:26px;height:26px;border-radius:50%;border:2px solid white;background:{{ $av[1] }};display:flex;align-items:center;justify-content:center;font-size:.55rem;font-weight:700;color:white;{{ $i > 0 ? 'margin-left:-7px' : '' }}">{{ $av[0] }}</div>
-                @endforeach
-            </div>
-            <span style="font-size:.8rem;color:#78716c">
-                Joined by <strong style="color:#1c1917;font-weight:600">{{ number_format($userCount) }}</strong> {{ Str::plural('user', $userCount) }}
-            </span>
-        </div>
-
     </div>
 
 </div>
