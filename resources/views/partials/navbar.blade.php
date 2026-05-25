@@ -73,6 +73,12 @@
         background: {{ $light ? '#f5f5f4' : 'rgba(255,255,255,.07)' }};
         color: {{ $light ? '#1c1917' : 'white' }};
     }
+    /* Hamburger only on mobile (Tailwind utility classes aren't compiled for blade pages) */
+    #mobile-menu-btn { display: flex; }
+    @media (min-width: 768px) {
+        #mobile-menu-btn { display: none !important; }
+    }
+
     /* Mobile menu card */
     #mobile-nav-menu {
         position: fixed;

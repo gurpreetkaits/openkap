@@ -58,6 +58,16 @@
     /* Tag pill */
     .tag{display:inline-block;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:#f97316;background:rgba(249,115,22,.08);border:1px solid rgba(249,115,22,.15);border-radius:100px;padding:.3rem 1rem;margin-bottom:1.25rem}
 
+    /* Consistent section vertical rhythm */
+    .section-py { padding-top: 5rem; padding-bottom: 5rem; }
+    .section-px { padding-left: 2rem; padding-right: 2rem; }
+    .section-header { text-align: center; margin: 0 auto 3rem; }
+    @media (max-width: 768px) {
+        .section-py { padding-top: 3.5rem; padding-bottom: 3.5rem; }
+        .section-px { padding-left: 1.25rem; padding-right: 1.25rem; }
+        .section-header { margin-bottom: 2.25rem; }
+    }
+
     /* ── Hero section ─────────────────────────────────── */
     .hero-content {
         text-align: center;
@@ -323,46 +333,36 @@
 @php
 $testimonials = [
     [
-        'quote' => "OpenKap replaced three tools for us — Loom, screenshots, and back-and-forth Slack threads. Bug reports went from 'can you describe what you saw?' to a 30-second video our engineers actually watch.",
-        'name'  => 'Aanya Kapoor',
-        'role'  => 'Head of Product, Northbeam',
-        'init'  => 'AK',
-        'color' => '#E05C2A',
+        'name'   => 'Chinmay Purav',
+        'date'   => '23 May 2026',
+        'rating' => 5,
+        'quote'  => 'Using Loom so far — looks like a great alternative to it! Switching to OpenKap!',
+        'init'   => 'CP',
+        'color'  => '#E05C2A',
     ],
     [
-        'quote' => "The async comments on a recording are the killer feature. Our design reviews stopped being meetings and became threaded conversations. We ship 2x faster now.",
-        'name'  => 'Marcus Reyes',
-        'role'  => 'Senior Designer, Vellum',
-        'init'  => 'MR',
-        'color' => '#2A7EE0',
+        'name'   => 'Kulbir Singh Kang',
+        'date'   => '23 May 2026',
+        'rating' => 5,
+        'quote'  => 'Lovely app, fastest and easy to use.',
+        'init'   => 'KK',
+        'color'  => '#2A7EE0',
     ],
     [
-        'quote' => "I tried five recording tools before OpenKap. This is the first one that doesn't make me wait for upload, doesn't add a watermark, and doesn't try to upsell me on every other click.",
-        'name'  => 'Sofia Lindqvist',
-        'role'  => 'Staff Engineer, Hyperline',
-        'init'  => 'SL',
-        'color' => '#29A06A',
+        'name'   => 'Rahul Jat',
+        'date'   => '20 May 2026',
+        'rating' => 5,
+        'quote'  => 'OpenKap is surprisingly smooth and lightweight. I was already using JumpShare for screen recording, but after trying this, the experience felt seamless. Easy to use, fast, and works really well. Highly recommended!',
+        'init'   => 'RJ',
+        'color'  => '#29A06A',
     ],
     [
-        'quote' => "Self-hosting was the deciding factor. We can't put customer support recordings on a third-party SaaS. OpenKap runs on our infra, looks polished, and our team picked it up in an afternoon.",
-        'name'  => 'Jamie Patel',
-        'role'  => 'Engineering Manager, Brightline',
-        'init'  => 'JP',
-        'color' => '#8B5CF6',
-    ],
-    [
-        'quote' => "Onboarding new hires used to mean writing 20-page Notion docs nobody read. Now we record a 5-minute walkthrough, paste the link, and they're up to speed by day two.",
-        'name'  => 'Priya Sharma',
-        'role'  => 'Chief of Staff, Lumen',
-        'init'  => 'PS',
-        'color' => '#F59E0B',
-    ],
-    [
-        'quote' => "Our PMs send me video tickets instead of paragraphs of Jira spec. I see exactly what they want, exactly where they want it. Open source on top — couldn't ask for more.",
-        'name'  => 'Daniel Okafor',
-        'role'  => 'Frontend Lead, Quartz',
-        'init'  => 'DO',
-        'color' => '#EF4444',
+        'name'   => 'Gurpreet SKU',
+        'date'   => '21 Mar 2026',
+        'rating' => 5,
+        'quote'  => 'Cool — easy to use for daily tasks, minimal and quick recordings!',
+        'init'   => 'GS',
+        'color'  => '#8B5CF6',
     ],
 ];
 
@@ -451,7 +451,7 @@ $schema = [
 <div class="orb orb-2"></div>
 
 {{-- ── HERO ──────────────────────────────────────────────────── --}}
-<section style="position:relative;z-index:1;padding:0 2rem 4rem">
+<section class="section-px" style="position:relative;z-index:1;padding-bottom:4rem">
 <div style="max-width:780px;margin:0 auto">
     <div class="hero-content reveal">
 
@@ -497,7 +497,7 @@ $schema = [
 </section>
 
 {{-- ── DEMO CARDS ─────────────────────────────────────────────── --}}
-<section style="position:relative;z-index:1;padding:0 2rem 4rem">
+<section class="section-px" style="position:relative;z-index:1;padding-bottom:4rem">
 <div class="demo-carousel-wrap reveal d2">
         <div class="demo-carousel-header">
             <div class="demo-carousel-title">See it in <span>action</span></div>
@@ -694,9 +694,9 @@ $schema = [
 
 
 {{-- ── HOW IT WORKS ───────────────────────────────────────────── --}}
-<section id="how-it-works" style="position:relative;z-index:1;background:rgba(255,255,255,.5);backdrop-filter:blur(12px);border-top:1px solid rgba(0,0,0,.06);border-bottom:1px solid rgba(0,0,0,.06);padding:6rem 2rem">
+<section id="how-it-works" class="section-py section-px" style="position:relative;z-index:1;background:rgba(255,255,255,.5);backdrop-filter:blur(12px);border-top:1px solid rgba(0,0,0,.06);border-bottom:1px solid rgba(0,0,0,.06)">
     <div style="max-width:1000px;margin:0 auto">
-        <div style="text-align:center;max-width:600px;margin:0 auto 3.5rem">
+        <div class="section-header" style="max-width:600px">
             <div class="tag">How it works</div>
             <h2 style="font-size:clamp(1.9rem,3.5vw,2.75rem);font-weight:800;letter-spacing:-.03em;line-height:1.15;color:#1c1917">From idea to shared video in <span class="grad">60 seconds</span></h2>
         </div>
@@ -726,7 +726,7 @@ $schema = [
 </section>
 
 {{-- ── AI INTEGRATION / MCP ─────────────────────────────────── --}}
-<section id="ai-integration" style="position:relative;z-index:1;max-width:960px;margin:0 auto;padding:5rem 2rem">
+<section id="ai-integration" class="section-py section-px" style="position:relative;z-index:1;max-width:960px;margin:0 auto">
 
     {{-- Heading --}}
     <div class="reveal" style="text-align:center;margin-bottom:3rem">
@@ -803,7 +803,7 @@ $schema = [
 </section>
 
 {{-- ── STATS ──────────────────────────────────────────────────── --}}
-<section style="position:relative;z-index:1;max-width:960px;margin:0 auto;padding:5rem 2rem">
+<section class="section-py section-px" style="position:relative;z-index:1;max-width:960px;margin:0 auto">
     <div class="stats-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:1.2rem">
         @foreach([['< 3s','Time to first recording'],['100%','Uptime guaranteed'],['∞','Video storage'],['0','Setup required']] as $st)
         <div class="glass reveal" style="border-radius:20px;padding:1.9rem;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.04)">
@@ -815,34 +815,36 @@ $schema = [
 </section>
 
 {{-- ── TESTIMONIALS ───────────────────────────────────────────── --}}
-<section id="testimonials" style="position:relative;z-index:1;background:rgba(255,255,255,.5);backdrop-filter:blur(12px);border-top:1px solid rgba(0,0,0,.06);border-bottom:1px solid rgba(0,0,0,.06);padding:6rem 2rem">
+<section id="testimonials" class="section-py section-px" style="position:relative;z-index:1;background:rgba(255,255,255,.5);backdrop-filter:blur(12px);border-top:1px solid rgba(0,0,0,.06);border-bottom:1px solid rgba(0,0,0,.06)">
     <div style="max-width:1100px;margin:0 auto">
-        <div style="text-align:center;max-width:640px;margin:0 auto 3.5rem">
+        <div class="section-header" style="max-width:640px">
             <div class="tag">Loved by teams</div>
             <h2 style="font-size:clamp(1.9rem,3.5vw,2.75rem);font-weight:800;letter-spacing:-.03em;line-height:1.15;color:#1c1917">What people are <span class="grad">saying</span></h2>
             <p style="font-size:1rem;color:#78716c;margin-top:1rem;line-height:1.65">Product teams, engineers, and designers use OpenKap to communicate visually — without the friction.</p>
         </div>
 
-        <div class="testimonials-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem">
+        <div class="testimonials-grid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:1.25rem">
             @foreach($testimonials as $t)
             <div class="glass reveal" style="border-radius:20px;padding:1.75rem;display:flex;flex-direction:column;box-shadow:0 2px 12px rgba(0,0,0,.04);transition:transform .25s ease, box-shadow .25s ease" onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,.08)'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 12px rgba(0,0,0,.04)'">
-                {{-- Quote marks --}}
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" style="margin-bottom:1rem;opacity:.5">
-                    <path d="M9.333 8H6.667A2.667 2.667 0 004 10.667v2.666A2.667 2.667 0 006.667 16h2.666A2.667 2.667 0 0012 13.333V8c0-2.667-1.333-5.333-4-5.333" stroke="#f97316" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M20 8h-2.667a2.667 2.667 0 00-2.666 2.667v2.666A2.667 2.667 0 0017.333 16H20a2.667 2.667 0 002.667-2.667V8C22.667 5.333 21.333 2.667 18.667 2.667" stroke="#f97316" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-
-                {{-- Quote --}}
-                <p style="font-size:.92rem;line-height:1.6;color:#44403c;flex-grow:1;margin-bottom:1.5rem">"{{ $t['quote'] }}"</p>
-
-                {{-- Author --}}
-                <div style="display:flex;align-items:center;gap:.75rem;padding-top:1rem;border-top:1px solid rgba(0,0,0,.06)">
-                    <div style="width:38px;height:38px;border-radius:50%;background:{{ $t['color'] }};display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:700;color:white;flex-shrink:0">{{ $t['init'] }}</div>
-                    <div style="min-width:0">
-                        <div style="font-size:.85rem;font-weight:600;color:#1c1917;line-height:1.3">{{ $t['name'] }}</div>
-                        <div style="font-size:.78rem;color:#78716c;line-height:1.3;margin-top:.1rem">{{ $t['role'] }}</div>
+                {{-- Header: avatar + name/date + stars --}}
+                <div style="display:flex;align-items:center;gap:.85rem;margin-bottom:1rem">
+                    <div style="width:42px;height:42px;border-radius:50%;background:{{ $t['color'] }};display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:700;color:white;flex-shrink:0">{{ $t['init'] }}</div>
+                    <div style="flex:1;min-width:0">
+                        <div style="font-size:.92rem;font-weight:600;color:#1c1917;line-height:1.3">{{ $t['name'] }}</div>
+                        <div style="display:flex;align-items:center;gap:.5rem;margin-top:.2rem">
+                            <div style="display:inline-flex;gap:1px;color:#f59e0b">
+                                @for($i = 0; $i < $t['rating']; $i++)
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                                @endfor
+                            </div>
+                            <span style="font-size:.75rem;color:#a8a29e">·</span>
+                            <span style="font-size:.75rem;color:#a8a29e;font-weight:500">{{ $t['date'] }}</span>
+                        </div>
                     </div>
                 </div>
+
+                {{-- Quote --}}
+                <p style="font-size:.92rem;line-height:1.65;color:#44403c;margin:0">{{ $t['quote'] }}</p>
             </div>
             @endforeach
         </div>
@@ -850,8 +852,8 @@ $schema = [
 </section>
 
 {{-- ── FAQ ──────────────────────────────────────────────────────── --}}
-<section id="faq" style="position:relative;z-index:1;max-width:780px;margin:0 auto;padding:5rem 2rem">
-    <div class="reveal" style="text-align:center;margin-bottom:3rem">
+<section id="faq" class="section-py section-px" style="position:relative;z-index:1;max-width:780px;margin:0 auto">
+    <div class="reveal section-header">
         <div class="tag">FAQ</div>
         <h2 style="font-size:clamp(1.9rem,3.5vw,2.75rem);font-weight:800;letter-spacing:-.03em;line-height:1.15;color:#1c1917">
             Questions & <span class="grad">answers</span>
@@ -873,7 +875,7 @@ $schema = [
 </section>
 
 {{-- ── PRICING ─────────────────────────────────────────────────── --}}
-<section id="pricing" style="position:relative;z-index:1;padding:5rem 2rem 6rem">
+<section id="pricing" class="section-py section-px" style="position:relative;z-index:1">
     <div style="max-width:860px;margin:0 auto">
 
         {{-- Heading --}}
