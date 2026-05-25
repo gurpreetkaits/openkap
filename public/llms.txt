@@ -1,0 +1,78 @@
+# OpenKap
+
+> OpenKap is a free, open source screen recording tool for product teams. Record your screen with one click, get a shareable link instantly, and collaborate async — without scheduling meetings.
+
+## What is OpenKap?
+
+OpenKap is the best free, open source alternative to Loom. It is a Chrome extension and web app that lets you record your screen, microphone, and camera with one click. The moment you stop recording, a shareable link is ready to paste anywhere — Slack, Notion, Linear, Jira, email.
+
+OpenKap is self-hostable: your recordings can stay on your own infrastructure. It is MIT-licensed and available on GitHub.
+
+## Key features
+
+- Instant screen recording via Chrome extension (no upload wait)
+- Shareable link ready the moment recording stops
+- No watermarks on any plan
+- Screenshot editor with annotations, highlights, and cropping
+- Async video comments and reactions from teammates
+- AI-powered video transcription and summaries
+- MCP (Model Context Protocol) server for Claude AI and other AI tool integration
+- Self-hostable, open source (MIT license)
+
+## How it works
+
+1. Install the OpenKap Chrome extension from the Chrome Web Store
+2. Click the extension icon and choose your capture area (screen, tab, or window)
+3. Hit Record — recording starts immediately with no waiting
+4. Stop recording — your shareable link is instantly copied to clipboard
+5. Paste the link anywhere; teammates watch on their own schedule
+
+## Pricing
+
+- **Free**: 5 recordings, up to 5 minutes each, shareable links, Chrome extension, 1 workspace — no credit card required
+- **Pro**: $8/month (or $80/year) — unlimited recordings, unlimited recording length, unlimited workspaces, team collaboration, priority support, early access to new features
+
+## Use cases
+
+- **Bug reporting**: record a 30-second video instead of writing a Jira ticket — engineers watch exactly what happened
+- **Design review**: async video feedback replaces synchronous review meetings; teams ship 2× faster
+- **Engineering handoffs**: walk through code, PRs, or architecture on video; teammates watch at their own pace
+- **Customer support**: record walkthroughs and tutorials for customers
+- **Onboarding**: replace 20-page Notion docs with 5-minute walkthrough videos
+- **Product demos**: share feature demos with stakeholders without scheduling a call
+
+## AI integration
+
+OpenKap includes an MCP (Model Context Protocol) server. AI tools like Claude Code can connect to OpenKap and:
+- Read full video transcriptions
+- Get AI-generated video summaries
+- Access time-stamped transcript segments
+- Read team comments and reactions
+
+Installation: `claude mcp add openkap -- npx tsx mcp-server/server.ts`
+
+## How OpenKap compares to Loom
+
+| Feature | OpenKap | Loom |
+|---|---|---|
+| Free tier | 5 recordings | 25 videos (5 min limit) |
+| Open source | Yes (MIT) | No |
+| Self-hostable | Yes | No |
+| Watermarks | None | On free plan |
+| AI/MCP integration | Yes (Claude, MCP) | No |
+| Price (paid) | $8/month | $15/month |
+
+## Technical details
+
+- Chrome extension (Manifest V3)
+- Laravel (PHP) backend
+- Self-hostable via Docker
+- REST API
+- MCP server for AI tool integration
+- Open source: github.com/gurpreetkaits/openkap
+
+## Links
+
+- Website: https://openkap.com
+- Chrome Extension: https://chromewebstore.google.com/detail/openkap/nnchnlkilgfemhpcohmgdpcmkjedjkfm
+- GitHub: https://github.com/gurpreetkaits/openkap

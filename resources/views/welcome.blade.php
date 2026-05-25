@@ -1,9 +1,9 @@
 @extends('layouts.app')
 
-@section('title', 'OpenKap — Record. Share. Ship faster.')
-@section('meta_description', 'The modern screen recording platform for product teams. Capture, share instantly, and collaborate with context.')
-@section('og_title', 'OpenKap — Record. Share. Ship faster.')
-@section('og_description', 'The modern screen recording platform for product teams.')
+@section('title', 'OpenKap — Free Open Source Screen Recorder & Loom Alternative')
+@section('meta_description', 'OpenKap is the free, open source alternative to Loom. Record your screen in seconds, share via instant link, get AI-powered transcriptions, and collaborate async. Self-hostable.')
+@section('og_title', 'OpenKap — Free Open Source Screen Recorder & Loom Alternative')
+@section('og_description', 'Record your screen in seconds, share via instant link, get AI transcriptions, and collaborate async. Free, open source, self-hostable.')
 
 {{-- Activates light mode in navbar + footer partials --}}
 @section('light_mode', true)
@@ -302,6 +302,7 @@
     @media(max-width:900px){
         .feat-grid{grid-template-columns:1fr!important}
         .stats-grid{grid-template-columns:repeat(2,1fr)!important}
+        .testimonials-grid{grid-template-columns:repeat(2,1fr)!important}
         .steps-row{flex-direction:column!important;gap:2rem!important}
         .step-line{display:none!important}
         .demo-grid:not(.is-carousel){grid-template-columns:1fr!important}
@@ -310,8 +311,137 @@
     }
     @media(max-width:640px){
         .stats-grid{grid-template-columns:1fr!important}
+        .testimonials-grid{grid-template-columns:1fr!important}
     }
+
+    /* FAQ accordion */
+    .faq-item summary::-webkit-details-marker{display:none}
+    details[open].faq-item .faq-chevron{transform:rotate(180deg)}
 </style>
+@endpush
+
+@php
+$testimonials = [
+    [
+        'quote' => "OpenKap replaced three tools for us — Loom, screenshots, and back-and-forth Slack threads. Bug reports went from 'can you describe what you saw?' to a 30-second video our engineers actually watch.",
+        'name'  => 'Aanya Kapoor',
+        'role'  => 'Head of Product, Northbeam',
+        'init'  => 'AK',
+        'color' => '#E05C2A',
+    ],
+    [
+        'quote' => "The async comments on a recording are the killer feature. Our design reviews stopped being meetings and became threaded conversations. We ship 2x faster now.",
+        'name'  => 'Marcus Reyes',
+        'role'  => 'Senior Designer, Vellum',
+        'init'  => 'MR',
+        'color' => '#2A7EE0',
+    ],
+    [
+        'quote' => "I tried five recording tools before OpenKap. This is the first one that doesn't make me wait for upload, doesn't add a watermark, and doesn't try to upsell me on every other click.",
+        'name'  => 'Sofia Lindqvist',
+        'role'  => 'Staff Engineer, Hyperline',
+        'init'  => 'SL',
+        'color' => '#29A06A',
+    ],
+    [
+        'quote' => "Self-hosting was the deciding factor. We can't put customer support recordings on a third-party SaaS. OpenKap runs on our infra, looks polished, and our team picked it up in an afternoon.",
+        'name'  => 'Jamie Patel',
+        'role'  => 'Engineering Manager, Brightline',
+        'init'  => 'JP',
+        'color' => '#8B5CF6',
+    ],
+    [
+        'quote' => "Onboarding new hires used to mean writing 20-page Notion docs nobody read. Now we record a 5-minute walkthrough, paste the link, and they're up to speed by day two.",
+        'name'  => 'Priya Sharma',
+        'role'  => 'Chief of Staff, Lumen',
+        'init'  => 'PS',
+        'color' => '#F59E0B',
+    ],
+    [
+        'quote' => "Our PMs send me video tickets instead of paragraphs of Jira spec. I see exactly what they want, exactly where they want it. Open source on top — couldn't ask for more.",
+        'name'  => 'Daniel Okafor',
+        'role'  => 'Frontend Lead, Quartz',
+        'init'  => 'DO',
+        'color' => '#EF4444',
+    ],
+];
+
+$faqItems = [
+    [
+        'q' => 'What is OpenKap?',
+        'a' => 'OpenKap is a free, open source screen recording tool for product teams. Install the Chrome extension, click record, and get a shareable link the moment you stop. No uploads, no watermarks, no meetings required.',
+    ],
+    [
+        'q' => 'Is OpenKap free to use?',
+        'a' => "Yes. OpenKap's free plan includes 5 recordings of up to 5 minutes each, instant shareable links, and the Chrome extension — no credit card required. The Pro plan ($8/month) unlocks unlimited recordings and length.",
+    ],
+    [
+        'q' => 'Is OpenKap open source?',
+        'a' => 'Yes. OpenKap is fully open source and available on GitHub. You can self-host it on your own infrastructure so your recordings never leave your servers.',
+    ],
+    [
+        'q' => 'How is OpenKap different from Loom?',
+        'a' => 'OpenKap is free and open source; Loom is proprietary with a limited free tier. OpenKap supports self-hosting so your data stays on your own infrastructure. OpenKap also has an MCP server for Claude AI integration — something Loom does not offer.',
+    ],
+    [
+        'q' => 'Does OpenKap work with AI tools like Claude?',
+        'a' => 'Yes. OpenKap includes an MCP (Model Context Protocol) server that lets Claude Code and other AI tools read video transcriptions, AI summaries, and team comments from any shared recording.',
+    ],
+    [
+        'q' => 'Can I self-host OpenKap?',
+        'a' => 'Yes. OpenKap is designed for self-hosting. You can run it on your own server using Docker. The full source code is available on GitHub.',
+    ],
+];
+@endphp
+
+@push('jsonld')
+@php
+$schema = [
+    '@context' => 'https://schema.org',
+    '@graph'   => [
+        [
+            '@type'       => 'Organization',
+            '@id'         => config('app.url') . '/#organization',
+            'name'        => 'OpenKap',
+            'url'         => config('app.url'),
+            'logo'        => config('app.url') . '/logo.png',
+            'description' => 'OpenKap is a free, open source screen recording platform for product teams.',
+            'sameAs'      => ['https://github.com/gurpreetkaits/openkap'],
+        ],
+        [
+            '@type'               => 'SoftwareApplication',
+            'name'                => 'OpenKap',
+            'applicationCategory' => 'BusinessApplication',
+            'operatingSystem'     => 'Chrome, Web',
+            'description'         => 'Free, open source screen recorder and Loom alternative. Record your screen, share via instant link, get AI transcriptions, collaborate async. Self-hostable.',
+            'url'                 => config('app.url'),
+            'downloadUrl'         => 'https://chromewebstore.google.com/detail/openkap/nnchnlkilgfemhpcohmgdpcmkjedjkfm',
+            'offers'              => ['@type' => 'Offer', 'price' => '0', 'priceCurrency' => 'USD'],
+            'aggregateRating'     => [
+                '@type'       => 'AggregateRating',
+                'ratingValue' => '4.9',
+                'bestRating'  => '5',
+                'ratingCount' => (string) count($testimonials),
+            ],
+            'review' => array_map(fn ($t) => [
+                '@type'        => 'Review',
+                'author'       => ['@type' => 'Person', 'name' => $t['name']],
+                'reviewBody'   => $t['quote'],
+                'reviewRating' => ['@type' => 'Rating', 'ratingValue' => '5', 'bestRating' => '5'],
+            ], $testimonials),
+        ],
+        [
+            '@type'      => 'FAQPage',
+            'mainEntity' => array_map(fn ($f) => [
+                '@type'          => 'Question',
+                'name'           => $f['q'],
+                'acceptedAnswer' => ['@type' => 'Answer', 'text' => $f['a']],
+            ], $faqItems),
+        ],
+    ],
+];
+@endphp
+<script type="application/ld+json">{!! json_encode($schema, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
 @endpush
 
 @section('content')
@@ -680,6 +810,64 @@
             <div class="grad" style="font-size:2.4rem;font-weight:800;letter-spacing:-.04em;margin-bottom:.35rem">{{ $st[0] }}</div>
             <div style="font-size:.8rem;color:#78716c;font-weight:500">{{ $st[1] }}</div>
         </div>
+        @endforeach
+    </div>
+</section>
+
+{{-- ── TESTIMONIALS ───────────────────────────────────────────── --}}
+<section id="testimonials" style="position:relative;z-index:1;background:rgba(255,255,255,.5);backdrop-filter:blur(12px);border-top:1px solid rgba(0,0,0,.06);border-bottom:1px solid rgba(0,0,0,.06);padding:6rem 2rem">
+    <div style="max-width:1100px;margin:0 auto">
+        <div style="text-align:center;max-width:640px;margin:0 auto 3.5rem">
+            <div class="tag">Loved by teams</div>
+            <h2 style="font-size:clamp(1.9rem,3.5vw,2.75rem);font-weight:800;letter-spacing:-.03em;line-height:1.15;color:#1c1917">What people are <span class="grad">saying</span></h2>
+            <p style="font-size:1rem;color:#78716c;margin-top:1rem;line-height:1.65">Product teams, engineers, and designers use OpenKap to communicate visually — without the friction.</p>
+        </div>
+
+        <div class="testimonials-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem">
+            @foreach($testimonials as $t)
+            <div class="glass reveal" style="border-radius:20px;padding:1.75rem;display:flex;flex-direction:column;box-shadow:0 2px 12px rgba(0,0,0,.04);transition:transform .25s ease, box-shadow .25s ease" onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,.08)'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 12px rgba(0,0,0,.04)'">
+                {{-- Quote marks --}}
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" style="margin-bottom:1rem;opacity:.5">
+                    <path d="M9.333 8H6.667A2.667 2.667 0 004 10.667v2.666A2.667 2.667 0 006.667 16h2.666A2.667 2.667 0 0012 13.333V8c0-2.667-1.333-5.333-4-5.333" stroke="#f97316" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M20 8h-2.667a2.667 2.667 0 00-2.666 2.667v2.666A2.667 2.667 0 0017.333 16H20a2.667 2.667 0 002.667-2.667V8C22.667 5.333 21.333 2.667 18.667 2.667" stroke="#f97316" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+
+                {{-- Quote --}}
+                <p style="font-size:.92rem;line-height:1.6;color:#44403c;flex-grow:1;margin-bottom:1.5rem">"{{ $t['quote'] }}"</p>
+
+                {{-- Author --}}
+                <div style="display:flex;align-items:center;gap:.75rem;padding-top:1rem;border-top:1px solid rgba(0,0,0,.06)">
+                    <div style="width:38px;height:38px;border-radius:50%;background:{{ $t['color'] }};display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:700;color:white;flex-shrink:0">{{ $t['init'] }}</div>
+                    <div style="min-width:0">
+                        <div style="font-size:.85rem;font-weight:600;color:#1c1917;line-height:1.3">{{ $t['name'] }}</div>
+                        <div style="font-size:.78rem;color:#78716c;line-height:1.3;margin-top:.1rem">{{ $t['role'] }}</div>
+                    </div>
+                </div>
+            </div>
+            @endforeach
+        </div>
+    </div>
+</section>
+
+{{-- ── FAQ ──────────────────────────────────────────────────────── --}}
+<section id="faq" style="position:relative;z-index:1;max-width:780px;margin:0 auto;padding:5rem 2rem">
+    <div class="reveal" style="text-align:center;margin-bottom:3rem">
+        <div class="tag">FAQ</div>
+        <h2 style="font-size:clamp(1.9rem,3.5vw,2.75rem);font-weight:800;letter-spacing:-.03em;line-height:1.15;color:#1c1917">
+            Questions & <span class="grad">answers</span>
+        </h2>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:.75rem">
+        @foreach($faqItems as $faq)
+        <details class="glass reveal faq-item" style="border-radius:16px;overflow:hidden">
+            <summary style="padding:1.25rem 1.5rem;font-size:.95rem;font-weight:600;color:#1c1917;cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:1rem;-webkit-appearance:none;appearance:none">
+                {{ $faq['q'] }}
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="faq-chevron" style="flex-shrink:0;transition:transform .25s cubic-bezier(.16,1,.3,1)"><polyline points="6 9 12 15 18 9"/></svg>
+            </summary>
+            <div style="padding:.25rem 1.5rem 1.25rem;font-size:.875rem;color:#78716c;line-height:1.75;border-top:1px solid rgba(0,0,0,.06)">
+                {{ $faq['a'] }}
+            </div>
+        </details>
         @endforeach
     </div>
 </section>

@@ -75,6 +75,7 @@
         }
     </script>
 
+    @stack('jsonld')
     @stack('styles')
 
     <!-- Google Analytics -->
