@@ -75,7 +75,7 @@
                 <div>
                     <p class="text-xs font-semibold uppercase tracking-widest mb-4 {{ $light ? 'text-gray-400' : 'text-neutral-600' }}">Company</p>
                     <ul class="flex flex-col gap-2.5">
-                        <li><a href="/about" class="text-xs {{ $light ? 'text-gray-500 hover:text-gray-900' : 'text-neutral-400 hover:text-white' }} transition-colors">About</a></li>
+                        <li><a href="/gurpreet-kait" class="text-xs {{ $light ? 'text-gray-500 hover:text-gray-900' : 'text-neutral-400 hover:text-white' }} transition-colors">About</a></li>
                         <li><a href="/contact" class="text-xs {{ $light ? 'text-gray-500 hover:text-gray-900' : 'text-neutral-400 hover:text-white' }} transition-colors">Contact</a></li>
                         <li><a href="/privacy-policy" class="text-xs {{ $light ? 'text-gray-500 hover:text-gray-900' : 'text-neutral-400 hover:text-white' }} transition-colors">Privacy Policy</a></li>
                         <li><a href="/terms" class="text-xs {{ $light ? 'text-gray-500 hover:text-gray-900' : 'text-neutral-400 hover:text-white' }} transition-colors">Terms</a></li>

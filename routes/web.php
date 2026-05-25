@@ -17,9 +17,9 @@ Route::get('/privacy-policy', function () {
 });
 
 // About page
-Route::get('/about', function () {
+Route::get('/gurpreet-kait', function () {
     return view('about');
-});
+})->name('about');
 
 // Contact page
 Route::get('/contact', function () {
