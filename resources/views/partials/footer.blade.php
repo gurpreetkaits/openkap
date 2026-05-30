@@ -84,6 +84,14 @@
             </div>
         </div>
 
+        {{-- Featured on --}}
+        <div class="flex flex-col items-center gap-2 mb-10">
+            <span class="text-xs uppercase tracking-widest font-semibold {{ $light ? 'text-gray-400' : 'text-neutral-600' }}">Featured on</span>
+            <a href="https://www.scrolllaunch.com/products/openkap?utm_source=badge&utm_medium=embed&utm_campaign=openkap&ref=scrolllaunch" target="_blank" rel="noopener noreferrer">
+                <img src="https://www.scrolllaunch.com/api/badge/openkap" alt="Featured on ScrollLaunch" width="220" height="48" loading="lazy" />
+            </a>
+        </div>
+
         {{-- Bottom bar --}}
         <div class="border-t {{ $light ? 'border-gray-100' : 'border-white/5' }} pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
             <span class="text-xs {{ $light ? 'text-gray-400' : 'text-neutral-600' }}">&copy; {{ date('Y') }} OpenKap. All rights reserved.</span>
