@@ -2336,14 +2336,23 @@ export default {
         if (!result) return
 
         if (result.mode === 'redirect') {
-          const link = document.createElement('a')
-          link.href = result.url
-          link.download = result.fileName || `${video.title || 'video'}.mp4`
-          link.target = '_blank'
-          document.body.appendChild(link)
-          link.click()
-          document.body.removeChild(link)
-          toast.success('Download started!')
+          toast.success('Downloading...')
+          try {
+            const resp = await fetch(result.url)
+            const blob = await resp.blob()
+            const blobUrl = window.URL.createObjectURL(blob)
+            const link = document.createElement('a')
+            link.href = blobUrl
+            link.download = result.fileName || `${video.title || 'video'}.mp4`
+            document.body.appendChild(link)
+            link.click()
+            document.body.removeChild(link)
+            window.URL.revokeObjectURL(blobUrl)
+            toast.success('Download complete!')
+          } catch (dlErr) {
+            console.error('Blob download failed, falling back:', dlErr)
+            window.open(result.url, '_blank')
+          }
         } else if (result.mode === 'sync') {
           const blobUrl = window.URL.createObjectURL(result.blob)
           const link = document.createElement('a')
@@ -2354,6 +2363,8 @@ export default {
           document.body.removeChild(link)
           window.URL.revokeObjectURL(blobUrl)
           toast.success('Download complete!')
+        } else if (result.mode === 'processing') {
+          toast.info('Video is still encoding — please try again in a few moments.')
         } else {
           trackDownload(video.id, video.title || 'Untitled Video')
           toast.success('Your video is being converted to MP4. Check notifications for progress!')
@@ -2450,14 +2461,23 @@ export default {
         if (!result) return
 
         if (result.mode === 'redirect') {
-          const link = document.createElement('a')
-          link.href = result.url
-          link.download = result.fileName || `${video.title || 'video'}.mp4`
-          link.target = '_blank'
-          document.body.appendChild(link)
-          link.click()
-          document.body.removeChild(link)
-          toast.success('Download started!')
+          toast.success('Downloading...')
+          try {
+            const resp = await fetch(result.url)
+            const blob = await resp.blob()
+            const blobUrl = window.URL.createObjectURL(blob)
+            const link = document.createElement('a')
+            link.href = blobUrl
+            link.download = result.fileName || `${video.title || 'video'}.mp4`
+            document.body.appendChild(link)
+            link.click()
+            document.body.removeChild(link)
+            window.URL.revokeObjectURL(blobUrl)
+            toast.success('Download complete!')
+          } catch (dlErr) {
+            console.error('Blob download failed, falling back:', dlErr)
+            window.open(result.url, '_blank')
+          }
         } else if (result.mode === 'sync') {
           const blobUrl = window.URL.createObjectURL(result.blob)
           const link = document.createElement('a')
@@ -2469,10 +2489,8 @@ export default {
           window.URL.revokeObjectURL(blobUrl)
           toast.success('Download complete!')
         } else if (result.mode === 'processing') {
-          // Bunny is still encoding — show in bell with live progress
-          flyThumbnailToNotificationBell(video)
-          trackDownload(video.id, video.title || 'Untitled Video')
-          toast.info('Video is still processing — check the bell for progress!')
+          // Bunny is still encoding — Bunny handles its own pipeline, don't queue locally
+          toast.info('Video is still encoding — please try again in a few moments.')
         } else {
           // Async local conversion
           flyThumbnailToNotificationBell(video)

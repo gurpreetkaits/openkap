@@ -223,7 +223,7 @@
               </svg>
             </button>
             <div v-show="showOptionsMenu" class="absolute right-0 top-full mt-1.5 w-52 bg-white rounded-lg shadow-xl border border-gray-200 py-1.5 z-50">
-              <button @click="handleDownload; showOptionsMenu = false" class="w-full px-4 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2.5">
+              <button @click="handleDownload(); showOptionsMenu = false" class="w-full px-4 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2.5">
                 <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
                 </svg>
@@ -2605,8 +2605,7 @@ export default {
         const result = await videoService.requestDownloadMp4(video.value.id)
 
         if (result.mode === 'processing') {
-          trackDownload(video.value.id, video.value.title || 'Untitled Video')
-          showToast('Video is still processing — check the bell for progress!')
+          showToast('Video is still encoding — please try again in a few moments.')
           return
         }
 

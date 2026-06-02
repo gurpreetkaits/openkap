@@ -50,7 +50,7 @@ async function pollForReady() {
     const notifications = data.notifications || []
 
     for (const download of processing) {
-      // Check for a matching download-ready notification
+      // Check for a matching download-ready notification (local ffmpeg conversion)
       const match = notifications.find(n =>
         n.type === 'download' &&
         n.link &&
@@ -71,6 +71,15 @@ async function pollForReady() {
       } else if (failMatch) {
         download.status = 'failed'
         download.notificationId = failMatch.id
+      } else {
+        // Self-heal stale Bunny entries: Bunny doesn't push a 'download' notification,
+        // so if this video is on Bunny and now ready, drop the stuck entry.
+        try {
+          const bunny = await videoService.getBunnyStatus(download.videoId)
+          if (bunny && (bunny.status === 'ready' || bunny.bunny_status === 'ready')) {
+            removeFromTracker(download.videoId)
+          }
+        } catch {}
       }
     }
 
@@ -78,6 +87,11 @@ async function pollForReady() {
   } catch (err) {
     console.error('Download tracker poll error:', err)
   }
+}
+
+function removeFromTracker(videoId) {
+  downloads.value = downloads.value.filter(d => d.videoId !== videoId)
+  saveToStorage()
 }
 
 export function useDownloadTracker() {
