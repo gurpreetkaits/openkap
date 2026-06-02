@@ -2336,23 +2336,13 @@ export default {
         if (!result) return
 
         if (result.mode === 'redirect') {
-          toast.success('Downloading...')
-          try {
-            const resp = await fetch(result.url)
-            const blob = await resp.blob()
-            const blobUrl = window.URL.createObjectURL(blob)
-            const link = document.createElement('a')
-            link.href = blobUrl
-            link.download = result.fileName || `${video.title || 'video'}.mp4`
-            document.body.appendChild(link)
-            link.click()
-            document.body.removeChild(link)
-            window.URL.revokeObjectURL(blobUrl)
-            toast.success('Download complete!')
-          } catch (dlErr) {
-            console.error('Blob download failed, falling back:', dlErr)
-            window.open(result.url, '_blank')
-          }
+          const link = document.createElement('a')
+          link.href = result.url
+          link.download = result.fileName || `${video.title || 'video'}.mp4`
+          document.body.appendChild(link)
+          link.click()
+          document.body.removeChild(link)
+          toast.success('Download started!')
         } else if (result.mode === 'sync') {
           const blobUrl = window.URL.createObjectURL(result.blob)
           const link = document.createElement('a')
@@ -2461,23 +2451,13 @@ export default {
         if (!result) return
 
         if (result.mode === 'redirect') {
-          toast.success('Downloading...')
-          try {
-            const resp = await fetch(result.url)
-            const blob = await resp.blob()
-            const blobUrl = window.URL.createObjectURL(blob)
-            const link = document.createElement('a')
-            link.href = blobUrl
-            link.download = result.fileName || `${video.title || 'video'}.mp4`
-            document.body.appendChild(link)
-            link.click()
-            document.body.removeChild(link)
-            window.URL.revokeObjectURL(blobUrl)
-            toast.success('Download complete!')
-          } catch (dlErr) {
-            console.error('Blob download failed, falling back:', dlErr)
-            window.open(result.url, '_blank')
-          }
+          const link = document.createElement('a')
+          link.href = result.url
+          link.download = result.fileName || `${video.title || 'video'}.mp4`
+          document.body.appendChild(link)
+          link.click()
+          document.body.removeChild(link)
+          toast.success('Download started!')
         } else if (result.mode === 'sync') {
           const blobUrl = window.URL.createObjectURL(result.blob)
           const link = document.createElement('a')

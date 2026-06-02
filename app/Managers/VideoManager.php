@@ -1155,19 +1155,19 @@ class VideoManager
             ];
         }
 
-        // Bunny CDN videos: redirect to signed MP4 download URL
+        // Bunny CDN videos: return a same-origin signed proxy URL so the browser
+        // downloads via a regular <a href> click (Bunny's MP4 fallback doesn't
+        // serve CORS headers, so client-side fetch+blob is unreliable).
         if ($video->isBunnyVideo() && $video->bunny_video_id && $video->bunny_status === 'ready') {
-            $resolution = $this->getBunnyDownloadResolution($video);
-
-            $downloadUrl = $this->bunnyService->generateSignedDownloadUrl(
-                $video->bunny_video_id,
-                $resolution,
-                3600
+            $proxyUrl = \Illuminate\Support\Facades\URL::temporarySignedRoute(
+                'videos.download-bunny',
+                now()->addMinutes(15),
+                ['id' => $video->id]
             );
 
             return [
                 'mode' => 'redirect',
-                'url' => $downloadUrl,
+                'url' => $proxyUrl,
                 'file_name' => ($video->title ?? 'video').'.mp4',
             ];
         }
@@ -1334,5 +1334,37 @@ class VideoManager
         usort($files, fn ($a, $b) => filemtime($b) - filemtime($a));
 
         return $files[0];
+    }
+
+    public function streamBunnyDownload(Video $video): \Symfony\Component\HttpFoundation\StreamedResponse
+    {
+        $resolution = $this->getBunnyDownloadResolution($video);
+
+        $bunnyUrl = $this->bunnyService->generateSignedDownloadUrl(
+            $video->bunny_video_id,
+            $resolution,
+            3600
+        );
+
+        $fileName = ($video->title ?? 'video').'.mp4';
+
+        $client = new \GuzzleHttp\Client(['timeout' => 0]);
+        $upstream = $client->get($bunnyUrl, ['stream' => true]);
+        $contentLength = $upstream->getHeaderLine('Content-Length');
+
+        $headers = ['Content-Type' => 'video/mp4'];
+        if ($contentLength !== '') {
+            $headers['Content-Length'] = $contentLength;
+        }
+
+        return response()->streamDownload(function () use ($upstream) {
+            $body = $upstream->getBody();
+            while (! $body->eof()) {
+                echo $body->read(65536);
+                @ob_flush();
+                flush();
+            }
+            $body->close();
+        }, $fileName, $headers);
     }
 }

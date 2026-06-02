@@ -924,6 +924,17 @@ class VideoController extends Controller
         return response()->download($filePath, $fileName)->deleteFileAfterSend(true);
     }
 
+    public function streamBunnyDownload($id)
+    {
+        $video = $this->videoManager->findVideoOrFail($id);
+
+        if (! $video->isBunnyVideo() || $video->bunny_status !== 'ready') {
+            abort(400, 'Video is not available for download');
+        }
+
+        return $this->videoManager->streamBunnyDownload($video);
+    }
+
     public function transcriptChat($id, Request $request, ChatService $chatService)
     {
         $validated = $request->validate([

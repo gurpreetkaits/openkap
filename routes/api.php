@@ -123,6 +123,11 @@ Route::get('/share/playlist/{token}', [PlaylistController::class, 'showShared'])
 // Public screenshot sharing - anyone can view
 Route::get('/share/screenshot/{token}', [ScreenshotController::class, 'viewShared']);
 
+// Signed-URL Bunny download proxy (auth is the signature; called via <a href> click)
+Route::get('/videos/{id}/download-bunny', [VideoController::class, 'streamBunnyDownload'])
+    ->name('videos.download-bunny')
+    ->middleware('signed');
+
 // ============================================
 // PROTECTED ROUTES (Authentication required)
 // ============================================
