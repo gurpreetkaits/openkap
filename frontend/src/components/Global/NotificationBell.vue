@@ -9,10 +9,10 @@
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
       </svg>
       <span
-        v-if="totalBadge > 0"
+        v-if="unreadCount > 0"
         class="absolute -top-0.5 -right-0.5 min-w-[16px] h-[16px] px-1 flex items-center justify-center text-[9px] font-bold text-white bg-orange-500 rounded-full border-2 border-white"
       >
-        {{ totalBadge > 9 ? '9+' : totalBadge }}
+        {{ unreadCount > 9 ? '9+' : unreadCount }}
       </span>
     </button>
 
@@ -47,7 +47,6 @@
                 : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'"
             >
               {{ tab.label }}
-              <span v-if="tab.id === 'downloads' && downloadBadge > 0" class="ml-1 px-1.5 py-0.5 text-[9px] font-bold bg-orange-500 text-white rounded-full">{{ downloadBadge }}</span>
             </button>
           </div>
         </div>
@@ -61,52 +60,17 @@
           </div>
 
           <!-- Empty -->
-          <div v-else-if="displayItems.length === 0" class="px-4 py-8 text-center">
+          <div v-else-if="displayNotifications.length === 0" class="px-4 py-8 text-center">
             <svg class="w-10 h-10 mx-auto text-gray-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
             </svg>
             <p class="text-sm text-gray-500">
-              {{ activeTab === 'all' ? 'No notifications yet' : activeTab === 'downloads' ? 'No downloads' : `No ${activeTab} notifications` }}
+              {{ activeTab === 'all' ? 'No notifications yet' : `No ${activeTab} notifications` }}
             </p>
           </div>
 
           <!-- Items -->
           <div v-else>
-            <!-- Processing downloads (shown at top for downloads tab or all tab) -->
-            <template v-if="(activeTab === 'all' || activeTab === 'downloads') && processingDownloads.length > 0">
-              <!-- Queue summary banner -->
-              <div class="px-4 py-2 bg-orange-50 border-b border-orange-100 flex items-center gap-2">
-                <div class="w-5 h-5 flex items-center justify-center">
-                  <svg class="w-3.5 h-3.5 text-orange-500 animate-spin" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-                  </svg>
-                </div>
-                <span class="text-[11px] font-semibold text-orange-700">
-                  {{ processingDownloads.length }} download{{ processingDownloads.length !== 1 ? 's' : '' }} in queue
-                </span>
-              </div>
-              <!-- Individual processing items -->
-              <div
-                v-for="(dl, index) in processingDownloads"
-                :key="'dl-' + dl.videoId"
-                class="px-4 py-3 bg-orange-50/30 border-b border-gray-50 transition-colors"
-              >
-                <div class="flex items-start gap-3">
-                  <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-orange-100 text-orange-600 text-[11px] font-bold">
-                    {{ index + 1 }}
-                  </div>
-                  <div class="flex-1 min-w-0">
-                    <p class="text-sm font-medium text-gray-700">Converting "<span class="text-gray-900">{{ dl.videoTitle }}</span>"</p>
-                    <p class="text-[10px] text-orange-600 mt-1 flex items-center gap-1.5">
-                      <span class="inline-block w-1.5 h-1.5 bg-orange-400 rounded-full animate-pulse"></span>
-                      {{ index === 0 ? 'Processing now...' : 'Queued - waiting...' }}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </template>
-
             <!-- Server notifications -->
             <div
               v-for="notification in displayNotifications"
@@ -202,7 +166,6 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import notificationService from '@/services/notificationService'
 import videoService from '@/services/videoService'
-import { useDownloadTracker } from '@/composables/useDownloadTracker'
 
 export default {
   name: 'NotificationBell',
@@ -216,43 +179,18 @@ export default {
     const activeTab = ref('all')
     let pollInterval = null
 
-    const {
-      downloads,
-      triggerDownload,
-      removeDownload,
-      startTracking,
-      stopTracking,
-      processingCount,
-      badgeCount: downloadBadge
-    } = useDownloadTracker()
-
     const notificationTabs = [
       { id: 'all', label: 'All' },
       { id: 'unread', label: 'Unread' },
-      { id: 'downloads', label: 'Downloads' },
       { id: 'comment', label: 'Comments' },
       { id: 'viewer', label: 'Views' }
     ]
-
-    const totalBadge = computed(() => unreadCount.value + downloadBadge.value)
-
-    const processingDownloads = computed(() =>
-      downloads.value.filter(d => d.status === 'processing')
-    )
 
     // Filter notifications based on active tab
     const displayNotifications = computed(() => {
       if (activeTab.value === 'all') return notifications.value
       if (activeTab.value === 'unread') return notifications.value.filter(n => !n.read_at)
-      if (activeTab.value === 'downloads') return notifications.value.filter(n => n.type === 'download')
       return notifications.value.filter(n => n.type === activeTab.value)
-    })
-
-    // Combined list for empty state check
-    const displayItems = computed(() => {
-      const notifs = displayNotifications.value
-      const processing = (activeTab.value === 'all' || activeTab.value === 'downloads') ? processingDownloads.value : []
-      return [...processing, ...notifs]
     })
 
     // Fetch unread count
@@ -268,18 +206,6 @@ export default {
       try {
         const data = await notificationService.getNotifications(1, 10)
         notifications.value = data.notifications || []
-
-        // Auto-clear processing downloads that now have a ready notification
-        for (const dl of processingDownloads.value) {
-          const match = notifications.value.find(n =>
-            n.type === 'download' &&
-            n.link &&
-            n.link.includes(`/videos/${dl.videoId}/download-mp4`)
-          )
-          if (match) {
-            removeDownload(dl.videoId)
-          }
-        }
       } catch {
         notifications.value = []
       } finally {
@@ -396,13 +322,11 @@ export default {
 
     onMounted(() => {
       fetchUnreadCount()
-      startTracking()
       pollInterval = setInterval(fetchUnreadCount, 30000)
       document.addEventListener('click', handleClickOutside)
     })
 
     onUnmounted(() => {
-      stopTracking()
       if (pollInterval) clearInterval(pollInterval)
       document.removeEventListener('click', handleClickOutside)
     })
@@ -415,12 +339,7 @@ export default {
       loadingNotifications,
       activeTab,
       notificationTabs,
-      totalBadge,
-      processingCount,
-      downloadBadge,
-      processingDownloads,
       displayNotifications,
-      displayItems,
       toggleDropdown,
       handleMarkAllAsRead,
       handleNotificationClick,
