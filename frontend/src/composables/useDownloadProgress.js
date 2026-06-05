@@ -58,7 +58,8 @@ async function pollAllProgress() {
                 headers["Authorization"] = `Bearer ${token}`;
             }
 
-            const baseUrl = import.meta.env.VITE_API_BASE_URL || "";
+            const baseUrl =
+                import.meta.env.VITE_BACKEND_URL || "http://localhost:8888";
             const response = await fetch(
                 `${baseUrl}/api/downloads/progress/${dl.downloadId}`,
                 { headers },
@@ -178,7 +179,8 @@ export function useDownloadProgress() {
                 headers["Authorization"] = `Bearer ${token}`;
             }
 
-            const baseUrl = import.meta.env.VITE_API_BASE_URL || "";
+            const baseUrl =
+                import.meta.env.VITE_BACKEND_URL || "http://localhost:8888";
             const response = await fetch(
                 `${baseUrl}/api/downloads/${download.token}/file`,
                 { headers },
