@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Data\DownloadOptionsData;
 use App\Http\Resources\DownloadResource;
 use App\Managers\DownloadManager;
 use App\Models\Video;
@@ -9,6 +10,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\URL;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -19,24 +21,61 @@ class DownloadController extends Controller
     ) {}
 
     /**
-     * Request a new download. Always returns 202 with a download token.
+     * Request a new download. Returns 202 with a download token, 200 if cached,
+     * or {mode: "redirect"} for Bunny-hosted videos.
      * POST /api/downloads
      */
     public function store(Request $request): JsonResponse
     {
         $request->validate([
             'video_id' => 'required|integer|exists:videos,id',
+            'quality' => 'sometimes|string|in:1080p,720p,480p,original',
+            'include_camera' => 'sometimes|boolean',
+            'camera_position' => 'sometimes|string|in:bottom-right,bottom-left,top-right,top-left',
+            'camera_size' => 'sometimes|numeric|between:0.1,0.4',
+            'include_captions' => 'sometimes|boolean',
         ]);
 
         $user = Auth::user();
         $video = Video::findOrFail($request->video_id);
 
-        // For owner-only downloads, verify ownership
         if ($video->user_id !== $user->id) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
-        $download = $this->downloadManager->request($video, $user);
+        // Bunny still encoding — frontend should retry
+        if ($video->isBunnyVideo() && $video->bunny_status && ! in_array($video->bunny_status, ['ready', 'error'])) {
+            return response()->json([
+                'mode' => 'processing',
+                'bunny_status' => $video->bunny_status,
+                'message' => 'Video is being processed by Bunny CDN. Try again in a moment.',
+            ], 202);
+        }
+
+        // Bunny ready — return a signed proxy URL; no Download record needed.
+        if ($video->isBunnyVideo() && $video->bunny_video_id && $video->bunny_status === 'ready') {
+            $proxyUrl = URL::temporarySignedRoute(
+                'videos.download-bunny',
+                now()->addMinutes(15),
+                ['id' => $video->id]
+            );
+
+            return response()->json([
+                'mode' => 'redirect',
+                'url' => $proxyUrl,
+                'file_name' => ($video->title ?? 'video').'.mp4',
+            ]);
+        }
+
+        $options = new DownloadOptionsData(
+            include_camera: $request->boolean('include_camera', true),
+            camera_position: $request->string('camera_position', 'bottom-right')->toString(),
+            camera_size: (float) $request->input('camera_size', 0.25),
+            include_captions: $request->boolean('include_captions', false),
+            quality: $request->string('quality', '1080p')->toString(),
+        );
+
+        $download = $this->downloadManager->request($video, $user, $options);
 
         Log::info('DownloadController::store', [
             'download_id' => $download->id,

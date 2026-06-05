@@ -1027,9 +1027,20 @@ class VideoService {
 
     /**
      * Request a download through the new unified download system.
-     * POST /api/downloads — always returns 202 with a download token.
+     * POST /api/downloads — returns one of:
+     *   - {mode: "redirect", url, file_name}     (Bunny videos, immediate)
+     *   - {mode: "processing", bunny_status, ...}(Bunny still encoding)
+     *   - {id, token, status, progress, ...}     (Download record — local conversion)
+     *
+     * @param {number} videoId
+     * @param {object} [options]
+     * @param {string} [options.quality]
+     * @param {boolean} [options.includeCamera]
+     * @param {string} [options.cameraPosition]
+     * @param {number} [options.cameraSize]
+     * @param {boolean} [options.includeCaptions]
      */
-    async requestUnifiedDownload(videoId) {
+    async requestUnifiedDownload(videoId, options = {}) {
         try {
             const token = getAuthToken();
             const headers = {
@@ -1040,10 +1051,21 @@ class VideoService {
                 headers["Authorization"] = `Bearer ${token}`;
             }
 
+            const body = { video_id: videoId };
+            if (options.quality) body.quality = options.quality;
+            if (options.includeCamera !== undefined)
+                body.include_camera = options.includeCamera;
+            if (options.cameraPosition)
+                body.camera_position = options.cameraPosition;
+            if (options.cameraSize !== undefined)
+                body.camera_size = options.cameraSize;
+            if (options.includeCaptions !== undefined)
+                body.include_captions = options.includeCaptions;
+
             const response = await fetch(`${API_BASE_URL}/api/downloads`, {
                 method: "POST",
                 headers,
-                body: JSON.stringify({ video_id: videoId }),
+                body: JSON.stringify(body),
             });
 
             if (handleUnauthorized(response)) return null;
@@ -1057,6 +1079,7 @@ class VideoService {
             }
 
             const data = await response.json();
+            // Bunny modes return a flat object; Download records are nested under "data".
             return data.data || data;
         } catch (error) {
             console.error("Error requesting unified download:", error);

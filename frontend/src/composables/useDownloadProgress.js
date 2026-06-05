@@ -109,7 +109,15 @@ export function useDownloadProgress() {
         }
     }
 
-    async function requestDownload(videoId, videoTitle) {
+    /**
+     * Request a download. Returns one of:
+     *   {kind: "redirect", url, fileName}   — Bunny direct download
+     *   {kind: "processing", message}       — Bunny still encoding
+     *   {kind: "tracked", download}         — Local conversion (also handles cached-ready)
+     *
+     * Tracked downloads are pushed into `downloads` state and polled until ready.
+     */
+    async function requestDownload(videoId, videoTitle, options = {}) {
         const existing = downloads.value.find(
             (d) =>
                 d.videoId === videoId &&
@@ -117,10 +125,30 @@ export function useDownloadProgress() {
                 d.status !== "expired",
         );
         if (existing) {
-            return existing;
+            return { kind: "tracked", download: existing };
         }
 
-        const result = await videoService.requestUnifiedDownload(videoId);
+        const result = await videoService.requestUnifiedDownload(
+            videoId,
+            options,
+        );
+
+        if (result?.mode === "redirect") {
+            return {
+                kind: "redirect",
+                url: result.url,
+                fileName: result.file_name,
+            };
+        }
+
+        if (result?.mode === "processing") {
+            return {
+                kind: "processing",
+                message:
+                    result.message ||
+                    "Video is still encoding. Try again shortly.",
+            };
+        }
 
         const download = {
             downloadId: result.id,
@@ -134,9 +162,12 @@ export function useDownloadProgress() {
 
         downloads.value.push(download);
         saveToStorage();
-        startPolling();
 
-        return download;
+        if (download.status !== "ready") {
+            startPolling();
+        }
+
+        return { kind: "tracked", download };
     }
 
     async function triggerFileDownload(download) {

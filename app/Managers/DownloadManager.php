@@ -3,6 +3,7 @@
 namespace App\Managers;
 
 use App\Data\DownloadData;
+use App\Data\DownloadOptionsData;
 use App\Jobs\ConvertVideoToMp4ForDownloadJob;
 use App\Models\Download;
 use App\Models\User;
@@ -20,27 +21,32 @@ class DownloadManager
     /**
      * Request a download for a video. Checks cache first, then dispatches
      * a conversion job if needed. Always returns a Download record.
+     *
+     * A cached download is only reused when options match the defaults
+     * (no camera/captions/quality changes), to avoid handing the user
+     * a previous render with different settings.
      */
-    public function request(Video $video, ?User $user = null): Download
+    public function request(Video $video, ?User $user = null, ?DownloadOptionsData $options = null): Download
     {
         Log::info('DownloadManager::request', [
             'video_id' => $video->id,
             'user_id' => $user?->id,
+            'has_options' => $options !== null,
         ]);
 
-        // 1. Check if a cached ready download already exists
-        $cached = $this->downloads->findReadyByVideoAndFormat($video->id, 'mp4');
+        if ($this->isDefaultOptions($options)) {
+            $cached = $this->downloads->findReadyByVideoAndFormat($video->id, 'mp4');
 
-        if ($cached) {
-            Log::info('DownloadManager: cached download found', [
-                'download_id' => $cached->id,
-                'video_id' => $video->id,
-            ]);
+            if ($cached) {
+                Log::info('DownloadManager: cached download found', [
+                    'download_id' => $cached->id,
+                    'video_id' => $video->id,
+                ]);
 
-            return $cached;
+                return $cached;
+            }
         }
 
-        // 2. Create a new download record
         $downloadData = new DownloadData(
             video_id: $video->id,
             user_id: $user?->id,
@@ -49,8 +55,7 @@ class DownloadManager
 
         $download = $this->downloads->create($downloadData->toArray());
 
-        // 3. Dispatch the conversion job
-        ConvertVideoToMp4ForDownloadJob::dispatch($video, $download);
+        ConvertVideoToMp4ForDownloadJob::dispatch($video, $download, $options);
 
         Log::info('DownloadManager: dispatched conversion job', [
             'download_id' => $download->id,
@@ -58,6 +63,21 @@ class DownloadManager
         ]);
 
         return $download;
+    }
+
+    private function isDefaultOptions(?DownloadOptionsData $options): bool
+    {
+        if ($options === null) {
+            return true;
+        }
+
+        $defaults = new DownloadOptionsData;
+
+        return $options->include_camera === $defaults->include_camera
+            && $options->camera_position === $defaults->camera_position
+            && $options->camera_size === $defaults->camera_size
+            && $options->include_captions === $defaults->include_captions
+            && $options->quality === $defaults->quality;
     }
 
     /**

@@ -301,6 +301,17 @@
         :confirmText="video.is_public ? 'Make Private' : 'Make Public'"
         @confirm="handleTogglePrivacy"
       />
+      <SBDownloadModal
+        v-if="!isSharedMode"
+        v-model="showDownloadModal"
+        :videoTitle="video.title || 'Untitled Video'"
+        :duration="Math.round(video.duration || 0)"
+        :hasCamera="hasCameraTrack"
+        :hasCaptions="hasCaptionsAvailable"
+        :isDownloading="isDownloadStarting"
+        @download="handleDownloadConfirm"
+        @close="showDownloadModal = false"
+      />
       <SBConfirmModal
         v-model="showDeleteConfirm"
         title="Delete Video"
@@ -1343,9 +1354,10 @@ import videoService from '@/services/videoService'
 import integrationService from '@/services/integrationService'
 import { createTracker, buildViewPayload } from '@/services/analyticsTracker'
 import SBConfirmModal from '@/components/Global/SBConfirmModal.vue'
+import SBDownloadModal from '@/components/Global/SBDownloadModal.vue'
 import VideoShareIntegrations from '@/components/VideoShareIntegrations.vue'
 import NotificationBell from '@/components/Global/NotificationBell.vue'
-import { useDownloadTracker } from '@/composables/useDownloadTracker'
+import { useDownloadProgress } from '@/composables/useDownloadProgress'
 import Hls from 'hls.js'
 import { marked } from 'marked'
 import { sanitizeHtml } from '@/utils/sanitize'
@@ -1356,6 +1368,7 @@ export default {
   name: 'VideoPlayerView',
   components: {
     SBConfirmModal,
+    SBDownloadModal,
     VideoShareIntegrations,
     NotificationBell
   },
@@ -1363,7 +1376,7 @@ export default {
     const route = useRoute()
     const auth = useAuth()
     const branding = useBranding()
-    const { trackDownload } = useDownloadTracker()
+    const { requestDownload: requestUnifiedDownload, triggerFileDownload } = useDownloadProgress()
 
     // Mode detection
     const isSharedMode = computed(() => !!route.params.token)
@@ -2573,33 +2586,33 @@ export default {
     }
 
     // --- Download ---
+    const showDownloadModal = ref(false)
+    const isDownloadStarting = ref(false)
+    const hasCaptionsAvailable = computed(() => transcriptionStatus.value === 'completed')
+
     const handleDownload = async () => {
       if (isSharedMode.value) {
         await handleSharedDownload()
       } else {
-        await downloadVideo()
+        if (!video.value.id) return
+        showDownloadModal.value = true
       }
     }
 
-    const downloadVideo = async () => {
+    const handleDownloadConfirm = async (options) => {
       if (!video.value.id) return
 
+      isDownloadStarting.value = true
       try {
-        showToast('Preparing your download...')
-        const result = await videoService.requestDownloadMp4(video.value.id)
+        const result = await requestUnifiedDownload(
+          video.value.id,
+          video.value.title || 'Untitled Video',
+          options,
+        )
 
-        if (result.mode === 'processing') {
-          showToast('Video is still encoding — please try again in a few moments.')
-          return
-        }
+        if (!result) return
 
-        if (result.mode === 'async') {
-          trackDownload(video.value.id, video.value.title || 'Untitled Video')
-          showToast('Your video is being converted to MP4. Check notifications when it\'s ready!')
-          return
-        }
-
-        if (result.mode === 'redirect') {
+        if (result.kind === 'redirect') {
           const link = document.createElement('a')
           link.href = result.url
           link.download = result.fileName || `${video.value.title || 'video'}.mp4`
@@ -2607,22 +2620,29 @@ export default {
           link.click()
           document.body.removeChild(link)
           showToast('Download started!')
+          showDownloadModal.value = false
           return
         }
 
-        const blobUrl = window.URL.createObjectURL(result.blob)
-        const link = document.createElement('a')
-        link.href = blobUrl
-        link.download = `${video.value.title || 'video'}.mp4`
-        document.body.appendChild(link)
-        link.click()
-        document.body.removeChild(link)
-        window.URL.revokeObjectURL(blobUrl)
+        if (result.kind === 'processing') {
+          showToast(result.message)
+          return
+        }
 
-        showToast('Download complete!')
+        const dl = result.download
+        if (dl.status === 'ready') {
+          showToast('Download ready — fetching file...')
+          await triggerFileDownload(dl)
+          showToast('Download complete!')
+        } else {
+          showToast("We're preparing your MP4 — you'll be notified when it's ready.")
+        }
+        showDownloadModal.value = false
       } catch (err) {
-        console.error('Failed to download:', err)
-        showToast('Failed to download video')
+        console.error('Failed to start download:', err)
+        showToast(err.message || 'Failed to start download')
+      } finally {
+        isDownloadStarting.value = false
       }
     }
 
@@ -3330,7 +3350,7 @@ export default {
       showControls: showControls_fn, hideControlsDelayed, formatTime, formatTimeAgo, formatCommentTime,
       copyShareLink, copyEmbedCode, shareUrl,
       // Download
-      handleDownload,
+      handleDownload, handleDownloadConfirm, showDownloadModal, isDownloadStarting, hasCaptionsAvailable,
       // Owner actions
       confirmDeleteVideo, goBack,
       isEditingTitle, editedTitle, isSavingTitle, titleInput,
