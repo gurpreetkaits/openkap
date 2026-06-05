@@ -1,0 +1,471 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OpenKap — Video Download Flow</title>
+    <style>
+        :root {
+            --bg: #0f1117; --surface: #191c24; --surface2: #22262f;
+            --border: #2d3240; --text: #e1e4ed; --text2: #949cb0;
+            --accent: #6366f1; --accent2: #818cf8; --green: #34d399;
+            --red: #f87171; --amber: #fbbf24; --cyan: #22d3ee; --purple: #a78bfa;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg); color: var(--text); line-height: 1.6; min-height: 100vh;
+        }
+        .container { max-width: 1150px; margin: 0 auto; padding: 36px 28px; }
+        h1 { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
+        .subtitle { color: var(--text2); font-size: 15px; margin-bottom: 32px; }
+        .legend { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 28px; padding: 14px 20px; background: var(--surface); border-radius: 10px; border: 1px solid var(--border); font-size: 13px; }
+        .legend-item { display: flex; align-items: center; gap: 8px; }
+        .legend-dot { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+        .tabs { display: flex; gap: 4px; margin-bottom: 0; flex-wrap: wrap; }
+        .tab { padding: 10px 20px; border-radius: 8px 8px 0 0; border: 1px solid transparent; background: var(--surface); color: var(--text2); cursor: pointer; font-size: 13px; font-weight: 500; transition: all .15s; }
+        .tab.active { background: var(--surface2); color: var(--text); border-color: var(--border); border-bottom-color: var(--surface2); }
+        .tab:hover:not(.active) { color: var(--text); }
+        .panel-wrapper { background: var(--surface2); border: 1px solid var(--border); border-radius: 0 10px 10px 10px; padding: 28px; }
+        .panel { display: none; }
+        .panel.active { display: block; }
+
+        /* Flow */
+        .flow { display: flex; flex-direction: column; gap: 0; }
+        .step-row { display: flex; align-items: stretch; gap: 0; padding: 0 0 0 16px; position: relative; min-height: 60px; }
+        .step-row::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--border); border-radius: 2px; }
+        .step-row:first-child::before { top: 18px; }
+        .step-row:last-child::before { bottom: calc(100% - 18px); }
+        .step-dot { position: absolute; left: -7px; top: 18px; width: 17px; height: 17px; border-radius: 50%; border: 3px solid var(--border); background: var(--surface); z-index: 1; transition: all .3s; }
+        .step-dot.active { border-color: var(--accent); background: var(--accent); box-shadow: 0 0 10px rgba(99,102,241,.4); }
+        .step-dot.done { border-color: var(--green); background: var(--green); }
+        .step-dot.error { border-color: var(--red); background: var(--red); }
+        .step-dot.warn { border-color: var(--amber); background: var(--amber); }
+        .step-dot.info { border-color: var(--cyan); background: var(--cyan); }
+        .step-dot.purple { border-color: var(--purple); background: var(--purple); }
+        .step-content { flex: 1; padding: 14px 16px 14px 22px; margin-bottom: 2px; border-radius: 8px; background: var(--surface); border: 1px solid var(--border); transition: all .2s; }
+        .step-content:hover { border-color: var(--accent2); }
+        .step-header { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; flex-wrap: wrap; }
+        .step-label { font-weight: 600; padding: 2px 10px; border-radius: 5px; font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 12px; }
+        .step-label.controller { background: rgba(99,102,241,.15); color: var(--accent2); }
+        .step-label.manager { background: rgba(167,139,250,.15); color: var(--purple); }
+        .step-label.job { background: rgba(34,211,238,.15); color: var(--cyan); }
+        .step-label.service { background: rgba(52,211,153,.15); color: var(--green); }
+        .step-label.frontend { background: rgba(251,191,36,.15); color: var(--amber); }
+        .step-title { font-weight: 600; font-size: 15px; }
+        .step-desc { color: var(--text2); font-size: 13px; margin-top: 2px; }
+        .step-desc code { background: var(--surface2); padding: 1px 5px; border-radius: 3px; font-size: 12px; }
+        .step-meta { margin-top: 8px; display: flex; gap: 8px; flex-wrap: wrap; }
+        .step-badge { font-size: 11px; padding: 3px 9px; border-radius: 5px; font-family: 'JetBrains Mono', 'Fira Code', monospace; background: var(--surface2); color: var(--text2); }
+        .step-badge.green { color: var(--green); background: rgba(52,211,153,.1); }
+        .step-badge.red { color: var(--red); background: rgba(248,113,113,.1); }
+        .step-badge.amber { color: var(--amber); background: rgba(251,191,36,.1); }
+        .step-badge.cyan { color: var(--cyan); background: rgba(34,211,238,.1); }
+        .step-badge.purple { color: var(--purple); background: rgba(167,139,250,.1); }
+
+        .branch { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 8px 0 4px; }
+        .branch-col { background: var(--surface2); border-radius: 8px; padding: 14px; border: 1px solid var(--border); }
+        .branch-title { font-weight: 600; font-size: 14px; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+        .branch-items { list-style: none; display: flex; flex-direction: column; gap: 5px; }
+        .branch-item { font-size: 12px; color: var(--text2); display: flex; align-items: center; gap: 6px; padding: 2px 0; }
+        .branch-item::before { content: '→'; color: var(--accent2); font-weight: bold; }
+        .branch-col.span { grid-column: 1 / -1; }
+
+        .info-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 12px; }
+        .info-table th, .info-table td { padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--border); }
+        .info-table th { color: var(--text2); font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: .5px; }
+        .info-table code { font-size: 12px; background: var(--surface); padding: 2px 6px; border-radius: 3px; }
+
+        .section-title { font-size: 16px; font-weight: 600; margin-bottom: 16px; margin-top: 24px; }
+        .divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+
+        .warning-box { margin: 12px 0; padding: 12px 16px; border-radius: 8px; background: rgba(251,191,36,.08); border: 1px solid rgba(251,191,36,.25); font-size: 13px; color: var(--amber); }
+        .info-box { margin: 12px 0; padding: 12px 16px; border-radius: 8px; background: rgba(34,211,238,.08); border: 1px solid rgba(34,211,238,.25); font-size: 13px; color: var(--cyan); }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>⬇️ Video Download Flow</h1>
+    <p class="subtitle">What happens when a user clicks "Download" on <code>/videos</code> or the single video page</p>
+
+    <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--amber)"></div> Frontend</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--accent2)"></div> Controller</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--purple)"></div> Manager</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--cyan)"></div> Queued Job</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div> Service / Notifications</div>
+    </div>
+
+    <div class="tabs">
+        <button class="tab active" onclick="switchTab('flow')">🔍 Flow Diagram</button>
+        <button class="tab" onclick="switchTab('paths')">🔀 Decision Paths</button>
+        <button class="tab" onclick="switchTab('tracker')">🔔 Download Tracker</button>
+        <button class="tab" onclick="switchTab('endpoints')">📡 API Reference</button>
+    </div>
+
+    <div class="panel-wrapper">
+    <!-- ============ FLOW DIAGRAM ============ -->
+    <div id="panel-flow" class="panel active">
+        <div class="flow">
+            <div class="step-row">
+                <div class="step-dot info"></div>
+                <div class="step-content">
+                    <div class="step-header">
+                        <span class="step-label frontend">Frontend</span>
+                        <span class="step-title">1️⃣ User Clicks "Download"</span>
+                    </div>
+                    <div class="step-desc">
+                        <strong>On <code>/videos</code>:</strong> User clicks the download icon in the video card's action menu &rarr; calls <code>downloadVideoWithAnimation(video)</code> or <code>downloadVideo(video)</code>.<br>
+                        <strong>On single video page:</strong> User clicks "Download" in the options menu (three-dot) or in the action bar below the player &rarr; calls <code>handleDownload()</code> &rarr; <code>downloadVideo()</code>.<br>
+                        <strong>Shared page (<code>/share/video/{token}</code>):</strong> Visitor clicks download &rarr; calls <code>handleSharedDownload()</code> &rarr; separate Bunny-only path.
+                    </div>
+                </div>
+            </div>
+            <div class="step-row">
+                <div class="step-dot info"></div>
+                <div class="step-content">
+                    <div class="step-header">
+                        <span class="step-label frontend">Frontend</span>
+                        <span class="step-title">2️⃣ API Call: <code>requestDownloadMp4(id)</code></span>
+                    </div>
+                    <div class="step-desc">
+                        <code>POST /api/videos/{id}/request-download-mp4</code> &mdash; Sends an authenticated request. The backend determines the best download mode.
+                    </div>
+                    <div class="step-meta">
+                        <span class="step-badge">Auth: Bearer token</span>
+                        <span class="step-badge">Accept: application/json</span>
+                    </div>
+                </div>
+            </div>
+            <div class="step-row">
+                <div class="step-dot purple"></div>
+                <div class="step-content">
+                    <div class="step-header">
+                        <span class="step-label manager">VideoManager</span>
+                        <span class="step-title">3️⃣ <code>requestMp4Download(video)</code> &mdash; Branching Logic</span>
+                    </div>
+                    <div class="step-desc">The backend inspects the video's storage type and status to determine which path to take:</div>
+                    <div class="branch">
+                        <div class="branch-col">
+                            <div class="branch-title">🐰 Bunny CDN (still encoding)</div>
+                            <div class="step-desc" style="margin-bottom:6px"><code>bunny_status</code> is not <code>ready</code> or <code>error</code></div>
+                            <span class="step-badge amber">mode: processing</span>
+                            <span class="step-badge">HTTP 202</span>
+                            <p style="font-size:12px;color:var(--text2);margin-top:6px">Returns immediately &mdash; frontend shows a toast: <em>"Video is still encoding"</em></p>
+                        </div>
+                        <div class="branch-col">
+                            <div class="branch-title">🐰 Bunny CDN (ready)</div>
+                            <div class="step-desc" style="margin-bottom:6px"><code>bunny_status === 'ready'</code></div>
+                            <span class="step-badge green">mode: redirect</span>
+                            <span class="step-badge">Signed URL (15 min)</span>
+                            <p style="font-size:12px;color:var(--text2);margin-top:6px">Generates a temporary signed proxy URL &rarr; <code>GET /api/videos/{id}/download-bunny</code> which streams from Bunny CDN</p>
+                        </div>
+                    </div>
+                    <div class="branch" style="margin-top:12px">
+                        <div class="branch-col">
+                            <div class="branch-title">💾 Local (≤ 5 minutes)</div>
+                            <div class="step-desc" style="margin-bottom:6px"><code>video.duration &lt;= 300s</code></div>
+                            <span class="step-badge green">mode: sync</span>
+                            <span class="step-badge">ffmpeg runs synchronously</span>
+                            <p style="font-size:12px;color:var(--text2);margin-top:6px">ffmpeg converts to MP4 on-the-fly (H.264, faststart, max 1080p). File returned as download response and deleted after sending.</p>
+                        </div>
+                        <div class="branch-col">
+                            <div class="branch-title">💾 Local (&gt; 5 minutes)</div>
+                            <div class="step-desc" style="margin-bottom:6px"><code>video.duration &gt; 300s</code></div>
+                            <span class="step-badge amber">mode: async</span>
+                            <span class="step-badge cyan">Dispatches ConvertVideoToMp4ForDownloadJob</span>
+                            <p style="font-size:12px;color:var(--text2);margin-top:6px">Job runs in the background. User is notified via the notification bell when ready.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="step-row">
+                <div class="step-dot info"></div>
+                <div class="step-content">
+                    <div class="step-header">
+                        <span class="step-label frontend">Frontend</span>
+                        <span class="step-title">4️⃣ Frontend Handles the Response</span>
+                    </div>
+                    <div class="step-desc">Based on <code>result.mode</code>:</div>
+                    <table class="info-table">
+                        <tr><th>Mode</th><th>Frontend Action</th></tr>
+                        <tr>
+                            <td><code>redirect</code></td>
+                            <td>Creates an invisible <code>&lt;a&gt;</code> tag pointing to the signed Bunny proxy URL and clicks it. Browser handles the download natively. Shows toast: <em>"Download started!"</em></td>
+                        </tr>
+                        <tr>
+                            <td><code>sync</code></td>
+                            <td>Receives the MP4 as a <code>Blob</code>. Creates an object URL, triggers a download via a temporary <code>&lt;a&gt;</code> tag, revokes the blob URL. Shows toast: <em>"Download complete!"</em></td>
+                        </tr>
+                        <tr>
+                            <td><code>processing</code></td>
+                            <td>Shows toast: <em>"Video is still encoding — please try again in a few moments."</em></td>
+                        </tr>
+                        <tr>
+                            <td><code>async</code></td>
+                            <td>Adds the download to <code>useDownloadTracker</code>. On <code>/videos</code>: animates the thumbnail flying to the notification bell. Shows toast: <em>"Converting to MP4 — check the bell for progress!"</em></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            <div class="step-row">
+                <div class="step-dot cyan"></div>
+                <div class="step-content">
+                    <div class="step-header">
+                        <span class="step-label job">ConvertVideoToMp4ForDownloadJob</span>
+                        <span class="step-title">5️⃣ Async Path: Background MP4 Conversion</span>
+                    </div>
+                    <div class="step-desc">Only for <strong>local videos &gt; 5 minutes</strong>. Runs in the queue (2 tries, 2 hour timeout).</div>
+                    <ul class="branch-items">
+                        <li class="branch-item">Runs ffmpeg: H.264, max 1080p, AAC 128k audio, faststart moov atom</li>
+                        <li class="branch-item">If the video has captions/transcription: burns SRT subtitles into the MP4</li>
+                        <li class="branch-item">Output saved to <code>storage/app/mp4-downloads/video_{id}_{timestamp}.mp4</code></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="step-row">
+                <div class="step-dot done"></div>
+                <div class="step-content">
+                    <div class="step-header">
+                        <span class="step-label service">NotificationManager</span>
+                        <span class="step-title">6️⃣ Download-Ready Notification Created</span>
+                    </div>
+                    <div class="step-desc">After successful ffmpeg conversion, the job calls <code>NotificationManager::createDownloadReadyNotification(video, downloadLink)</code>.</div>
+                    <div class="step-meta">
+                        <span class="step-badge green">type: download</span>
+                        <span class="step-badge">link: /api/videos/{id}/download-mp4</span>
+                        <span class="step-badge">message: "Your MP4 download is ready"</span>
+                    </div>
+                </div>
+            </div>
+            <div class="step-row">
+                <div class="step-dot info"></div>
+                <div class="step-content">
+                    <div class="step-header">
+                        <span class="step-label frontend">useDownloadTracker</span>
+                        <span class="step-title">7️⃣ Polling Detects "Ready" Status</span>
+                    </div>
+                    <div class="step-desc">The download tracker polls <code>GET /api/notifications</code> every 8 seconds. When it finds a <code>type: 'download'</code> notification matching the video ID, it transitions the download status from <code>processing</code> to <code>ready</code>. The notification bell badge updates automatically.</div>
+                    <div class="step-meta">
+                        <span class="step-badge cyan">Poll interval: 8s</span>
+                        <span class="step-badge">Stored in localStorage</span>
+                        <span class="step-badge amber">Stale entries auto-cleaned after 24h</span>
+                    </div>
+                </div>
+            </div>
+            <div class="step-row">
+                <div class="step-dot done"></div>
+                <div class="step-content">
+                    <div class="step-header">
+                        <span class="step-label frontend">Frontend</span>
+                        <span class="step-title">8️⃣ User Clicks "Download" in Notification Bell</span>
+                    </div>
+                    <div class="step-desc">The notification bell shows a green "Download" button on the ready notification. Clicking it calls <code>triggerDownload()</code> which:</div>
+                    <ol style="font-size:13px;color:var(--text2);margin:6px 0 0 18px;display:flex;flex-direction:column;gap:3px;">
+                        <li>Calls <code>GET /api/videos/{id}/download-mp4</code></li>
+                        <li>Receives the MP4 as a Blob</li>
+                        <li>Triggers a browser download via a temporary <code>&lt;a&gt;</code> tag</li>
+                        <li>Marks the notification as read</li>
+                        <li>Removes the download from the tracker</li>
+                    </ol>
+                    <div class="step-meta" style="margin-top:10px">
+                        <span class="step-badge green">File deleted after send</span>
+                        <span class="step-badge">deleteFileAfterSend(true)</span>
+                    </div>
+                </div>
+            </div>
+            <div class="step-row">
+                <div class="step-dot error"></div>
+                <div class="step-content">
+                    <div class="step-header">
+                        <span class="step-label service">NotificationManager</span>
+                        <span class="step-title">❌ Error Path: Conversion Failure</span>
+                    </div>
+                    <div class="step-desc">If ffmpeg fails, the job calls <code>createInfoNotification()</code> with an error message. The tracker picks up the failure via the notification text and marks the download status as <code>failed</code>. The temp MP4 file is cleaned up.</div>
+                    <div class="step-meta">
+                        <span class="step-badge red">type: info</span>
+                        <span class="step-badge red">status: failed</span>
+                        <span class="step-badge">Tries: 2 (with retry)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ DECISION PATHS ============ -->
+    <div id="panel-paths" class="panel">
+        <h3 class="section-title" style="margin-top:0">🔀 <code>requestMp4Download()</code> Decision Tree</h3>
+        <div class="flow">
+            <div class="step-row">
+                <div class="step-dot info"></div>
+                <div class="step-content">
+                    <div class="step-header"><span class="step-title">🔍 Is this a Bunny CDN video?</span></div>
+                    <div class="step-desc"><code>$video->isBunnyVideo() && $video->bunny_video_id</code></div>
+                </div>
+            </div>
+            <div class="step-row">
+                <div class="step-dot amber"></div>
+                <div class="step-content">
+                    <div class="step-header"><span class="step-title">YES → Is Bunny encoding complete?</span></div>
+                    <div class="step-desc"><code>in_array($video->bunny_status, ['ready', 'error'])</code></div>
+                    <div class="branch">
+                        <div class="branch-col">
+                            <div class="branch-title">✅ Ready</div>
+                            <span class="step-badge green">mode: redirect</span>
+                            <p style="font-size:12px;color:var(--text2);margin-top:6px">Creates a temporary signed route: <code>GET /api/videos/{id}/download-bunny</code> (valid 15 min). The proxy endpoint streams the file from Bunny CDN using <code>GuzzleHttp</code> with a signed download URL (resolution capped at 1080p, 1 hour expiry).</p>
+                        </div>
+                        <div class="branch-col">
+                            <div class="branch-title">⏳ Still encoding</div>
+                            <span class="step-badge amber">mode: processing</span>
+                            <p style="font-size:12px;color:var(--text2);margin-top:6px">Returns HTTP 202. Frontend shows a toast and the user must try again later. Bunny handles its own encoding pipeline — no local queue needed.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="step-row">
+                <div class="step-dot purple"></div>
+                <div class="step-content">
+                    <div class="step-header"><span class="step-title">NO → Local video. Is it ≤ 5 minutes?</span></div>
+                    <div class="step-desc"><code>($video->duration ?? 0) <= 300</code></div>
+                    <div class="branch">
+                        <div class="branch-col">
+                            <div class="branch-title">✅ ≤ 5 min (Sync)</div>
+                            <span class="step-badge green">mode: sync</span>
+                            <p style="font-size:12px;color:var(--text2);margin-top:6px">
+                                ffmpeg runs in the same request. Converts WebM → MP4 (H.264, AAC, faststart, max 1080p). If transcript exists, SRT subtitles are burned in. The returned file is deleted after the response is sent.
+                            </p>
+                        </div>
+                        <div class="branch-col">
+                            <div class="branch-title">⏳ > 5 min (Async)</div>
+                            <span class="step-badge amber">mode: async</span>
+                            <p style="font-size:12px;color:var(--text2);margin-top:6px">
+                                <code>ConvertVideoToMp4ForDownloadJob</code> is dispatched to the queue. Same ffmpeg command, but runs non-blocking. User gets notified via the notification bell when ready.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h3 class="section-title">📐 ffmpeg Download Command</h3>
+        <div class="info-box">
+            <strong>Without captions:</strong><br>
+            <code style="word-break:break-all;font-size:12px;">ffmpeg -y -threads 1 -i {input} -vf "scale=min(iw,1920):min(ih,1080):force_original_aspect_ratio=decrease,pad=ceil(iw/2)*2:ceil(ih/2)*2" -c:v libx264 -preset fast -crf 22 -maxrate 5M -bufsize 3M -pix_fmt yuv420p -c:a aac -b:a 128k -max_muxing_queue_size 1024 -movflags +faststart {output}</code>
+        </div>
+        <div class="info-box">
+            <strong>With captions (SRT burned in):</strong><br>
+            <code style="word-break:break-all;font-size:12px;">ffmpeg -y -threads 1 -i {input} -i {srt_file} -vf "scale=...,subtitles={srt_file}" ... -c:s mov_text -metadata:s:s:0 language=eng ... {output}</code>
+        </div>
+    </div>
+
+    <!-- ============ DOWNLOAD TRACKER ============ -->
+    <div id="panel-tracker" class="panel">
+        <h3 class="section-title" style="margin-top:0">🔔 <code>useDownloadTracker</code> Composable</h3>
+        <p style="color:var(--text2);font-size:13px;margin-bottom:16px;">
+            A shared global state composable that manages the lifecycle of async download conversions across all components.
+        </p>
+        <table class="info-table">
+            <tr><th>Feature</th><th>Details</th></tr>
+            <tr><td>Storage</td><td><code>localStorage</code> key: <code>openkap_downloads</code> — persists across page refreshes</td></tr>
+            <tr><td>Poll interval</td><td>Every 8 seconds via <code>setInterval</code></td></tr>
+            <tr><td>Poll target</td><td><code>GET /api/notifications?page=1&per_page=20</code></td></tr>
+            <tr><td>Detection</td><td>Looks for <code>type: 'download'</code> notifications whose <code>link</code> matches <code>/videos/{videoId}/download-mp4</code></td></tr>
+            <tr><td>Auto-cleanup</td><td>Entries older than 24 hours are purged on load</td></tr>
+            <tr><td>Bunny self-heal</td><td>For Bunny videos, if the tracker is stuck in <code>processing</code>, it checks Bunny status directly and drops stale entries</td></tr>
+            <tr><td>Ref counting</td><td>Uses <code>startTracking()</code>/<code>stopTracking()</code> ref-count pattern so polling stops when no components need it</td></tr>
+            <tr><td>Failure detection</td><td>Looks for <code>type: 'info'</code> notifications with <em>"failed"</em> in the message matching the video title</td></tr>
+        </table>
+
+        <h3 class="section-title">Download State Machine</h3>
+        <table class="info-table">
+            <tr><th>State</th><th>Meaning</th><th>UI Display</th></tr>
+            <tr>
+                <td><code>processing</code></td>
+                <td>Async job is queued or running. Polling active.</td>
+                <td>Orange spinner in notification bell; progress bar in downloads tab</td>
+            </tr>
+            <tr>
+                <td><code>ready</code></td>
+                <td>Notification found with download link. Conversion complete.</td>
+                <td>Green "Download" button in notification bell; ready badge</td>
+            </tr>
+            <tr>
+                <td><code>failed</code></td>
+                <td>ffmpeg failed or error notification detected.</td>
+                <td>Red error indicator; notification with error message</td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- ============ API REFERENCE ============ -->
+    <div id="panel-endpoints" class="panel">
+        <table class="info-table">
+            <tr><th>Method</th><th>Endpoint</th><th>Auth</th><th>Purpose</th></tr>
+            <tr>
+                <td><code>POST</code></td>
+                <td><code>/api/videos/{id}/request-download-mp4</code></td>
+                <td>Bearer token</td>
+                <td>Initiates the download flow. Returns mode: <code>sync</code> | <code>redirect</code> | <code>processing</code> | <code>async</code></td>
+            </tr>
+            <tr>
+                <td><code>GET</code></td>
+                <td><code>/api/videos/{id}/download-mp4</code></td>
+                <td>Bearer token</td>
+                <td>Retrieves a previously-converted MP4 file (async path). File is deleted after sending.</td>
+            </tr>
+            <tr>
+                <td><code>GET</code></td>
+                <td><code>/api/videos/{id}/download-bunny</code></td>
+                <td>Signed URL (15 min)</td>
+                <td>Temporary signed proxy that streams the MP4 from Bunny CDN to the browser.</td>
+            </tr>
+            <tr>
+                <td><code>GET</code></td>
+                <td><code>/api/bunny/share/{token}/download</code></td>
+                <td>None (public)</td>
+                <td>Shared video download. Returns a signed Bunny download URL for public share pages.</td>
+            </tr>
+        </table>
+
+        <h3 class="section-title">Response Modes</h3>
+        <table class="info-table">
+            <tr><th>Mode</th><th>HTTP Status</th><th>Response Body</th><th>Trigger</th></tr>
+            <tr>
+                <td><code>redirect</code></td>
+                <td>200</td>
+                <td><code>{ mode, url, file_name }</code></td>
+                <td>Bunny CDN video that is ready</td>
+            </tr>
+            <tr>
+                <td><code>sync</code></td>
+                <td>200</td>
+                <td>Binary MP4 blob (Content-Type: video/mp4)</td>
+                <td>Local video ≤ 5 min</td>
+            </tr>
+            <tr>
+                <td><code>processing</code></td>
+                <td>202</td>
+                <td><code>{ mode, bunny_status, message }</code></td>
+                <td>Bunny CDN video still encoding</td>
+            </tr>
+            <tr>
+                <td><code>async</code></td>
+                <td>202</td>
+                <td><code>{ message }</code></td>
+                <td>Local video > 5 min (job dispatched)</td>
+            </tr>
+        </table>
+    </div>
+    </div><!-- /panel-wrapper -->
+</div>
+
+<script>
+    function switchTab(name) {
+        document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+        document.querySelectorAll('.panel').forEach(function(p) { p.classList.remove('active'); });
+        document.querySelector('.tab[onclick*="' + name + '"]').classList.add('active');
+        document.getElementById('panel-' + name).classList.add('active');
+    }
+</script>
+</body>
+</html>

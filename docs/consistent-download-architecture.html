@@ -1,0 +1,480 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OpenKap — Consistent Download Architecture</title>
+    <style>
+        :root {
+            --bg: #0f1117; --surface: #191c24; --surface2: #22262f;
+            --border: #2d3240; --text: #e1e4ed; --text2: #949cb0;
+            --accent: #6366f1; --accent2: #818cf8; --green: #34d399;
+            --red: #f87171; --amber: #fbbf24; --cyan: #22d3ee; --purple: #a78bfa;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg); color: var(--text); line-height: 1.6; min-height: 100vh;
+        }
+        .container { max-width: 1150px; margin: 0 auto; padding: 36px 28px; }
+        h1 { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
+        h2 { font-size: 20px; font-weight: 600; margin: 32px 0 12px; }
+        h3 { font-size: 16px; font-weight: 600; margin: 24px 0 10px; color: var(--accent2); }
+        .subtitle { color: var(--text2); font-size: 15px; margin-bottom: 32px; }
+
+        .tabs { display: flex; gap: 4px; margin-bottom: 0; flex-wrap: wrap; }
+        .tab { padding: 10px 20px; border-radius: 8px 8px 0 0; border: 1px solid transparent; background: var(--surface); color: var(--text2); cursor: pointer; font-size: 13px; font-weight: 500; transition: all .15s; }
+        .tab.active { background: var(--surface2); color: var(--text); border-color: var(--border); border-bottom-color: var(--surface2); }
+        .tab:hover:not(.active) { color: var(--text); }
+        .panel-wrapper { background: var(--surface2); border: 1px solid var(--border); border-radius: 0 10px 10px 10px; padding: 28px; }
+        .panel { display: none; }
+        .panel.active { display: block; }
+
+        .flow { display: flex; flex-direction: column; gap: 0; }
+        .step-row { display: flex; align-items: stretch; gap: 0; padding: 0 0 0 16px; position: relative; min-height: 60px; }
+        .step-row::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--border); border-radius: 2px; }
+        .step-row:first-child::before { top: 18px; }
+        .step-row:last-child::before { bottom: calc(100% - 18px); }
+        .step-dot { position: absolute; left: -7px; top: 18px; width: 17px; height: 17px; border-radius: 50%; border: 3px solid var(--border); background: var(--surface); z-index: 1; transition: all .3s; }
+        .step-dot.done { border-color: var(--green); background: var(--green); }
+        .step-dot.error { border-color: var(--red); background: var(--red); }
+        .step-dot.warn { border-color: var(--amber); background: var(--amber); }
+        .step-dot.info { border-color: var(--cyan); background: var(--cyan); }
+        .step-dot.purple { border-color: var(--purple); background: var(--purple); }
+        .step-content { flex: 1; padding: 14px 16px 14px 22px; margin-bottom: 2px; border-radius: 8px; background: var(--surface); border: 1px solid var(--border); transition: all .2s; }
+        .step-content:hover { border-color: var(--accent2); }
+        .step-content code { background: var(--surface2); padding: 1px 5px; border-radius: 3px; font-size: 12px; }
+        .step-title { font-weight: 600; font-size: 15px; margin-bottom: 4px; }
+        .step-desc { color: var(--text2); font-size: 13px; }
+
+        .info-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 12px; }
+        .info-table th, .info-table td { padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
+        .info-table th { color: var(--text2); font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: .5px; }
+        .info-table code { font-size: 12px; background: var(--surface); padding: 2px 6px; border-radius: 3px; }
+
+        .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-bottom: 16px; }
+        .card h3 { margin-top: 0; margin-bottom: 8px; }
+        .card p { color: var(--text2); font-size: 13px; line-height: 1.7; }
+        .card p code { background: var(--surface2); padding: 1px 5px; border-radius: 3px; font-size: 12px; }
+
+        .badge { display: inline-block; font-size: 11px; padding: 3px 9px; border-radius: 5px; font-family: 'JetBrains Mono', monospace; background: var(--surface2); color: var(--text2); margin: 2px 4px 2px 0; }
+        .badge.green { color: var(--green); background: rgba(52,211,153,.1); }
+        .badge.red { color: var(--red); background: rgba(248,113,113,.1); }
+        .badge.amber { color: var(--amber); background: rgba(251,191,36,.1); }
+        .badge.cyan { color: var(--cyan); background: rgba(34,211,238,.1); }
+        .badge.purple { color: var(--purple); background: rgba(167,139,250,.1); }
+
+        .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 16px 0; }
+        .compare-col { border-radius: 10px; padding: 20px; border: 1px solid var(--border); }
+        .compare-col.bad { background: rgba(248,113,113,.06); border-color: rgba(248,113,113,.2); }
+        .compare-col.good { background: rgba(52,211,153,.06); border-color: rgba(52,211,153,.2); }
+        .compare-col h4 { font-size: 15px; font-weight: 600; margin-bottom: 10px; }
+        .compare-col ul { list-style: none; display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: var(--text2); }
+        .compare-col ul li::before { content: '• '; font-weight: bold; }
+        .compare-col.bad ul li::before { color: var(--red); }
+        .compare-col.good ul li::before { color: var(--green); }
+
+        .arch-diagram { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 24px; margin: 16px 0; }
+        .arch-layer { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+        .arch-box { padding: 10px 18px; border-radius: 8px; font-size: 13px; font-weight: 600; text-align: center; border: 1px solid var(--border); background: var(--surface2); }
+        .arch-arrow { color: var(--text2); font-size: 18px; font-weight: bold; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>🏗️ Consistent Download Architecture</h1>
+    <p class="subtitle">Designing a single, predictable, fast, and reliable download system for OpenKap</p>
+
+    <div class="tabs">
+        <button class="tab active" onclick="switchTab('problems')">⚠️ Current Problems</button>
+        <button class="tab" onclick="switchTab('design')">🏛️ Proposed Design</button>
+        <button class="tab" onclick="switchTab('migration')">📋 Migration Plan</button>
+    </div>
+
+    <div class="panel-wrapper">
+
+    <!-- ============ CURRENT PROBLEMS ============ -->
+    <div id="panel-problems" class="panel active">
+
+        <div class="compare">
+            <div class="compare-col bad">
+                <h4>❌ Current System — 4 Inconsistent Paths</h4>
+                <ul>
+                    <li><strong>Bunny (encoding)</strong> → HTTP 202, user must retry manually</li>
+                    <li><strong>Bunny (ready)</strong> → signed redirect URL, 15-min expiry window</li>
+                    <li><strong>Local ≤5 min</strong> → ffmpeg blocks the HTTP request (sync)</li>
+                    <li><strong>Local >5 min</strong> → queued job, polls notifications every 8s</li>
+                </ul>
+            </div>
+            <div class="compare-col good">
+                <h4>✅ Proposed System — 1 Unified Path</h4>
+                <ul>
+                    <li><strong>All videos</strong> → immediate HTTP 202 with a download token</li>
+                    <li><strong>All videos</strong> → background job converts &amp; caches MP4</li>
+                    <li><strong>All videos</strong> → real-time SSE/WebSocket progress</li>
+                    <li><strong>All videos</strong> → same polling fallback, resumable downloads</li>
+                </ul>
+            </div>
+        </div>
+
+        <h3>🔴 Problem 1: Sync ffmpeg Blocks the Request Thread</h3>
+        <div class="card">
+            <p>
+                Videos ≤ 5 minutes run <code>convertToMp4Sync()</code> inside the HTTP request. ffmpeg conversion can take 30-60 seconds for a 5-minute video. During this time:
+            </p>
+            <p style="margin-top:8px">
+                • The PHP-FPM worker is tied up — <strong>reducing concurrency</strong> for other requests<br>
+                • If the user closes the tab, <strong>CPU cycles are wasted</strong><br>
+                • No progress feedback — the browser just shows a spinner<br>
+                • On slow servers, the request may <strong>hit PHP's <code>max_execution_time</code></strong> and fail
+            </p>
+            <div style="margin-top:10px">
+                <span class="badge red">Blocks request</span>
+                <span class="badge red">No progress</span>
+                <span class="badge red">Wastes CPU on cancel</span>
+            </div>
+        </div>
+
+        <h3>🔴 Problem 2: Bunny Redirect URLs Expire</h3>
+        <div class="card">
+            <p>
+                Bunny videos get a <strong>15-minute signed proxy URL</strong> (<code>temporarySignedRoute</code>). If the user doesn't start the download within that window, the link is dead and they must re-request. The proxy endpoint (<code>streamBunnyDownload</code>) also streams the entire file through the app server, <strong>doubling bandwidth costs</strong> and adding latency.
+            </p>
+            <div style="margin-top:10px">
+                <span class="badge amber">15-min expiry</span>
+                <span class="badge amber">Double bandwidth</span>
+                <span class="badge amber">No retry</span>
+            </div>
+        </div>
+
+        <h3>🔴 Problem 3: Polling Instead of Push</h3>
+        <div class="card">
+            <p>
+                The <code>useDownloadTracker</code> composable polls <code>GET /api/notifications</code> every 8 seconds. This means:
+            </p>
+            <p style="margin-top:8px">
+                • <strong>0–8 second delay</strong> between job completion and user notification<br>
+                • Unnecessary HTTP requests when no downloads are in progress<br>
+                • The tracker can miss notifications if they're on page 2 of paginated results<br>
+                • No way to show <strong>real-time conversion progress</strong> (e.g., "68% complete")
+            </p>
+            <div style="margin-top:10px">
+                <span class="badge amber">8s latency</span>
+                <span class="badge amber">No progress %</span>
+                <span class="badge amber">Pagination gaps</span>
+            </div>
+        </div>
+
+        <h3>🔴 Problem 4: Files Deleted Immediately — No Caching</h3>
+        <div class="card">
+            <p>
+                Both <code>downloadMp4()</code> and <code>convertToMp4Sync()</code> use <code>deleteFileAfterSend(true)</code>. If the download fails mid-way (network blip, browser crash), the user must <strong>re-convert the entire video from scratch</strong>. There's no caching, no retry, and no resumption.
+            </p>
+            <div style="margin-top:10px">
+                <span class="badge red">No caching</span>
+                <span class="badge red">No resume</span>
+                <span class="badge red">Re-convert on failure</span>
+            </div>
+        </div>
+
+        <h3>🔴 Problem 5: No Download Token / Rate Limiting</h3>
+        <div class="card">
+            <p>
+                The current endpoints have no per-download authorization. Anyone with a valid session can call <code>GET /api/videos/{id}/download-mp4</code> repeatedly, triggering redundant conversions. There's no way to limit downloads per user, expire download links, or track download counts.
+            </p>
+            <div style="margin-top:10px">
+                <span class="badge red">No per-download auth</span>
+                <span class="badge red">No rate limiting</span>
+                <span class="badge red">No download analytics</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ PROPOSED DESIGN ============ -->
+    <div id="panel-design" class="panel">
+
+        <h2 style="margin-top:0">Unified Download Pipeline</h2>
+        <p style="color:var(--text2);font-size:14px;margin-bottom:20px">
+            Every video download follows the exact same path regardless of storage type (Bunny or Local) or duration.
+        </p>
+
+        <div class="flow">
+            <div class="step-row">
+                <div class="step-dot info"></div>
+                <div class="step-content">
+                    <div class="step-title">1️⃣ User Clicks Download → <code>POST /api/downloads</code></div>
+                    <div class="step-desc">
+                        Single endpoint for all downloads. Payload: <code>{ video_id }</code>. Returns immediately with <code>{ download_id, token, status: "queued" }</code> — HTTP 202. Always async, never blocks.
+                    </div>
+                </div>
+            </div>
+            <div class="step-row">
+                <div class="step-dot purple"></div>
+                <div class="step-content">
+                    <div class="step-title">2️⃣ <code>DownloadManager::request(video, user)</code></div>
+                    <div class="step-desc">
+                        • Creates a <code>Download</code> record: <code>id, video_id, user_id, token (UUID), status, progress, format, file_path, file_size, expires_at, created_at</code><br>
+                        • Checks if a cached MP4 already exists → if yes, marks <code>status = 'ready'</code> immediately<br>
+                        • Dispatches <code>ConvertVideoToMp4ForDownloadJob</code> (same job for all videos)<br>
+                        • Returns the download token to the frontend
+                    </div>
+                </div>
+            </div>
+            <div class="step-row">
+                <div class="step-dot cyan"></div>
+                <div class="step-content">
+                    <div class="step-title">3️⃣ <code>ConvertVideoToMp4ForDownloadJob</code> (Background)</div>
+                    <div class="step-desc">
+                        • Updates <code>Download.status = 'converting'</code> and <code>progress</code> incrementally<br>
+                        • For Bunny videos: downloads the MP4 renditions from Bunny CDN, remuxes locally<br>
+                        • For Local videos: runs the existing ffmpeg pipeline<br>
+                        • Emits <strong>SSE events</strong> at every 10% progress increment<br>
+                        • On success: saves to <code>storage/app/downloads/{id}.mp4</code>, marks status <code>'ready'</code>, sets <code>expires_at = now + 24h</code><br>
+                        • On failure: marks status <code>'failed'</code> with error message
+                    </div>
+                </div>
+            </div>
+            <div class="step-row">
+                <div class="step-dot info"></div>
+                <div class="step-content">
+                    <div class="step-title">4️⃣ Frontend Receives Real-Time Progress via SSE</div>
+                    <div class="step-desc">
+                        • Opens an <code>EventSource</code> to <code>GET /api/downloads/{id}/progress</code> (SSE stream)<br>
+                        • Receives events: <code>{ progress: 45, status: "converting" }</code><br>
+                        • Updates UI in real-time: progress bar, percentage, estimated time remaining<br>
+                        • Falls back to polling <code>GET /api/downloads/{id}</code> every 5s if SSE fails
+                    </div>
+                </div>
+            </div>
+            <div class="step-row">
+                <div class="step-dot done"></div>
+                <div class="step-content">
+                    <div class="step-title">5️⃣ Download Ready → <code>GET /api/downloads/{token}/file</code></div>
+                    <div class="step-desc">
+                        • Token-based access — no session auth required (shareable, expiring)<br>
+                        • Supports <code>Range</code> headers for <strong>resumable downloads</strong><br>
+                        • Streams the cached MP4 file directly<br>
+                        • File remains cached for 24 hours (configurable) — subsequent downloads are instant<br>
+                        • Records download completion for analytics
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h3>📊 New Database Model: <code>downloads</code> Table</h3>
+        <table class="info-table">
+            <tr><th>Column</th><th>Type</th><th>Purpose</th></tr>
+            <tr><td><code>id</code></td><td>bigint (PK)</td><td>Auto-increment ID</td></tr>
+            <tr><td><code>video_id</code></td><td>bigint (FK)</td><td>Reference to videos table</td></tr>
+            <tr><td><code>user_id</code></td><td>bigint (FK, nullable)</td><td>Requesting user (null for shared downloads)</td></tr>
+            <tr><td><code>token</code></td><td>uuid (unique)</td><td>Public download token (used in URL)</td></tr>
+            <tr><td><code>status</code></td><td>string</td><td><code>queued</code> | <code>converting</code> | <code>ready</code> | <code>failed</code> | <code>expired</code></td></tr>
+            <tr><td><code>progress</code></td><td>int (0–100)</td><td>Conversion progress percentage</td></tr>
+            <tr><td><code>format</code></td><td>string</td><td><code>mp4</code> (extensible for future formats)</td></tr>
+            <tr><td><code>file_path</code></td><td>string (nullable)</td><td>Path to cached MP4 file on disk</td></tr>
+            <tr><td><code>file_size</code></td><td>bigint (nullable)</td><td>Size of the cached MP4 in bytes</td></tr>
+            <tr><td><code>error_message</code></td><td>text (nullable)</td><td>Failure reason if status = failed</td></tr>
+            <tr><td><code>expires_at</code></td><td>timestamp</td><td>When the cached file is deleted (default: +24h)</td></tr>
+            <tr><td><code>downloaded_at</code></td><td>timestamp (nullable)</td><td>When the user actually downloaded the file</td></tr>
+            <tr><td><code>created_at</code></td><td>timestamp</td><td>When the download was requested</td></tr>
+        </table>
+
+        <h3>📡 SSE Endpoint: <code>GET /api/downloads/{id}/progress</code></h3>
+        <div class="card">
+            <p><strong>Response</strong> (text/event-stream):</p>
+            <pre style="background:var(--bg);padding:12px;border-radius:6px;font-size:12px;color:var(--text2);overflow-x:auto;margin-top:8px">
+event: progress
+data: {"progress":25,"status":"converting","eta_seconds":45}
+
+event: progress
+data: {"progress":50,"status":"converting","eta_seconds":30}
+
+event: complete
+data: {"status":"ready","token":"abc-123","expires_at":"2026-06-06T12:00:00Z"}
+
+event: error
+data: {"status":"failed","error":"FFmpeg conversion failed: out of disk space"}
+</pre>
+        </div>
+
+        <h3>♻️ File Lifecycle &amp; Caching</h3>
+        <table class="info-table">
+            <tr><th>Phase</th><th>Action</th><th>Details</th></tr>
+            <tr>
+                <td>1. Request</td>
+                <td>Check cache</td>
+                <td>If a <code>ready</code> download exists for this video+format and hasn't expired, return the existing token immediately — <strong>zero conversion time</strong></td>
+            </tr>
+            <tr>
+                <td>2. Convert</td>
+                <td>Background job</td>
+                <td>ffmpeg runs in a queue worker. Progress is emitted to a Redis pub/sub channel that the SSE endpoint listens to</td>
+            </tr>
+            <tr>
+                <td>3. Ready</td>
+                <td>File cached</td>
+                <td>MP4 stored at <code>storage/app/downloads/{download_id}.mp4</code>. Token is active for 24 hours</td>
+            </tr>
+            <tr>
+                <td>4. Download</td>
+                <td>Stream to user</td>
+                <td>Supports <code>Range: bytes=0-</code> for resumable downloads. File is NOT deleted after streaming</td>
+            </tr>
+            <tr>
+                <td>5. Expiry</td>
+                <td>Scheduled cleanup</td>
+                <td>A <code>CleanupExpiredDownloads</code> scheduled command runs hourly, deletes files and DB records past <code>expires_at</code>. If a new download is requested for the same video, step 1 reuses the cache</td>
+            </tr>
+        </table>
+
+        <h3>🔒 Security Improvements</h3>
+        <table class="info-table">
+            <tr><th>Concern</th><th>Current</th><th>Proposed</th></tr>
+            <tr>
+                <td>Download auth</td><td>Session cookie (no per-download scope)</td>
+                <td>UUID token — scoped to a single download, expires independently of session</td>
+            </tr>
+            <tr>
+                <td>Rate limiting</td><td>None</td>
+                <td>Max N concurrent conversions per user; max M downloads per hour</td>
+            </tr>
+            <tr>
+                <td>Token sharing</td><td>N/A</td>
+                <td>Tokens can be shared (e.g., "send download link to colleague") with optional <code>max_downloads</code> counter</td>
+            </tr>
+            <tr>
+                <td>Bunny bandwidth</td><td>Streamed through app server (doubled)</td>
+                <td>Downloaded once to cache, served from local disk thereafter</td>
+            </tr>
+        </table>
+
+    </div>
+
+    <!-- ============ MIGRATION PLAN ============ -->
+    <div id="panel-migration" class="panel">
+
+        <h2 style="margin-top:0">Phased Migration Plan</h2>
+        <p style="color:var(--text2);font-size:14px;margin-bottom:20px">
+            No breaking changes. New endpoints coexist with old ones during migration.
+        </p>
+
+        <div class="flow">
+            <div class="step-row">
+                <div class="step-dot done"></div>
+                <div class="step-content">
+                    <div class="step-title">Phase 1: Foundation (Week 1)</div>
+                    <div class="step-desc">
+                        • Create <code>downloads</code> table migration<br>
+                        • Create <code>Download</code> model, <code>DownloadRepository</code>, <code>DownloadManager</code><br>
+                        • Create <code>DownloadData</code> DTO<br>
+                        • Add <code>POST /api/downloads</code> endpoint (returns <code>{ download_id, token, status }</code>)<br>
+                        • Add <code>GET /api/downloads/{token}</code> status check endpoint<br>
+                        • Deploy behind feature flag — existing endpoints unchanged
+                    </div>
+                </div>
+            </div>
+            <div class="step-row">
+                <div class="step-dot info"></div>
+                <div class="step-content">
+                    <div class="step-title">Phase 2: SSE &amp; Progress (Week 2)</div>
+                    <div class="step-desc">
+                        • Implement Redis pub/sub for conversion progress events<br>
+                        • Add <code>GET /api/downloads/{id}/progress</code> SSE endpoint<br>
+                        • Update <code>ConvertVideoToMp4ForDownloadJob</code> to emit progress events<br>
+                        • Create <code>useDownloadProgress</code> composable (replaces <code>useDownloadTracker</code> polling)<br>
+                        • Add progress bar UI component
+                    </div>
+                </div>
+            </div>
+            <div class="step-row">
+                <div class="step-dot info"></div>
+                <div class="step-content">
+                    <div class="step-title">Phase 3: Caching &amp; Resumable Downloads (Week 3)</div>
+                    <div class="step-desc">
+                        • Implement download file caching with 24h TTL<br>
+                        • Add <code>GET /api/downloads/{token}/file</code> with Range header support<br>
+                        • Add <code>CleanupExpiredDownloads</code> scheduled command<br>
+                        • Add cache-hit logic: reuse existing MP4 if still valid<br>
+                        • Update Bunny path to download once, cache locally
+                    </div>
+                </div>
+            </div>
+            <div class="step-row">
+                <div class="step-dot warn"></div>
+                <div class="step-content">
+                    <div class="step-title">Phase 4: Frontend Migration (Week 4)</div>
+                    <div class="step-desc">
+                        • Update <code>VideoPlayerView.vue</code> and <code>VideosView.vue</code> to use new endpoints<br>
+                        • Update <code>NotificationBell.vue</code> to use SSE-driven progress<br>
+                        • Add resumable download support in the UI<br>
+                        • Deprecate old endpoints (<code>request-download-mp4</code>, <code>download-mp4</code>, <code>download-bunny</code>)<br>
+                        • Remove old endpoints after 2-week deprecation window
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h3>📋 New Files to Create</h3>
+        <table class="info-table">
+            <tr><th>File</th><th>Type</th><th>Purpose</th></tr>
+            <tr><td><code>app/Models/Download.php</code></td><td>Model</td><td>Download Eloquent model</td></tr>
+            <tr><td><code>app/Data/DownloadData.php</code></td><td>Data (DTO)</td><td>Structured download data transfer</td></tr>
+            <tr><td><code>app/Repositories/DownloadRepository.php</code></td><td>Repository</td><td>Download DB operations</td></tr>
+            <tr><td><code>app/Managers/DownloadManager.php</code></td><td>Manager</td><td>Business logic: request, cache check, progress</td></tr>
+            <tr><td><code>app/Http/Controllers/DownloadController.php</code></td><td>Controller</td><td>REST endpoints: create, status, progress, file</td></tr>
+            <tr><td><code>app/Http/Resources/DownloadResource.php</code></td><td>Resource</td><td>API response formatting</td></tr>
+            <tr><td><code>app/Events/DownloadProgressEvent.php</code></td><td>Event</td><td>Broadcasts conversion progress via Redis</td></tr>
+            <tr><td><code>app/Console/Commands/CleanupExpiredDownloadsCommand.php</code></td><td>Command</td><td>Scheduled cleanup of expired cached files</td></tr>
+            <tr><td><code>database/migrations/...create_downloads_table.php</code></td><td>Migration</td><td>Schema for downloads table</td></tr>
+            <tr><td><code>frontend/src/composables/useDownloadProgress.js</code></td><td>Composable</td><td>SSE-based progress tracking (replaces polling)</td></tr>
+        </table>
+
+        <h3>🔄 Endpoint Comparison</h3>
+        <table class="info-table">
+            <tr><th>Old Endpoint</th><th>New Endpoint</th><th>Change</th></tr>
+            <tr>
+                <td><code>POST /api/videos/{id}/request-download-mp4</code></td>
+                <td><code>POST /api/downloads</code> <span class="badge green">new</span></td>
+                <td>Unified. Accepts <code>{ video_id }</code>. Always returns 202.</td>
+            </tr>
+            <tr>
+                <td><code>GET /api/videos/{id}/download-mp4</code></td>
+                <td><code>GET /api/downloads/{token}/file</code> <span class="badge green">new</span></td>
+                <td>Token-based. Supports Range headers. Cached, not deleted.</td>
+            </tr>
+            <tr>
+                <td><em>(no equivalent)</em></td>
+                <td><code>GET /api/downloads/{token}</code> <span class="badge green">new</span></td>
+                <td>Check download status without SSE.</td>
+            </tr>
+            <tr>
+                <td><em>(no equivalent)</em></td>
+                <td><code>GET /api/downloads/{id}/progress</code> <span class="badge green">new</span></td>
+                <td>SSE stream for real-time progress.</td>
+            </tr>
+            <tr>
+                <td><code>GET /api/videos/{id}/download-bunny</code></td>
+                <td><em>(removed)</em></td>
+                <td>Bunny downloads now go through the unified pipeline.</td>
+            </tr>
+            <tr>
+                <td><code>GET /api/bunny/share/{token}/download</code></td>
+                <td><code>POST /api/downloads</code> (with <code>share_token</code>) <span class="badge green">new</span></td>
+                <td>Shared video downloads use the same pipeline.</td>
+            </tr>
+        </table>
+
+    </div>
+    </div><!-- /panel-wrapper -->
+</div>
+
+<script>
+    function switchTab(name) {
+        document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+        document.querySelectorAll('.panel').forEach(function(p) { p.classList.remove('active'); });
+        document.querySelector('.tab[onclick*="' + name + '"]').classList.add('active');
+        document.getElementById('panel-' + name).classList.add('active');
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,1514 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>OpenKap — Recorded Video Upload Pipeline</title>
+        <style>
+            :root {
+                --bg: #0f1117;
+                --surface: #191c24;
+                --surface2: #22262f;
+                --border: #2d3240;
+                --text: #e1e4ed;
+                --text2: #949cb0;
+                --accent: #6366f1;
+                --accent2: #818cf8;
+                --green: #34d399;
+                --red: #f87171;
+                --amber: #fbbf24;
+                --cyan: #22d3ee;
+                --purple: #a78bfa;
+            }
+            * {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
+            body {
+                font-family:
+                    "Inter",
+                    -apple-system,
+                    BlinkMacSystemFont,
+                    "Segoe UI",
+                    sans-serif;
+                background: var(--bg);
+                color: var(--text);
+                line-height: 1.6;
+                min-height: 100vh;
+            }
+            .container {
+                max-width: 1150px;
+                margin: 0 auto;
+                padding: 36px 28px;
+            }
+            h1 {
+                font-size: 28px;
+                font-weight: 700;
+                margin-bottom: 4px;
+            }
+            .subtitle {
+                color: var(--text2);
+                font-size: 15px;
+                margin-bottom: 32px;
+            }
+
+            /* Legend */
+            .legend {
+                display: flex;
+                gap: 20px;
+                flex-wrap: wrap;
+                margin-bottom: 28px;
+                padding: 14px 20px;
+                background: var(--surface);
+                border-radius: 10px;
+                border: 1px solid var(--border);
+                font-size: 13px;
+            }
+            .legend-item {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            .legend-dot {
+                width: 12px;
+                height: 12px;
+                border-radius: 3px;
+                flex-shrink: 0;
+            }
+
+            /* Tabs */
+            .tabs {
+                display: flex;
+                gap: 4px;
+                margin-bottom: 0;
+                flex-wrap: wrap;
+            }
+            .tab {
+                padding: 10px 20px;
+                border-radius: 8px 8px 0 0;
+                border: 1px solid transparent;
+                background: var(--surface);
+                color: var(--text2);
+                cursor: pointer;
+                font-size: 13px;
+                font-weight: 500;
+                transition: all 0.15s;
+            }
+            .tab.active {
+                background: var(--surface2);
+                color: var(--text);
+                border-color: var(--border);
+                border-bottom-color: var(--surface2);
+            }
+            .tab:hover:not(.active) {
+                color: var(--text);
+            }
+
+            /* Panel */
+            .panel-wrapper {
+                background: var(--surface2);
+                border: 1px solid var(--border);
+                border-radius: 0 10px 10px 10px;
+                padding: 28px;
+            }
+            .panel {
+                display: none;
+            }
+            .panel.active {
+                display: block;
+            }
+
+            /* Flow Diagram */
+            .flow {
+                display: flex;
+                flex-direction: column;
+                gap: 0;
+            }
+            .step-row {
+                display: flex;
+                align-items: stretch;
+                gap: 0;
+                padding: 0 0 0 16px;
+                position: relative;
+                min-height: 60px;
+            }
+            .step-row::before {
+                content: "";
+                position: absolute;
+                left: 0;
+                top: 0;
+                bottom: 0;
+                width: 3px;
+                background: var(--border);
+                border-radius: 2px;
+            }
+            .step-row:first-child::before {
+                top: 18px;
+            }
+            .step-row:last-child::before {
+                bottom: calc(100% - 18px);
+            }
+            .step-dot {
+                position: absolute;
+                left: -7px;
+                top: 18px;
+                width: 17px;
+                height: 17px;
+                border-radius: 50%;
+                border: 3px solid var(--border);
+                background: var(--surface);
+                z-index: 1;
+                transition: all 0.3s;
+            }
+            .step-dot.active {
+                border-color: var(--accent);
+                background: var(--accent);
+                box-shadow: 0 0 10px rgba(99, 102, 241, 0.4);
+            }
+            .step-dot.done {
+                border-color: var(--green);
+                background: var(--green);
+            }
+            .step-dot.error {
+                border-color: var(--red);
+                background: var(--red);
+            }
+            .step-dot.warn {
+                border-color: var(--amber);
+                background: var(--amber);
+            }
+            .step-dot.info {
+                border-color: var(--cyan);
+                background: var(--cyan);
+            }
+            .step-dot.purple {
+                border-color: var(--purple);
+                background: var(--purple);
+            }
+
+            .step-content {
+                flex: 1;
+                padding: 14px 16px 14px 22px;
+                margin-bottom: 2px;
+                border-radius: 8px;
+                background: var(--surface);
+                border: 1px solid var(--border);
+                transition: all 0.2s;
+            }
+            .step-content:hover {
+                border-color: var(--accent2);
+            }
+            .step-header {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                margin-bottom: 4px;
+                flex-wrap: wrap;
+            }
+            .step-label {
+                font-weight: 600;
+                padding: 2px 10px;
+                border-radius: 5px;
+                font-family: "JetBrains Mono", "Fira Code", monospace;
+                font-size: 12px;
+            }
+            .step-label.controller {
+                background: rgba(99, 102, 241, 0.15);
+                color: var(--accent2);
+            }
+            .step-label.manager {
+                background: rgba(167, 139, 250, 0.15);
+                color: var(--purple);
+            }
+            .step-label.job {
+                background: rgba(34, 211, 238, 0.15);
+                color: var(--cyan);
+            }
+            .step-label.webhook {
+                background: rgba(251, 191, 36, 0.15);
+                color: var(--amber);
+            }
+            .step-label.service {
+                background: rgba(52, 211, 153, 0.15);
+                color: var(--green);
+            }
+
+            .step-title {
+                font-weight: 600;
+                font-size: 15px;
+            }
+            .step-desc {
+                color: var(--text2);
+                font-size: 13px;
+                margin-top: 2px;
+            }
+            .step-meta {
+                margin-top: 8px;
+                display: flex;
+                gap: 8px;
+                flex-wrap: wrap;
+            }
+            .step-badge {
+                font-size: 11px;
+                padding: 3px 9px;
+                border-radius: 5px;
+                font-family: "JetBrains Mono", "Fira Code", monospace;
+                background: var(--surface2);
+                color: var(--text2);
+            }
+            .step-badge.green {
+                color: var(--green);
+                background: rgba(52, 211, 153, 0.1);
+            }
+            .step-badge.red {
+                color: var(--red);
+                background: rgba(248, 113, 113, 0.1);
+            }
+            .step-badge.amber {
+                color: var(--amber);
+                background: rgba(251, 191, 36, 0.1);
+            }
+            .step-badge.cyan {
+                color: var(--cyan);
+                background: rgba(34, 211, 238, 0.1);
+            }
+
+            .branch {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 12px;
+                margin: 8px 0 4px;
+            }
+            .branch-col {
+                background: var(--surface2);
+                border-radius: 8px;
+                padding: 14px;
+                border: 1px solid var(--border);
+            }
+            .branch-title {
+                font-weight: 600;
+                font-size: 14px;
+                margin-bottom: 8px;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            .branch-items {
+                list-style: none;
+                display: flex;
+                flex-direction: column;
+                gap: 5px;
+            }
+            .branch-item {
+                font-size: 12px;
+                color: var(--text2);
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                padding: 2px 0;
+            }
+            .branch-item::before {
+                content: "→";
+                color: var(--accent2);
+                font-weight: bold;
+            }
+
+            /* State Machine */
+            .state-machine {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                flex-wrap: wrap;
+                margin: 12px 0;
+            }
+            .state-node {
+                padding: 6px 14px;
+                border-radius: 6px;
+                font-size: 12px;
+                font-weight: 600;
+                font-family: "JetBrains Mono", "Fira Code", monospace;
+                border: 2px solid var(--border);
+            }
+            .state-node.pending {
+                background: rgba(148, 156, 176, 0.1);
+                color: var(--text2);
+            }
+            .state-node.processing {
+                background: rgba(99, 102, 241, 0.1);
+                color: var(--accent2);
+                border-color: var(--accent);
+            }
+            .state-node.completed {
+                background: rgba(52, 211, 153, 0.1);
+                color: var(--green);
+                border-color: var(--green);
+            }
+            .state-node.failed {
+                background: rgba(248, 113, 113, 0.1);
+                color: var(--red);
+                border-color: var(--red);
+            }
+            .state-node.ready {
+                background: rgba(52, 211, 153, 0.15);
+                color: var(--green);
+                border-color: var(--green);
+            }
+            .state-arrow {
+                color: var(--text2);
+                font-weight: bold;
+            }
+
+            /* Table */
+            .info-table {
+                width: 100%;
+                border-collapse: collapse;
+                font-size: 13px;
+                margin-top: 12px;
+            }
+            .info-table th,
+            .info-table td {
+                padding: 8px 12px;
+                text-align: left;
+                border-bottom: 1px solid var(--border);
+            }
+            .info-table th {
+                color: var(--text2);
+                font-weight: 500;
+                font-size: 11px;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+            .info-table code {
+                font-size: 12px;
+                background: var(--surface);
+                padding: 2px 6px;
+                border-radius: 3px;
+            }
+
+            /* Animation */
+            @keyframes pulse {
+                0%,
+                100% {
+                    box-shadow: 0 0 4px rgba(99, 102, 241, 0.3);
+                }
+                50% {
+                    box-shadow: 0 0 16px rgba(99, 102, 241, 0.6);
+                }
+            }
+            .anim-pulse {
+                animation: pulse 2s infinite;
+            }
+            .sim-btn {
+                padding: 8px 20px;
+                border-radius: 8px;
+                border: 1px solid var(--accent);
+                background: transparent;
+                color: var(--accent2);
+                cursor: pointer;
+                font-size: 14px;
+                font-weight: 500;
+                transition: all 0.15s;
+                margin-right: 8px;
+            }
+            .sim-btn:hover {
+                background: var(--accent);
+                color: #fff;
+            }
+            .sim-btn:disabled {
+                opacity: 0.4;
+                cursor: not-allowed;
+            }
+            .status-bar {
+                margin-top: 20px;
+                padding: 12px 18px;
+                border-radius: 8px;
+                background: var(--surface);
+                border: 1px solid var(--border);
+                font-size: 14px;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+            .status-dot {
+                width: 10px;
+                height: 10px;
+                border-radius: 50%;
+                background: var(--text2);
+                flex-shrink: 0;
+            }
+            .section-title {
+                font-size: 16px;
+                font-weight: 600;
+                margin-bottom: 16px;
+                margin-top: 24px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>🎬 Recorded Video Upload Pipeline</h1>
+            <p class="subtitle">
+                How OpenKap handles a user-recorded video from the browser
+                extension through processing to playback
+            </p>
+
+            <div class="legend">
+                <div class="legend-item">
+                    <div
+                        class="legend-dot"
+                        style="background: var(--accent2)"
+                    ></div>
+                    Controller
+                </div>
+                <div class="legend-item">
+                    <div
+                        class="legend-dot"
+                        style="background: var(--purple)"
+                    ></div>
+                    Manager
+                </div>
+                <div class="legend-item">
+                    <div
+                        class="legend-dot"
+                        style="background: var(--cyan)"
+                    ></div>
+                    Queued Job
+                </div>
+                <div class="legend-item">
+                    <div
+                        class="legend-dot"
+                        style="background: var(--amber)"
+                    ></div>
+                    Webhook
+                </div>
+                <div class="legend-item">
+                    <div
+                        class="legend-dot"
+                        style="background: var(--green)"
+                    ></div>
+                    Service / DB
+                </div>
+            </div>
+
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('overview')">
+                    🔍 Overview
+                </button>
+                <button class="tab" onclick="switchTab('chunked')">
+                    📡 Chunked Upload
+                </button>
+                <button class="tab" onclick="switchTab('simple')">
+                    📤 Simple Upload
+                </button>
+                <button class="tab" onclick="switchTab('states')">
+                    🔄 State Machines
+                </button>
+                <button class="tab" onclick="switchTab('jobs')">
+                    ⚡ Job Reference
+                </button>
+                <button class="tab" onclick="switchTab('simulation')">
+                    ▶️ Live Simulation
+                </button>
+            </div>
+
+            <div class="panel-wrapper">
+                <!-- ============ OVERVIEW ============ -->
+                <div id="panel-overview" class="panel active">
+                    <div class="flow">
+                        <div class="step-row">
+                            <div class="step-dot info"></div>
+                            <div class="step-content">
+                                <div class="step-header">
+                                    <span class="step-label controller"
+                                        >Controller</span
+                                    >
+                                    <span class="step-title"
+                                        >📡 Browser Extension Captures
+                                        Screen</span
+                                    >
+                                </div>
+                                <div class="step-desc">
+                                    User clicks "Record" in the Chrome
+                                    extension. <code>MediaRecorder</code> API
+                                    captures the screen (and optionally camera)
+                                    as WebM chunks. Chunks are streamed via
+                                    <code
+                                        >POST
+                                        /api/stream/upload/{sessionId}/chunk</code
+                                    >
+                                    every few seconds.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="step-row">
+                            <div class="step-dot info"></div>
+                            <div class="step-content">
+                                <div class="step-header">
+                                    <span class="step-label controller"
+                                        >Controller</span
+                                    >
+                                    <span class="step-title"
+                                        >✅ User Stops Recording &rarr; Complete
+                                        Upload</span
+                                    >
+                                </div>
+                                <div class="step-desc">
+                                    <code
+                                        >POST
+                                        /api/stream/upload/{sessionId}/complete</code
+                                    >
+                                    &mdash; Remaining pending chunks are
+                                    appended in order, a
+                                    <strong>Video</strong> record is created in
+                                    the DB, and background jobs are fired
+                                    <em>after</em> the HTTP response is sent
+                                    (non-blocking).
+                                </div>
+                            </div>
+                        </div>
+                        <div class="step-row">
+                            <div class="step-dot info"></div>
+                            <div class="step-content">
+                                <div class="step-header">
+                                    <span class="step-label job"
+                                        >Background Jobs</span
+                                    >
+                                    <span class="step-title"
+                                        >⚡ Processing Pipeline Begins (in
+                                        parallel)</span
+                                    >
+                                </div>
+                                <div class="step-desc">
+                                    Multiple jobs are dispatched simultaneously
+                                    — isolated so one failure doesn't block the
+                                    others.
+                                </div>
+                                <div class="branch">
+                                    <div class="branch-col">
+                                        <div class="branch-title">
+                                            🐰 Bunny CDN Path
+                                        </div>
+                                        <ul class="branch-items">
+                                            <li class="branch-item">
+                                                UploadToBunnyJob &rarr; uploads
+                                                raw WebM to Bunny
+                                            </li>
+                                            <li class="branch-item">
+                                                Bunny auto-encodes to HLS
+                                                (240p&rarr;1080p)
+                                            </li>
+                                            <li class="branch-item">
+                                                Webhook
+                                                <code
+                                                    >POST
+                                                    /api/webhooks/bunny</code
+                                                >
+                                            </li>
+                                            <li class="branch-item">
+                                                Status: pending &rarr; uploading
+                                                &rarr; processing &rarr;
+                                                <strong>ready</strong>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <div class="branch-col">
+                                        <div class="branch-title">
+                                            💾 Local Storage Path
+                                        </div>
+                                        <ul class="branch-items">
+                                            <li class="branch-item">
+                                                RemuxWebmJob &rarr; fixes WebM
+                                                container headers
+                                            </li>
+                                            <li class="branch-item">
+                                                ConvertVideoToMp4Job &rarr; MP4
+                                                with faststart
+                                            </li>
+                                            <li class="branch-item">
+                                                ProcessHlsConversionJob &rarr;
+                                                HLS segments
+                                            </li>
+                                            <li class="branch-item">
+                                                Status: pending &rarr;
+                                                processing &rarr;
+                                                <strong>completed</strong>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="step-row">
+                            <div class="step-dot info"></div>
+                            <div class="step-content">
+                                <div class="step-header">
+                                    <span class="step-label job"
+                                        >Background Jobs</span
+                                    >
+                                    <span class="step-title"
+                                        >🧠 AI / Metadata Enrichment</span
+                                    >
+                                </div>
+                                <div class="step-desc">
+                                    Runs alongside encoding — jobs
+                                    auto-reschedule if the media isn't ready
+                                    yet.
+                                </div>
+                                <ul class="branch-items">
+                                    <li class="branch-item">
+                                        GenerateThumbnailJob &rarr; captures a
+                                        frame at the video midpoint
+                                    </li>
+                                    <li class="branch-item">
+                                        GenerateTranscriptionJob &rarr; Whisper
+                                        AI speech-to-text (also dispatches
+                                        GenerateSummaryJob for AI summaries +
+                                        title)
+                                    </li>
+                                    <li class="branch-item">
+                                        ConvertCameraToMp4Job &rarr; converts
+                                        webcam overlay WebM to MP4 (5s delay)
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="step-row">
+                            <div class="step-dot done"></div>
+                            <div class="step-content">
+                                <div class="step-header">
+                                    <span class="step-label service"
+                                        >Service</span
+                                    >
+                                    <span class="step-title"
+                                        >▶️ Video Ready for Playback!</span
+                                    >
+                                </div>
+                                <div class="step-desc">
+                                    Bunny videos: ready when
+                                    <code>bunny_status === 'ready'</code>. Local
+                                    videos: ready when
+                                    <code>isHlsReady() === true</code>. HLS
+                                    adaptive streaming in any modern browser.
+                                    Share URL:
+                                    <code>/api/share/video/{token}/stream</code>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ============ CHUNKED UPLOAD ============ -->
+                <div id="panel-chunked" class="panel">
+                    <div class="flow">
+                        <div class="step-row">
+                            <div class="step-dot info"></div>
+                            <div class="step-content">
+                                <div class="step-header">
+                                    <span class="step-label controller"
+                                        >StreamVideoController</span
+                                    >
+                                    <span class="step-title"
+                                        >1️⃣ startUpload() &mdash; Begin
+                                        Session</span
+                                    >
+                                </div>
+                                <div class="step-desc">
+                                    <code>POST /api/stream/upload/start</code>
+                                </div>
+                                <div class="step-meta">
+                                    <span class="step-badge"
+                                        >Creates session UUID</span
+                                    >
+                                    <span class="step-badge"
+                                        >temp dir:
+                                        storage/app/temp/stream-uploads/{uuid}/</span
+                                    >
+                                    <span class="step-badge amber"
+                                        >Checks video quota</span
+                                    >
+                                    <span class="step-badge"
+                                        >Creates empty video.webm +
+                                        camera.webm</span
+                                    >
+                                </div>
+                            </div>
+                        </div>
+                        <div class="step-row">
+                            <div class="step-dot active anim-pulse"></div>
+                            <div class="step-content">
+                                <div class="step-header">
+                                    <span class="step-label controller"
+                                        >StreamVideoController</span
+                                    >
+                                    <span class="step-title"
+                                        >2️⃣ uploadChunk() &mdash; Receive Live
+                                        Chunks</span
+                                    >
+                                </div>
+                                <div class="step-desc">
+                                    <code
+                                        >POST
+                                        /api/stream/upload/{sessionId}/chunk</code
+                                    >
+                                    &middot; Called every 2-5 seconds during
+                                    recording
+                                </div>
+                                <div class="step-meta">
+                                    <span class="step-badge"
+                                        >Validates chunk_index order</span
+                                    >
+                                    <span class="step-badge"
+                                        >Appends in-order to video.webm</span
+                                    >
+                                    <span class="step-badge amber"
+                                        >Out-of-order &rarr; saved as
+                                        pending</span
+                                    >
+                                    <span class="step-badge"
+                                        >Separate tracking for camera
+                                        chunks</span
+                                    >
+                                    <span class="step-badge green"
+                                        >Type: video | camera</span
+                                    >
+                                </div>
+                            </div>
+                        </div>
+                        <div class="step-row">
+                            <div class="step-dot done"></div>
+                            <div class="step-content">
+                                <div class="step-header">
+                                    <span class="step-label controller"
+                                        >StreamVideoController</span
+                                    >
+                                    <span class="step-title"
+                                        >3️⃣ completeUpload() &mdash; Finalize
+                                        Recording</span
+                                    >
+                                </div>
+                                <div class="step-desc">
+                                    <code
+                                        >POST
+                                        /api/stream/upload/{sessionId}/complete</code
+                                    >
+                                </div>
+                                <div class="step-meta">
+                                    <span class="step-badge green"
+                                        >Appends remaining pending chunks</span
+                                    >
+                                    <span class="step-badge green"
+                                        >Remuxes camera WebM (fixes
+                                        container)</span
+                                    >
+                                    <span class="step-badge"
+                                        >Creates Video + VideoZoomSetting
+                                        records</span
+                                    >
+                                    <span class="step-badge cyan"
+                                        >Dispatches all jobs via
+                                        afterResponse()</span
+                                    >
+                                    <span class="step-badge"
+                                        >Cleans up temp session directory</span
+                                    >
+                                </div>
+                            </div>
+                        </div>
+                        <div class="step-row">
+                            <div class="step-dot info"></div>
+                            <div class="step-content">
+                                <div class="step-header">
+                                    <span class="step-label controller"
+                                        >StreamVideoController</span
+                                    >
+                                    <span class="step-title"
+                                        >🔴 cancelUpload() &mdash; Abort
+                                        Recording</span
+                                    >
+                                </div>
+                                <div class="step-desc">
+                                    <code
+                                        >POST
+                                        /api/stream/upload/{sessionId}/cancel</code
+                                    >
+                                    &middot; Cleans up temp files &mdash; no
+                                    Video record is created.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ============ SIMPLE UPLOAD ============ -->
+                <div id="panel-simple" class="panel">
+                    <div class="flow">
+                        <div class="step-row">
+                            <div class="step-dot info"></div>
+                            <div class="step-content">
+                                <div class="step-header">
+                                    <span class="step-label controller"
+                                        >VideoController</span
+                                    >
+                                    <span class="step-title"
+                                        >1️⃣ store() &mdash; Receive Full File
+                                        Upload</span
+                                    >
+                                </div>
+                                <div class="step-desc">
+                                    <code>POST /api/videos</code> &middot;
+                                    Multipart form with <code>title</code>,
+                                    <code>description</code>,
+                                    <code>video</code> file
+                                </div>
+                                <div class="step-meta">
+                                    <span class="step-badge amber"
+                                        >Validates: webm, mp4, mov (max 10
+                                        GB)</span
+                                    >
+                                    <span class="step-badge amber"
+                                        >Checks user video quota</span
+                                    >
+                                    <span class="step-badge"
+                                        >Probes duration via ffprobe</span
+                                    >
+                                    <span class="step-badge amber"
+                                        >Free users: enforces min/max
+                                        duration</span
+                                    >
+                                </div>
+                            </div>
+                        </div>
+                        <div class="step-row">
+                            <div class="step-dot purple"></div>
+                            <div class="step-content">
+                                <div class="step-header">
+                                    <span class="step-label manager"
+                                        >VideoManager</span
+                                    >
+                                    <span class="step-title"
+                                        >2️⃣ createVideo() &mdash; Persist &amp;
+                                        Dispatch</span
+                                    >
+                                </div>
+                                <div class="step-desc">
+                                    Creates Video record via
+                                    <strong>VideoRepository</strong>, attaches
+                                    media file, then dispatches background jobs.
+                                </div>
+                                <div class="step-meta">
+                                    <span class="step-badge"
+                                        >Stores in spatie/media-library (videos
+                                        collection)</span
+                                    >
+                                    <span class="step-badge green"
+                                        >Charges monthly recording seconds</span
+                                    >
+                                    <span class="step-badge green"
+                                        >Reserves workspace storage quota</span
+                                    >
+                                    <span class="step-badge cyan"
+                                        >Dispatches: GenerateThumbnailJob</span
+                                    >
+                                    <span class="step-badge cyan"
+                                        >Dispatches:
+                                        GenerateTranscriptionJob</span
+                                    >
+                                    <span class="step-badge cyan"
+                                        >Bunny? &rarr; UploadToBunnyJob
+                                        (conversion=completed)</span
+                                    >
+                                    <span class="step-badge cyan"
+                                        >Local? &rarr; RemuxWebmJob</span
+                                    >
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ============ STATE MACHINES ============ -->
+                <div id="panel-states" class="panel">
+                    <h3 class="section-title" style="margin-top: 0">
+                        🔄 conversion_status
+                    </h3>
+                    <div class="state-machine">
+                        <span class="state-node pending">pending</span>
+                        <span class="state-arrow">&rarr;</span>
+                        <span class="state-node processing">processing</span>
+                        <span class="state-arrow">&rarr;</span>
+                        <span class="state-node completed">completed</span>
+                        <span class="state-arrow" style="color: var(--red)"
+                            >&#8600;</span
+                        >
+                    </div>
+                    <div style="margin-left: 140px">
+                        <span
+                            class="state-node failed"
+                            style="display: inline-block; margin-top: 4px"
+                            >failed</span
+                        >
+                    </div>
+                    <table class="info-table">
+                        <tr>
+                            <th>Status</th>
+                            <th>Set By</th>
+                            <th>Meaning</th>
+                        </tr>
+                        <tr>
+                            <td><code>pending</code></td>
+                            <td>Video model default</td>
+                            <td>Awaiting conversion job to start</td>
+                        </tr>
+                        <tr>
+                            <td><code>processing</code></td>
+                            <td>ConvertVideoToMp4Job</td>
+                            <td>ffmpeg re-encoding is running</td>
+                        </tr>
+                        <tr>
+                            <td><code>completed</code></td>
+                            <td>
+                                RemuxWebmJob / ConvertVideoToMp4Job /
+                                StreamVideoController (Bunny)
+                            </td>
+                            <td>MP4/WebM ready for streaming</td>
+                        </tr>
+                        <tr>
+                            <td><code>failed</code></td>
+                            <td>ConvertVideoToMp4Job::markAsFailed()</td>
+                            <td>Conversion error occurred</td>
+                        </tr>
+                    </table>
+
+                    <h3 class="section-title">🐰 bunny_status</h3>
+                    <div class="state-machine">
+                        <span class="state-node pending">pending</span>
+                        <span class="state-arrow">&rarr;</span>
+                        <span class="state-node processing">uploading</span>
+                        <span class="state-arrow">&rarr;</span>
+                        <span class="state-node processing">processing</span>
+                        <span class="state-arrow">&rarr;</span>
+                        <span class="state-node processing">transcoding</span>
+                        <span class="state-arrow">&rarr;</span>
+                        <span class="state-node ready">ready</span>
+                        <span class="state-arrow" style="color: var(--red)"
+                            >&#8600;</span
+                        >
+                    </div>
+                    <div style="margin-left: 380px">
+                        <span
+                            class="state-node failed"
+                            style="display: inline-block; margin-top: 4px"
+                            >error</span
+                        >
+                    </div>
+                    <table class="info-table">
+                        <tr>
+                            <th>Status</th>
+                            <th>Bunny Code</th>
+                            <th>Set By</th>
+                        </tr>
+                        <tr>
+                            <td><code>pending</code></td>
+                            <td>&mdash;</td>
+                            <td>StreamVideoController / VideoManager</td>
+                        </tr>
+                        <tr>
+                            <td><code>uploading</code></td>
+                            <td>&mdash;</td>
+                            <td>UploadToBunnyJob</td>
+                        </tr>
+                        <tr>
+                            <td><code>uploaded</code></td>
+                            <td>1</td>
+                            <td>BunnyWebhookController</td>
+                        </tr>
+                        <tr>
+                            <td><code>processing</code></td>
+                            <td>2</td>
+                            <td>BunnyWebhookController</td>
+                        </tr>
+                        <tr>
+                            <td><code>transcoding</code></td>
+                            <td>3</td>
+                            <td>BunnyWebhookController</td>
+                        </tr>
+                        <tr>
+                            <td><code>ready</code></td>
+                            <td>4</td>
+                            <td>BunnyWebhookController</td>
+                        </tr>
+                        <tr>
+                            <td><code>error</code></td>
+                            <td>5</td>
+                            <td>BunnyWebhookController / UploadToBunnyJob</td>
+                        </tr>
+                    </table>
+
+                    <h3 class="section-title">📊 hls_status</h3>
+                    <div class="state-machine">
+                        <span class="state-node pending">pending</span>
+                        <span class="state-arrow">&rarr;</span>
+                        <span class="state-node processing">processing</span>
+                        <span class="state-arrow">&rarr;</span>
+                        <span class="state-node completed">completed</span>
+                        <span class="state-arrow" style="color: var(--red)"
+                            >&#8600;</span
+                        >
+                    </div>
+                    <div style="margin-left: 300px">
+                        <span
+                            class="state-node failed"
+                            style="display: inline-block; margin-top: 4px"
+                            >failed</span
+                        >
+                    </div>
+
+                    <h3 class="section-title">🎤 transcription_status</h3>
+                    <div class="state-machine">
+                        <span class="state-node pending">pending</span>
+                        <span class="state-arrow">&rarr;</span>
+                        <span class="state-node processing">processing</span>
+                        <span class="state-arrow">&rarr;</span>
+                        <span class="state-node completed">completed</span>
+                        <span class="state-arrow" style="color: var(--red)"
+                            >&#8600;</span
+                        >
+                    </div>
+                    <div style="margin-left: 300px">
+                        <span
+                            class="state-node failed"
+                            style="display: inline-block; margin-top: 4px"
+                            >failed</span
+                        >
+                    </div>
+
+                    <h3 class="section-title">📷 camera_conversion_status</h3>
+                    <div class="state-machine">
+                        <span class="state-node pending">pending</span>
+                        <span class="state-arrow">&rarr;</span>
+                        <span class="state-node processing">processing</span>
+                        <span class="state-arrow">&rarr;</span>
+                        <span class="state-node completed">completed</span>
+                        <span class="state-arrow" style="color: var(--red)"
+                            >&#8600;</span
+                        >
+                    </div>
+                    <div style="margin-left: 300px">
+                        <span
+                            class="state-node failed"
+                            style="display: inline-block; margin-top: 4px"
+                            >failed</span
+                        >
+                    </div>
+                </div>
+
+                <!-- ============ JOB REFERENCE ============ -->
+                <div id="panel-jobs" class="panel">
+                    <table class="info-table">
+                        <tr>
+                            <th>Job Class</th>
+                            <th>Interface</th>
+                            <th>Tries</th>
+                            <th>Timeout</th>
+                            <th>Purpose</th>
+                        </tr>
+                        <tr>
+                            <td><code>RemuxWebmJob</code></td>
+                            <td>ShouldQueue</td>
+                            <td>2</td>
+                            <td>10 min</td>
+                            <td>
+                                Fixes WebM container (Duration + Cues) via
+                                ffmpeg <code>-c copy</code>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><code>ConvertVideoToMp4Job</code></td>
+                            <td>ShouldQueue</td>
+                            <td>1</td>
+                            <td>2 hours</td>
+                            <td>
+                                Re-encodes to MP4 (H.264, faststart); uses
+                                concurrency lock
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><code>ProcessHlsConversionJob</code></td>
+                            <td>ShouldQueue</td>
+                            <td>1</td>
+                            <td>30 min</td>
+                            <td>Creates HLS segments for adaptive streaming</td>
+                        </tr>
+                        <tr>
+                            <td><code>UploadToBunnyJob</code></td>
+                            <td>ShouldQueue</td>
+                            <td>3</td>
+                            <td>1 hour</td>
+                            <td>Uploads raw file to Bunny CDN via PUT</td>
+                        </tr>
+                        <tr>
+                            <td><code>GenerateThumbnailJob</code></td>
+                            <td>ShouldQueue</td>
+                            <td>3</td>
+                            <td>2 min</td>
+                            <td>Captures a frame at the video midpoint</td>
+                        </tr>
+                        <tr>
+                            <td><code>GenerateTranscriptionJob</code></td>
+                            <td>ShouldQueue</td>
+                            <td>3</td>
+                            <td>30 min</td>
+                            <td>
+                                Whisper AI speech-to-text; auto-reschedules if
+                                not ready
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><code>GenerateSummaryJob</code></td>
+                            <td>ShouldQueue</td>
+                            <td>3</td>
+                            <td>5 min</td>
+                            <td>
+                                AI-powered summary + title generation (from
+                                transcription)
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><code>ConvertCameraToMp4Job</code></td>
+                            <td>ShouldQueue</td>
+                            <td>1</td>
+                            <td>10 min</td>
+                            <td>
+                                Converts webcam overlay WebM &rarr; MP4 (5s
+                                delay)
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><code>ApplyZoomEffectsJob</code></td>
+                            <td>ShouldQueue</td>
+                            <td>1</td>
+                            <td>2 hours</td>
+                            <td>
+                                Smooth zoom animations based on mouse click
+                                events
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><code>ApplyBlurJob</code></td>
+                            <td>ShouldQueue</td>
+                            <td>1</td>
+                            <td>2 hours</td>
+                            <td>Blurs sensitive regions in the video</td>
+                        </tr>
+                        <tr>
+                            <td><code>ApplyVideoEditsJob</code></td>
+                            <td>ShouldQueue</td>
+                            <td>1</td>
+                            <td>2 hours</td>
+                            <td>Trim / text overlay / full editing pipeline</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <!-- ============ LIVE SIMULATION ============ -->
+                <div id="panel-simulation" class="panel">
+                    <p style="color: var(--text2); margin-bottom: 16px">
+                        Click "Simulate Upload" to watch an animated walkthrough
+                        of all 14 steps in the recorded video upload pipeline.
+                    </p>
+                    <button
+                        class="sim-btn"
+                        onclick="runSimulation()"
+                        id="simBtn"
+                    >
+                        ▶️ Simulate Upload
+                    </button>
+                    <button class="sim-btn" onclick="resetSimulation()">
+                        🔄 Reset
+                    </button>
+                    <div class="status-bar" id="simStatus">
+                        <span class="status-dot" id="simDot"></span>
+                        <span id="simMsg"
+                            >Ready &mdash; click "Simulate Upload" to
+                            begin</span
+                        >
+                    </div>
+                    <div
+                        class="flow"
+                        id="simFlow"
+                        style="margin-top: 20px"
+                    ></div>
+                </div>
+            </div>
+            <!-- /panel-wrapper -->
+        </div>
+
+        <script>
+            function switchTab(name) {
+                document
+                    .querySelectorAll(".tab")
+                    .forEach((t) => t.classList.remove("active"));
+                document
+                    .querySelectorAll(".panel")
+                    .forEach((p) => p.classList.remove("active"));
+                document
+                    .querySelector('.tab[onclick*="' + name + '"]')
+                    .classList.add("active");
+                document
+                    .getElementById("panel-" + name)
+                    .classList.add("active");
+            }
+
+            const simSteps = [
+                {
+                    label: "StreamVideoController",
+                    dot: "info",
+                    title: "User clicks Record in extension",
+                    desc: "Browser creates a MediaRecorder capturing the screen as WebM chunks. Extension calls <code>POST /api/stream/upload/start</code> — session UUID created, temp directory initialized, quota checked.",
+                    badges: [
+                        "sessionId: a1b2c3d4-...",
+                        "storage: local chunked",
+                    ],
+                    delay: 1400,
+                },
+                {
+                    label: "StreamVideoController",
+                    dot: "active",
+                    title: "Chunk 0 received",
+                    desc: "<code>POST /api/stream/upload/{id}/chunk</code> · chunk_index=0 · 256 KB appended to video.webm",
+                    badges: ["chunks_received: 1", "total_size: 262144"],
+                    delay: 800,
+                },
+                {
+                    label: "StreamVideoController",
+                    dot: "active",
+                    title: "Chunks 1–15 received (live streaming)",
+                    desc: "Recording continues... chunks arrive every 2–5 seconds. Each is appended in order. Any out-of-order chunks are saved as pending and flushed when their turn arrives.",
+                    badges: ["chunks_received: 16", "total_size: ~4 MB"],
+                    delay: 1200,
+                },
+                {
+                    label: "StreamVideoController",
+                    dot: "done",
+                    title: "User stops recording → completeUpload()",
+                    desc: "<code>POST /api/stream/upload/{id}/complete</code> · Remaining pending chunks appended. Camera track remuxed (ffmpeg -c copy). Video + VideoZoomSetting records created in database.",
+                    badges: ["duration: 45s", "has_camera: true"],
+                    delay: 1500,
+                },
+                {
+                    label: "DB",
+                    dot: "green",
+                    title: "Video record created",
+                    desc: "<code>INSERT INTO videos (title, duration, user_id, workspace_id, storage_type, has_camera, ...)</code>",
+                    badges: [
+                        "id: 1423",
+                        "conversion_status: pending",
+                        "bunny_status: pending",
+                    ],
+                    delay: 800,
+                },
+                {
+                    label: "UploadToBunnyJob",
+                    dot: "cyan",
+                    title: "UploadToBunnyJob dispatched (afterResponse)",
+                    desc: 'Bunny is configured → upload starts. Job creates a Bunny video entry via API, then PUTs the raw WebM file. Status set to "uploading".',
+                    badges: [
+                        "bunny_video_id: ab12cd34",
+                        "bunny_status: uploading",
+                        "timeout: 1 hour",
+                    ],
+                    delay: 2000,
+                },
+                {
+                    label: "GenerateThumbnailJob",
+                    dot: "cyan",
+                    title: "GenerateThumbnailJob dispatched",
+                    desc: "ffmpeg captures a frame at the video midpoint. Thumbnail stored in media-library and available immediately.",
+                    badges: ["tries: 3", "timeout: 2 min"],
+                    delay: 1000,
+                },
+                {
+                    label: "GenerateTranscriptionJob",
+                    dot: "cyan",
+                    title: "GenerateTranscriptionJob dispatched",
+                    desc: "Whisper AI processes the audio track. Generates text transcription + AI summary + AI-generated title (via GenerateSummaryJob). Auto-reschedules if video encoding is not yet complete.",
+                    badges: [
+                        "tries: 3",
+                        "generateSummary: false",
+                        "generateTitle: true",
+                    ],
+                    delay: 1200,
+                },
+                {
+                    label: "ConvertCameraToMp4Job",
+                    dot: "cyan",
+                    title: "ConvertCameraToMp4Job dispatched (5s delay)",
+                    desc: "Camera WebM is already remuxed during completeUpload for immediate playback. This job converts it to MP4 for better compatibility.",
+                    badges: ["delay: 5 seconds", "tries: 1"],
+                    delay: 1000,
+                },
+                {
+                    label: "BunnyWebhookController",
+                    dot: "amber",
+                    title: "Bunny Webhook: VideoUploaded (status=1)",
+                    desc: 'Bunny CDN confirms the file was received. Status updated to "uploaded".',
+                    badges: ["bunny_status: uploaded", "Status code: 1"],
+                    delay: 1200,
+                },
+                {
+                    label: "BunnyWebhookController",
+                    dot: "amber",
+                    title: "Bunny Webhook: VideoTranscoding (status=3)",
+                    desc: "Bunny starts encoding the video into multiple HLS renditions (240p → 1080p).",
+                    badges: ["bunny_status: transcoding", "Status code: 3"],
+                    delay: 1000,
+                },
+                {
+                    label: "BunnyWebhookController",
+                    dot: "done",
+                    title: "Bunny Webhook: VideoReady (status=4) ✅",
+                    desc: "Bunny encoding complete! Duration, resolution, and storage size received from webhook payload. Monthly recording minutes charged. Notification sent to user.",
+                    badges: [
+                        "bunny_status: ready",
+                        "bunny_resolution: 1080p",
+                        "charged monthly quota",
+                    ],
+                    delay: 1500,
+                },
+                {
+                    label: "NotificationManager",
+                    dot: "purple",
+                    title: '🔔 User gets "Video Ready" notification',
+                    desc: "Notification bell flips to alert the user their video is fully processed and ready to share.",
+                    badges: ["createVideoProcessedNotification()"],
+                    delay: 800,
+                },
+                {
+                    label: "Service",
+                    dot: "done",
+                    title: "▶️ Video Ready for Playback!",
+                    desc: "Video is now streamable via Bunny HLS CDN. Share URL active. Thumbnail, transcription, and AI summary all available to the user.",
+                    badges: [
+                        "isReadyForPlayback: true",
+                        "url: /api/share/video/{token}/stream",
+                    ],
+                    delay: 1200,
+                },
+            ];
+
+            let simRunning = false;
+
+            function resetSimulation() {
+                simRunning = false;
+                document.getElementById("simFlow").innerHTML = "";
+                document.getElementById("simMsg").textContent =
+                    'Ready — click "Simulate Upload" to begin';
+                document.getElementById("simDot").style.background =
+                    "var(--text2)";
+                document.getElementById("simBtn").disabled = false;
+            }
+
+            async function runSimulation() {
+                if (simRunning) return;
+                simRunning = true;
+                const btn = document.getElementById("simBtn");
+                btn.disabled = true;
+                const flow = document.getElementById("simFlow");
+                const msg = document.getElementById("simMsg");
+                const dot = document.getElementById("simDot");
+                flow.innerHTML = "";
+
+                for (let i = 0; i < simSteps.length; i++) {
+                    if (!simRunning) break;
+                    const s = simSteps[i];
+                    const row = document.createElement("div");
+                    row.className = "step-row";
+                    row.style.opacity = "0";
+                    row.style.transform = "translateY(10px)";
+                    row.style.transition = "all .4s ease";
+
+                    let labelType = "service";
+                    if (s.label.includes("Controller"))
+                        labelType = "controller";
+                    else if (s.label.includes("Job")) labelType = "job";
+                    else if (s.label.includes("Webhook")) labelType = "webhook";
+                    else if (s.label.includes("Manager")) labelType = "manager";
+
+                    row.innerHTML =
+                        '<div class="step-dot ' +
+                        s.dot +
+                        (s.dot === "active" ? " anim-pulse" : "") +
+                        '"></div>' +
+                        '<div class="step-content">' +
+                        '<div class="step-header">' +
+                        '<span class="step-label ' +
+                        labelType +
+                        '">' +
+                        s.label +
+                        "</span>" +
+                        '<span class="step-title">' +
+                        s.title +
+                        "</span>" +
+                        "</div>" +
+                        '<div class="step-desc">' +
+                        s.desc +
+                        "</div>" +
+                        '<div class="step-meta">' +
+                        s.badges
+                            .map(function (b) {
+                                var cls = "step-badge";
+                                if (/ready|completed|charged/i.test(b))
+                                    cls += " green";
+                                else if (/error|failed/i.test(b)) cls += " red";
+                                else if (/pending|quota/i.test(b))
+                                    cls += " amber";
+                                else if (
+                                    /Job|dispatch|timeout|tries|delay/i.test(b)
+                                )
+                                    cls += " cyan";
+                                return (
+                                    '<span class="' + cls + '">' + b + "</span>"
+                                );
+                            })
+                            .join("") +
+                        "</div>" +
+                        "</div>";
+
+                    flow.appendChild(row);
+                    msg.textContent =
+                        "Step " +
+                        (i + 1) +
+                        "/" +
+                        simSteps.length +
+                        ": " +
+                        s.title;
+                    dot.style.background =
+                        s.dot === "done"
+                            ? "var(--green)"
+                            : s.dot === "active"
+                              ? "var(--accent2)"
+                              : "var(--cyan)";
+
+                    requestAnimationFrame(function () {
+                        row.style.opacity = "1";
+                        row.style.transform = "translateY(0)";
+                    });
+
+                    await new Promise(function (r) {
+                        setTimeout(r, s.delay);
+                    });
+                }
+
+                if (simRunning) {
+                    msg.textContent =
+                        "✅ Simulation complete — all " +
+                        simSteps.length +
+                        " steps finished. Video is ready for playback!";
+                    dot.style.background = "var(--green)";
+                }
+                simRunning = false;
+            }
+        </script>
+    </body>
+</html>

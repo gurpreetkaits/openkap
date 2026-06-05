@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Download Options Modal — UX Concept</title>
+    <style>
+        :root {
+            --bg: #0f1117; --surface: #191c24; --surface2: #22262f;
+            --border: #2d3240; --text: #e1e4ed; --text2: #949cb0;
+            --accent: #6366f1; --accent2: #818cf8; --green: #34d399;
+            --red: #f87171; --amber: #fbbf24; --orange: #f97316;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg); color: var(--text); line-height: 1.6;
+            display: flex; align-items: center; justify-content: center;
+            min-height: 100vh; padding: 40px;
+        }
+        .modal {
+            background: #fff; border-radius: 16px; width: 480px;
+            box-shadow: 0 25px 60px rgba(0,0,0,.5); overflow: hidden;
+            color: #1a1a2e;
+        }
+        .modal-header {
+            padding: 20px 24px; border-bottom: 1px solid #e5e7eb;
+            display: flex; align-items: center; gap: 12px;
+        }
+        .modal-header h2 { font-size: 17px; font-weight: 700; flex: 1; }
+        .close-btn { width: 32px; height: 32px; border-radius: 8px; border: none; background: #f3f4f6; cursor: pointer; font-size: 18px; color: #6b7280; display: flex; align-items: center; justify-content: center; }
+        .modal-body { padding: 20px 24px; display: flex; flex-direction: column; gap: 18px; }
+        .video-info { display: flex; gap: 12px; align-items: center; padding: 12px; background: #f9fafb; border-radius: 10px; }
+        .video-thumb { width: 80px; height: 45px; border-radius: 6px; background: linear-gradient(135deg, #6366f1, #a78bfa); display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0; }
+        .video-meta { font-size: 13px; }
+        .video-meta .title { font-weight: 600; color: #111827; margin-bottom: 2px; }
+        .video-meta .detail { color: #6b7280; font-size: 12px; }
+
+        .option-group { display: flex; flex-direction: column; gap: 6px; }
+        .option-group label { font-size: 13px; font-weight: 600; color: #374151; }
+        .option-group select { padding: 8px 12px; border-radius: 8px; border: 1px solid #d1d5db; font-size: 13px; background: #fff; color: #111827; width: 100%; }
+
+        .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; }
+        .toggle-row .label-side { display: flex; flex-direction: column; gap: 2px; }
+        .toggle-row .main-label { font-size: 13px; font-weight: 600; color: #374151; }
+        .toggle-row .sub-label { font-size: 11px; color: #9ca3af; }
+        .toggle {
+            width: 44px; height: 24px; border-radius: 12px; border: none;
+            cursor: pointer; transition: background .2s; position: relative;
+            background: #d1d5db; flex-shrink: 0;
+        }
+        .toggle.on { background: #f97316; }
+        .toggle::after {
+            content: ''; position: absolute; top: 2px; left: 2px;
+            width: 20px; height: 20px; border-radius: 50%; background: #fff;
+            transition: transform .2s; box-shadow: 0 1px 3px rgba(0,0,0,.2);
+        }
+        .toggle.on::after { transform: translateX(20px); }
+
+        .camera-options { margin-left: 12px; padding: 10px 0 0 12px; border-left: 2px solid #e5e7eb; display: flex; flex-direction: column; gap: 10px; }
+        .radio-row { display: flex; gap: 12px; flex-wrap: wrap; }
+        .radio-pill { padding: 6px 14px; border-radius: 20px; border: 1px solid #d1d5db; font-size: 12px; cursor: pointer; color: #6b7280; transition: all .15s; background: #fff; }
+        .radio-pill.active { background: #fff7ed; border-color: #f97316; color: #f97316; font-weight: 600; }
+
+        .estimate { display: flex; gap: 16px; padding: 12px; background: #f0fdf4; border-radius: 10px; border: 1px solid #bbf7d0; font-size: 12px; color: #166534; }
+        .estimate div { display: flex; align-items: center; gap: 4px; }
+
+        .modal-footer { padding: 16px 24px; border-top: 1px solid #e5e7eb; display: flex; gap: 10px; justify-content: flex-end; }
+        .btn { padding: 9px 20px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all .15s; border: none; }
+        .btn-ghost { background: transparent; color: #6b7280; }
+        .btn-ghost:hover { background: #f3f4f6; }
+        .btn-primary { background: #f97316; color: #fff; }
+        .btn-primary:hover { background: #ea580c; }
+
+        .divider { border: none; border-top: 1px solid #e5e7eb; margin: 4px 0; }
+
+        .info-note { font-size: 11px; color: #9ca3af; padding: 8px 12px; background: #fffbeb; border-radius: 8px; border: 1px solid #fde68a; }
+    </style>
+</head>
+<body>
+
+<div class="modal">
+    <div class="modal-header">
+        <h2>⬇️ Download Video</h2>
+        <button class="close-btn">&times;</button>
+    </div>
+
+    <div class="modal-body">
+
+        <!-- Video info preview -->
+        <div class="video-info">
+            <div class="video-thumb">🎬</div>
+            <div class="video-meta">
+                <div class="title">Sprint Planning — June 2026</div>
+                <div class="detail">2:34 · 1080p · Screen + Camera</div>
+            </div>
+        </div>
+
+        <hr class="divider">
+
+        <!-- Quality selector -->
+        <div class="option-group">
+            <label>Quality</label>
+            <select>
+                <option>1080p (Full HD)</option>
+                <option>720p (HD)</option>
+                <option>480p (SD)</option>
+                <option>Original (no resize)</option>
+            </select>
+        </div>
+
+        <!-- Camera toggle -->
+        <div class="toggle-row">
+            <div class="label-side">
+                <span class="main-label">📷 Include camera overlay</span>
+                <span class="sub-label">Merge your webcam as picture-in-picture</span>
+            </div>
+            <button class="toggle on" onclick="this.classList.toggle('on');toggleCamera()"></button>
+        </div>
+
+        <div class="camera-options" id="cameraOptions">
+            <div class="option-group">
+                <label>Camera position</label>
+                <div class="radio-row">
+                    <span class="radio-pill active">Bottom Right</span>
+                    <span class="radio-pill">Bottom Left</span>
+                    <span class="radio-pill">Top Right</span>
+                    <span class="radio-pill">Top Left</span>
+                </div>
+            </div>
+            <div class="option-group">
+                <label>Camera size</label>
+                <select>
+                    <option>Small (15%)</option>
+                    <option selected>Normal (25%)</option>
+                    <option>Large (35%)</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Captions toggle -->
+        <div class="toggle-row">
+            <div class="label-side">
+                <span class="main-label">💬 Burn captions into video</span>
+                <span class="sub-label">English captions available from transcription</span>
+            </div>
+            <button class="toggle" onclick="this.classList.toggle('on');updateEstimate()"></button>
+        </div>
+
+        <hr class="divider">
+
+        <!-- Estimate -->
+        <div class="estimate" id="estimate">
+            <div>📦 <strong>~48 MB</strong></div>
+            <div>⏱️ <strong>~35 sec</strong></div>
+        </div>
+
+        <div class="info-note">
+            💡 Your download will be ready in the notification bell. We'll convert it in the background so you can keep browsing.
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <button class="btn btn-ghost">Cancel</button>
+        <button class="btn btn-primary">Download MP4</button>
+    </div>
+</div>
+
+<script>
+    function toggleCamera() {
+        document.getElementById('cameraOptions').style.display =
+            document.querySelector('.toggle.on') ? '' : 'none';
+        updateEstimate();
+    }
+    function updateEstimate() {
+        const cam = document.querySelector('.toggle-row .toggle').classList.contains('on');
+        const caps = document.querySelectorAll('.toggle-row .toggle')[1].classList.contains('on');
+        let size = 48, time = 35;
+        if (cam) { size += 12; time += 10; }
+        if (caps) { size += 3; time += 5; }
+        document.getElementById('estimate').innerHTML =
+            '<div>📦 <strong>~' + size + ' MB</strong></div>' +
+            '<div>⏱️ <strong>~' + time + ' sec</strong></div>';
+    }
+</script>
+</body>
+</html>

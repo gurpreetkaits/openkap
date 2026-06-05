@@ -1144,7 +1144,7 @@ class VideoManager
     // MP4 DOWNLOAD METHODS
     // ============================================
 
-    public function requestMp4Download(Video $video): array
+    public function requestMp4Download(Video $video, ?\App\Data\DownloadOptionsData $options = null): array
     {
         // Bunny video still encoding — tell frontend to wait
         if ($video->isBunnyVideo() && $video->bunny_status && ! in_array($video->bunny_status, ['ready', 'error'])) {
@@ -1178,19 +1178,7 @@ class VideoManager
             throw new \Exception('Video file not found');
         }
 
-        $maxSyncDuration = 300; // 5 minutes
-
-        if (($video->duration ?? 0) <= $maxSyncDuration) {
-            $outputPath = $this->convertToMp4Sync($video, $media);
-
-            return [
-                'mode' => 'sync',
-                'file_path' => $outputPath,
-                'file_name' => ($video->title ?? 'video').'.mp4',
-            ];
-        }
-
-        ConvertVideoToMp4ForDownloadJob::dispatch($video);
+        ConvertVideoToMp4ForDownloadJob::dispatch($video, options: $options);
 
         Log::info('Dispatched async MP4 download conversion', ['video_id' => $video->id]);
 
@@ -1276,27 +1264,106 @@ class VideoManager
         return $outputPath;
     }
 
-    public function buildMp4DownloadCommand(Video $video, string $inputPath, string $outputPath): string
-    {
+    public function buildMp4DownloadCommand(
+        Video $video,
+        string $inputPath,
+        string $outputPath,
+        ?\App\Data\DownloadOptionsData $options = null,
+    ): string {
         $ffmpegPath = config('media-library.ffmpeg_path');
-        $srtPath = $this->generateTempSrt($video);
+        $options ??= new \App\Data\DownloadOptionsData;
+
+        // Resolve quality target
+        $maxWidth = match ($options->quality) {
+            '720p' => 1280,
+            '480p' => 854,
+            'original' => 99999,
+            default => 1920,
+        };
+
+        $scaleExpr = $maxWidth < 99999
+            ? "scale=min(iw\\,{$maxWidth}):min(ih\\,-2):force_original_aspect_ratio=decrease,pad=ceil(iw/2)*2:ceil(ih/2)*2"
+            : 'scale=ceil(iw/2)*2:ceil(ih/2)*2';
+
+        $inputs = [escapeshellarg($inputPath)];
+        $filterComplex = '';
+        $hasFilterComplex = false;
+
+        // --- Camera overlay (PiP merge) ---
+        $cameraMedia = null;
+        if ($options->include_camera && $video->has_camera) {
+            $cameraMedia = $video->getFirstMedia('camera');
+        }
+
+        if ($cameraMedia && file_exists($cameraMedia->getPath())) {
+            $inputs[] = escapeshellarg($cameraMedia->getPath());
+            $camSize = max(0.1, min(0.4, $options->camera_size));
+            [$overlayX, $overlayY] = $this->resolveCameraOverlayPosition($options->camera_position);
+
+            $filterComplex .= sprintf(
+                '[1:v]scale=iw*%F:-1,setsar=1[cam];[0:v]%s,setsar=1[main];[main][cam]overlay=%s:%s[merged]',
+                $camSize,
+                $scaleExpr,
+                $overlayX,
+                $overlayY
+            );
+            $hasFilterComplex = true;
+        }
+
+        // --- Caption/subtitle burning (opt-in) ---
+        $srtPath = null;
+        if ($options->include_captions) {
+            $srtPath = $this->generateTempSrt($video);
+        }
 
         if ($srtPath) {
-            return sprintf(
-                '%s -y -threads 1 -i %s -i %s -vf "scale=min(iw\,1920):min(ih\,1080):force_original_aspect_ratio=decrease,pad=ceil(iw/2)*2:ceil(ih/2)*2" -c:v libx264 -preset fast -crf 22 -maxrate 5M -bufsize 3M -pix_fmt yuv420p -c:a aac -b:a 128k -c:s mov_text -metadata:s:s:0 language=eng -max_muxing_queue_size 1024 -movflags +faststart %s 2>&1',
-                escapeshellarg($ffmpegPath),
-                escapeshellarg($inputPath),
-                escapeshellarg($srtPath),
-                escapeshellarg($outputPath)
-            );
+            if ($hasFilterComplex) {
+                $filterComplex .= sprintf(
+                    ';%ssubtitles=%s:force_style=\'FontSize=18,Outline=1,Shadow=1\'[outv]',
+                    '[merged]',
+                    escapeshellarg($srtPath)
+                );
+            } else {
+                $filterComplex .= sprintf(
+                    '[0:v]%s,setsar=1,subtitles=%s:force_style=\'FontSize=18,Outline=1,Shadow=1\'[outv]',
+                    $scaleExpr,
+                    escapeshellarg($srtPath)
+                );
+                $hasFilterComplex = true;
+            }
+        }
+
+        // Build flags
+        $inputFlags = implode(' ', array_map(fn ($i) => '-i '.$i, $inputs));
+
+        if ($hasFilterComplex) {
+            $fcFlag = ' -filter_complex "'.$filterComplex.'" -map "[outv]" -map 0:a?';
+            $vfFlag = '';
+        } else {
+            $fcFlag = '';
+            $vfFlag = ' -vf "'.$scaleExpr.'"';
         }
 
         return sprintf(
-            '%s -y -threads 1 -i %s -vf "scale=min(iw\,1920):min(ih\,1080):force_original_aspect_ratio=decrease,pad=ceil(iw/2)*2:ceil(ih/2)*2" -c:v libx264 -preset fast -crf 22 -maxrate 5M -bufsize 3M -pix_fmt yuv420p -c:a aac -b:a 128k -max_muxing_queue_size 1024 -movflags +faststart %s 2>&1',
+            '%s -y -threads 1 %s%s%s -c:v libx264 -preset fast -crf 22 -maxrate 5M -bufsize 3M -pix_fmt yuv420p -c:a aac -b:a 128k -max_muxing_queue_size 1024 -movflags +faststart %s 2>&1',
             escapeshellarg($ffmpegPath),
-            escapeshellarg($inputPath),
+            $inputFlags,
+            $fcFlag,
+            $vfFlag,
             escapeshellarg($outputPath)
         );
+    }
+
+    private function resolveCameraOverlayPosition(string $position): array
+    {
+        $margin = 20;
+
+        return match ($position) {
+            'bottom-left' => ["{$margin}", "main_h-overlay_h-{$margin}"],
+            'top-right' => ["main_w-overlay_w-{$margin}", "{$margin}"],
+            'top-left' => ["{$margin}", "{$margin}"],
+            default => ["main_w-overlay_w-{$margin}", "main_h-overlay_h-{$margin}"],
+        };
     }
 
     protected function generateTempSrt(Video $video): ?string

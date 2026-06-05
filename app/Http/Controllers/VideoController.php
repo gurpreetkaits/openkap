@@ -862,7 +862,7 @@ class VideoController extends Controller
     // MP4 DOWNLOAD ENDPOINTS
     // ============================================
 
-    public function requestDownloadMp4($id)
+    public function requestDownloadMp4($id, Request $request)
     {
         $video = $this->videoManager->findVideoOrFail($id);
 
@@ -871,7 +871,15 @@ class VideoController extends Controller
         }
 
         try {
-            $result = $this->videoManager->requestMp4Download($video);
+            $options = new \App\Data\DownloadOptionsData(
+                include_camera: $request->boolean('include_camera', true),
+                camera_position: $request->string('camera_position', 'bottom-right')->toString(),
+                camera_size: (float) $request->input('camera_size', 0.25),
+                include_captions: $request->boolean('include_captions', false),
+                quality: $request->string('quality', '1080p')->toString(),
+            );
+
+            $result = $this->videoManager->requestMp4Download($video, $options);
 
             if ($result['mode'] === 'redirect') {
                 return response()->json([
@@ -887,13 +895,6 @@ class VideoController extends Controller
                     'bunny_status' => $result['bunny_status'],
                     'message' => $result['message'],
                 ], 202);
-            }
-
-            if ($result['mode'] === 'sync') {
-                return response()->download(
-                    $result['file_path'],
-                    $result['file_name']
-                )->deleteFileAfterSend(true);
             }
 
             return response()->json([

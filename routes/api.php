@@ -28,6 +28,7 @@ use App\Http\Controllers\VideoViewController;
 use App\Http\Controllers\WorkspaceController;
 use App\Http\Controllers\WorkspaceInvitationController;
 use App\Http\Controllers\WorkspaceMemberController;
+use App\Http\Controllers\DownloadController;
 use App\Http\Middleware\AdminMiddleware;
 use App\Http\Middleware\CheckSubscriptionLimit;
 use App\Http\Middleware\OptionalSanctumAuthMiddleware;
@@ -127,6 +128,15 @@ Route::get('/share/screenshot/{token}', [ScreenshotController::class, 'viewShare
 Route::get('/videos/{id}/download-bunny', [VideoController::class, 'streamBunnyDownload'])
     ->name('videos.download-bunny')
     ->middleware('signed');
+
+// Download file by token (public, token-based auth — no session needed)
+Route::get('/downloads/{token}/file', [DownloadController::class, 'file'])
+    ->name('downloads.file')
+    ->middleware('throttle:30,1');
+
+// Check download status by token (public)
+Route::get('/downloads/status/{token}', [DownloadController::class, 'show'])
+    ->middleware('throttle:60,1');
 
 // ============================================
 // PROTECTED ROUTES (Authentication required)
@@ -282,12 +292,17 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/{id}/editor-settings', [VideoController::class, 'saveEditorSettings']);
         Route::get('/{id}/editor-settings', [VideoController::class, 'getEditorSettings']);
 
-        // MP4 download
-        Route::post('/{id}/request-download-mp4', [VideoController::class, 'requestDownloadMp4']);
-        Route::get('/{id}/download-mp4', [VideoController::class, 'downloadMp4']);
-    });
+	        // MP4 download
+	        Route::post('/{id}/request-download-mp4', [VideoController::class, 'requestDownloadMp4']);
+	        Route::get('/{id}/download-mp4', [VideoController::class, 'downloadMp4']);
+	    });
 
-    // Folder routes
+	    // New unified download system (authenticated)
+	    Route::post('/downloads', [DownloadController::class, 'store']);
+	    Route::get('/downloads/progress/{id}', [DownloadController::class, 'progress']);
+	    Route::post('/downloads/shared', [DownloadController::class, 'storeShared']);
+
+	    // Folder routes
     Route::prefix('folders')->group(function () {
         Route::get('/', [FolderController::class, 'index']);
         Route::post('/', [FolderController::class, 'store']);
