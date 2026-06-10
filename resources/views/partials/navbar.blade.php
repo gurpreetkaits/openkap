@@ -151,15 +151,8 @@
             </div>
         </div>
 
-        {{-- Right: CTA + hamburger --}}
+        {{-- Right: hamburger --}}
         <div style="display:flex;align-items:center;gap:.6rem;flex-shrink:0">
-            <a href="{{ config('app.frontend_url', config('app.url')) }}/login"
-                class="hidden sm:inline-flex"
-                style="align-items:center;font-size:.84rem;font-weight:600;padding:.45rem 1.1rem;border-radius:100px;text-decoration:none;transition:all .2s;background:{{ $light ? '#1c1917' : 'white' }};color:{{ $light ? 'white' : '#1c1917' }};"
-                onmouseover="this.style.opacity='.85'"
-                onmouseout="this.style.opacity='1'">
-                Sign in
-            </a>
 
             {{-- Mobile hamburger --}}
             <button id="mobile-menu-btn" class="md:hidden"
@@ -192,12 +185,6 @@
         <a href="/alternative/cap" style="display:block;padding:.65rem 1rem;border-radius:10px;font-size:.88rem;font-weight:500;text-decoration:none;color:{{ $light ? '#44403c' : 'rgba(255,255,255,.75)' }};transition:background .15s"
             onmouseover="this.style.background='{{ $light ? '#f5f5f4' : 'rgba(255,255,255,.06)' }}'"
             onmouseout="this.style.background='transparent'">vs Cap</a>
-        <div style="border-top:1px solid {{ $light ? 'rgba(0,0,0,.07)' : 'rgba(255,255,255,.07)' }};margin-top:.5rem;padding-top:.75rem">
-            <a href="{{ config('app.frontend_url', config('app.url')) }}/login"
-                style="display:flex;align-items:center;justify-content:center;padding:.75rem;border-radius:10px;font-size:.88rem;font-weight:600;text-decoration:none;background:{{ $light ? '#1c1917' : 'white' }};color:{{ $light ? 'white' : '#1c1917' }}">
-                Sign in
-            </a>
-        </div>
     </div>
 </div>
 

@@ -446,6 +446,11 @@ $schema = [
 
 @section('content')
 
+{{-- Shutdown Banner --}}
+<div style="background:#991b1b;color:white;text-align:center;padding:.75rem 1.5rem;font-size:.9rem;font-weight:600;letter-spacing:.01em;position:relative;z-index:100">
+    ⚠️ OpenKap has been shut down. Thank you to everyone who used it.
+</div>
+
 {{-- Orbs --}}
 <div class="orb orb-1"></div>
 <div class="orb orb-2"></div>
@@ -481,10 +486,6 @@ $schema = [
         </p>
 
         <div style="display:flex;align-items:center;justify-content:center;gap:.875rem;flex-wrap:wrap">
-            <a href="{{ config('app.frontend_url', config('app.url')) }}/login" class="btn-p" style="font-size:.95rem;padding:.9rem 1.75rem">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"/></svg>
-                Record Now
-            </a>
             <a href="https://chromewebstore.google.com/detail/openkap/nnchnlkilgfemhpcohmgdpcmkjedjkfm" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:.5rem;text-decoration:none;color:#44403c;font-size:.9rem;font-weight:500;padding:.85rem 1.4rem;border-radius:10px;border:1px solid rgba(0,0,0,.1);background:white;transition:border-color .2s" onmouseover="this.style.borderColor='rgba(0,0,0,.2)'" onmouseout="this.style.borderColor='rgba(0,0,0,.1)'">
                 <img src="/logo.png" alt="" style="width:16px;height:16px;border-radius:4px">
                 Add Chrome Extension
@@ -910,11 +911,9 @@ $schema = [
                     <span style="font-size:.85rem;color:#a8a29e">/mo</span>
                 </div>
                 <p style="font-size:.82rem;color:#78716c;margin-bottom:1.75rem;line-height:1.5">Everything you need to get started.</p>
-                <a href="{{ config('app.frontend_url', config('app.url')) }}/login"
-                    style="display:flex;align-items:center;justify-content:center;gap:.4rem;width:100%;padding:.75rem;border-radius:10px;border:1.5px solid rgba(0,0,0,.12);background:white;font-size:.88rem;font-weight:600;color:#1c1917;text-decoration:none;transition:border-color .2s"
-                    onmouseover="this.style.borderColor='rgba(0,0,0,.25)'" onmouseout="this.style.borderColor='rgba(0,0,0,.12)'">
-                    Get started free
-                </a>
+                <div style="display:flex;align-items:center;justify-content:center;gap:.4rem;width:100%;padding:.75rem;border-radius:10px;border:1.5px solid rgba(0,0,0,.12);background:#fef2f2;font-size:.88rem;font-weight:600;color:#991b1b">
+                    App shut down
+                </div>
                 <ul style="list-style:none;padding:0;margin:1.75rem 0 0;display:flex;flex-direction:column;gap:.75rem">
                     @foreach(['5 recordings','Up to 5 min per recording','Shareable links','1 workspace','Chrome extension'] as $f)
                     <li style="display:flex;align-items:center;gap:.6rem;font-size:.85rem;color:#57534e">
@@ -937,10 +936,9 @@ $schema = [
                     <span style="font-size:.85rem;color:rgba(255,255,255,.4)" id="period-display">/mo</span>
                 </div>
                 <p style="font-size:.82rem;color:rgba(255,255,255,.45);margin-bottom:1.75rem;line-height:1.5;position:relative" id="yearly-note" style="display:none"></p>
-                <a href="{{ config('app.frontend_url', config('app.url')) }}/login" class="btn-p"
-                    style="display:flex;align-items:center;justify-content:center;gap:.4rem;width:100%;padding:.75rem;border-radius:10px;font-size:.88rem;box-shadow:none;position:relative">
-                    Get started with Pro
-                </a>
+                <div style="display:flex;align-items:center;justify-content:center;gap:.4rem;width:100%;padding:.75rem;border-radius:10px;font-size:.88rem;box-shadow:none;position:relative;background:rgba(255,255,255,.1);color:rgba(255,255,255,.5);cursor:default">
+                    App shut down
+                </div>
                 <ul style="list-style:none;padding:0;margin:1.75rem 0 0;display:flex;flex-direction:column;gap:.75rem;position:relative">
                     @foreach(['Unlimited recordings','Unlimited recording length','Shareable links','Unlimited workspaces','Team collaboration','Priority support','Early access to new features'] as $f)
                     <li style="display:flex;align-items:center;gap:.6rem;font-size:.85rem;color:rgba(255,255,255,.75)">
