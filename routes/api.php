@@ -50,12 +50,14 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-// Authentication routes disabled — app is shut down
+// Authentication routes (rate limited to prevent abuse)
 Route::prefix('auth')->middleware('throttle:60,1')->group(function () {
-    Route::get('/google', fn() => response()->json(['message' => 'OpenKap has been shut down.'], 503));
-    Route::get('/google/callback', fn() => response()->json(['message' => 'OpenKap has been shut down.'], 503));
-    Route::post('/logout', fn() => response()->json(['message' => 'OpenKap has been shut down.'], 503));
-    Route::get('/me', fn() => response()->json(['message' => 'OpenKap has been shut down.'], 503));
+    Route::get('/google', [GoogleAuthController::class, 'redirect']);
+    Route::get('/google/callback', [GoogleAuthController::class, 'callback']);
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::post('/logout', [GoogleAuthController::class, 'logout']);
+        Route::get('/me', [GoogleAuthController::class, 'user']);
+    });
 });
 
 // Test route to verify API is working
