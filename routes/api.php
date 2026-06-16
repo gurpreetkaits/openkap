@@ -264,7 +264,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // Views tracking
         Route::post('/{id}/view', [VideoViewController::class, 'recordView']);
-        Route::post('/{id}/progress', [VideoViewController::class, 'recordProgress'])->middleware('throttle:120,1');
+        Route::post('/{id}/progress', [VideoViewController::class, 'recordProgress'])->withoutMiddleware('auth:sanctum')->middleware([OptionalSanctumAuthMiddleware::class, 'throttle:120,1']);
         Route::get('/{id}/stats', [VideoViewController::class, 'getStats']);
 
         // Transcription and summary
