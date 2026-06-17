@@ -437,8 +437,10 @@
                 @canplay="onVideoLoaded"
                 @ended="onVideoEnded"
                 @seeking="isBuffering = true"
-                @seeked="isBuffering = false"
+                @seeked="onVideoSeeked"
                 @waiting="isBuffering = true"
+                @stalled="isBuffering = true"
+                @playing="isBuffering = false"
                 @play="onVideoPlay"
                 @pause="onVideoPause"
                 @error="onVideoError"
@@ -2194,6 +2196,16 @@ export default {
       analyticsTracker?.flush()
     }
 
+    // Only clear the buffering overlay if the seek target is actually playable
+    // (HAVE_FUTURE_DATA = 3). Otherwise leave the spinner on so the user sees
+    // continuous feedback while data for the new position loads; @playing /
+    // @canplay / @loadeddata will clear it once the player is ready.
+    const onVideoSeeked = () => {
+      if (videoRef.value && videoRef.value.readyState >= 3) {
+        isBuffering.value = false
+      }
+    }
+
     const updateProgress = () => {
       if (!videoRef.value) return
       currentTime.value = videoRef.value.currentTime
@@ -3345,7 +3357,7 @@ export default {
       speedOptions, toggleSpeedMenu,
       availableQualities, currentQuality, showQualityMenu, qualityMenuRef,
       setQuality, toggleQualityMenu, getCurrentQualityLabel,
-      togglePlay, updateProgress, onVideoLoaded, onVideoError, onVideoEnded, onVideoPlay, onVideoPause, seek, startSeeking, updateHoverTime,
+      togglePlay, updateProgress, onVideoLoaded, onVideoError, onVideoSeeked, onVideoEnded, onVideoPlay, onVideoPause, seek, startSeeking, updateHoverTime,
       skip, toggleMute, updateVolume, setPlaybackSpeed, toggleFullscreen,
       showControls: showControls_fn, hideControlsDelayed, formatTime, formatTimeAgo, formatCommentTime,
       copyShareLink, copyEmbedCode, shareUrl,
