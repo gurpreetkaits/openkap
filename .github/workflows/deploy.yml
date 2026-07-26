@@ -113,8 +113,10 @@ jobs:
             # Run Laravel migrations
             php artisan migrate --force || { echo "Error: Database migration failed"; exit 1; }
 
-            # Clear and cache Laravel configurations
-            php artisan cache:clear || { echo "Error: Cache clear failed"; exit 1; }
+            # Clear ALL Laravel caches (config, ROUTE, view, compiled, events) so code
+            # changes take effect. A stale bootstrap/cache/routes-*.php would otherwise
+            # shadow routes/api.php and hide newly added routes. Then re-cache config.
+            php artisan optimize:clear || { echo "Error: optimize:clear failed"; exit 1; }
             php artisan config:cache || { echo "Error: Config cache failed"; exit 1; }
 
             # Check if npm is available
@@ -140,5 +142,12 @@ jobs:
 
             # Restart Apache service
             sudo systemctl restart apache2 || { echo "Error: Apache restart failed"; exit 1; }
+
+            # Reset PHP OPcache so recompiled files are picked up when PHP runs under
+            # PHP-FPM (an apache2 restart alone does not recycle FPM workers). Best-effort.
+            sudo systemctl restart php8.3-fpm 2>/dev/null \
+              || sudo systemctl restart php8.2-fpm 2>/dev/null \
+              || sudo systemctl restart php-fpm 2>/dev/null \
+              || true
 
             echo "Deployment completed successfully"
