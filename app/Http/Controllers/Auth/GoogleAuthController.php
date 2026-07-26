@@ -61,8 +61,9 @@ class GoogleAuthController extends Controller
                 $isNewUser = true;
             }
 
-            // Create auth token
-            $token = $user->createToken('google-auth')->plainTextToken;
+            // Create auth token. Session tokens expire in 30 days; the global
+            // sanctum.expiration is disabled so long-lived personal API tokens work.
+            $token = $user->createToken('google-auth', ['*'], now()->addDays(30))->plainTextToken;
 
             // Redirect to frontend with token
             $frontendUrl = config('services.frontend.url');

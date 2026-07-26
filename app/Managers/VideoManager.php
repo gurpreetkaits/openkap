@@ -2,6 +2,7 @@
 
 namespace App\Managers;
 
+use App\Data\UploadQuotaData;
 use App\Data\VideoEditData;
 use App\Jobs\ConvertVideoToMp4ForDownloadJob;
 use App\Jobs\GenerateSummaryJob;
@@ -37,6 +38,22 @@ class VideoManager
         protected VideoProbeService $videoProbe,
         protected UserRepository $users,
     ) {}
+
+    /**
+     * Snapshot of the user's upload quota — lets clients check for space before uploading.
+     */
+    public function getUploadQuota(User $user): UploadQuotaData
+    {
+        return new UploadQuotaData(
+            can_upload: $user->canRecordVideo(),
+            plan_type: $user->getPlanType(),
+            videos_count: $user->getVideosCount(),
+            max_videos: $user->getMaxVideos(),
+            remaining_video_quota: $user->getRemainingVideoQuota(),
+            monthly_minutes_exceeded: $user->hasExceededMonthlyRecordingMinutes(),
+            upgrade_url: config('services.frontend.url').'/subscription',
+        );
+    }
 
     public function getUserVideos(int $userId): array
     {

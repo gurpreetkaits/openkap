@@ -46,7 +46,10 @@ return [
     |
     */
 
-    'expiration' => env('SANCTUM_TOKEN_EXPIRATION', 60 * 24 * 30), // 30 days
+    // Default: no global expiry, so personal API tokens honour their own per-token
+    // expires_at (login sessions are given an explicit 30-day expiry at creation).
+    // A non-null value here would OVERRIDE every token's expires_at (see note above).
+    'expiration' => env('SANCTUM_TOKEN_EXPIRATION', null),
 
     /*
     |--------------------------------------------------------------------------

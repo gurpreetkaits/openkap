@@ -3,11 +3,13 @@
 use App\Http\Controllers\Admin\SupportAdminController;
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\AnalyticsController;
+use App\Http\Controllers\ApiTokenController;
 use App\Http\Controllers\Auth\GoogleAuthController;
 use App\Http\Controllers\BunnyVideoController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\ClipForgeController;
 use App\Http\Controllers\CommentController;
+use App\Http\Controllers\DownloadController;
 use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\FolderController;
 use App\Http\Controllers\HlsController;
@@ -28,7 +30,6 @@ use App\Http\Controllers\VideoViewController;
 use App\Http\Controllers\WorkspaceController;
 use App\Http\Controllers\WorkspaceInvitationController;
 use App\Http\Controllers\WorkspaceMemberController;
-use App\Http\Controllers\DownloadController;
 use App\Http\Middleware\AdminMiddleware;
 use App\Http\Middleware\CheckSubscriptionLimit;
 use App\Http\Middleware\OptionalSanctumAuthMiddleware;
@@ -159,6 +160,13 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/avatar', [ProfileController::class, 'deleteAvatar']);
     });
 
+    // Personal API tokens (self-service — used for programmatic uploads from anywhere)
+    Route::prefix('tokens')->middleware('throttle:20,1')->group(function () {
+        Route::get('/', [ApiTokenController::class, 'index']);
+        Route::post('/', [ApiTokenController::class, 'store']);
+        Route::delete('/{id}', [ApiTokenController::class, 'destroy']);
+    });
+
     // Subscription management routes
     Route::prefix('subscription')->group(function () {
         Route::get('/status', [SubscriptionController::class, 'status']);
@@ -227,6 +235,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/', [VideoController::class, 'index']);
         Route::get('/favourites', [VideoController::class, 'favourites']);
         Route::get('/archived', [VideoController::class, 'archived']);
+        Route::get('/quota', [VideoController::class, 'quota']);
 
         // Video upload requires subscription limit check
         Route::post('/', [VideoController::class, 'store'])
@@ -292,17 +301,17 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/{id}/editor-settings', [VideoController::class, 'saveEditorSettings']);
         Route::get('/{id}/editor-settings', [VideoController::class, 'getEditorSettings']);
 
-	        // MP4 download
-	        Route::post('/{id}/request-download-mp4', [VideoController::class, 'requestDownloadMp4']);
-	        Route::get('/{id}/download-mp4', [VideoController::class, 'downloadMp4']);
-	    });
+        // MP4 download
+        Route::post('/{id}/request-download-mp4', [VideoController::class, 'requestDownloadMp4']);
+        Route::get('/{id}/download-mp4', [VideoController::class, 'downloadMp4']);
+    });
 
-	    // New unified download system (authenticated)
-	    Route::post('/downloads', [DownloadController::class, 'store']);
-	    Route::get('/downloads/progress/{id}', [DownloadController::class, 'progress']);
-	    Route::post('/downloads/shared', [DownloadController::class, 'storeShared']);
+    // New unified download system (authenticated)
+    Route::post('/downloads', [DownloadController::class, 'store']);
+    Route::get('/downloads/progress/{id}', [DownloadController::class, 'progress']);
+    Route::post('/downloads/shared', [DownloadController::class, 'storeShared']);
 
-	    // Folder routes
+    // Folder routes
     Route::prefix('folders')->group(function () {
         Route::get('/', [FolderController::class, 'index']);
         Route::post('/', [FolderController::class, 'store']);

@@ -420,7 +420,130 @@
         </p>
       </div>
     </div>
+
+    <!-- API Tokens tab -->
+    <div v-else-if="activeTab === 'api-tokens'" class="space-y-6">
+      <!-- Intro -->
+      <div class="bg-white rounded-xl border border-gray-100 p-5">
+        <h2 class="text-lg font-semibold text-gray-900">API Tokens</h2>
+        <p class="mt-1 text-sm text-gray-500">
+          Personal tokens let you upload recordings to your workspace from anywhere — the qa-record skill, a script, or CI.
+          Send the token as <code class="px-1 py-0.5 text-xs bg-gray-100 rounded">Authorization: Bearer &lt;token&gt;</code>
+          when calling <code class="px-1 py-0.5 text-xs bg-gray-100 rounded">POST /api/videos</code>.
+        </p>
+        <p class="mt-3 text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+          A token has <strong>full access to your account</strong> — treat it like a password. Keep it in an environment
+          variable or CI secret, never in committed code, and revoke it if it leaks.
+        </p>
+      </div>
+
+      <!-- Just-created token (shown once) -->
+      <div v-if="createdToken" class="bg-emerald-50 border border-emerald-200 rounded-xl p-5">
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <h3 class="text-sm font-semibold text-emerald-900">Your new token</h3>
+            <p class="mt-1 text-xs text-emerald-700">Copy it now — for security, you won't be able to see it again.</p>
+          </div>
+          <button @click="dismissCreatedToken" class="text-xs font-medium text-emerald-700 hover:text-emerald-900">Done</button>
+        </div>
+        <div class="mt-3 flex items-center gap-2">
+          <code class="flex-1 px-3 py-2 text-xs font-mono text-emerald-900 bg-white border border-emerald-200 rounded-lg break-all">{{ createdToken }}</code>
+          <button
+            @click="copyCreatedToken"
+            class="px-3 py-2 text-xs font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-sm transition-colors flex-shrink-0"
+          >
+            Copy
+          </button>
+        </div>
+      </div>
+
+      <!-- Create form -->
+      <div class="bg-white rounded-xl border border-gray-100 p-5">
+        <h3 class="text-sm font-semibold text-gray-900 mb-3">Create a token</h3>
+        <div class="flex flex-col sm:flex-row gap-3">
+          <input
+            v-model="newTokenName"
+            type="text"
+            placeholder="Token name (e.g. qa-record)"
+            @keyup.enter="createApiToken"
+            class="flex-1 px-3 py-2 text-sm bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
+          />
+          <select
+            v-model="newTokenExpiry"
+            class="px-3 py-2 text-sm bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
+          >
+            <option value="">No expiration</option>
+            <option value="30">Expires in 30 days</option>
+            <option value="90">Expires in 90 days</option>
+            <option value="365">Expires in 1 year</option>
+          </select>
+          <button
+            @click="createApiToken"
+            :disabled="creatingToken || !newTokenName.trim()"
+            class="px-5 py-2 text-xs font-medium text-white bg-orange-500 hover:bg-orange-600 rounded-lg shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+          >
+            {{ creatingToken ? 'Creating…' : 'Create token' }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Token list -->
+      <div class="bg-white rounded-xl border border-gray-100 p-5">
+        <h3 class="text-sm font-semibold text-gray-900 mb-3">Your tokens</h3>
+
+        <div v-if="tokensLoading" class="py-6 text-center text-sm text-gray-400">Loading…</div>
+
+        <p v-else-if="tokens.length === 0" class="py-6 text-center text-sm text-gray-500">
+          You don't have any API tokens yet.
+        </p>
+
+        <ul v-else class="divide-y divide-gray-100">
+          <li v-for="token in tokens" :key="token.id" class="flex items-center justify-between gap-3 py-3">
+            <div class="min-w-0">
+              <p class="text-sm font-medium text-gray-900 truncate">{{ token.name }}</p>
+              <p class="text-xs text-gray-400">
+                Created {{ formatTokenDate(token.created_at) }}
+                <span v-if="token.last_used_at"> · Last used {{ formatTokenDate(token.last_used_at) }}</span>
+                <span v-else> · Never used</span>
+                <span v-if="token.expires_at"> · Expires {{ formatTokenDate(token.expires_at) }}</span>
+                <span v-else> · No expiration</span>
+              </p>
+            </div>
+            <button
+              @click="askRevokeToken(token)"
+              class="px-3 py-1.5 text-xs font-medium text-red-600 bg-white border border-red-200 hover:bg-red-50 rounded-lg transition-colors flex-shrink-0"
+            >
+              Revoke
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
   </div>
+
+  <SBModal v-model="showRevokeModal" title="Revoke token?" size="sm" @close="showRevokeModal = false">
+    <p class="text-sm text-gray-600">
+      Revoking <span class="font-semibold text-gray-900">{{ tokenToRevoke?.name }}</span> immediately breaks any script or
+      integration using it. This cannot be undone.
+    </p>
+    <template #footer>
+      <div class="flex justify-end gap-2">
+        <button
+          @click="showRevokeModal = false"
+          class="px-4 py-2 text-xs font-medium text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 rounded-lg transition-colors"
+        >
+          Cancel
+        </button>
+        <button
+          @click="confirmRevokeToken"
+          :disabled="revokingToken"
+          class="px-4 py-2 text-xs font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg shadow-sm transition-colors disabled:opacity-50"
+        >
+          {{ revokingToken ? 'Revoking…' : 'Revoke token' }}
+        </button>
+      </div>
+    </template>
+  </SBModal>
 </template>
 
 <script setup>
@@ -428,7 +551,9 @@ import { ref, computed, h, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import settingsService from '@/services/settingsService'
 import videoService from '@/services/videoService'
+import tokenService from '@/services/tokenService'
 import toast from '@/services/toastService'
+import SBModal from '@/components/Global/SBModal.vue'
 import { useAuth } from '@/stores/auth'
 import { useBranding } from '@/composables/useBranding'
 
@@ -511,9 +636,25 @@ const tabs = [
         ],
       ),
   },
+  {
+    id: 'api-tokens',
+    label: 'API Tokens',
+    iconComponent: () =>
+      h(
+        'svg',
+        { class: 'w-4 h-4', fill: 'none', stroke: 'currentColor', 'stroke-width': '2', viewBox: '0 0 24 24' },
+        [
+          h('path', {
+            'stroke-linecap': 'round',
+            'stroke-linejoin': 'round',
+            d: 'M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z',
+          }),
+        ],
+      ),
+  },
 ]
 
-const activeTab = ref(route.query.tab === 'account' ? 'account' : 'branding')
+const activeTab = ref(['account', 'api-tokens'].includes(route.query.tab) ? route.query.tab : 'branding')
 
 function setActiveTab(id) {
   activeTab.value = id
@@ -525,7 +666,104 @@ watch(activeTab, (val) => {
   if (val === 'account' && videoCount.value === 0 && !exportLoading.value) {
     loadVideoCount()
   }
+  if (val === 'api-tokens' && !tokensLoaded.value) {
+    loadTokens()
+  }
 })
+
+// ---- API Tokens ----
+const tokens = ref([])
+const tokensLoaded = ref(false)
+const tokensLoading = ref(false)
+const newTokenName = ref('')
+const newTokenExpiry = ref('') // '' = no expiration, otherwise number of days
+const creatingToken = ref(false)
+const createdToken = ref(null) // plaintext token, shown once right after creation
+const showRevokeModal = ref(false)
+const tokenToRevoke = ref(null)
+const revokingToken = ref(false)
+
+async function loadTokens() {
+  tokensLoading.value = true
+  try {
+    tokens.value = await tokenService.listTokens()
+    tokensLoaded.value = true
+  } catch (error) {
+    console.error('Failed to load API tokens:', error)
+    toast.error('Failed to load API tokens')
+  } finally {
+    tokensLoading.value = false
+  }
+}
+
+async function createApiToken() {
+  const name = newTokenName.value.trim()
+  if (!name) {
+    toast.error('Please name your token')
+    return
+  }
+
+  creatingToken.value = true
+  try {
+    const payload = { name }
+    if (newTokenExpiry.value) {
+      payload.expires_in_days = Number(newTokenExpiry.value)
+    }
+    const result = await tokenService.createToken(payload)
+    if (result) {
+      createdToken.value = result.plain_text_token
+      newTokenName.value = ''
+      newTokenExpiry.value = ''
+      await loadTokens()
+      toast.success('API token created')
+    }
+  } catch (error) {
+    toast.error(error.message || 'Failed to create API token')
+  } finally {
+    creatingToken.value = false
+  }
+}
+
+async function copyCreatedToken() {
+  if (!createdToken.value) return
+  try {
+    await navigator.clipboard.writeText(createdToken.value)
+    toast.success('Token copied to clipboard')
+  } catch (error) {
+    console.error('Failed to copy token:', error)
+    toast.error('Failed to copy token')
+  }
+}
+
+function dismissCreatedToken() {
+  createdToken.value = null
+}
+
+function askRevokeToken(token) {
+  tokenToRevoke.value = token
+  showRevokeModal.value = true
+}
+
+async function confirmRevokeToken() {
+  if (!tokenToRevoke.value) return
+  revokingToken.value = true
+  try {
+    await tokenService.revokeToken(tokenToRevoke.value.id)
+    toast.success('Token revoked')
+    showRevokeModal.value = false
+    tokenToRevoke.value = null
+    await loadTokens()
+  } catch (error) {
+    toast.error(error.message || 'Failed to revoke token')
+  } finally {
+    revokingToken.value = false
+  }
+}
+
+function formatTokenDate(value) {
+  if (!value) return null
+  return new Date(value).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
+}
 
 // ---- Formatting helpers ----
 function formatDate(iso) {
@@ -693,6 +931,10 @@ onMounted(async () => {
 
   if (activeTab.value === 'account') {
     loadVideoCount()
+  }
+
+  if (activeTab.value === 'api-tokens') {
+    loadTokens()
   }
 })
 

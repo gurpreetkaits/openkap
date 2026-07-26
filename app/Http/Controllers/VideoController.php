@@ -52,6 +52,13 @@ class VideoController extends Controller
         ]);
     }
 
+    public function quota()
+    {
+        return response()->json([
+            'quota' => $this->videoManager->getUploadQuota(Auth::user())->toArray(),
+        ]);
+    }
+
     public function toggleFavourite($id)
     {
         $video = $this->videoManager->findVideoOrFail($id);
