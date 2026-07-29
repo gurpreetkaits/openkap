@@ -53,6 +53,7 @@ let controlBar = null;
 let controlBarTimer = null;
 let isPaused = false;
 let recordingPanel = null;
+let streamSessionId = null;  // Active streaming upload session ID
 
 // ============================================
 // Configuration - Change ENV to switch environments
@@ -570,9 +571,23 @@ async function initRecording(options) {
       videoBitsPerSecond: 2500000
     });
 
-    mediaRecorder.ondataavailable = (event) => {
+    let chunkIndex = 0;
+
+    mediaRecorder.ondataavailable = async (event) => {
       if (event.data.size > 0) {
+        // Also keep chunks for fallback
         recordedChunks.push(event.data);
+
+        // Stream the chunk to backend if session is active
+        if (streamSessionId) {
+          try {
+            await uploadStreamChunk(streamSessionId, event.data, chunkIndex, 'video');
+            chunkIndex++;
+          } catch (err) {
+            console.error('Failed to stream chunk, falling back to blob upload:', err);
+            streamSessionId = null; // Disable streaming, fall back to blob
+          }
+        }
       }
     };
 
@@ -589,8 +604,19 @@ async function initRecording(options) {
     }
 
     // Start recording
-    mediaRecorder.start(100); // Capture data every 100ms
+    mediaRecorder.start(1000); // Capture data every 1 second (matches backend chunk size)
     console.log('Recording started');
+
+    // Start streaming upload session
+    const timestamp = new Date().toLocaleString();
+    const title = `Screen Recording ${timestamp}`;
+    try {
+      streamSessionId = await startStreamUpload(title, !!cameraStream);
+      console.log('Stream upload session active:', streamSessionId);
+    } catch (err) {
+      console.error('Failed to start stream upload, will fall back to blob upload:', err);
+      streamSessionId = null;
+    }
 
     // Start max duration auto-stop timer for free users
     getAuthUser().then(user => {
@@ -1449,21 +1475,40 @@ async function stopRecording() {
 
         if (!isPaidUser && minDuration > 0 && durationSec < minDuration) {
           showToast(`Recording too short. Minimum is ${minDuration} seconds for free accounts.`, 'error');
+          // Cancel the streaming session
+          if (streamSessionId) {
+            await cancelStreamUpload(streamSessionId);
+            streamSessionId = null;
+          }
           recordedChunks = [];
           cleanup();
           resolve();
           return;
         }
 
-        // Auto-upload to backend
+        // Complete the streaming upload if session is active
+        if (streamSessionId) {
+          try {
+            const result = await completeStreamUpload(streamSessionId, durationSec);
+            streamSessionId = null;
+            recordedChunks = [];
+            resolve();
+            return;
+          } catch (error) {
+            console.error('Stream upload completion failed:', error);
+            showToast('Upload failed. Video saved locally.', 'warning');
+            // Fall through to download fallback if we still have chunks
+          }
+        }
+
+        // Fallback: if stream session never started or completion failed, try single blob upload
         if (recordedChunks.length > 0) {
           const blob = new Blob(recordedChunks, { type: 'video/webm' });
           try {
             await uploadToBackend(blob);
-            recordedChunks = []; // Clear after successful upload
+            recordedChunks = [];
           } catch (error) {
-            console.error('Auto-upload failed:', error);
-            // Keep chunks for manual download
+            console.error('Fallback upload failed:', error);
           }
         }
 
@@ -1519,9 +1564,156 @@ async function downloadRecording() {
   return { success: true, downloaded: true };
 }
 
-async function uploadToBackend(blob) {
-  const API_URL = 'http://localhost:8000/api/videos';
+// ============================================
+// Streaming Chunk Upload (during recording)
+// ============================================
 
+async function startStreamUpload(title, hasCamera) {
+  const authToken = await getAuthToken();
+  if (!authToken) throw new Error('Not authenticated');
+
+  const body = JSON.stringify({
+    title,
+    mime_type: 'video/webm',
+    has_camera: !!hasCamera
+  });
+
+  const response = await fetch(`${API_URL}/api/stream/start`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'Authorization': `Bearer ${authToken}`
+    },
+    body
+  });
+
+  if (!response.ok) {
+    if (response.status === 403) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.detail || errorData.message || 'Recording limit reached');
+    }
+    if (response.status === 401) {
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('auth_user');
+      window.location.href = '/login';
+      throw new Error('Session expired');
+    }
+    throw new Error(`Failed to start upload session (${response.status})`);
+  }
+
+  const data = await response.json();
+  console.log('Stream upload session started:', data.session_id);
+  return data.session_id;
+}
+
+async function uploadStreamChunk(sessionId, chunk, index, type) {
+  const authToken = await getAuthToken();
+  if (!authToken) throw new Error('Not authenticated');
+
+  const formData = new FormData();
+  formData.append('chunk', chunk, `chunk_${index}.webm`);
+  formData.append('chunk_index', index.toString());
+  if (type) formData.append('type', type);
+
+  const response = await fetch(`${API_URL}/api/stream/${sessionId}/chunk`, {
+    method: 'POST',
+    headers: {
+      'Accept': 'application/json',
+      'Authorization': `Bearer ${authToken}`
+    },
+    body: formData
+  });
+
+  if (!response.ok) {
+    if (response.status === 401) {
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('auth_user');
+      throw new Error('Session expired');
+    }
+    throw new Error(`Chunk upload failed (${response.status})`);
+  }
+
+  return await response.json();
+}
+
+async function completeStreamUpload(sessionId, durationSec) {
+  const authToken = await getAuthToken();
+  if (!authToken) throw new Error('Not authenticated');
+
+  const timestamp = new Date().toLocaleString();
+  const title = `Screen Recording ${timestamp}`;
+
+  const body = JSON.stringify({
+    title,
+    duration: durationSec,
+    has_camera: false
+  });
+
+  const response = await fetch(`${API_URL}/api/stream/${sessionId}/complete`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'Authorization': `Bearer ${authToken}`
+    },
+    body
+  });
+
+  if (!response.ok) {
+    if (response.status === 401) {
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('auth_user');
+      window.location.href = '/login';
+      throw new Error('Session expired');
+    }
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || errorData.detail || `Upload completion failed (${response.status})`);
+  }
+
+  const data = await response.json();
+  console.log('Stream upload completed:', data);
+
+  // Notify the page about the successful upload
+  if (isOpenKapPage()) {
+    window.dispatchEvent(new CustomEvent('openkap:extension:uploadComplete', {
+      detail: {
+        videoId: data.video.id,
+        shareUrl: data.video.share_url,
+        title: data.video.title
+      }
+    }));
+  }
+
+  // Show notification with share URL
+  showUploadNotification(data.video.share_url);
+
+  return {
+    success: true,
+    videoId: data.video.id,
+    shareUrl: data.video.share_url
+  };
+}
+
+async function cancelStreamUpload(sessionId) {
+  if (!sessionId) return;
+  const authToken = await getAuthToken();
+  if (!authToken) return;
+
+  try {
+    await fetch(`${API_URL}/api/stream/${sessionId}/cancel`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${authToken}`
+      }
+    });
+    console.log('Stream upload cancelled:', sessionId);
+  } catch (e) {
+    console.error('Failed to cancel stream upload:', e);
+  }
+}
+
+async function uploadToBackend(blob) {
   // Get auth token from localStorage or chrome.storage
   const authToken = await getAuthToken();
   if (!authToken) {
@@ -1550,7 +1742,7 @@ async function uploadToBackend(blob) {
 
   console.log('Uploading video to backend...', { title, duration });
 
-  const response = await fetch(API_URL, {
+  const response = await fetch(`${API_URL}/api/videos`, {
     method: 'POST',
     body: formData,
     headers: {
@@ -1693,6 +1885,12 @@ function showUploadNotification(shareUrl) {
 function cleanup() {
   // Clear max duration timer
   clearMaxDurationTimer();
+
+  // Cancel any active stream upload session
+  if (streamSessionId) {
+    cancelStreamUpload(streamSessionId);
+    streamSessionId = null;
+  }
 
   // Remove the control bar
   removeControlBar();
