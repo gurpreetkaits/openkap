@@ -144,7 +144,7 @@
 
     <!-- Logos / Social proof bar -->
     <div class="logos-bar">
-      <p class="logos-label">Trusted by developers, designers, and PMs at</p>
+      <p class="logos-label">Open source screen recording — free, private, and self-hostable</p>
       <div class="logos-row">
         <span v-for="co in companies" :key="co" class="logo-pill">{{ co }}</span>
       </div>
@@ -278,7 +278,17 @@
         <h2 class="section-title">Simple, <span class="gradient-text">honest pricing</span></h2>
         <p class="section-sub">Free forever for personal use. Upgrade when you outgrow it.</p>
       </div>
-      <div class="pricing-grid pricing-grid--single">
+      <div class="pricing-grid">
+        <SBPricingCard
+          plan-key="free"
+          plan-name="Free"
+          tagline="For individuals getting started"
+          :monthly-price="0"
+          :yearly-price="null"
+          :features="freeFeatures"
+          cta-label="Start for free"
+          @checkout="goToSignup"
+        />
         <SBPricingCard
           plan-key="pro"
           plan-name="Pro"
@@ -371,6 +381,18 @@ const pricing = ref(settingsService.getDefaults().subscription)
 
 const freePlanLimits = ref(settingsService.getDefaults().free_plan)
 
+const freeFeatures = computed(() => {
+  const limit = freePlanLimits.value?.max_videos ?? 25
+  return [
+    `${limit} videos`,
+    '5 min recording length',
+    'Basic sharing',
+    '720p quality',
+    'Community support',
+    'No watermarks',
+  ]
+})
+
 const proFeatures = computed(() => {
   const cap = pricing.value.pro_monthly_recording_minutes_limit ?? 500
   return [
@@ -392,7 +414,7 @@ const previewRef = ref(null)
 const mouseX = ref(0)
 const mouseY = ref(0)
 
-const companies = ['Notion', 'Linear', 'Vercel', 'Stripe', 'Figma', 'Railway', 'Supabase']
+const companies = ['Self-hostable', 'MIT Licensed', 'Open Source', 'No Lock-in', 'GDPR-ready', 'Private', 'Transparent']
 
 const features = [
   { icon: '🎬', title: 'Instant Screen Recording', desc: 'Capture your screen, camera, or both with one click. Record tab, window, or full screen — no lag, no compression artifacts.', bg: 'rgba(249,115,22,0.1)' },
@@ -410,7 +432,7 @@ const steps = [
 ]
 
 const stats = [
-  { value: '< 3s', label: 'Time to first recording' },
+  { value: '1-click', label: 'Start recording' },
   { value: '100%', label: 'Open source codebase' },
   { value: '∞', label: 'Videos on self-host' },
   { value: '0', label: 'Vendor lock-in' },

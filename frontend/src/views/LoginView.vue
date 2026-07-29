@@ -22,7 +22,7 @@
             <span style="background:linear-gradient(135deg,#f97316,#ea580c);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Move on.</span>
           </h1>
           <p class="mt-3 text-stone-400 text-sm leading-relaxed max-w-xs">
-            Skip the meeting. Send a quick screen recording instead — your team watches it on their own time.
+            Skip the meeting. Record your screen, share instantly. Your team watches on their own time — no scheduling required.
           </p>
         </div>
 
@@ -53,8 +53,8 @@
 
       <div class="w-full max-w-sm">
         <div class="mb-8">
-          <h2 class="text-2xl font-bold text-stone-900">Welcome back</h2>
-          <p class="mt-1 text-sm text-stone-500">Sign in to access your workspace</p>
+          <h2 class="text-2xl font-bold text-stone-900">Welcome to OpenKap</h2>
+          <p class="mt-1 text-sm text-stone-500">Sign in or create your account to get started</p>
         </div>
 
         <!-- Error -->

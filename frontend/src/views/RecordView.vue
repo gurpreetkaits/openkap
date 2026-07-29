@@ -219,10 +219,10 @@ export default {
     const recordingSource = ref(null) // 'website' or 'extension'
     const showUpgradeModal = ref(false)
 
-    // Recording options (microphone always on, no camera)
+    // Recording options
     const recordingOptions = ref({
       screen: true,
-      microphone: true // Always enabled
+      microphone: true
     })
 
     // Media elements

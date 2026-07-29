@@ -119,7 +119,7 @@
               <line x1="6" y1="15" x2="9" y2="15"/>
             </g>
           </svg>
-          Billing
+          Plans & Billing
         </router-link>
 
         <router-link
@@ -565,11 +565,7 @@ export default {
     })
 
     const handleNewRecording = () => {
-      if (document.documentElement.hasAttribute('data-openkap-extension')) {
-        window.dispatchEvent(new CustomEvent('openkap:new-recording'))
-      } else {
-        window.open(extensionStoreUrl, '_blank')
-      }
+      router.push('/record')
     }
 
     const handleLogin = () => {

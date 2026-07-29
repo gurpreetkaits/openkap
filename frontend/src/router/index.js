@@ -3,7 +3,9 @@ import { createRouter, createWebHistory } from "vue-router";
 const routes = [
   {
     path: "/",
-    redirect: "/videos",
+    name: "Landing",
+    component: () => import("../views/LandingView.vue"),
+    meta: { guest: true }
   },
   {
     path: "/login",
@@ -16,6 +18,11 @@ const routes = [
     component: () => import("../components/Layout/AppLayout.vue"),
     meta: { requiresAuth: true },
     children: [
+      {
+        path: "record",
+        name: "Record",
+        component: () => import("../views/StreamRecordView.vue"),
+      },
       {
         path: "videos",
         name: "Videos",
