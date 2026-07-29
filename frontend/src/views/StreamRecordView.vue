@@ -1,187 +1,149 @@
 <template>
-  <div class="bg-gradient-to-br from-orange-50 via-white to-red-50 min-h-full">
-    <!-- Recording Status Bar -->
-    <div v-if="isRecording" class="bg-white border-b border-gray-200 px-4 sm:px-6 lg:px-8 py-3 shadow-sm">
-      <div class="max-w-5xl mx-auto">
-        <div class="flex items-center justify-center">
-          <div class="flex items-center space-x-2 bg-red-50 text-red-700 px-5 py-2.5 rounded-full shadow-sm">
-            <div class="w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse"></div>
-            <span class="text-sm font-semibold">Recording {{ formatTime(recordingTime) }}</span>
+  <div class="min-h-full bg-gradient-to-br from-orange-50/80 via-white to-rose-50/80">
+    <!-- Recording Status Bar (compact, floats during recording) -->
+    <div v-if="isRecording" class="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-red-100 px-4 py-2.5">
+      <div class="max-w-5xl mx-auto flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="flex items-center gap-2 bg-red-50 text-red-700 px-3 py-1.5 rounded-full">
+            <div class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+            <span class="text-xs font-semibold tabular-nums">{{ formatTime(recordingTime) }}</span>
           </div>
+          <span v-if="isPaused" class="text-xs font-medium text-amber-600 bg-amber-50 px-2.5 py-1 rounded-full">Paused</span>
+        </div>
+        <div class="flex items-center gap-2 text-xs text-gray-400">
+          <span v-if="uploadedBytes > 0">{{ formatBytes(uploadedBytes) }} uploaded</span>
         </div>
       </div>
     </div>
 
-    <!-- Main Content -->
-    <main class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16">
+    <main class="max-w-2xl mx-auto px-4 py-12 md:py-20">
       <!-- Recording Setup -->
-      <div v-if="!isRecording && !hasRecorded" class="text-center">
-        <!-- Header (compact) -->
-        <div class="mb-6 sm:mb-8">
-          <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
-            Ready to Record?
-          </h1>
-          <p class="text-base text-gray-500 max-w-lg mx-auto">
-            Capture your screen with crystal-clear quality
-          </p>
-        </div>
-
-        <!-- Recording Options Cards (compact) -->
-        <div class="grid grid-cols-2 gap-4 mb-6 max-w-lg mx-auto">
-          <!-- Screen Option (always enabled, shown as info) -->
-          <div class="bg-orange-50 border-2 border-orange-500 rounded-xl p-5 shadow-sm">
-            <div class="flex flex-col items-center">
-              <div class="w-11 h-11 bg-orange-100 rounded-full flex items-center justify-center mb-3">
-                <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-                </svg>
-              </div>
-              <h3 class="font-semibold text-gray-900 text-sm">Screen</h3>
-              <p class="text-xs text-gray-500 mt-1">Display or window</p>
-            </div>
-            <input v-model="recordingOptions.screen" type="checkbox" class="sr-only" checked>
+      <div v-if="!isRecording && !hasRecorded">
+        <!-- Header -->
+        <div class="text-center mb-10">
+          <div class="inline-flex items-center justify-center w-14 h-14 bg-gradient-to-br from-orange-400 to-orange-600 rounded-2xl mb-5 shadow-lg shadow-orange-200">
+            <svg class="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 20 20"><circle cx="10" cy="10" r="6"/></svg>
           </div>
-
-          <!-- Microphone Option -->
-          <label class="relative cursor-pointer group">
-            <input
-              v-model="recordingOptions.microphone"
-              type="checkbox"
-              class="peer sr-only"
-            >
-            <div class="bg-white border-2 border-gray-200 rounded-xl p-5 transition-all peer-checked:border-orange-500 peer-checked:bg-orange-50 peer-checked:shadow-sm hover:shadow-sm">
-              <div class="flex flex-col items-center">
-                <div class="w-11 h-11 bg-gray-100 rounded-full flex items-center justify-center mb-3 peer-checked:bg-orange-100 transition-colors">
-                  <svg class="w-5 h-5 text-gray-500 peer-checked:text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/>
-                  </svg>
-                </div>
-                <h3 class="font-semibold text-gray-900 text-sm">Microphone</h3>
-                <p class="text-xs text-gray-500 mt-1">Record your voice</p>
-              </div>
-            </div>
-          </label>
+          <h1 class="text-3xl font-bold text-gray-900 mb-2">Record your screen</h1>
+          <p class="text-gray-500 max-w-md mx-auto">Capture your screen, camera, and microphone in crisp quality. Share instantly with a link.</p>
         </div>
 
-        <!-- Start Recording Button (primary CTA, above the fold) -->
-        <button
-          @click="startRecording"
-          :disabled="!canRecord || isStartingRecording"
-          class="group relative inline-flex items-center px-10 py-4 border border-transparent text-lg font-semibold rounded-full text-white bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 focus:outline-none focus:ring-4 focus:ring-orange-300 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:scale-105"
-        >
-          <svg v-if="!isStartingRecording" class="w-6 h-6 mr-2.5" fill="currentColor" viewBox="0 0 20 20">
-            <circle cx="10" cy="10" r="7" fill="currentColor"/>
-          </svg>
-          <svg v-else class="w-6 h-6 mr-2.5 animate-spin" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-          </svg>
-          <span>{{ isStartingRecording ? 'Starting...' : 'Start Recording' }}</span>
-        </button>
+        <!-- Source Selection -->
+        <div class="mb-8">
+          <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 text-center">Capture Source</p>
+          <div class="grid grid-cols-3 gap-3">
+            <button
+              v-for="src in sources"
+              :key="src.key"
+              @click="selectedSource = src.key"
+              class="group flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all duration-150"
+              :class="selectedSource === src.key
+                ? 'border-orange-400 bg-orange-50 shadow-sm'
+                : 'border-gray-100 bg-white hover:border-gray-200 hover:bg-gray-50'"
+            >
+              <div class="w-10 h-10 rounded-lg flex items-center justify-center transition-colors"
+                :class="selectedSource === src.key ? 'bg-orange-100 text-orange-600' : 'bg-gray-100 text-gray-400 group-hover:bg-gray-200 group-hover:text-gray-600'">
+                <component :is="src.icon" class="w-5 h-5" />
+              </div>
+              <span class="text-xs font-medium" :class="selectedSource === src.key ? 'text-orange-700' : 'text-gray-600'">{{ src.label }}</span>
+            </button>
+          </div>
+        </div>
 
-        <p class="mt-4 text-xs text-gray-400">
-          <span v-if="!settingsLoaded">Loading settings...</span>
-          <span v-else>You'll choose what to share after clicking</span>
-        </p>
+        <!-- Options -->
+        <div class="mb-8 space-y-2">
+          <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 text-center">Options</p>
+          <div class="bg-white rounded-xl border border-gray-100 divide-y divide-gray-50 shadow-sm">
+            <label class="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50/50 transition-colors rounded-t-xl">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-lg flex items-center justify-center" :class="recordingOptions.microphone ? 'bg-orange-100 text-orange-600' : 'bg-gray-100 text-gray-400'">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/></svg>
+                </div>
+                <div class="text-left"><div class="text-sm font-medium text-gray-900">Microphone</div><div class="text-xs text-gray-400">Record your voice</div></div>
+              </div>
+              <input v-model="recordingOptions.microphone" type="checkbox" class="sr-only peer">
+              <div class="w-11 h-6 bg-gray-200 peer-checked:bg-orange-500 rounded-full relative transition-colors after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:w-5 after:h-5 after:transition-transform peer-checked:after:translate-x-5"></div>
+            </label>
+            <label class="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50/50 transition-colors rounded-b-xl">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-lg flex items-center justify-center" :class="recordingOptions.camera ? 'bg-orange-100 text-orange-600' : 'bg-gray-100 text-gray-400'">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                </div>
+                <div class="text-left"><div class="text-sm font-medium text-gray-900">Camera</div><div class="text-xs text-gray-400">Picture-in-picture overlay</div></div>
+              </div>
+              <input v-model="recordingOptions.camera" type="checkbox" class="sr-only peer">
+              <div class="w-11 h-6 bg-gray-200 peer-checked:bg-orange-500 rounded-full relative transition-colors after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:w-5 after:h-5 after:transition-transform peer-checked:after:translate-x-5"></div>
+            </label>
+          </div>
+        </div>
 
-        <!-- Advanced: Zoom Settings (collapsed by default) -->
-        <div class="max-w-md mx-auto mt-8">
-          <details class="group">
-            <summary class="flex items-center justify-center gap-2 text-sm text-gray-500 hover:text-gray-700 cursor-pointer select-none">
-              <svg class="w-4 h-4 transition-transform group-open:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-              </svg>
-              Advanced: Auto-Zoom Settings
-            </summary>
-            <div class="mt-4">
-              <ZoomSettingsPanel
-                v-model:zoomEnabled="zoomTracking.zoomEnabled.value"
-                v-model:zoomLevel="zoomTracking.zoomLevel.value"
-                v-model:zoomDurationMs="zoomTracking.zoomDurationMs.value"
-                :eventCount="zoomTracking.eventCount.value"
-                :clickEventCount="zoomTracking.clickEventCount.value"
-                :keyboardEventCount="zoomTracking.keyboardEventCount.value"
-              />
-            </div>
-          </details>
+        <!-- Record Button -->
+        <div class="text-center">
+          <button
+            @click="startRecording"
+            :disabled="!canRecord || isStartingRecording"
+            class="group relative inline-flex items-center gap-3 px-12 py-4 text-lg font-semibold rounded-2xl text-white bg-gradient-to-r from-orange-500 to-rose-500 hover:from-orange-600 hover:to-rose-600 shadow-lg shadow-orange-200 hover:shadow-xl hover:shadow-orange-300 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:shadow-lg transform active:scale-[0.98]"
+          >
+            <svg v-if="!isStartingRecording" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><circle cx="10" cy="10" r="6"/></svg>
+            <svg v-else class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+            {{ isStartingRecording ? 'Starting...' : 'Start Recording' }}
+          </button>
+          <p class="mt-4 text-xs text-gray-400">You'll choose what to share after clicking</p>
         </div>
       </div>
 
       <!-- Recording in Progress -->
       <div v-if="isRecording" class="text-center">
-        <div class="mb-6 sm:mb-8">
-          <h2 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-3 sm:mb-4">Recording in Progress</h2>
-          <p class="text-base sm:text-lg text-gray-600 px-4">
-            Your screen is being recorded. Click stop when you're done.
-          </p>
+        <div class="mb-8">
+          <h2 class="text-2xl font-bold text-gray-900 mb-2">Recording</h2>
+          <p class="text-gray-500">Your screen is being captured. Switch tabs — the recording continues.</p>
         </div>
 
-        <!-- Recording Preview -->
-        <div class="bg-gray-900 rounded-lg aspect-video max-w-3xl mx-auto mb-8 relative">
-          <video
-            ref="previewVideo"
-            autoplay
-            muted
-            class="w-full h-full object-cover rounded-lg"
-          ></video>
-
-          <!-- Recording Indicator -->
-          <div class="absolute top-4 left-4 flex items-center space-x-2 bg-red-500 text-white px-3 py-2 rounded-lg">
-            <div class="w-3 h-3 bg-white rounded-full animate-pulse"></div>
-            <span class="font-medium">REC {{ formatTime(recordingTime) }}</span>
+        <div class="bg-gray-900 rounded-2xl overflow-hidden aspect-video max-w-3xl mx-auto mb-8 relative shadow-2xl">
+          <video ref="previewVideo" autoplay muted class="w-full h-full object-cover"></video>
+          <div class="absolute top-4 left-4 flex items-center gap-2 bg-black/60 backdrop-blur-sm text-white px-3 py-2 rounded-lg text-xs font-mono tabular-nums">
+            <div class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+            {{ formatTime(recordingTime) }}
+          </div>
+          <!-- Upload progress overlay -->
+          <div v-if="uploadedBytes > 0" class="absolute bottom-4 right-4 bg-black/60 backdrop-blur-sm text-white px-3 py-1.5 rounded-lg text-xs">
+            {{ formatBytes(uploadedBytes) }} uploaded
           </div>
         </div>
 
-        <!-- Recording Controls -->
-        <div class="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-0 sm:space-x-4">
-          <button
-            @click="pauseRecording"
-            v-if="!isPaused"
-            class="inline-flex items-center px-6 py-3 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors duration-200"
-          >
-            <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M5.5 3.5A1.5 1.5 0 017 2h6a1.5 1.5 0 011.5 1.5v13a1.5 1.5 0 01-1.5 1.5H7A1.5 1.5 0 015.5 16.5v-13zM9 4H7v12h2V4zm4 0h-2v12h2V4z"/>
-            </svg>
+        <div class="flex items-center justify-center gap-3">
+          <button v-if="!isPaused" @click="pauseRecording"
+            class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 shadow-sm transition-colors">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M5.5 3.5A1.5 1.5 0 017 2h6a1.5 1.5 0 011.5 1.5v13a1.5 1.5 0 01-1.5 1.5H7A1.5 1.5 0 015.5 16.5v-13z"/></svg>
             Pause
           </button>
-
-          <button
-            @click="resumeRecording"
-            v-if="isPaused"
-            class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors duration-200"
-          >
-            <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.841z"/>
-            </svg>
+          <button v-if="isPaused" @click="resumeRecording"
+            class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium text-white bg-orange-500 hover:bg-orange-600 shadow-sm transition-colors">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.841z"/></svg>
             Resume
           </button>
-
-          <button
-            @click="stopRecording"
-            class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200"
-          >
-            <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-              <rect x="4" y="4" width="12" height="12" rx="2" ry="2"/>
-            </svg>
-            Stop Recording
+          <button @click="stopRecording"
+            class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium text-white bg-red-500 hover:bg-red-600 shadow-sm transition-colors">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><rect x="4" y="4" width="12" height="12" rx="2"/></svg>
+            Stop
           </button>
         </div>
       </div>
 
-      <!-- Processing/Uploading State -->
-      <div v-if="hasRecorded && isFinishing" class="text-center">
-        <div class="mb-6">
-          <div class="inline-flex items-center justify-center w-20 h-20 bg-orange-100 rounded-full mb-6">
-            <svg class="w-10 h-10 text-orange-600 animate-spin" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-          </div>
-          <h2 class="text-3xl font-bold text-gray-900 mb-3">Processing Your Video</h2>
-          <p class="text-lg text-gray-600">
-            Uploading and preparing your recording...
-          </p>
+      <!-- Processing -->
+      <div v-if="hasRecorded && isFinishing" class="text-center py-16">
+        <div class="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-orange-100 to-orange-200 rounded-2xl mb-6 shadow-lg">
+          <svg class="w-10 h-10 text-orange-500 animate-spin" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"/>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+          </svg>
         </div>
+        <h2 class="text-2xl font-bold text-gray-900 mb-2">Saving your recording</h2>
+        <p class="text-gray-500 mb-8">Finalizing and preparing your video...</p>
+        <div class="w-64 mx-auto bg-gray-100 rounded-full h-1.5 overflow-hidden">
+          <div class="h-full bg-gradient-to-r from-orange-400 to-orange-600 rounded-full transition-all duration-500" :style="{ width: uploadProgress + '%' }"></div>
+        </div>
+        <p class="mt-3 text-xs text-gray-400">{{ uploadProgress }}%</p>
       </div>
     </main>
   </div>
@@ -229,8 +191,36 @@ export default {
     // Recording options
     const recordingOptions = ref({
       screen: true,
-      microphone: true
+      microphone: true,
+      camera: false
     })
+
+    const selectedSource = ref('screen')
+
+    // Source options
+    const sources = [
+      {
+        key: 'screen',
+        label: 'Full Screen',
+        icon: {
+          template: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>'
+        }
+      },
+      {
+        key: 'window',
+        label: 'Window',
+        icon: {
+          template: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="16" rx="2"/><line x1="2" y1="7" x2="22" y2="7"/></svg>'
+        }
+      },
+      {
+        key: 'tab',
+        label: 'Browser Tab',
+        icon: {
+          template: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 8h16M4 8a2 2 0 00-2 2v8a2 2 0 002 2h16a2 2 0 002-2V10a2 2 0 00-2-2H4z"/><line x1="8" y1="4" x2="8" y2="6"/></svg>'
+        }
+      }
+    ]
 
     // Media elements
     const previewVideo = ref(null)
@@ -434,12 +424,17 @@ export default {
         // Get screen capture (up to 4K)
         const displayMediaOptions = {
           video: {
-            width: { ideal: 3840, max: 3840 },    // 4K width
-            height: { ideal: 2160, max: 2160 },   // 4K height
-            frameRate: { ideal: 60, max: 60 },    // 60fps for smooth recording
-            displaySurface: 'monitor'              // Prefer full screen capture
+            width: { ideal: 3840, max: 3840 },
+            height: { ideal: 2160, max: 2160 },
+            frameRate: { ideal: 60, max: 60 },
+            displaySurface: selectedSource.value === 'tab' ? 'browser' : selectedSource.value === 'window' ? 'window' : 'monitor'
           },
-          audio: true // Request system/tab audio
+          audio: selectedSource.value !== 'tab' // System audio for screen/window, exclude for tab
+        }
+
+        // For Chrome: auto-select current tab
+        if (selectedSource.value === 'tab') {
+          displayMediaOptions.preferCurrentTab = true
         }
 
         const displayStream = await navigator.mediaDevices.getDisplayMedia(displayMediaOptions)
@@ -715,6 +710,8 @@ export default {
       isFinishing,
       recordingTime,
       recordingOptions,
+      selectedSource,
+      sources,
       previewVideo,
       canRecord,
       settingsLoaded,

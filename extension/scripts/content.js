@@ -831,18 +831,18 @@ function createControlBar() {
   pauseBtn.onmouseout = () => pauseBtn.style.background = 'rgba(255, 255, 255, 0.1)';
   pauseBtn.onclick = (e) => {
     e.stopPropagation();
-    if (isPaused) {
-      // Send resume to background which will forward to the recording tab
-      safeSendMessage({ action: 'resumeRecording' }, (response) => {
-        if (response && response.success) {
-          updateControlBarPauseState(false);
-        }
-      });
+    if (mediaRecorder) {
+      // Direct call when recording on this tab
+      if (isPaused) {
+        resumeRecording();
+      } else {
+        pauseRecording();
+      }
     } else {
-      // Send pause to background which will forward to the recording tab
-      safeSendMessage({ action: 'pauseRecording' }, (response) => {
+      // Route through background for cross-tab control
+      safeSendMessage({ action: isPaused ? 'resumeRecording' : 'pauseRecording' }, (response) => {
         if (response && response.success) {
-          updateControlBarPauseState(true);
+          updateControlBarPauseState(!isPaused);
         }
       });
     }
@@ -873,12 +873,15 @@ function createControlBar() {
   stopBtn.onmouseout = () => stopBtn.style.background = '#ef4444';
   stopBtn.onclick = (e) => {
     e.stopPropagation();
-    // Send stop to background which will forward to the recording tab
-    safeSendMessage({ action: 'stopRecording' }, (response) => {
-      if (response && response.success) {
-        removeControlBar();
-      }
-    });
+    if (mediaRecorder) {
+      stopRecording();
+    } else {
+      safeSendMessage({ action: 'stopRecording' }, (response) => {
+        if (response && response.success) {
+          removeControlBar();
+        }
+      });
+    }
   };
 
   // Assemble control bar
@@ -1647,7 +1650,7 @@ async function completeStreamUpload(sessionId, durationSec) {
   const body = JSON.stringify({
     title,
     duration: durationSec,
-    has_camera: false
+    has_camera: !!cameraStream
   });
 
   const response = await fetch(`${API_URL}/api/stream/${sessionId}/complete`, {
@@ -1788,98 +1791,65 @@ async function uploadToBackend(blob) {
 }
 
 function showUploadNotification(shareUrl) {
-  // Create a notification overlay
   const notification = document.createElement('div');
   notification.id = 'openkap-upload-notification';
   notification.style.cssText = `
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-    color: white;
-    padding: 16px 20px;
-    border-radius: 12px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-    z-index: 999999;
+    position: fixed; bottom: 24px; right: 24px; background: white;
+    padding: 0; border-radius: 16px; z-index: 999999;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    max-width: 320px;
-    animation: openkap-slide-in 0.3s ease-out;
+    width: 360px; max-width: calc(100vw - 48px);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.05);
+    animation: ok-notif-in 0.35s cubic-bezier(0.16,1,0.3,1);
+    overflow: hidden;
   `;
 
   notification.innerHTML = `
-    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-      </svg>
-      <span style="font-weight: 600; font-size: 14px;">Video Saved!</span>
+    <style>
+      @keyframes ok-notif-in { from{opacity:0;transform:translateY(16px) scale(0.96)} to{opacity:1;transform:translateY(0) scale(1)} }
+      @keyframes ok-check-pop { 0%{transform:scale(0)} 60%{transform:scale(1.2)} 100%{transform:scale(1)} }
+    </style>
+    <div style="background:linear-gradient(135deg,#10b981,#059669); padding:16px 20px; display:flex; align-items:center; gap:12px;">
+      <div style="width:36px; height:36px; background:rgba(255,255,255,0.2); border-radius:50%; display:flex; align-items:center; justify-content:center; animation:ok-check-pop 0.4s ease-out 0.1s both;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>
+      </div>
+      <div>
+        <div style="color:white; font-weight:600; font-size:14px;">Recording saved!</div>
+        <div style="color:rgba(255,255,255,0.8); font-size:12px; margin-top:1px;">Link copied to clipboard</div>
+      </div>
     </div>
-    <div style="background: rgba(255,255,255,0.2); padding: 8px 12px; border-radius: 6px; margin-bottom: 12px;">
-      <input type="text" value="${shareUrl}" readonly style="
-        background: transparent;
-        border: none;
-        color: white;
-        width: 100%;
-        font-size: 12px;
-        outline: none;
-      " id="openkap-share-url"/>
-    </div>
-    <div style="display: flex; gap: 8px;">
-      <button id="openkap-copy-btn" style="
-        flex: 1;
-        background: white;
-        color: #059669;
-        border: none;
-        padding: 8px 12px;
-        border-radius: 6px;
-        font-weight: 600;
-        font-size: 13px;
-        cursor: pointer;
-      ">Copy Link</button>
-      <button id="openkap-close-btn" style="
-        background: rgba(255,255,255,0.2);
-        color: white;
-        border: none;
-        padding: 8px 12px;
-        border-radius: 6px;
-        font-size: 13px;
-        cursor: pointer;
-      ">✕</button>
+    <div style="padding:14px 20px;">
+      <div style="display:flex; align-items:center; gap:8px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:10px; padding:8px 12px; margin-bottom:10px;">
+        <input type="text" value="${shareUrl}" readonly id="ok-share-url" style="flex:1; background:transparent; border:none; color:#374151; font-size:12px; outline:none; font-family:monospace;">
+        <button id="ok-copy-btn" style="background:#f97316; color:white; border:none; padding:6px 12px; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap; transition:all 0.15s;">Copy</button>
+      </div>
+      <div style="display:flex; gap:8px;">
+        <button id="ok-view-btn" style="flex:1; background:#f9fafb; border:1px solid #e5e7eb; padding:8px; border-radius:8px; font-size:13px; font-weight:500; color:#374151; cursor:pointer; transition:all 0.15s;">View Video</button>
+        <button id="ok-dismiss-btn" style="flex:1; background:#fff; border:1px solid #e5e7eb; padding:8px; border-radius:8px; font-size:13px; font-weight:500; color:#9ca3af; cursor:pointer; transition:all 0.15s;">Dismiss</button>
+      </div>
     </div>
   `;
-
-  // Add animation style
-  const style = document.createElement('style');
-  style.textContent = `
-    @keyframes openkap-slide-in {
-      from { transform: translateX(100%); opacity: 0; }
-      to { transform: translateX(0); opacity: 1; }
-    }
-  `;
-  document.head.appendChild(style);
 
   document.body.appendChild(notification);
 
-  // Copy button handler
-  document.getElementById('openkap-copy-btn').addEventListener('click', () => {
+  // Auto-copy to clipboard
+  navigator.clipboard.writeText(shareUrl).catch(() => {});
+
+  // Handlers
+  document.getElementById('ok-copy-btn').addEventListener('click', () => {
     navigator.clipboard.writeText(shareUrl).then(() => {
-      document.getElementById('openkap-copy-btn').textContent = 'Copied!';
-      setTimeout(() => {
-        document.getElementById('openkap-copy-btn').textContent = 'Copy Link';
-      }, 2000);
+      const btn = document.getElementById('ok-copy-btn');
+      btn.textContent = 'Copied!'; btn.style.background = '#10b981';
+      setTimeout(() => { btn.textContent = 'Copy'; btn.style.background = '#f97316'; }, 2000);
     });
   });
-
-  // Close button handler
-  document.getElementById('openkap-close-btn').addEventListener('click', () => {
+  document.getElementById('ok-view-btn').addEventListener('click', () => {
+    window.open(shareUrl, '_blank');
     notification.remove();
   });
+  document.getElementById('ok-dismiss-btn').addEventListener('click', () => notification.remove());
 
-  // Auto-close after 30 seconds
-  setTimeout(() => {
-    if (notification.parentNode) {
-      notification.remove();
-    }
-  }, 30000);
+  // Auto-close after 15 seconds
+  setTimeout(() => { if (notification.parentNode) notification.remove(); }, 15000);
 }
 
 function cleanup() {
@@ -1950,249 +1920,190 @@ function showFloatingRecordPanel() {
 window.__openkapShowPanel = showFloatingRecordPanel;
 
 function createFloatingPanel(savedOptions) {
-  // Create overlay to detect outside clicks
   const overlay = document.createElement('div');
   overlay.id = 'openkap-floating-overlay';
   overlay.style.cssText = `
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
     z-index: 2147483645;
-    background: transparent;
+    background: rgba(0,0,0,0.3);
+    backdrop-filter: blur(4px);
+    animation: ok-fade-in 0.15s ease-out;
   `;
 
-  // Create the floating panel
   floatingPanel = document.createElement('div');
   floatingPanel.id = 'openkap-floating-panel';
   floatingPanel.style.cssText = `
     position: fixed;
-    top: 80px;
-    right: 20px;
-    width: 320px;
-    background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
-    border-radius: 16px;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255,255,255,0.1);
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 380px;
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 25px 60px rgba(0,0,0,0.2), 0 0 0 1px rgba(0,0,0,0.06);
     z-index: 2147483646;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    color: white;
-    animation: openkap-panel-slide-in 0.3s ease-out;
+    color: #1a1a2e;
+    animation: ok-panel-in 0.25s cubic-bezier(0.16,1,0.3,1);
+    overflow: hidden;
   `;
 
   floatingPanel.innerHTML = `
     <style>
-      @keyframes openkap-panel-slide-in {
-        from { opacity: 0; transform: translateY(-10px) scale(0.95); }
-        to { opacity: 1; transform: translateY(0) scale(1); }
-      }
-      #openkap-floating-panel * {
-        box-sizing: border-box;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      }
-      .ss-toggle {
-        position: relative;
-        width: 44px;
-        height: 24px;
-        cursor: pointer;
-      }
-      .ss-toggle input {
-        opacity: 0;
-        width: 0;
-        height: 0;
-      }
-      .ss-toggle-slider {
-        position: absolute;
-        cursor: pointer;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-color: rgba(255, 255, 255, 0.2);
-        transition: 0.3s;
-        border-radius: 24px;
-      }
-      .ss-toggle-slider:before {
-        position: absolute;
-        content: "";
-        height: 18px;
-        width: 18px;
-        left: 3px;
-        bottom: 3px;
-        background-color: white;
-        transition: 0.3s;
-        border-radius: 50%;
-      }
-      .ss-toggle input:checked + .ss-toggle-slider {
-        background-color: #ea580c;
-      }
-      .ss-toggle input:checked + .ss-toggle-slider:before {
-        transform: translateX(20px);
-      }
+      @keyframes ok-fade-in { from{opacity:0} to{opacity:1} }
+      @keyframes ok-panel-in { from{opacity:0;transform:translate(-50%,-50%) scale(0.92) translateY(10px)} to{opacity:1;transform:translate(-50%,-50%) scale(1) translateY(0)} }
+      @keyframes ok-pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+      #ok-panel * { box-sizing:border-box; margin:0; }
+      .ok-toggle { position:relative; width:44px; height:24px; cursor:pointer; flex-shrink:0; }
+      .ok-toggle input { opacity:0; width:0; height:0; }
+      .ok-toggle-slider { position:absolute; inset:0; background:#e5e7eb; transition:0.2s; border-radius:24px; }
+      .ok-toggle-slider:before { position:absolute; content:''; height:18px; width:18px; left:3px; bottom:3px; background:#fff; transition:0.2s; border-radius:50%; box-shadow:0 1px 3px rgba(0,0,0,0.15); }
+      .ok-toggle input:checked + .ok-toggle-slider { background:#f97316; }
+      .ok-toggle input:checked + .ok-toggle-slider:before { transform:translateX(20px); }
+      .ok-source-btn { flex:1; padding:10px 8px; background:#f9fafb; border:2px solid #e5e7eb; border-radius:12px; cursor:pointer; text-align:center; transition:all 0.15s; font-size:12px; font-weight:500; color:#6b7280; }
+      .ok-source-btn:hover { border-color:#d1d5db; background:#f3f4f6; }
+      .ok-source-btn.active { border-color:#f97316; background:#fff7ed; color:#c2410c; }
+      .ok-source-btn svg { width:18px; height:18px; margin:0 auto 3px; display:block; }
     </style>
 
-    <!-- Header -->
-    <div style="padding: 16px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: space-between;">
-      <div style="display: flex; align-items: center; gap: 10px;">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2">
-          <circle cx="12" cy="12" r="10"/>
-          <circle cx="12" cy="12" r="4" fill="#ea580c"/>
-        </svg>
-        <span style="font-size: 16px; font-weight: 600; color: #ea580c;">OpenKap</span>
-      </div>
-      <button id="ss-close-btn" style="background: none; border: none; cursor: pointer; padding: 4px; color: #9ca3af; transition: color 0.2s;">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="18" y1="6" x2="6" y2="18"/>
-          <line x1="6" y1="6" x2="18" y2="18"/>
-        </svg>
-      </button>
-    </div>
-
-    <!-- Options -->
-    <div style="padding: 20px;">
-      <div style="font-size: 11px; font-weight: 600; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px;">Recording Options</div>
-
-      <!-- Camera Option -->
-      <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
-        <div style="display: flex; align-items: center; gap: 12px;">
-          <div id="ss-camera-icon" style="width: 36px; height: 36px; background: rgba(255,255,255,0.1); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2">
-              <path d="M23 7l-7 5 7 5V7z"/>
-              <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
-            </svg>
+    <div id="ok-panel">
+      <div style="padding:20px 24px 16px; display:flex; align-items:center; justify-content:space-between;">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <div style="width:32px; height:32px; background:linear-gradient(135deg,#f97316,#ea580c); border-radius:10px; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 8px rgba(249,115,22,0.3);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><circle cx="12" cy="12" r="5"/></svg>
           </div>
           <div>
-            <div style="font-size: 14px; font-weight: 500;">Camera</div>
-            <div style="font-size: 11px; color: #6b7280;">Show your face</div>
+            <div style="font-size:15px; font-weight:700; color:#111827;">Record Screen</div>
+            <div style="font-size:11px; color:#9ca3af; margin-top:-1px;">Cmd+Shift+R to start</div>
           </div>
         </div>
-        <label class="ss-toggle">
-          <input type="checkbox" id="ss-camera-toggle" ${savedOptions.camera ? 'checked' : ''}>
-          <span class="ss-toggle-slider"></span>
-        </label>
+        <button id="ok-close-btn" style="background:none; border:none; cursor:pointer; padding:4px; color:#9ca3af; border-radius:6px; transition:all 0.15s;" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background='none'">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
       </div>
 
-      <!-- Microphone Option -->
-      <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 0;">
-        <div style="display: flex; align-items: center; gap: 12px;">
-          <div id="ss-mic-icon" style="width: 36px; height: 36px; background: ${savedOptions.microphone ? 'rgba(234, 88, 12, 0.2)' : 'rgba(255,255,255,0.1)'}; border-radius: 10px; display: flex; align-items: center; justify-content: center;">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="${savedOptions.microphone ? '#ea580c' : '#9ca3af'}" stroke-width="2">
-              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
-              <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-              <line x1="12" y1="19" x2="12" y2="23"/>
-              <line x1="8" y1="23" x2="16" y2="23"/>
-            </svg>
+      <div style="padding:0 24px 16px;">
+        <div style="font-size:11px; font-weight:600; color:#9ca3af; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">Capture Source</div>
+        <div style="display:flex; gap:8px;" id="ok-source-buttons">
+          <button class="ok-source-btn active" data-source="screen">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            Full Screen
+          </button>
+          <button class="ok-source-btn" data-source="window">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="16" rx="2"/><line x1="2" y1="7" x2="22" y2="7"/></svg>
+            Window
+          </button>
+          <button class="ok-source-btn" data-source="tab">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 8h16M4 8a2 2 0 00-2 2v8a2 2 0 002 2h16a2 2 0 002-2V10a2 2 0 00-2-2H4z"/><line x1="8" y1="4" x2="8" y2="6"/></svg>
+            Browser Tab
+          </button>
+        </div>
+      </div>
+
+      <div style="padding:0 24px 16px;">
+        <div style="font-size:11px; font-weight:600; color:#9ca3af; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:10px;">Options</div>
+        <div style="display:flex; flex-direction:column; gap:2px;">
+          <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 12px; border-radius:10px; background:#f9fafb;">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <div id="ok-mic-icon" style="width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; background:${savedOptions.microphone ? '#fff7ed' : '#f3f4f6'};">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="${savedOptions.microphone ? '#f97316' : '#9ca3af'}" stroke-width="2"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/></svg>
+              </div>
+              <div><div style="font-size:13px; font-weight:500;">Microphone</div><div style="font-size:11px; color:#9ca3af;">Record your voice</div></div>
+            </div>
+            <label class="ok-toggle"><input type="checkbox" id="ok-mic-toggle" ${savedOptions.microphone ? 'checked' : ''}><span class="ok-toggle-slider"></span></label>
           </div>
-          <div>
-            <div style="font-size: 14px; font-weight: 500;">Microphone</div>
-            <div style="font-size: 11px; color: #6b7280;">Record audio</div>
+          <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 12px; border-radius:10px;">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <div id="ok-cam-icon" style="width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; background:${savedOptions.camera ? '#fff7ed' : '#f3f4f6'};">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="${savedOptions.camera ? '#f97316' : '#9ca3af'}" stroke-width="2"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+              </div>
+              <div><div style="font-size:13px; font-weight:500;">Camera</div><div style="font-size:11px; color:#9ca3af;">Show your face</div></div>
+            </div>
+            <label class="ok-toggle"><input type="checkbox" id="ok-cam-toggle" ${savedOptions.camera ? 'checked' : ''}><span class="ok-toggle-slider"></span></label>
           </div>
         </div>
-        <label class="ss-toggle">
-          <input type="checkbox" id="ss-mic-toggle" ${savedOptions.microphone ? 'checked' : ''}>
-          <span class="ss-toggle-slider"></span>
-        </label>
       </div>
-    </div>
 
-    <!-- Record Button -->
-    <div style="padding: 0 20px 20px;">
-      <button id="ss-record-btn" style="
-        width: 100%;
-        padding: 14px 20px;
-        background: linear-gradient(135deg, #ea580c 0%, #dc2626 100%);
-        color: white;
-        border: none;
-        border-radius: 12px;
-        font-size: 15px;
-        font-weight: 600;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-        box-shadow: 0 4px 12px rgba(234, 88, 12, 0.3);
-        transition: all 0.2s ease;
-      ">
-        <div style="width: 16px; height: 16px; background: white; border-radius: 50%;"></div>
-        Start Recording
-      </button>
+      <div style="padding:4px 24px 20px;">
+        <button id="ok-record-btn" style="
+          width:100%; padding:14px; background:linear-gradient(135deg,#f97316,#ea580c);
+          color:white; border:none; border-radius:14px; font-size:15px; font-weight:600;
+          cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;
+          box-shadow:0 4px 16px rgba(249,115,22,0.35); transition:all 0.2s;
+        " onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 6px 20px rgba(249,115,22,0.4)'" onmouseout="this.style.transform='';this.style.boxShadow='0 4px 16px rgba(249,115,22,0.35)'">
+          <div style="width:14px; height:14px; background:white; border-radius:50%; box-shadow:0 0 0 2px rgba(255,255,255,0.3);"></div>
+          Start Recording
+        </button>
+        <div style="text-align:center; margin-top:8px; font-size:11px; color:#d1d5db;">Press <kbd style="background:#f3f4f6; padding:1px 5px; border-radius:3px; font-size:10px; border:1px solid #e5e7eb;">Esc</kbd> to cancel</div>
+      </div>
     </div>
   `;
 
   document.body.appendChild(overlay);
   document.body.appendChild(floatingPanel);
 
-  // Close button handler
-  document.getElementById('ss-close-btn').addEventListener('click', closeFloatingPanel);
+  // Elements
+  const closeBtn = document.getElementById('ok-close-btn');
+  const recordBtn = document.getElementById('ok-record-btn');
+  const camToggle = document.getElementById('ok-cam-toggle');
+  const micToggle = document.getElementById('ok-mic-toggle');
+  const camIcon = document.getElementById('ok-cam-icon');
+  const micIcon = document.getElementById('ok-mic-icon');
+  const sourceBtns = document.querySelectorAll('.ok-source-btn');
 
-  // Click outside to close
+  let selectedSource = 'screen';
+
+  // Source selection
+  sourceBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      sourceBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      selectedSource = btn.dataset.source;
+    });
+  });
+
+  // Close handlers
+  closeBtn.addEventListener('click', closeFloatingPanel);
   overlay.addEventListener('click', closeFloatingPanel);
-
-  // Toggle handlers
-  const cameraToggle = document.getElementById('ss-camera-toggle');
-  const micToggle = document.getElementById('ss-mic-toggle');
-  const cameraIcon = document.getElementById('ss-camera-icon');
-  const micIcon = document.getElementById('ss-mic-icon');
-
-  cameraToggle.addEventListener('change', () => {
-    if (cameraToggle.checked) {
-      cameraIcon.style.background = 'rgba(234, 88, 12, 0.2)';
-      cameraIcon.querySelector('svg').setAttribute('stroke', '#ea580c');
-    } else {
-      cameraIcon.style.background = 'rgba(255,255,255,0.1)';
-      cameraIcon.querySelector('svg').setAttribute('stroke', '#9ca3af');
-    }
-    saveFloatingPanelOptions();
+  document.addEventListener('keydown', function okEscHandler(e) {
+    if (e.key === 'Escape') { closeFloatingPanel(); document.removeEventListener('keydown', okEscHandler); }
   });
 
-  micToggle.addEventListener('change', () => {
-    if (micToggle.checked) {
-      micIcon.style.background = 'rgba(234, 88, 12, 0.2)';
-      micIcon.querySelector('svg').setAttribute('stroke', '#ea580c');
-    } else {
-      micIcon.style.background = 'rgba(255,255,255,0.1)';
-      micIcon.querySelector('svg').setAttribute('stroke', '#9ca3af');
-    }
-    saveFloatingPanelOptions();
-  });
-
-  // Initialize camera icon based on saved state
-  if (savedOptions.camera) {
-    cameraIcon.style.background = 'rgba(234, 88, 12, 0.2)';
-    cameraIcon.querySelector('svg').setAttribute('stroke', '#ea580c');
+  // Toggle handlers with visual feedback
+  function updateToggleIcons() {
+    const micOn = micToggle.checked;
+    const camOn = camToggle.checked;
+    micIcon.style.background = micOn ? '#fff7ed' : '#f3f4f6';
+    micIcon.querySelector('svg').setAttribute('stroke', micOn ? '#f97316' : '#9ca3af');
+    camIcon.style.background = camOn ? '#fff7ed' : '#f3f4f6';
+    camIcon.querySelector('svg').setAttribute('stroke', camOn ? '#f97316' : '#9ca3af');
   }
 
-  // Record button handler
-  document.getElementById('ss-record-btn').addEventListener('click', () => {
+  camToggle.addEventListener('change', () => { updateToggleIcons(); saveOptions(); });
+  micToggle.addEventListener('change', () => { updateToggleIcons(); saveOptions(); });
+
+  function saveOptions() {
+    chrome.storage.local.set({ recordingOptions: { camera: camToggle.checked, microphone: micToggle.checked, source: selectedSource } });
+  }
+
+  // Record button — record directly, no page navigation!
+  recordBtn.addEventListener('click', () => {
     const options = {
-      camera: cameraToggle.checked,
-      microphone: micToggle.checked
+      screen: true,
+      camera: camToggle.checked,
+      microphone: micToggle.checked,
+      source: selectedSource
     };
-
-    // Save options and set auto-start flag
-    chrome.storage.local.set({
-      autoStartRecording: true,
-      recordingOptions: options
-    }, () => {
-      // Navigate to record page
-      window.location.href = OPENKAP_URL + '/record?autostart=true';
+    chrome.storage.local.set({ recordingOptions: options });
+    closeFloatingPanel();
+    initRecording(options).then(() => {
+      recordingStartTime = Date.now();
+      notifyWebsiteOfState(true, false);
+    }).catch(err => {
+      showToast(err.message || 'Failed to start recording', 'error');
     });
   });
-}
-
-function saveFloatingPanelOptions() {
-  const cameraToggle = document.getElementById('ss-camera-toggle');
-  const micToggle = document.getElementById('ss-mic-toggle');
-
-  if (cameraToggle && micToggle) {
-    chrome.storage.local.set({
-      recordingOptions: {
-        camera: cameraToggle.checked,
-        microphone: micToggle.checked
-      }
-    });
-  }
 }
 
 function closeFloatingPanel() {
