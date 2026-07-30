@@ -428,7 +428,8 @@ Route::middleware('auth:sanctum')->prefix('stream')->group(function () {
     Route::post('/start', [\App\Http\Controllers\StreamVideoController::class, 'startUpload'])
         ->middleware([CheckSubscriptionLimit::class, 'throttle:5,1']);
 
-    Route::post('/{sessionId}/chunk', [\App\Http\Controllers\StreamVideoController::class, 'uploadChunk']);
+    Route::post('/{sessionId}/chunk', [\App\Http\Controllers\StreamVideoController::class, 'uploadChunk'])
+        ->middleware('throttle:120,1');
     Route::post('/{sessionId}/complete', [\App\Http\Controllers\StreamVideoController::class, 'completeUpload'])
         ->middleware(CheckSubscriptionLimit::class);
     Route::post('/{sessionId}/cancel', [\App\Http\Controllers\StreamVideoController::class, 'cancelUpload'])

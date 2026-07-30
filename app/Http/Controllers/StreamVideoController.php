@@ -129,6 +129,12 @@ class StreamVideoController extends Controller
 
         // Verify session exists
         if (! file_exists($metadataPath)) {
+            Log::warning('Chunk upload: session metadata not found', [
+                'session_id' => $sessionId,
+                'user_id' => $userId ?? Auth::id(),
+                'chunk_index' => $chunkIndex,
+                'ip' => $request->ip(),
+            ]);
             return response()->json(['message' => 'Invalid session'], 404);
         }
 
@@ -138,6 +144,10 @@ class StreamVideoController extends Controller
         // Verify user owns this session
         $userId = Auth::id();
         if (! $userId || $metadata['user_id'] !== $userId) {
+            Log::warning('Chunk upload: user mismatch', [
+                'session_id' => $sessionId, 'auth_user_id' => $userId,
+                'metadata_user_id' => $metadata['user_id'], 'chunk_index' => $chunkIndex,
+            ]);
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
@@ -256,6 +266,12 @@ class StreamVideoController extends Controller
 
         // Verify session exists
         if (! file_exists($metadataPath)) {
+            Log::warning('Chunk upload: session metadata not found', [
+                'session_id' => $sessionId,
+                'user_id' => $userId ?? Auth::id(),
+                'chunk_index' => $chunkIndex,
+                'ip' => $request->ip(),
+            ]);
             return response()->json(['message' => 'Invalid session'], 404);
         }
 
@@ -265,6 +281,10 @@ class StreamVideoController extends Controller
         // Verify user owns this session
         $userId = Auth::id();
         if (! $userId || $metadata['user_id'] !== $userId) {
+            Log::warning('Chunk upload: user mismatch', [
+                'session_id' => $sessionId, 'auth_user_id' => $userId,
+                'metadata_user_id' => $metadata['user_id'], 'chunk_index' => $chunkIndex,
+            ]);
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
