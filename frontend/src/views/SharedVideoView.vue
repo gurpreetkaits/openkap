@@ -30,7 +30,7 @@
     <!-- Main Content -->
     <template v-else>
       <!-- Navigation -->
-      <nav class="border-b border-gray-200/60 bg-white/90 backdrop-blur-md z-50 sticky top-0 flex-shrink-0 px-6" style="height: 80px;">
+      <nav class="border-b border-gray-200/60 bg-white/90 backdrop-blur-md z-50 sticky top-0 flex-shrink-0 px-6" style="height: 60px;">
         <div class="flex items-center gap-4 h-full">
 
           <!-- Logo -->
@@ -129,51 +129,55 @@
             </button>
           </div>
           <div class="p-5">
-            <div class="flex gap-4 mb-6">
-              <a :href="`mailto:?subject=${encodeURIComponent(video.title || 'Check out this video')}&body=${encodeURIComponent(shareUrl || '')}`" class="flex-1 flex flex-col items-center gap-2 p-3 rounded-lg border border-gray-200 hover:border-orange-500 hover:bg-orange-50/50 transition-all group no-underline">
-                <div class="w-8 h-8 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-                  </svg>
-                </div>
-                <span class="text-xs font-medium text-gray-600 group-hover:text-orange-700">Email</span>
+            <div class="grid grid-cols-3 gap-3 mb-5">
+              <a :href="`mailto:?subject=${encodeURIComponent(video.title || 'Check out this video')}&body=${encodeURIComponent(timestampedShareUrl || shareUrl)}`" class="flex flex-col items-center gap-1.5 p-2.5 rounded-lg border border-gray-200 hover:border-orange-500 hover:bg-orange-50/50 transition-all group no-underline">
+                <div class="w-8 h-8 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center group-hover:scale-110 transition-transform text-sm">📧</div>
+                <span class="text-[10px] font-medium text-gray-600 group-hover:text-orange-700">Email</span>
               </a>
-              <button @click="copyEmbedCode" class="flex-1 flex flex-col items-center gap-2 p-3 rounded-lg border border-gray-200 hover:border-orange-500 hover:bg-orange-50/50 transition-all group">
-                <div class="w-8 h-8 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
-                  </svg>
-                </div>
-                <span class="text-xs font-medium text-gray-600 group-hover:text-pink-700">{{ copiedEmbed ? 'Copied!' : 'Embed' }}</span>
+              <a :href="`https://twitter.com/intent/tweet?url=${encodeURIComponent(timestampedShareUrl || shareUrl)}&text=${encodeURIComponent(video.title || 'Check out this video')}`" target="_blank" rel="noopener noreferrer" class="flex flex-col items-center gap-1.5 p-2.5 rounded-lg border border-gray-200 hover:border-orange-500 hover:bg-orange-50/50 transition-all group no-underline">
+                <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform text-sm">🐦</div>
+                <span class="text-[10px] font-medium text-gray-600 group-hover:text-blue-700">Twitter</span>
+              </a>
+              <a :href="`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(timestampedShareUrl || shareUrl)}`" target="_blank" rel="noopener noreferrer" class="flex flex-col items-center gap-1.5 p-2.5 rounded-lg border border-gray-200 hover:border-orange-500 hover:bg-orange-50/50 transition-all group no-underline">
+                <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center group-hover:scale-110 transition-transform text-sm">💼</div>
+                <span class="text-[10px] font-medium text-gray-600 group-hover:text-blue-700">LinkedIn</span>
+              </a>
+              <a :href="`https://wa.me/?text=${encodeURIComponent((video.title || 'Check out this video') + ' ' + (timestampedShareUrl || shareUrl))}`" target="_blank" rel="noopener noreferrer" class="flex flex-col items-center gap-1.5 p-2.5 rounded-lg border border-gray-200 hover:border-orange-500 hover:bg-orange-50/50 transition-all group no-underline">
+                <div class="w-8 h-8 rounded-full bg-green-100 text-green-600 flex items-center justify-center group-hover:scale-110 transition-transform text-sm">📱</div>
+                <span class="text-[10px] font-medium text-gray-600 group-hover:text-green-700">WhatsApp</span>
+              </a>
+              <a :href="`https://slack.com/intl/en-us/share?url=${encodeURIComponent(timestampedShareUrl || shareUrl)}&text=${encodeURIComponent(video.title || 'Check out this video')}`" target="_blank" rel="noopener noreferrer" class="flex flex-col items-center gap-1.5 p-2.5 rounded-lg border border-gray-200 hover:border-orange-500 hover:bg-orange-50/50 transition-all group no-underline">
+                <div class="w-8 h-8 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center group-hover:scale-110 transition-transform text-sm">💬</div>
+                <span class="text-[10px] font-medium text-gray-600 group-hover:text-purple-700">Slack</span>
+              </a>
+              <button @click="copyEmbedCode" class="flex flex-col items-center gap-1.5 p-2.5 rounded-lg border border-gray-200 hover:border-orange-500 hover:bg-orange-50/50 transition-all group">
+                <div class="w-8 h-8 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center group-hover:scale-110 transition-transform text-sm">📋</div>
+                <span class="text-[10px] font-medium text-gray-600 group-hover:text-pink-700">{{ copiedEmbed ? 'Copied!' : 'Embed' }}</span>
               </button>
-              <a :href="`https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl || '')}&text=${encodeURIComponent(video.title || 'Check out this video')}`" target="_blank" rel="noopener noreferrer" class="flex-1 flex flex-col items-center gap-2 p-3 rounded-lg border border-gray-200 hover:border-orange-500 hover:bg-orange-50/50 transition-all group no-underline">
-                <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-                  </svg>
-                </div>
-                <span class="text-xs font-medium text-gray-600 group-hover:text-blue-700">Twitter</span>
-              </a>
             </div>
 
             <label class="text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-2 block">Public Link</label>
             <div class="flex gap-2">
               <div class="flex-1 relative">
-                <input type="text" :value="shareUrl" class="w-full pl-9 pr-3 py-2 text-xs bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500 text-gray-600" readonly>
+                <input type="text" :value="timestampedShareUrl || shareUrl" class="w-full pl-9 pr-3 py-2 text-xs bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500 text-gray-600" readonly>
                 <svg class="w-3.5 h-3.5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
                 </svg>
               </div>
-              <button @click="copyShareLink" class="bg-orange-600 hover:bg-orange-700 text-white px-3 py-2 rounded-lg text-xs font-medium transition-colors">
+              <button @click="copyTimestampedLink" class="bg-orange-600 hover:bg-orange-700 text-white px-3 py-2 rounded-lg text-xs font-medium transition-colors">
                 {{ copied ? 'Copied!' : 'Copy' }}
               </button>
             </div>
+            <label class="flex items-center gap-2 mt-2 text-[10px] text-gray-500 cursor-pointer select-none">
+              <input type="checkbox" v-model="includeTimestamp" class="accent-orange-500 w-3.5 h-3.5">
+              Link to current time ({{ formatTime(currentTime) }})
+            </label>
           </div>
         </div>
       </div>
 
       <!-- Main Layout -->
-      <main class="flex z-10" style="height: calc(100vh - 80px)">
+      <main class="flex z-10" style="height: calc(100vh - 60px)">
 
         <!-- Video Player — expands/shrinks with sidebar -->
         <div class="video-stage flex flex-col items-center justify-center p-6 bg-[#FAFAFA]/50 overflow-y-auto" :class="sidebarVisible ? 'sidebar-is-open' : 'sidebar-is-closed'">
@@ -485,10 +489,28 @@
                           <path stroke-linecap="round" stroke-linejoin="round" d="M9 9V4.5M9 9H4.5M9 9L3.75 3.75M9 15v4.5M9 15H4.5M9 15l-5.25 5.25M15 9h4.5M15 9V4.5M15 9l5.25-5.25M15 15h4.5M15 15v4.5m0-4.5l5.25 5.25"/>
                         </svg>
                       </button>
+                      <!-- Keyboard Shortcuts -->
+                      <button @click.stop="showKeyboardShortcuts = !showKeyboardShortcuts" class="ctrl-tip player-btn w-7 h-7 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-all text-white/40 hover:text-white/80 text-[13px]" data-tip="Keyboard shortcuts">⌨</button>
                     </div>
                   </div>
                   </transition>
                 </div>
+              </div>
+            </div>
+
+            <!-- Reactions Bar -->
+            <div class="flex items-center justify-center gap-1 mt-3 z-30">
+              <div class="flex items-center gap-0.5 px-1.5 py-1 bg-white border border-gray-200 rounded-full shadow-sm">
+                <button
+                  v-for="emoji in ['👍','❤️','😮','🎉','👎']"
+                  :key="emoji"
+                  @click="toggleReaction(emoji)"
+                  class="w-7 h-7 flex items-center justify-center rounded-full text-sm hover:bg-orange-50 hover:scale-110 transition-all"
+                  :class="userReactions.includes(emoji) ? 'bg-orange-100' : ''"
+                >
+                  {{ emoji }}
+                  <span v-if="reactions[emoji]?.count" class="text-[10px] font-semibold text-orange-600 ml-0.5">{{ reactions[emoji].count }}</span>
+                </button>
               </div>
             </div>
 
@@ -597,6 +619,14 @@
                 </svg>
                 Download
               </button>
+            </div>
+
+            <!-- Powered by OpenKap -->
+            <div class="flex items-center justify-center gap-1.5 mt-2 z-30 opacity-40 hover:opacity-70 transition-opacity">
+              <a href="/" class="flex items-center gap-1.5 text-[10px] text-gray-400 hover:text-orange-500 transition-colors no-underline">
+                <img :src="branding.logoUrl.value || '/logo.png'" alt="OpenKap" class="w-3 h-3 rounded-sm" />
+                Recorded with OpenKap
+              </a>
             </div>
           </div>
         </div>
@@ -925,6 +955,27 @@
       </div>
     </transition>
 
+    <!-- Keyboard Shortcuts Cheat Sheet -->
+    <div v-if="showKeyboardShortcuts" class="fixed inset-0 z-[80] flex items-center justify-center" @click.self="showKeyboardShortcuts = false">
+      <div class="absolute inset-0 bg-gray-900/30 backdrop-blur-sm" @click="showKeyboardShortcuts = false"></div>
+      <div class="bg-gray-900 text-white rounded-xl shadow-2xl border border-white/10 w-full max-w-xs relative z-10 overflow-hidden">
+        <div class="px-4 py-3 border-b border-white/10 flex items-center justify-between">
+          <h3 class="text-sm font-semibold">Keyboard Shortcuts</h3>
+          <button @click="showKeyboardShortcuts = false" class="text-white/50 hover:text-white">✕</button>
+        </div>
+        <div class="px-4 py-3 space-y-2 text-xs">
+          <div class="flex justify-between"><span>Play / Pause</span><kbd class="bg-white/10 px-2 py-0.5 rounded text-[10px]">Space</kbd></div>
+          <div class="flex justify-between"><span>Fullscreen</span><kbd class="bg-white/10 px-2 py-0.5 rounded text-[10px]">F</kbd></div>
+          <div class="flex justify-between"><span>Mute / Unmute</span><kbd class="bg-white/10 px-2 py-0.5 rounded text-[10px]">M</kbd></div>
+          <div class="flex justify-between"><span>Skip back 5s</span><kbd class="bg-white/10 px-2 py-0.5 rounded text-[10px]">←</kbd></div>
+          <div class="flex justify-between"><span>Skip forward 5s</span><kbd class="bg-white/10 px-2 py-0.5 rounded text-[10px]">→</kbd></div>
+          <div class="flex justify-between"><span>Jump back 10s</span><kbd class="bg-white/10 px-2 py-0.5 rounded text-[10px]">J</kbd></div>
+          <div class="flex justify-between"><span>Jump forward 10s</span><kbd class="bg-white/10 px-2 py-0.5 rounded text-[10px]">L</kbd></div>
+          <div class="flex justify-between"><span>Picture in Picture</span><kbd class="bg-white/10 px-2 py-0.5 rounded text-[10px]">I</kbd></div>
+          <div class="flex justify-between"><span>Jump to 0-90%</span><kbd class="bg-white/10 px-2 py-0.5 rounded text-[10px]">0 – 9</kbd></div>
+        </div>
+      </div>
+    </div>
 
     </div><!-- end Main Content Area -->
   </div>
@@ -984,6 +1035,7 @@ export default {
     const showSpeedMenu = ref(false)
     const showBigPlayButton = ref(true)
     const showPrePlaySpeedMenu = ref(false)
+    const showKeyboardShortcuts = ref(false)
     const copied = ref(false)
     const copiedEmbed = ref(false)
     const toast = ref(null)
@@ -1005,7 +1057,7 @@ export default {
     // Ownership check for restricting actions
     const isOwner = computed(() => currentUser.value?.id && video.value?.user_id && currentUser.value.id === video.value.user_id)
 
-    const activeTab = ref('transcript')
+    const activeTab = ref('comments')
     const sidebarVisible = ref(localStorage.getItem('sidebar_visible') !== 'false')
     const toggleSidebar = () => {
       sidebarVisible.value = !sidebarVisible.value
@@ -1213,6 +1265,22 @@ export default {
     })
 
     const shareUrl = computed(() => window.location.href)
+    const includeTimestamp = ref(false)
+    const timestampedShareUrl = computed(() => {
+      if (!includeTimestamp.value || currentTime.value <= 0) return shareUrl.value
+      const url = new URL(shareUrl.value)
+      url.searchParams.set('t', Math.floor(currentTime.value))
+      return url.toString()
+    })
+
+    const copyTimestampedLink = async () => {
+      try {
+        await navigator.clipboard.writeText(timestampedShareUrl.value || shareUrl.value)
+        copied.value = true
+        showToast('Link copied!')
+        setTimeout(() => { copied.value = false }, 3000)
+      } catch (err) {}
+    }
 
     const sessionId = ref(localStorage.getItem('openkap_session') || Math.random().toString(36).substring(2))
     if (!localStorage.getItem('openkap_session')) {
@@ -2010,6 +2078,8 @@ export default {
       // Record view (non-blocking)
       if (token.value) {
         videoService.recordSharedView(token.value).catch(() => {})
+        // Update view count locally so it doesn't show stale "0 views"
+        video.value.views_count = (video.value.views_count || 0) + 1
       }
 
       document.addEventListener('keydown', handleKeydown)
@@ -2032,8 +2102,8 @@ export default {
       videoRef, progressBar, speedMenuRef, playerContainer, qualityMenuRef,
       isPlaying, isBuffering, videoLoading, isMuted, isFullscreen, volume, currentTime, duration,
       bufferedPercent, progressPercent, playbackSpeed, speedOptions, controlsVisible,
-      hoverTime, hoverPercent, showSpeedMenu, showBigPlayButton, showPrePlaySpeedMenu,
-      copied, copiedEmbed, toast, shareUrl,
+      hoverTime, hoverPercent, showSpeedMenu, showBigPlayButton, showPrePlaySpeedMenu, showKeyboardShortcuts,
+      copied, copiedEmbed, toast, shareUrl, timestampedShareUrl, includeTimestamp,
       newComment, isSavingComment, isAuthenticated, currentUser, userInitial,
       showShareModal, activeTab, sidebarVisible, toggleSidebar,
       // Dropdowns & confirmations
@@ -2059,7 +2129,7 @@ export default {
       togglePlay, updateProgress, onVideoLoaded, onVideoError, onVideoEnded, seek, startSeeking,
       updateHoverTime, skip, toggleMute, updateVolume, toggleSpeedMenu, setPlaybackSpeed,
       toggleFullscreen, togglePiP, showControls, hideControlsDelayed,
-      formatTime, formatTimeAgo, formatCommentTime, copyShareLink, copyEmbedCode, toggleReaction, addComment, loginToComment, openCommentBox, showCommentBox, commentBoxRef,
+      formatTime, formatTimeAgo, formatCommentTime, copyShareLink, copyTimestampedLink, copyEmbedCode, toggleReaction, addComment, loginToComment, openCommentBox, showCommentBox, commentBoxRef,
       quickEmojis, showMentionDropdown, mentionUsers, onCommentInput, triggerMention, insertMention, renderCommentContent,
       // HLS functions
       setQuality, toggleQualityMenu, getCurrentQualityLabel,
