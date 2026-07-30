@@ -119,7 +119,7 @@ class StreamVideoController extends Controller
         }
 
         $request->validate([
-            'chunk' => 'required|file|max:10240',
+            'chunk' => 'required|file|max:51200',
             'chunk_index' => 'required|integer|min:0',
             'type' => 'nullable|string|in:video,camera',
         ]);
@@ -405,8 +405,13 @@ class StreamVideoController extends Controller
             // Use -fflags +genpts to regenerate timestamps (MediaRecorder
             // produces variable framerate WebM that causes glitchy playback).
             $remuxedCameraPath = "{$sessionDir}/camera_remuxed.webm";
+            // Bound the in-request remux with `timeout` so a large/slow camera track
+            // can't stall the completeUpload request past upstream (Cloudflare/proxy)
+            // timeouts. On non-zero exit we fall back to the raw camera file below.
+            // (Deferring this to a queued job would be the fuller fix, but the session
+            // dir is cleaned up right after, so that needs careful file-lifecycle work.)
             $remuxCmd = sprintf(
-                '%s -y -fflags +genpts -i %s -c copy %s 2>&1',
+                'timeout 60 %s -y -fflags +genpts -i %s -c copy %s 2>&1',
                 escapeshellarg($ffmpegPath),
                 escapeshellarg($cameraPath),
                 escapeshellarg($remuxedCameraPath)
