@@ -304,6 +304,7 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import workspaceService from '@/services/workspaceService'
+import toast from '@/services/toastService'
 
 export default {
   name: 'WorkspaceMembersView',
@@ -390,7 +391,7 @@ export default {
         await workspaceService.updateMemberRole(slug, userId, role)
         fetchMembers()
       } catch (err) {
-        alert(err.message || 'Failed to update role')
+        toast.error(err.message || 'Failed to update role')
       }
     }
 
@@ -408,7 +409,7 @@ export default {
         memberToRemove.value = null
         fetchMembers()
       } catch (err) {
-        alert(err.message || 'Failed to remove member')
+        toast.error(err.message || 'Failed to remove member')
       } finally {
         removing.value = false
       }
@@ -419,16 +420,16 @@ export default {
         await workspaceService.cancelInvitation(slug, invitationId)
         fetchInvitations()
       } catch (err) {
-        alert(err.message || 'Failed to cancel invitation')
+        toast.error(err.message || 'Failed to cancel invitation')
       }
     }
 
     const resendInvitation = async (invitationId) => {
       try {
         await workspaceService.resendInvitation(slug, invitationId)
-        alert('Invitation resent successfully')
+        toast.success('Invitation resent successfully')
       } catch (err) {
-        alert(err.message || 'Failed to resend invitation')
+        toast.error(err.message || 'Failed to resend invitation')
       }
     }
 

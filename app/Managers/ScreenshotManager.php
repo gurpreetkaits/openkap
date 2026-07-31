@@ -4,24 +4,24 @@ namespace App\Managers;
 
 use App\Models\Screenshot;
 use App\Models\User;
+use App\Repositories\ScreenshotRepository;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Log;
 
 class ScreenshotManager
 {
+    public function __construct(
+        protected ScreenshotRepository $screenshots,
+    ) {}
+
     /**
      * Get all screenshots for a user.
      */
     public function getUserScreenshots(int $userId): array
     {
-        $screenshots = Screenshot::where('user_id', $userId)
-            ->orderBy('created_at', 'desc')
-            ->with('media')
-            ->get();
-
-        return $screenshots->map(function ($screenshot) {
-            return $this->formatScreenshot($screenshot);
-        })->toArray();
+        return $this->screenshots->findByUserId($userId)
+            ->map(fn ($screenshot) => $this->formatScreenshot($screenshot))
+            ->toArray();
     }
 
     /**
@@ -36,7 +36,7 @@ class ScreenshotManager
             'mime_type' => $imageFile->getMimeType(),
         ]);
 
-        $screenshot = Screenshot::create([
+        $screenshot = $this->screenshots->createScreenshot([
             'user_id' => $user->id,
             'title' => $title ?? 'Screenshot '.now()->format('Y-m-d H:i:s'),
             'file_size_bytes' => $imageFile->getSize(),
@@ -58,7 +58,7 @@ class ScreenshotManager
      */
     public function findScreenshot(int $id): ?Screenshot
     {
-        return Screenshot::with('media')->find($id);
+        return $this->screenshots->findWithMedia($id);
     }
 
     /**
@@ -66,7 +66,7 @@ class ScreenshotManager
      */
     public function findScreenshotOrFail(int $id): Screenshot
     {
-        return Screenshot::with('media')->findOrFail($id);
+        return $this->screenshots->findWithMediaOrFail($id);
     }
 
     /**
@@ -74,9 +74,7 @@ class ScreenshotManager
      */
     public function findByShareToken(string $token): ?Screenshot
     {
-        return Screenshot::where('share_token', $token)
-            ->with('media')
-            ->first();
+        return $this->screenshots->findByShareToken($token);
     }
 
     /**
@@ -84,9 +82,7 @@ class ScreenshotManager
      */
     public function updateScreenshot(Screenshot $screenshot, array $data): Screenshot
     {
-        $screenshot->update($data);
-
-        return $screenshot->fresh();
+        return $this->screenshots->updateScreenshot($screenshot, $data);
     }
 
     /**
@@ -103,7 +99,7 @@ class ScreenshotManager
         $screenshot->clearMediaCollection('screenshots');
         $screenshot->clearMediaCollection('thumbnails');
 
-        $screenshot->delete();
+        $this->screenshots->deleteScreenshot($screenshot);
     }
 
     /**
@@ -112,9 +108,8 @@ class ScreenshotManager
     public function toggleSharing(Screenshot $screenshot): Screenshot
     {
         $screenshot->is_public = ! $screenshot->is_public;
-        $screenshot->save();
 
-        return $screenshot;
+        return $this->screenshots->save($screenshot);
     }
 
     /**

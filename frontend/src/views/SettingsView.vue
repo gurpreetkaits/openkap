@@ -822,6 +822,11 @@ function syncProfileFromUser() {
 function onAvatarSelected(event) {
   const file = event.target.files[0]
   if (!file) return
+  if (!/^image\/(png|jpe?g|webp|gif)$/.test(file.type)) {
+    toast.error('Avatar must be a PNG, JPG, WEBP or GIF image')
+    event.target.value = ''
+    return
+  }
   if (file.size > 2 * 1024 * 1024) {
     toast.error('Avatar must be under 2MB')
     event.target.value = ''
@@ -946,6 +951,11 @@ watch(user, () => {
 const onLogoSelected = async (event) => {
   const file = event.target.files[0]
   if (!file) return
+
+  if (!/^image\/(png|jpe?g|webp|gif)$/.test(file.type)) {
+    toast.error('Logo must be a PNG, JPG, WEBP or GIF image')
+    return
+  }
 
   if (file.size > 2 * 1024 * 1024) {
     toast.error('Logo must be under 2MB')

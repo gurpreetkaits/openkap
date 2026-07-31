@@ -287,6 +287,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import workspaceService from '@/services/workspaceService'
 import { useAuth } from '@/stores/auth'
+import toast from '@/services/toastService'
 
 export default {
   name: 'WorkspaceSettingsView',
@@ -362,9 +363,9 @@ export default {
         }
 
         workspace.value = result.workspace
-        alert('Settings saved successfully')
+        toast.success('Settings saved successfully')
       } catch (err) {
-        alert(err.message || 'Failed to save settings')
+        toast.error(err.message || 'Failed to save settings')
       } finally {
         saving.value = false
       }
@@ -376,7 +377,7 @@ export default {
         await workspaceService.leaveWorkspace(slug)
         router.push('/workspaces')
       } catch (err) {
-        alert(err.message || 'Failed to leave workspace')
+        toast.error(err.message || 'Failed to leave workspace')
       } finally {
         leaving.value = false
       }
@@ -390,7 +391,7 @@ export default {
         await workspaceService.deleteWorkspace(slug)
         router.push('/workspaces')
       } catch (err) {
-        alert(err.message || 'Failed to delete workspace')
+        toast.error(err.message || 'Failed to delete workspace')
       } finally {
         deleting.value = false
       }

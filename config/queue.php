@@ -39,7 +39,10 @@ return [
             'connection' => env('DB_QUEUE_CONNECTION'),
             'table' => env('DB_QUEUE_TABLE', 'jobs'),
             'queue' => env('DB_QUEUE', 'default'),
-            'retry_after' => (int) env('DB_QUEUE_RETRY_AFTER', 90),
+            // Must exceed the longest job $timeout (ffmpeg/HLS jobs run up to 10800s),
+            // otherwise the queue re-releases a still-running job to a second worker,
+            // causing duplicate ffmpeg processes and corrupted/racing output.
+            'retry_after' => (int) env('DB_QUEUE_RETRY_AFTER', 10860),
             'after_commit' => false,
         ],
 

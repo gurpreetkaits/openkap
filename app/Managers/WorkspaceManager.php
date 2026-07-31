@@ -5,6 +5,7 @@ namespace App\Managers;
 use App\Models\User;
 use App\Models\Workspace;
 use App\Models\WorkspaceInvitation;
+use App\Repositories\UserRepository;
 use App\Repositories\WorkspaceInvitationRepository;
 use App\Repositories\WorkspaceRepository;
 use Illuminate\Support\Facades\Log;
@@ -14,7 +15,8 @@ class WorkspaceManager
 {
     public function __construct(
         protected WorkspaceRepository $workspaces,
-        protected WorkspaceInvitationRepository $invitations
+        protected WorkspaceInvitationRepository $invitations,
+        protected UserRepository $users
     ) {}
 
     /**
@@ -193,7 +195,7 @@ class WorkspaceManager
         }
 
         // Check if user is already a member
-        $existingUser = User::where('email', $email)->first();
+        $existingUser = $this->users->findByEmail($email);
         if ($existingUser && $workspace->hasMember($existingUser)) {
             throw new \InvalidArgumentException('This user is already a member of the workspace.');
         }

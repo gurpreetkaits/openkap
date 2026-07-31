@@ -119,6 +119,7 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import workspaceService from '@/services/workspaceService'
+import toast from '@/services/toastService'
 
 export default {
   name: 'AcceptInvitationView',
@@ -151,7 +152,7 @@ export default {
         const result = await workspaceService.acceptInvitation(token)
         router.push(`/workspace/${result.workspace.slug}`)
       } catch (err) {
-        alert(err.message || 'Failed to accept invitation')
+        toast.error(err.message || 'Failed to accept invitation')
       } finally {
         accepting.value = false
       }

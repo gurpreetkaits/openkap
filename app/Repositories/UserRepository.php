@@ -18,6 +18,20 @@ class UserRepository extends BaseRepository
         return User::findOrFail($id);
     }
 
+    public function findByEmail(string $email): ?User
+    {
+        return User::where('email', $email)->first();
+    }
+
+    /**
+     * Null-safe find: returns null for a null id (preserves the behaviour of
+     * the previous inline User::find($nullableId) calls in the managers).
+     */
+    public function findById(?int $id): ?User
+    {
+        return $id ? User::find($id) : null;
+    }
+
     public function updateProfile(User $user, array $data): User
     {
         $user->fill($data);
@@ -100,13 +114,13 @@ class UserRepository extends BaseRepository
         // otherwise add $seconds to the existing counter.
         User::whereKey($user->id)->update([
             'monthly_recording_seconds_used' => DB::raw(sprintf(
-                "CASE WHEN monthly_recording_period_start IS NULL OR monthly_recording_period_start < %s THEN %d ELSE monthly_recording_seconds_used + %d END",
+                'CASE WHEN monthly_recording_period_start IS NULL OR monthly_recording_period_start < %s THEN %d ELSE monthly_recording_seconds_used + %d END',
                 DB::connection()->getPdo()->quote($startOfMonth->toDateTimeString()),
                 $seconds,
                 $seconds,
             )),
             'monthly_recording_period_start' => DB::raw(sprintf(
-                "CASE WHEN monthly_recording_period_start IS NULL OR monthly_recording_period_start < %s THEN %s ELSE monthly_recording_period_start END",
+                'CASE WHEN monthly_recording_period_start IS NULL OR monthly_recording_period_start < %s THEN %s ELSE monthly_recording_period_start END',
                 DB::connection()->getPdo()->quote($startOfMonth->toDateTimeString()),
                 DB::connection()->getPdo()->quote($startOfMonth->toDateTimeString()),
             )),

@@ -28,7 +28,11 @@
           >
             <div
               v-if="modelValue"
+              ref="panelRef"
               :class="modalClasses"
+              role="dialog"
+              aria-modal="true"
+              tabindex="-1"
               @click.stop
             >
               <!-- Header -->
@@ -69,7 +73,7 @@
 </template>
 
 <script>
-import { computed } from 'vue'
+import { computed, ref, watch, nextTick, onBeforeUnmount } from 'vue'
 
 export default {
   name: 'SBModal',
@@ -148,11 +152,39 @@ export default {
       }
     }
 
+    // --- Keyboard + focus accessibility ---
+    const panelRef = ref(null)
+    let previouslyFocused = null
+
+    const onKeydown = (e) => {
+      if (e.key === 'Escape' && props.modelValue) {
+        close()
+      }
+    }
+
+    watch(() => props.modelValue, (open) => {
+      if (open) {
+        previouslyFocused = document.activeElement
+        document.addEventListener('keydown', onKeydown)
+        nextTick(() => panelRef.value?.focus())
+      } else {
+        document.removeEventListener('keydown', onKeydown)
+        if (previouslyFocused && typeof previouslyFocused.focus === 'function') {
+          previouslyFocused.focus()
+        }
+      }
+    })
+
+    onBeforeUnmount(() => {
+      document.removeEventListener('keydown', onKeydown)
+    })
+
     return {
       modalClasses,
       bodyClasses,
       close,
-      handleBackdropClick
+      handleBackdropClick,
+      panelRef
     }
   }
 }

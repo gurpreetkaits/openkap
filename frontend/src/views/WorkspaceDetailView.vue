@@ -247,6 +247,7 @@
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import workspaceService from '@/services/workspaceService'
+import toast from '@/services/toastService'
 
 export default {
   name: 'WorkspaceDetailView',
@@ -305,7 +306,7 @@ export default {
         await workspaceService.startCheckout(slug)
       } catch (err) {
         console.error('Checkout error:', err)
-        alert(err.message || 'Failed to start checkout. Please try again.')
+        toast.error(err.message || 'Failed to start checkout. Please try again.')
         checkingOut.value = false
       }
     }

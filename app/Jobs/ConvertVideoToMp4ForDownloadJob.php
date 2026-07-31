@@ -48,6 +48,7 @@ class ConvertVideoToMp4ForDownloadJob implements ShouldQueue
             if ($download) {
                 $downloadManager->markFailed($download, 'No media file found');
             }
+
             return;
         }
 
@@ -57,6 +58,7 @@ class ConvertVideoToMp4ForDownloadJob implements ShouldQueue
             if ($download) {
                 $downloadManager->markFailed($download, 'Video file not found on disk');
             }
+
             return;
         }
 
@@ -66,7 +68,7 @@ class ConvertVideoToMp4ForDownloadJob implements ShouldQueue
         }
 
         $downloadId = $download?->id ?? $video->id;
-        $outputPath = $outputDir . '/video_' . $downloadId . '_' . time() . '.mp4';
+        $outputPath = $outputDir.'/video_'.$downloadId.'_'.time().'.mp4';
 
         // Update status to converting
         if ($download) {
@@ -91,7 +93,7 @@ class ConvertVideoToMp4ForDownloadJob implements ShouldQueue
 
             if ($returnCode !== 0) {
                 $outputText = implode("\n", $output);
-                throw new \Exception("FFmpeg failed with code $returnCode: " . substr($outputText, -500));
+                throw new \Exception("FFmpeg failed with code $returnCode: ".substr($outputText, -500));
             }
 
             if (! file_exists($outputPath) || filesize($outputPath) < 1000) {
@@ -99,7 +101,7 @@ class ConvertVideoToMp4ForDownloadJob implements ShouldQueue
             }
 
             $outputSize = filesize($outputPath);
-            $relativePath = 'downloads/' . basename($outputPath);
+            $relativePath = 'downloads/'.basename($outputPath);
 
             Log::info('MP4 download conversion completed', [
                 'video_id' => $video->id,
@@ -135,6 +137,24 @@ class ConvertVideoToMp4ForDownloadJob implements ShouldQueue
             }
 
             throw $e;
+        }
+    }
+
+    /**
+     * Called when the job ultimately fails (retries exhausted, timeout kill, or a
+     * fatal error that bypasses the handle() try/catch). Ensures the download record
+     * never gets stuck in "converting".
+     */
+    public function failed(\Throwable $exception): void
+    {
+        Log::error('ConvertVideoToMp4ForDownloadJob permanently failed', [
+            'video_id' => $this->video->id,
+            'download_id' => $this->download?->id,
+            'error' => $exception->getMessage(),
+        ]);
+
+        if ($this->download && $this->download->fresh()?->status !== 'failed') {
+            app(DownloadManager::class)->markFailed($this->download, 'Conversion failed. Please try again.');
         }
     }
 }

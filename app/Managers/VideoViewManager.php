@@ -2,9 +2,9 @@
 
 namespace App\Managers;
 
-use App\Models\User;
 use App\Models\Video;
 use App\Models\VideoView;
+use App\Repositories\UserRepository;
 use App\Repositories\VideoRepository;
 use App\Repositories\VideoViewRepository;
 use App\Support\AnalyticsEnricher;
@@ -14,7 +14,8 @@ class VideoViewManager
     public function __construct(
         protected VideoViewRepository $viewRepository,
         protected VideoRepository $videoRepository,
-        protected NotificationManager $notificationManager
+        protected NotificationManager $notificationManager,
+        protected UserRepository $users
     ) {}
 
     /**
@@ -181,7 +182,7 @@ class VideoViewManager
             return;
         }
 
-        $viewer = User::find($userId);
+        $viewer = $this->users->findById($userId);
         if (! $viewer) {
             return;
         }

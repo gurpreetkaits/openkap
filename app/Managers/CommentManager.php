@@ -5,6 +5,7 @@ namespace App\Managers;
 use App\Models\Comment;
 use App\Models\User;
 use App\Repositories\CommentRepository;
+use App\Repositories\UserRepository;
 use App\Repositories\VideoRepository;
 
 class CommentManager
@@ -12,7 +13,8 @@ class CommentManager
     public function __construct(
         protected CommentRepository $comments,
         protected VideoRepository $videos,
-        protected NotificationManager $notifications
+        protected NotificationManager $notifications,
+        protected UserRepository $users
     ) {}
 
     public function getVideoComments(int $videoId): array
@@ -183,7 +185,7 @@ class CommentManager
             return;
         }
 
-        $commenter = User::find($userId);
+        $commenter = $this->users->findById($userId);
         if ($commenter) {
             $this->notifications->createCommentNotification($video, $commenter);
         }
@@ -198,7 +200,7 @@ class CommentManager
             return;
         }
 
-        $author = $authorId ? User::find($authorId) : null;
+        $author = $authorId ? $this->users->findById($authorId) : null;
         $authorName = $author?->name ?? $comment->author_name ?? 'Someone';
 
         foreach ($mentionIds as $userId) {
@@ -207,7 +209,7 @@ class CommentManager
                 continue;
             }
 
-            $user = User::find($userId);
+            $user = $this->users->findById($userId);
             if ($user) {
                 $this->notifications->createMentionNotification($comment, $user, $authorName);
             }
@@ -233,10 +235,10 @@ class CommentManager
             return;
         }
 
-        $author = $userId ? User::find($userId) : null;
+        $author = $userId ? $this->users->findById($userId) : null;
         $authorName = $author?->name ?? $comment->author_name ?? 'Someone';
 
-        $parentAuthor = User::find($parent->user_id);
+        $parentAuthor = $this->users->findById($parent->user_id);
         if ($parentAuthor) {
             $this->notifications->createReplyNotification($comment, $parentAuthor, $authorName);
         }

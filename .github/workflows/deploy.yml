@@ -119,6 +119,10 @@ jobs:
             php artisan optimize:clear || { echo "Error: optimize:clear failed"; exit 1; }
             php artisan config:cache || { echo "Error: Config cache failed"; exit 1; }
 
+            # Tell any running queue workers to restart so they pick up the new code.
+            # No-op if none are running; a supervisor/systemd unit must respawn workers.
+            php artisan queue:restart || true
+
             # Check if npm is available
             if ! command -v npm &> /dev/null; then
               echo "Error: npm is not installed"

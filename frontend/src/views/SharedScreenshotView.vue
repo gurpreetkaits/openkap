@@ -156,6 +156,7 @@ import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import screenshotService from '@/services/screenshotService'
 import { useBranding } from '@/composables/useBranding'
+import toast from '@/services/toastService'
 
 export default {
   name: 'SharedScreenshotView',
@@ -208,6 +209,7 @@ export default {
         }, 2000)
       } catch (err) {
         console.error('Failed to copy link:', err)
+        toast.error('Failed to copy link')
       }
     }
 
@@ -233,7 +235,7 @@ export default {
         window.URL.revokeObjectURL(url)
       } catch (err) {
         console.error('Failed to download:', err)
-        alert('Failed to download screenshot')
+        toast.error('Failed to download screenshot')
       }
     }
 

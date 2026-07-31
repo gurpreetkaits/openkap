@@ -189,7 +189,7 @@
                 </svg>
                 Copy link
               </button>
-              <button v-if="!isSharedMode || isOwner" @click="copyEmbedCode; showShareDropdown = false" class="w-full px-4 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2.5">
+              <button v-if="!isSharedMode || isOwner" @click="copyEmbedCode(); showShareDropdown = false" class="w-full px-4 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2.5">
                 <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
                 </svg>
@@ -225,13 +225,13 @@
                   </svg>
                   Duplicate
                 </button>
-                <button @click="startEditingTitle; showOptionsMenu = false" class="w-full px-4 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2.5">
+                <button @click="startEditingTitle(); showOptionsMenu = false" class="w-full px-4 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2.5">
                   <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
                   </svg>
                   Rename
                 </button>
-                <button v-if="!isSharedMode" @click="handleDownloadCaptions; showOptionsMenu = false" class="w-full px-4 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2.5">
+                <button v-if="!isSharedMode" @click="handleDownloadCaptions(); showOptionsMenu = false" class="w-full px-4 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2.5">
                   <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <rect x="2" y="4" width="20" height="16" rx="2" stroke-width="2"/>
                     <text x="12" y="15" text-anchor="middle" fill="currentColor" stroke="none" font-size="8" font-weight="bold">CC</text>
@@ -2574,19 +2574,25 @@ export default {
         copied.value = true
         showToast('Link copied!')
         setTimeout(() => { copied.value = false }, 3000)
-      } catch (err) {}
+      } catch (err) {
+        console.error('Failed to copy link:', err)
+        showToast('Failed to copy link')
+      }
     }
 
     const copyEmbedCode = async () => {
       try {
-        let embedUrl
+        // The /embed route is served by the backend origin (not the SPA), for both
+        // shared and owner views — derive the token and always build from API_BASE_URL.
+        let embedToken
         if (isSharedMode.value) {
-          embedUrl = `${API_BASE_URL}/embed/video/${token.value}`
+          embedToken = token.value
         } else if (video.value.shareUrl) {
-          embedUrl = video.value.shareUrl.replace('/share/video/', '/embed/video/')
+          embedToken = video.value.shareUrl.split('/share/video/').pop()
         } else {
           return
         }
+        const embedUrl = `${API_BASE_URL}/embed/video/${embedToken}`
         const embedCode = `<iframe src="${embedUrl}" width="640" height="360" frameborder="0" allowfullscreen></iframe>`
         await navigator.clipboard.writeText(embedCode)
         copiedEmbed.value = true
@@ -2594,6 +2600,7 @@ export default {
         setTimeout(() => { copiedEmbed.value = false }, 3000)
       } catch (err) {
         console.error('Failed to copy embed code:', err)
+        showToast('Failed to copy embed code')
       }
     }
 
@@ -2904,6 +2911,9 @@ export default {
               timestamp_seconds: timestampSeconds
             })
           })
+          if (!response.ok) {
+            throw new Error(`Failed to post comment (HTTP ${response.status})`)
+          }
           const data = await response.json()
           comments.value.unshift(normalizeComment(data.comment))
         } else {
