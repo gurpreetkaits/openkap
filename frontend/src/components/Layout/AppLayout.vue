@@ -168,60 +168,56 @@
         <NotificationBell v-if="isAuthenticated" />
 
         <!-- User avatar / dropdown -->
-        <div v-if="isAuthenticated" class="relative" ref="userDropdownRef">
-          <button
-            @click="showUserDropdown = !showUserDropdown"
-            class="flex items-center gap-1.5 p-1 pr-1.5 rounded-full hover:bg-gray-100 transition-colors"
-            :title="userInfo.name"
-          >
-            <div class="relative">
-              <img
-                v-if="userInfo.avatar"
-                :src="userInfo.avatar"
-                :alt="userInfo.name"
-                class="w-7 h-7 rounded-full bg-gray-200 object-cover"
-              />
-              <div v-else class="w-7 h-7 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center">
-                <span class="text-xs font-bold text-white">{{ userInfo.initial }}</span>
-              </div>
-            </div>
-            <svg class="w-3 h-3 text-gray-400 transition-transform" :class="{ 'rotate-180': showUserDropdown }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
-            </svg>
-          </button>
-
-          <Transition name="dropdown">
-            <div
-              v-show="showUserDropdown"
-              class="absolute right-0 top-full mt-1.5 w-56 bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-50"
+        <SBDropdown v-if="isAuthenticated" v-model="showUserDropdown" align="right" width="lg">
+          <template #trigger>
+            <button
+              class="flex items-center gap-1.5 p-1 pr-1.5 rounded-full hover:bg-gray-100 transition-colors"
+              :title="userInfo.name"
             >
-              <div class="px-3 py-2 border-b border-gray-100">
-                <p class="text-sm font-medium text-gray-900 truncate">{{ userInfo.name }}</p>
-                <p class="text-xs text-gray-500 truncate">{{ subscription?.is_active ? 'Pro Plan' : 'Free Plan' }}</p>
+              <div class="relative">
+                <img
+                  v-if="userInfo.avatar"
+                  :src="userInfo.avatar"
+                  :alt="userInfo.name"
+                  class="w-7 h-7 rounded-full bg-gray-200 object-cover"
+                />
+                <div v-else class="w-7 h-7 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center">
+                  <span class="text-xs font-bold text-white">{{ userInfo.initial }}</span>
+                </div>
               </div>
-              <router-link
-                to="/profile"
-                @click="showUserDropdown = false"
-                class="flex items-center gap-2.5 px-3 py-2 mx-1 mt-1 text-sm text-gray-700 hover:bg-gray-50 transition-colors rounded-lg"
-              >
-                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                </svg>
-                Profile
-              </router-link>
-              <div class="border-t border-gray-100 my-1 mx-2"></div>
-              <button
-                @click="showUserDropdown = false; showLogoutModal = true"
-                class="w-[calc(100%-8px)] flex items-center gap-2.5 px-3 py-2 mx-1 text-sm text-red-600 hover:bg-red-50 transition-colors rounded-lg"
-              >
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
-                </svg>
-                Logout
-              </button>
+              <svg class="w-3 h-3 text-gray-400 transition-transform" :class="{ 'rotate-180': showUserDropdown }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </button>
+          </template>
+          <div class="menu-panel">
+            <div class="px-3 py-2 border-b border-gray-100">
+              <p class="text-sm font-medium text-gray-900 truncate">{{ userInfo.name }}</p>
+              <p class="text-xs text-gray-500 truncate">{{ subscription?.is_active ? 'Pro Plan' : 'Free Plan' }}</p>
             </div>
-          </Transition>
-        </div>
+            <router-link
+              to="/profile"
+              class="menu-item mt-1"
+              data-dropdown-item
+            >
+              <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+              </svg>
+              Profile
+            </router-link>
+            <div class="menu-divider"></div>
+            <button
+              @click="showLogoutModal = true"
+              class="menu-item menu-item-danger"
+              data-dropdown-item
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+              </svg>
+              Logout
+            </button>
+          </div>
+        </SBDropdown>
 
         <!-- Sign in (unauthenticated) -->
         <button
@@ -492,9 +488,9 @@
 </template>
 
 <script>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { SBLogoutModal } from '../Global'
+import { SBLogoutModal, SBDropdown } from '../Global'
 import RecordingSetupPanel from '../Global/RecordingSetupPanel.vue'
 import ChatbotWidget from '../Global/ChatbotWidget.vue'
 import NotificationBell from '../Global/NotificationBell.vue'
@@ -507,6 +503,7 @@ export default {
   name: 'AppLayout',
   components: {
     SBLogoutModal,
+    SBDropdown,
     RecordingSetupPanel,
     ChatbotWidget,
     NotificationBell,
@@ -520,9 +517,7 @@ export default {
     const branding = useBranding()
     const sidebarOpen = ref(false)
     const showLogoutModal = ref(false)
-    const logoutLoading = ref(false)
     const showUserDropdown = ref(false)
-    const userDropdownRef = ref(null)
     const extensionInstalled = ref(false)
     const showExtensionModal = ref(false)
     const extensionStoreUrl = 'https://chromewebstore.google.com/detail/openkap/nnchnlkilgfemhpcohmgdpcmkjedjkfm'
@@ -584,20 +579,12 @@ export default {
       }
     }
 
-    // Handle click outside to close dropdowns
-    const handleClickOutside = (event) => {
-      if (userDropdownRef.value && !userDropdownRef.value.contains(event.target)) {
-        showUserDropdown.value = false
-      }
-    }
-
     // Fetch subscription status on mount
     onMounted(() => {
       if (isAuthenticated.value) {
         auth.fetchSubscription()
         branding.loadBranding()
       }
-      document.addEventListener('click', handleClickOutside)
 
       // Detect if OpenKap extension is installed
       window.addEventListener('openkap:extension:ready', () => {
@@ -606,10 +593,6 @@ export default {
       if (document.documentElement.hasAttribute('data-openkap-extension')) {
         extensionInstalled.value = true
       }
-    })
-
-    onUnmounted(() => {
-      document.removeEventListener('click', handleClickOutside)
     })
 
     return {
@@ -622,7 +605,6 @@ export default {
       showLogoutModal,
       logoutLoading,
       showUserDropdown,
-      userDropdownRef,
       userInfo,
       subscription,
       subscriptionUsagePercent,

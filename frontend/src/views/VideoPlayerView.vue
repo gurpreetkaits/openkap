@@ -182,14 +182,14 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
               </svg>
             </button>
-            <div v-show="showShareDropdown" class="absolute right-0 top-full mt-1.5 w-48 bg-white rounded-lg shadow-xl border border-gray-200 py-1.5 z-50">
-              <button @click="() => { copyShareLink(); showShareDropdown = false }" class="w-full px-4 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2.5">
+            <div v-show="showShareDropdown" class="absolute right-0 top-full mt-1.5 menu-panel w-48">
+              <button @click="() => { copyShareLink(); showShareDropdown = false }" class="menu-item">
                 <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
                 </svg>
                 Copy link
               </button>
-              <button v-if="!isSharedMode || isOwner" @click="copyEmbedCode(); showShareDropdown = false" class="w-full px-4 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2.5">
+              <button v-if="!isSharedMode || isOwner" @click="copyEmbedCode(); showShareDropdown = false" class="menu-item">
                 <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
                 </svg>
@@ -210,8 +210,8 @@
                 <circle cx="12" cy="19" r="1.5"/>
               </svg>
             </button>
-            <div v-show="showOptionsMenu" class="absolute right-0 top-full mt-1.5 w-52 bg-white rounded-lg shadow-xl border border-gray-200 py-1.5 z-50">
-              <button @click="handleDownload(); showOptionsMenu = false" class="w-full px-4 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2.5">
+            <div v-show="showOptionsMenu" class="absolute right-0 top-full mt-1.5 menu-panel w-52">
+              <button @click="handleDownload(); showOptionsMenu = false" class="menu-item">
                 <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
                 </svg>
@@ -219,27 +219,27 @@
               </button>
               <!-- Owner-only actions -->
               <template v-if="isOwner">
-                <button @click="showDuplicateConfirm = true; showOptionsMenu = false" class="w-full px-4 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2.5">
+                <button @click="showDuplicateConfirm = true; showOptionsMenu = false" class="menu-item">
                   <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
                   </svg>
                   Duplicate
                 </button>
-                <button @click="startEditingTitle(); showOptionsMenu = false" class="w-full px-4 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2.5">
+                <button @click="startEditingTitle(); showOptionsMenu = false" class="menu-item">
                   <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
                   </svg>
                   Rename
                 </button>
-                <button v-if="!isSharedMode" @click="handleDownloadCaptions(); showOptionsMenu = false" class="w-full px-4 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2.5">
+                <button v-if="!isSharedMode" @click="handleDownloadCaptions(); showOptionsMenu = false" class="menu-item">
                   <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <rect x="2" y="4" width="20" height="16" rx="2" stroke-width="2"/>
                     <text x="12" y="15" text-anchor="middle" fill="currentColor" stroke="none" font-size="8" font-weight="bold">CC</text>
                   </svg>
                   Download Captions
                 </button>
-                <div class="my-1.5 border-t border-gray-100"></div>
-                <button @click="showPrivacyConfirm = true; showOptionsMenu = false" class="w-full px-4 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2.5">
+                <div class="menu-divider"></div>
+                <button @click="showPrivacyConfirm = true; showOptionsMenu = false" class="menu-item">
                   <svg v-if="video.is_public" class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
                   </svg>
@@ -249,13 +249,13 @@
                   </svg>
                   {{ video.is_public ? 'Make it private' : 'Make it public' }}
                 </button>
-                <button @click="showArchiveConfirm = true; showOptionsMenu = false" class="w-full px-4 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2.5">
+                <button @click="showArchiveConfirm = true; showOptionsMenu = false" class="menu-item">
                   <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>
                   </svg>
                   Archive
                 </button>
-                <button @click="showDeleteConfirm = true; showOptionsMenu = false" class="w-full px-4 py-2 text-left text-xs text-red-600 hover:bg-red-50 flex items-center gap-2.5">
+                <button @click="showDeleteConfirm = true; showOptionsMenu = false" class="menu-item menu-item-danger">
                   <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                   </svg>
@@ -563,10 +563,10 @@
                       >
                         {{ playbackSpeed }}x
                       </button>
-                      <div
-                        v-show="showPrePlaySpeedMenu"
-                        class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 py-2 bg-gray-900 rounded-xl shadow-2xl border border-white/20 min-w-[80px] z-50"
-                      >
+                        <div
+                          v-show="showPrePlaySpeedMenu"
+                          class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 menu-panel-dark min-w-[80px] py-2"
+                        >
                         <button
                           v-for="speed in speedOptions"
                           :key="speed"
@@ -692,7 +692,7 @@
                         </button>
                         <div
                           v-show="showQualityMenu"
-                          class="absolute bottom-full right-0 mb-2 py-1.5 bg-black/80 backdrop-blur-xl rounded-lg shadow-2xl border border-white/10 min-w-[100px] z-50"
+                          class="absolute bottom-full right-0 mb-2 menu-panel-dark min-w-[100px]"
                         >
                           <button
                             @click.stop.prevent="setQuality(-1)"
@@ -722,7 +722,7 @@
                         </button>
                         <div
                           v-show="showSpeedMenu"
-                          class="absolute bottom-full right-0 mb-2 py-1.5 bg-black/80 backdrop-blur-xl rounded-lg shadow-2xl border border-white/10 min-w-[80px] z-50"
+                          class="absolute bottom-full right-0 mb-2 menu-panel-dark min-w-[80px]"
                         >
                           <button
                             v-for="speed in speedOptions"
@@ -817,16 +817,16 @@
                     @input="onCommentInput"
                     class="w-full text-xs text-gray-900 placeholder:text-gray-400 outline-none border-0 ring-0 focus:outline-none focus:ring-0 focus:border-0 bg-transparent py-1"
                   />
-                  <div
-                    v-if="showMentionDropdown && mentionUsers.length > 0"
-                    class="absolute bottom-full left-0 mb-2 w-56 bg-white border border-gray-200 rounded-lg shadow-xl py-1 z-50 max-h-40 overflow-y-auto"
-                  >
-                    <button
-                      v-for="user in mentionUsers"
-                      :key="user.id"
-                      @mousedown.prevent="insertMention(user)"
-                      class="w-full px-3 py-1.5 text-left text-xs text-gray-700 hover:bg-orange-50 flex items-center gap-2"
+                    <div
+                      v-if="showMentionDropdown && mentionUsers.length > 0"
+                      class="absolute bottom-full left-0 mb-2 menu-panel w-56 max-h-40 overflow-y-auto"
                     >
+                      <button
+                        v-for="user in mentionUsers"
+                        :key="user.id"
+                        @mousedown.prevent="insertMention(user)"
+                        class="menu-item"
+                      >
                       <img v-if="user.avatar_url" :src="user.avatar_url" class="w-5 h-5 rounded-full object-cover" />
                       <div v-else class="w-5 h-5 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 text-[9px] font-bold">
                         {{ (user.name || 'U').charAt(0).toUpperCase() }}
@@ -1004,11 +1004,11 @@
                           </svg>
                           Download
                         </button>
-                        <div v-if="showExportMenu" class="absolute left-0 mt-1 w-40 bg-white rounded-lg shadow-lg border border-gray-100 py-1 z-20">
-                          <button @click="exportTranscript('txt')" class="w-full px-3 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2">
+                        <div v-if="showExportMenu" class="absolute left-0 mt-1 menu-panel w-40">
+                          <button @click="exportTranscript('txt')" class="menu-item">
                             Plain Text (.txt)
                           </button>
-                          <button @click="exportTranscript('srt')" class="w-full px-3 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2">
+                          <button @click="exportTranscript('srt')" class="menu-item">
                             Subtitles (.srt)
                           </button>
                         </div>

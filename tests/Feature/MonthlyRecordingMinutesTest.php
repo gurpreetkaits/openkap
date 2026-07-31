@@ -65,7 +65,7 @@ class MonthlyRecordingMinutesTest extends TestCase
     {
         $user = User::factory()->create([
             'monthly_recording_seconds_used' => 600,
-            'monthly_recording_period_start' => Carbon::now()->subMonth()->startOfMonth(),
+            'monthly_recording_period_start' => Carbon::now()->startOfMonth()->subMonth(),
         ]);
 
         $this->assertTrue($user->isMonthlyRecordingPeriodExpired());
@@ -90,7 +90,7 @@ class MonthlyRecordingMinutesTest extends TestCase
     {
         $user = User::factory()->create([
             'monthly_recording_seconds_used' => 9999,
-            'monthly_recording_period_start' => Carbon::now()->subMonths(2)->startOfMonth(),
+            'monthly_recording_period_start' => Carbon::now()->startOfMonth()->subMonths(2),
         ]);
 
         $reset = app(UserRepository::class)->resetMonthlyRecordingPeriodIfDue($user);
@@ -139,7 +139,7 @@ class MonthlyRecordingMinutesTest extends TestCase
     {
         $user = User::factory()->create([
             'monthly_recording_seconds_used' => 9999,
-            'monthly_recording_period_start' => Carbon::now()->subMonth()->startOfMonth(),
+            'monthly_recording_period_start' => Carbon::now()->startOfMonth()->subMonth(),
         ]);
 
         app(UserRepository::class)->incrementMonthlyRecordingSeconds($user, 30);
@@ -270,7 +270,7 @@ class MonthlyRecordingMinutesTest extends TestCase
         // month AND apply the increment in a single UPDATE.
         $user = User::factory()->create([
             'monthly_recording_seconds_used' => 9999,
-            'monthly_recording_period_start' => Carbon::now()->subMonths(3)->startOfMonth(),
+            'monthly_recording_period_start' => Carbon::now()->startOfMonth()->subMonths(3),
         ]);
 
         app(UserRepository::class)->incrementMonthlyRecordingSeconds($user, 90);

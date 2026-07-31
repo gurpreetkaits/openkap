@@ -76,7 +76,7 @@
               v-for="notification in displayNotifications"
               :key="notification.id"
               @click="handleNotificationClick(notification)"
-              class="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-50 last:border-0 transition-colors"
+              class="menu-item cursor-pointer border-b border-gray-50 last:border-0"
               :class="{ 'bg-orange-50/50': !notification.read_at }"
             >
               <div class="flex items-start gap-3">

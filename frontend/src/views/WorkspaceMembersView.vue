@@ -116,25 +116,25 @@
 
               <div
                 v-if="openMemberMenu === member.user_id"
-                class="absolute right-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-100 py-1 z-10"
+                class="menu-panel w-48"
               >
                 <button
                   v-if="member.role !== 'admin'"
                   @click="updateRole(member.user_id, 'admin')"
-                  class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
+                  class="menu-item"
                 >
                   Make Admin
                 </button>
                 <button
                   v-if="member.role === 'admin'"
                   @click="updateRole(member.user_id, 'member')"
-                  class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
+                  class="menu-item"
                 >
                   Remove Admin
                 </button>
                 <button
                   @click="confirmRemoveMember(member)"
-                  class="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50"
+                  class="menu-item menu-item-danger"
                 >
                   Remove from workspace
                 </button>

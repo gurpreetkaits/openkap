@@ -154,11 +154,11 @@
             <Transition name="dropdown">
               <div
                 v-show="showBulkActionsDropdown"
-                class="absolute right-0 mt-1.5 w-48 bg-white rounded-xl shadow-lg border border-gray-100 py-1.5 z-50"
-              >
-                <button
-                  @click="bulkAddToFavourites"
-                  class="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2.5 transition-colors"
+              class="menu-panel w-48 absolute right-0 mt-1.5"
+            >
+            <button
+              @click="bulkAddToFavourites"
+              class="menu-item flex items-center gap-2.5"
                 >
                   <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
@@ -168,23 +168,23 @@
                 <button
                   v-if="folders.length > 0"
                   @click="openBulkMoveToFolderModal"
-                  class="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2.5 transition-colors"
-                >
-                  <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
-                  </svg>
-                  Move to Folder
-                </button>
-                <div class="h-px bg-gray-100 my-1"></div>
+              class="menu-item flex items-center gap-2.5"
+              >
+                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
+                </svg>
+                Move to Folder
+              </button>
+              <div class="menu-divider"></div>
                 <button
                   @click="showBulkDeleteModal = true; showBulkActionsDropdown = false"
-                  class="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2.5 transition-colors"
-                >
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                  </svg>
-                  Delete
-                </button>
+              class="menu-item menu-item-danger flex items-center gap-2.5"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+              </svg>
+              Delete
+            </button>
               </div>
             </Transition>
           </div>
@@ -250,13 +250,13 @@
           <Transition name="dropdown">
             <div
               v-show="showSortDropdown"
-              class="absolute right-0 mt-1.5 w-48 bg-white rounded-xl shadow-lg border border-gray-100 py-1.5 z-50"
+              class="menu-panel w-48 absolute right-0 mt-1.5"
             >
               <button
                 v-for="option in sortOptions"
                 :key="option.id"
                 @click="setSortOption(option.id)"
-                class="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 flex items-center justify-between transition-colors"
+                class="menu-item flex items-center justify-between"
                 :class="sortBy === option.id ? 'text-orange-600 font-medium' : 'text-gray-700'"
               >
                 {{ option.label }}
@@ -286,7 +286,7 @@
           <Transition name="dropdown">
             <div
               v-show="showFilterDropdown"
-              class="absolute right-0 mt-1.5 w-56 bg-white rounded-xl shadow-lg border border-gray-100 py-1.5 z-50"
+              class="menu-panel w-56 absolute right-0 mt-1.5"
             >
               <div class="px-3 py-1.5 mb-0.5">
                 <span class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Date Range</span>
@@ -295,7 +295,7 @@
                 v-for="filter in dateFilters"
                 :key="filter.id"
                 @click="setDateFilter(filter.id); showFilterDropdown = false"
-                class="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 flex items-center justify-between transition-colors"
+                class="menu-item flex items-center justify-between"
                 :class="activeDateFilter === filter.id ? 'text-orange-600 font-medium' : 'text-gray-700'"
               >
                 {{ filter.label }}
@@ -1284,19 +1284,19 @@
       <Transition name="dropdown">
         <div
           v-if="contextMenu.show"
-          class="fixed z-[500] bg-white rounded-xl shadow-xl border border-gray-100 py-1.5 overflow-hidden"
+          class="menu-panel fixed z-[500] overflow-hidden"
           :style="{ left: contextMenu.x + 'px', top: contextMenu.y + 'px', minWidth: '176px' }"
           @click.stop
           @mouseleave="closeContextMenu"
         >
           <!-- Folder Context Menu -->
           <template v-if="contextMenu.type === 'folder'">
-            <button @click="contextMenuAction('rename')" class="w-full px-3.5 py-2 text-left text-[13px] text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2.5">
+            <button @click="contextMenuAction('rename')" class="menu-item flex items-center gap-2.5">
               <svg class="w-3.5 h-3.5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
               Rename
             </button>
-            <div class="h-px bg-gray-100 my-1 mx-2"></div>
-            <button @click="contextMenuAction('delete')" class="w-full px-3.5 py-2 text-left text-[13px] text-red-600 hover:bg-red-50 transition-colors flex items-center gap-2.5">
+            <div class="menu-divider"></div>
+            <button @click="contextMenuAction('delete')" class="menu-item menu-item-danger flex items-center gap-2.5">
               <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
               Delete
             </button>
@@ -1304,15 +1304,15 @@
 
           <!-- Video Context Menu -->
           <template v-else-if="contextMenu.type === 'video'">
-            <button @click="contextMenuAction('share')" class="w-full px-3.5 py-2 text-left text-[13px] text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2.5">
+            <button @click="contextMenuAction('share')" class="menu-item flex items-center gap-2.5">
               <svg class="w-3.5 h-3.5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
               Copy Link
             </button>
-            <button @click="contextMenuAction('rename')" class="w-full px-3.5 py-2 text-left text-[13px] text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2.5">
+            <button @click="contextMenuAction('rename')" class="menu-item flex items-center gap-2.5">
               <svg class="w-3.5 h-3.5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
               Rename
             </button>
-            <button @click="contextMenuAction('move')" class="w-full px-3.5 py-2 text-left text-[13px] text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2.5">
+            <button @click="contextMenuAction('move')" class="menu-item flex items-center gap-2.5">
               <svg class="w-3.5 h-3.5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
               Move to Folder
             </button>
@@ -1320,18 +1320,18 @@
               @click="contextMenuAction('download')"
               :disabled="isBunnyEncoding(contextMenu.target)"
               :title="isBunnyEncoding(contextMenu.target) ? 'Available when video encoding completes' : 'Download'"
-              class="w-full px-3.5 py-2 text-left text-[13px] transition-colors flex items-center gap-2.5"
+              class="menu-item flex items-center gap-2.5"
               :class="isBunnyEncoding(contextMenu.target) ? 'text-gray-300 cursor-not-allowed' : 'text-gray-700 hover:bg-gray-50'"
             >
               <svg class="w-3.5 h-3.5 flex-shrink-0" :class="isBunnyEncoding(contextMenu.target) ? 'text-gray-300' : 'text-gray-400'" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
               Download
             </button>
-            <button @click="contextMenuAction('archive')" class="w-full px-3.5 py-2 text-left text-[13px] text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2.5">
+            <button @click="contextMenuAction('archive')" class="menu-item flex items-center gap-2.5">
               <svg class="w-3.5 h-3.5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/></svg>
               Archive
             </button>
-            <div class="h-px bg-gray-100 my-1 mx-2"></div>
-            <button @click="contextMenuAction('delete')" class="w-full px-3.5 py-2 text-left text-[13px] text-red-600 hover:bg-red-50 transition-colors flex items-center gap-2.5">
+            <div class="menu-divider"></div>
+            <button @click="contextMenuAction('delete')" class="menu-item menu-item-danger flex items-center gap-2.5">
               <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
               Delete
             </button>

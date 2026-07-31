@@ -102,16 +102,16 @@
               <Transition name="dropdown">
                 <div
                   v-if="showHeroMenu"
-                  class="absolute right-0 mt-1 w-[165px] bg-white border border-gray-200 rounded-lg shadow-xl z-50 py-1"
+                  class="menu-panel w-[165px]"
                 >
-                  <button @click="editPlaylist(); showHeroMenu = false" class="w-full flex items-center gap-2 px-3 py-[7px] text-[12.5px] text-gray-700 hover:bg-gray-50 transition-colors rounded-md mx-0">
+                  <button @click="editPlaylist(); showHeroMenu = false" class="menu-item">
                     Edit details
                   </button>
-                  <button @click="toggleVisibility(); showHeroMenu = false" class="w-full flex items-center gap-2 px-3 py-[7px] text-[12.5px] text-gray-700 hover:bg-gray-50 transition-colors rounded-md mx-0">
+                  <button @click="toggleVisibility(); showHeroMenu = false" class="menu-item">
                     {{ playlist.is_public ? 'Make private' : 'Make public' }}
                   </button>
-                  <div class="h-px bg-gray-100 my-0.5"></div>
-                  <button @click="confirmDeletePlaylist(); showHeroMenu = false" class="w-full flex items-center gap-2 px-3 py-[7px] text-[12.5px] text-red-600 hover:bg-red-50 transition-colors rounded-md mx-0">
+                  <div class="menu-divider"></div>
+                  <button @click="confirmDeletePlaylist(); showHeroMenu = false" class="menu-item menu-item-danger">
                     Delete playlist
                   </button>
                 </div>
@@ -165,17 +165,17 @@
                   <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 10 10"><path d="M2 4l3 3 3-3"/></svg>
                 </button>
                 <Transition name="dropdown">
-                  <div v-if="showSortMenu" class="absolute left-0 mt-1 w-40 bg-white border border-gray-100 rounded-lg shadow-lg z-10 py-1">
+                  <div v-if="showSortMenu" class="menu-panel w-40">
                     <button
                       @click="updateSortBy('manual')"
-                      class="w-full px-3 py-1.5 text-left text-[12.5px] hover:bg-gray-50 transition-colors flex items-center gap-2"
+                      class="menu-item"
                       :class="playlist.sort_by === 'manual' ? 'text-orange-600 font-medium' : 'text-gray-700'"
                     >
                       Manual order
                     </button>
                     <button
                       @click="updateSortBy('date_added')"
-                      class="w-full px-3 py-1.5 text-left text-[12.5px] hover:bg-gray-50 transition-colors flex items-center gap-2"
+                      class="menu-item"
                       :class="playlist.sort_by === 'date_added' ? 'text-orange-600 font-medium' : 'text-gray-700'"
                     >
                       Date added
@@ -258,20 +258,20 @@
                 <Transition name="dropdown">
                   <div
                     v-if="activeVideoMenu === video.id"
-                    class="absolute right-0 mt-1 w-[165px] bg-white border border-gray-200 rounded-lg shadow-xl z-50 py-1"
+                    class="menu-panel w-[165px]"
                   >
-                    <button @click="openVideo(video.id); activeVideoMenu = null" class="w-full flex items-center gap-2 px-3 py-[7px] text-[12.5px] text-gray-700 hover:bg-gray-50 transition-colors">
+                    <button @click="openVideo(video.id); activeVideoMenu = null" class="menu-item">
                       <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 12 12"><polygon points="3,2 9,6 3,10"/></svg>
                       Play
                     </button>
-                    <button @click="copyVideoLink(video); activeVideoMenu = null" class="w-full flex items-center gap-2 px-3 py-[7px] text-[12.5px] text-gray-700 hover:bg-gray-50 transition-colors">
+                    <button @click="copyVideoLink(video); activeVideoMenu = null" class="menu-item">
                       <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="1.4" viewBox="0 0 12 12">
                         <path d="M5 8.5L8.5 5M7 3l1.5-1.5a2.5 2.5 0 013.5 3.5L10.5 6.5M6 10L4.5 11.5a2.5 2.5 0 01-3.5-3.5L2.5 6.5"/>
                       </svg>
                       Copy link
                     </button>
-                    <div class="h-px bg-gray-100 my-0.5"></div>
-                    <button @click="removeVideo(video); activeVideoMenu = null" class="w-full flex items-center gap-2 px-3 py-[7px] text-[12.5px] text-red-600 hover:bg-red-50 transition-colors">
+                    <div class="menu-divider"></div>
+                    <button @click="removeVideo(video); activeVideoMenu = null" class="menu-item menu-item-danger">
                       <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="1.4" viewBox="0 0 12 12">
                         <path d="M1.5 3.5h9M4.5 3.5V2.5a.5.5 0 01.5-.5h2a.5.5 0 01.5.5v1M3.5 3.5l.8 7h4.4l.8-7"/>
                       </svg>

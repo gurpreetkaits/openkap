@@ -124,6 +124,8 @@ class StreamVideoController extends Controller
             'type' => 'nullable|string|in:video,camera',
         ]);
 
+        $chunkIndex = (int) $request->chunk_index;
+
         $sessionDir = storage_path("app/temp/stream-uploads/{$sessionId}");
         $metadataPath = "{$sessionDir}/metadata.json";
 
@@ -150,8 +152,6 @@ class StreamVideoController extends Controller
             ]);
             return response()->json(['message' => 'Unauthorized'], 403);
         }
-
-        $chunkIndex = (int) $request->chunk_index;
         $chunkFile = $request->file('chunk');
         $chunkSize = $chunkFile->getSize();
         $chunkType = $request->input('type', 'video');
