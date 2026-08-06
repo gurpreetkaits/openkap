@@ -520,6 +520,7 @@ export default {
     const showUserDropdown = ref(false)
     const extensionInstalled = ref(false)
     const showExtensionModal = ref(false)
+    const logoutLoading = ref(false)
     const extensionStoreUrl = 'https://chromewebstore.google.com/detail/openkap/nnchnlkilgfemhpcohmgdpcmkjedjkfm'
 
     // Subscription from auth store
