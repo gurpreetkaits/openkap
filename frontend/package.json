@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@polar-sh/checkout": "^0.1.14",
+    "@sentry/vue": "^10.70.0",
     "@vueuse/motion": "^3.0.3",
     "canvas-confetti": "^1.9.4",
     "dompurify": "^3.3.1",

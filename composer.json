@@ -17,6 +17,7 @@
         "laravel/tinker": "^2.10.1",
         "pbmedia/laravel-ffmpeg": "^8.7",
         "saloonphp/saloon": "^3.14",
+        "sentry/sentry-laravel": "^4.27",
         "spatie/laravel-medialibrary": "^11.0",
         "standard-webhooks/standard-webhooks": "@dev",
         "symfony/yaml": "^7.4"
