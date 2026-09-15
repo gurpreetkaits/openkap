@@ -109,23 +109,37 @@ class AdminDashboardManager
     }
 
     /**
-     * Order matters: a recording still being processed legitimately has no size or
-     * duration yet, so 'processing' must win over 'empty' to avoid false alarms.
+     * Health follows whichever pipeline actually produces the playable file:
+     * Bunny for Bunny-hosted recordings, local conversion otherwise.
+     *
+     * hls_status deliberately contributes only a FAILURE signal, never an in-flight
+     * one. Bunny handles its own delivery, so the local HLS step never runs for
+     * Bunny-hosted recordings and their hls_status stays 'pending' forever; locally
+     * converted recordings without HLS still play from the MP4. Treating that
+     * 'pending' as "processing" mislabels the bulk of the library as in-flight.
+     *
+     * Order matters: a recording genuinely still converting has no size or duration
+     * yet, so 'processing' must win over 'empty' to avoid false alarms.
      */
     private function resolveVideoHealth(Video $video, ?string $error): string
     {
-        $statuses = [$video->conversion_status, $video->hls_status];
-
-        if ($this->usesBunnyStorage($video)) {
-            $statuses[] = $video->bunny_status;
-        }
+        $usesBunny = $this->usesBunnyStorage($video);
 
         // The local pipeline reports failure as 'failed'; Bunny reports it as 'error'.
-        if ($error !== null || array_intersect($statuses, ['failed', 'error'])) {
+        $hasFailed = $error !== null
+            || $video->conversion_status === 'failed'
+            || $video->hls_status === 'failed'
+            || ($usesBunny && $video->bunny_status === 'error');
+
+        if ($hasFailed) {
             return 'failed';
         }
 
-        if (array_intersect($statuses, ['pending', 'processing', 'uploading'])) {
+        $inFlight = $usesBunny
+            ? in_array($video->bunny_status, ['pending', 'uploading', 'processing'], true)
+            : in_array($video->conversion_status, ['pending', 'processing'], true);
+
+        if ($inFlight) {
             return 'processing';
         }
 

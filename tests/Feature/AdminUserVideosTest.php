@@ -183,6 +183,85 @@ class AdminUserVideosTest extends TestCase
             ->assertJsonPath('data.problem_videos', 0);
     }
 
+    /**
+     * These four shapes are the ones that actually dominate production. Bunny handles
+     * its own delivery, so the local HLS step never runs for Bunny-hosted recordings
+     * and hls_status stays 'pending' forever — treating that as "in flight" previously
+     * mislabelled ~90% of the library as "processing".
+     */
+    #[Test]
+    public function a_ready_bunny_recording_is_ok_even_though_hls_stayed_pending(): void
+    {
+        Video::factory()->create([
+            'user_id' => $this->member->id,
+            'duration' => 200, 'file_size_bytes' => 0, 'bunny_file_size' => 8_000_000,
+            'storage_type' => 'bunny', 'bunny_video_id' => 'b-1',
+            'conversion_status' => 'completed', 'hls_status' => 'pending', 'bunny_status' => 'ready',
+        ]);
+
+        $this->assertHealthIs('ok');
+    }
+
+    #[Test]
+    public function a_converted_local_recording_is_ok_even_though_hls_stayed_pending(): void
+    {
+        Video::factory()->create([
+            'user_id' => $this->member->id,
+            'duration' => 200, 'file_size_bytes' => 7_000_000,
+            'conversion_status' => 'completed', 'hls_status' => 'pending',
+        ]);
+
+        $this->assertHealthIs('ok');
+    }
+
+    #[Test]
+    public function a_ready_bunny_recording_ignores_the_local_conversion_status(): void
+    {
+        // Bunny-hosted recordings are never converted locally, so conversion_status
+        // sits at 'pending' and must not drag health down.
+        Video::factory()->create([
+            'user_id' => $this->member->id,
+            'duration' => 200, 'file_size_bytes' => 0, 'bunny_file_size' => 8_000_000,
+            'storage_type' => 'bunny', 'bunny_video_id' => 'b-2',
+            'conversion_status' => 'pending', 'hls_status' => 'pending', 'bunny_status' => 'ready',
+        ]);
+
+        $this->assertHealthIs('ok');
+    }
+
+    #[Test]
+    public function a_failed_hls_step_still_counts_as_failed(): void
+    {
+        Video::factory()->create([
+            'user_id' => $this->member->id,
+            'duration' => 200, 'file_size_bytes' => 7_000_000,
+            'conversion_status' => 'completed', 'hls_status' => 'failed',
+        ]);
+
+        $this->assertHealthIs('failed');
+    }
+
+    #[Test]
+    public function a_bunny_recording_still_uploading_is_processing(): void
+    {
+        Video::factory()->create([
+            'user_id' => $this->member->id,
+            'duration' => 0, 'file_size_bytes' => 0,
+            'storage_type' => 'bunny', 'bunny_video_id' => 'b-3',
+            'conversion_status' => 'completed', 'hls_status' => 'pending', 'bunny_status' => 'uploading',
+        ]);
+
+        $this->assertHealthIs('processing');
+    }
+
+    private function assertHealthIs(string $expected): void
+    {
+        $this->actingAs($this->admin)
+            ->getJson("/api/admin/users/{$this->member->id}/videos")
+            ->assertOk()
+            ->assertJsonPath('data.videos.0.health', $expected);
+    }
+
     #[Test]
     public function videos_are_returned_newest_first(): void
     {
