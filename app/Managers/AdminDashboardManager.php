@@ -143,7 +143,11 @@ class AdminDashboardManager
             return 'processing';
         }
 
-        if (empty($video->duration) || empty($video->file_size_bytes ?: $video->bunny_file_size)) {
+        // Duration is the only trustworthy "did this capture anything" signal. Byte
+        // size is not: Bunny frequently never reports bunny_file_size, and some local
+        // rows never got file_size_bytes written, so 85 of 253 production recordings
+        // are playable yet sizeless. Condemning those would bury the real failures.
+        if (empty($video->duration)) {
             return 'empty';
         }
 

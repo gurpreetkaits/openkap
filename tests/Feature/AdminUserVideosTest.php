@@ -242,6 +242,34 @@ class AdminUserVideosTest extends TestCase
     }
 
     #[Test]
+    public function a_playable_recording_with_no_recorded_size_is_still_ok(): void
+    {
+        // 85 of 253 production recordings have a real duration but no byte size,
+        // because Bunny often never reports one. They play fine and must not be
+        // flagged, or the genuine failures get buried.
+        Video::factory()->create([
+            'user_id' => $this->member->id,
+            'duration' => 180, 'file_size_bytes' => 0, 'bunny_file_size' => 0,
+            'storage_type' => 'bunny', 'bunny_video_id' => 'b-4',
+            'conversion_status' => 'completed', 'hls_status' => 'pending', 'bunny_status' => 'ready',
+        ]);
+
+        $this->assertHealthIs('ok');
+    }
+
+    #[Test]
+    public function only_a_missing_duration_marks_a_recording_empty(): void
+    {
+        Video::factory()->create([
+            'user_id' => $this->member->id,
+            'duration' => 0, 'file_size_bytes' => 9_000_000,
+            'conversion_status' => 'completed', 'hls_status' => 'completed',
+        ]);
+
+        $this->assertHealthIs('empty');
+    }
+
+    #[Test]
     public function a_bunny_recording_still_uploading_is_processing(): void
     {
         Video::factory()->create([

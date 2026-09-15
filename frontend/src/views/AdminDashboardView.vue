@@ -252,7 +252,8 @@
                   <td class="py-2.5 pr-4 text-right tabular-nums" :class="metricClass(video, video.duration)">
                     {{ formatDuration(video.duration) }}
                   </td>
-                  <td class="py-2.5 pr-4 text-right tabular-nums" :class="metricClass(video, video.file_size_bytes)">
+                  <!-- Size is often simply unrecorded, so it never implies a problem. -->
+                  <td class="py-2.5 pr-4 text-right tabular-nums" :class="video.file_size_bytes ? 'text-gray-900' : 'text-gray-400'">
                     {{ formatBytes(video.file_size_bytes) }}
                   </td>
                   <td class="py-2.5 pr-4 text-gray-600 whitespace-nowrap">{{ video.bunny_resolution || '—' }}</td>
@@ -422,7 +423,8 @@ export default {
     }
 
     const formatBytes = (bytes) => {
-      if (!bytes) return '0 B'
+      // Unknown, not zero — most Bunny recordings never report a size.
+      if (!bytes) return '—'
       const units = ['B', 'KB', 'MB', 'GB', 'TB']
       const i = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1)
       return `${Math.round((bytes / Math.pow(1024, i)) * 100) / 100} ${units[i]}`
