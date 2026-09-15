@@ -47,6 +47,27 @@ class AdminService {
       throw error
     }
   }
+
+  async getUserVideos(userId) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/admin/users/${userId}/videos`, {
+        method: 'GET',
+        headers: getAuthHeaders()
+      })
+
+      if (handleUnauthorized(response)) return null
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch user videos: ${response.statusText}`)
+      }
+
+      const data = await response.json()
+      return data.data
+    } catch (error) {
+      console.error('Error fetching user videos:', error)
+      throw error
+    }
+  }
 }
 
 export default new AdminService()

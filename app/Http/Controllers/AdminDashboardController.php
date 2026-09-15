@@ -18,4 +18,11 @@ class AdminDashboardController extends Controller
 
         return response()->json(['dashboard' => $stats]);
     }
+
+    public function userVideos(Request $request, int $userId): JsonResponse
+    {
+        $videos = $this->adminDashboardManager->getUserVideos($userId);
+
+        return response()->json(['data' => $videos->toArray()]);
+    }
 }

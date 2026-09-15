@@ -378,6 +378,10 @@ Route::middleware(['auth:sanctum', AdminMiddleware::class])
     ->group(function () {
         Route::get('/dashboard', [AdminDashboardController::class, 'index']);
 
+        // Drill-down: every recording a given user has made, with health flags
+        Route::get('/users/{userId}/videos', [AdminDashboardController::class, 'userVideos'])
+            ->whereNumber('userId');
+
         // Support inbox (admins)
         Route::prefix('support')->group(function () {
             Route::get('/conversations', [SupportAdminController::class, 'index']);

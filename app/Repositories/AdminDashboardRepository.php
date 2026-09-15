@@ -5,6 +5,7 @@ namespace App\Repositories;
 use App\Models\User;
 use App\Models\Video;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 
 class AdminDashboardRepository
@@ -119,5 +120,28 @@ class AdminDashboardRepository
             ->get()
             ->map(fn ($row) => ['month' => $row->month, 'count' => $row->count])
             ->toArray();
+    }
+
+    /**
+     * Most recent recordings for one user, newest first. Includes archived ones —
+     * an admin checking "can this user record properly" wants every attempt.
+     *
+     * @return Collection<int, Video>
+     */
+    public function getVideosByUserId(int $userId, int $limit = 100): Collection
+    {
+        return Video::where('user_id', $userId)
+            ->orderBy('created_at', 'desc')
+            ->limit($limit)
+            ->get();
+    }
+
+    /**
+     * Counted off the videos table rather than the denormalised users.videos_count,
+     * which is known to drift (it has underflowed past zero in production).
+     */
+    public function countVideosByUserId(int $userId): int
+    {
+        return Video::where('user_id', $userId)->count();
     }
 }

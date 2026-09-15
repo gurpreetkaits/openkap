@@ -143,7 +143,18 @@
                     {{ user.plan_type }}
                   </span>
                 </td>
-                <td class="py-2.5 pr-4 text-right tabular-nums text-gray-900">{{ user.videos_count ?? 0 }}</td>
+                <td class="py-2.5 pr-4 text-right tabular-nums">
+                  <button
+                    v-if="(user.videos_count ?? 0) > 0"
+                    type="button"
+                    @click="openUserVideos(user)"
+                    class="font-medium text-orange-600 underline decoration-orange-200 underline-offset-2 hover:text-orange-700 hover:decoration-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-300 rounded px-1 -mr-1 transition-colors"
+                    :title="`View ${user.name}'s recordings`"
+                  >
+                    {{ user.videos_count }}
+                  </button>
+                  <span v-else class="text-gray-400">0</span>
+                </td>
                 <td class="py-2.5 pr-4 text-right tabular-nums text-gray-900">
                   {{ user.monthly_recording_minutes_used ?? 0 }}<span class="text-gray-400">{{ user.monthly_recording_minutes_limit != null ? ` / ${user.monthly_recording_minutes_limit}` : '' }}</span>
                 </td>
@@ -154,12 +165,124 @@
         </div>
       </div>
     </template>
+
+    <!-- Per-user recordings drill-down -->
+    <SBModal v-model="videosModalOpen" size="5xl" padding="none">
+      <template #header>
+        <div>
+          <h3 class="text-lg font-semibold text-gray-900">
+            {{ selectedUser?.name }}'s recordings
+          </h3>
+          <p class="text-xs text-gray-500 mt-0.5">{{ selectedUser?.email }}</p>
+        </div>
+      </template>
+
+      <div class="px-6 py-5">
+        <div v-if="videosLoading" class="py-12 text-center text-sm text-gray-500">
+          Loading recordings…
+        </div>
+
+        <div v-else-if="videosError" class="py-12 text-center">
+          <p class="text-sm text-red-600">{{ videosError }}</p>
+          <button
+            type="button"
+            @click="openUserVideos(selectedUser)"
+            class="mt-3 text-sm font-medium text-orange-600 hover:text-orange-700"
+          >
+            Try again
+          </button>
+        </div>
+
+        <div v-else-if="userVideos && userVideos.videos.length === 0" class="py-12 text-center text-sm text-gray-500">
+          This user has no recordings yet.
+        </div>
+
+        <template v-else-if="userVideos">
+          <!-- Summary: the "are their recordings actually working" answer -->
+          <div class="flex flex-wrap items-center gap-3 mb-4">
+            <span class="text-xs font-medium px-2.5 py-1 rounded-full bg-gray-100 text-gray-700">
+              {{ userVideos.total_videos }} total
+            </span>
+            <span
+              class="text-xs font-medium px-2.5 py-1 rounded-full"
+              :class="userVideos.problem_videos > 0 ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'"
+            >
+              {{ userVideos.problem_videos }} problem{{ userVideos.problem_videos === 1 ? '' : 's' }}
+            </span>
+            <span v-if="userVideos.total_videos > userVideos.videos.length" class="text-xs text-gray-400">
+              showing latest {{ userVideos.videos.length }}
+            </span>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="border-b border-gray-100">
+                  <th class="text-left py-2 pr-4 text-xs font-medium text-gray-500 uppercase tracking-wider">Recording</th>
+                  <th class="text-left py-2 pr-4 text-xs font-medium text-gray-500 uppercase tracking-wider">Health</th>
+                  <th class="text-right py-2 pr-4 text-xs font-medium text-gray-500 uppercase tracking-wider">Length</th>
+                  <th class="text-right py-2 pr-4 text-xs font-medium text-gray-500 uppercase tracking-wider">Size</th>
+                  <th class="text-left py-2 pr-4 text-xs font-medium text-gray-500 uppercase tracking-wider">Resolution</th>
+                  <th class="text-left py-2 pr-4 text-xs font-medium text-gray-500 uppercase tracking-wider">Tracks</th>
+                  <th class="text-left py-2 text-xs font-medium text-gray-500 uppercase tracking-wider">Recorded</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  v-for="video in userVideos.videos"
+                  :key="video.id"
+                  class="border-b border-gray-50 last:border-0 align-top"
+                >
+                  <td class="py-2.5 pr-4 max-w-xs">
+                    <a
+                      :href="videoHref(video.id)"
+                      target="_blank"
+                      rel="noopener"
+                      class="font-medium text-gray-900 hover:text-orange-600 hover:underline break-words"
+                    >
+                      {{ video.title }}
+                    </a>
+                    <p v-if="video.error" class="text-xs text-red-600 mt-1 break-words">{{ video.error }}</p>
+                  </td>
+                  <td class="py-2.5 pr-4">
+                    <span class="text-xs font-medium px-2 py-0.5 rounded-full whitespace-nowrap" :class="healthBadgeClass(video.health)">
+                      {{ healthLabel(video.health) }}
+                    </span>
+                  </td>
+                  <td class="py-2.5 pr-4 text-right tabular-nums" :class="metricClass(video, video.duration)">
+                    {{ formatDuration(video.duration) }}
+                  </td>
+                  <td class="py-2.5 pr-4 text-right tabular-nums" :class="metricClass(video, video.file_size_bytes)">
+                    {{ formatBytes(video.file_size_bytes) }}
+                  </td>
+                  <td class="py-2.5 pr-4 text-gray-600 whitespace-nowrap">{{ video.bunny_resolution || '—' }}</td>
+                  <td class="py-2.5 pr-4 text-gray-600 whitespace-nowrap">
+                    <!-- line-through alone is invisible to screen readers, so state it in the label -->
+                    <span
+                      :class="video.has_audio ? 'text-gray-700' : 'text-gray-300 line-through'"
+                      :aria-label="video.has_audio ? 'Audio track present' : 'No audio track'"
+                    >audio</span>
+                    <span class="text-gray-300" aria-hidden="true"> · </span>
+                    <span
+                      :class="video.has_camera ? 'text-gray-700' : 'text-gray-300 line-through'"
+                      :aria-label="video.has_camera ? 'Camera track present' : 'No camera track'"
+                    >cam</span>
+                  </td>
+                  <td class="py-2.5 text-gray-500 whitespace-nowrap">{{ formatDateTime(video.created_at) }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </template>
+      </div>
+    </SBModal>
   </div>
 </template>
 
 <script>
 import { ref, computed, onMounted } from 'vue'
 import adminService from '@/services/adminService'
+import { SBModal } from '@/components/Global'
 
 // Stat Card Component
 const StatCard = {
@@ -216,11 +339,18 @@ const BarChart = {
 
 export default {
   name: 'AdminDashboardView',
-  components: { StatCard, BarChart },
+  components: { StatCard, BarChart, SBModal },
   setup() {
     const stats = ref(null)
     const loading = ref(true)
     const error = ref(null)
+
+    // Per-user recordings drill-down
+    const videosModalOpen = ref(false)
+    const selectedUser = ref(null)
+    const userVideos = ref(null)
+    const videosLoading = ref(false)
+    const videosError = ref(null)
 
     const loadStats = async () => {
       loading.value = true
@@ -258,6 +388,75 @@ export default {
       return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
     }
 
+    // Recordings include the time — useful when checking a user's repeated attempts.
+    const formatDateTime = (dateStr) => {
+      const d = new Date(dateStr)
+      return d.toLocaleString('en-US', {
+        month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit'
+      })
+    }
+
+    const openUserVideos = async (user) => {
+      if (!user) return
+      selectedUser.value = user
+      videosModalOpen.value = true
+      videosLoading.value = true
+      videosError.value = null
+      userVideos.value = null
+      try {
+        userVideos.value = await adminService.getUserVideos(user.id)
+      } catch (e) {
+        videosError.value = 'Failed to load this user\'s recordings.'
+      } finally {
+        videosLoading.value = false
+      }
+    }
+
+    const formatDuration = (seconds) => {
+      if (!seconds) return '0:00'
+      const h = Math.floor(seconds / 3600)
+      const m = Math.floor((seconds % 3600) / 60)
+      const s = Math.floor(seconds % 60)
+      const mm = h > 0 ? String(m).padStart(2, '0') : String(m)
+      return `${h > 0 ? h + ':' : ''}${mm}:${String(s).padStart(2, '0')}`
+    }
+
+    const formatBytes = (bytes) => {
+      if (!bytes) return '0 B'
+      const units = ['B', 'KB', 'MB', 'GB', 'TB']
+      const i = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1)
+      return `${Math.round((bytes / Math.pow(1024, i)) * 100) / 100} ${units[i]}`
+    }
+
+    // A still-processing recording has no duration/size yet — that is expected,
+    // so it must not be shown in alarm-red like a genuinely empty one.
+    const metricClass = (video, value) => {
+      if (value) return 'text-gray-900'
+      return video.health === 'processing' ? 'text-gray-400' : 'text-red-600 font-medium'
+    }
+
+    const healthLabel = (health) => {
+      switch (health) {
+        case 'ok': return 'OK'
+        case 'processing': return 'Processing'
+        case 'failed': return 'Failed'
+        case 'empty': return 'No content'
+        default: return health
+      }
+    }
+
+    const healthBadgeClass = (health) => {
+      switch (health) {
+        case 'ok': return 'bg-green-100 text-green-700'
+        case 'processing': return 'bg-blue-100 text-blue-700'
+        case 'failed': return 'bg-red-100 text-red-700'
+        case 'empty': return 'bg-amber-100 text-amber-700'
+        default: return 'bg-gray-100 text-gray-600'
+      }
+    }
+
+    const videoHref = (id) => `${import.meta.env.BASE_URL}video/${id}`
+
     onMounted(loadStats)
 
     return {
@@ -267,7 +466,20 @@ export default {
       loadStats,
       subPercent,
       planBadgeClass,
-      formatDate
+      formatDate,
+      formatDateTime,
+      videosModalOpen,
+      selectedUser,
+      userVideos,
+      videosLoading,
+      videosError,
+      openUserVideos,
+      formatDuration,
+      formatBytes,
+      metricClass,
+      healthLabel,
+      healthBadgeClass,
+      videoHref
     }
   }
 }
