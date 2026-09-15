@@ -161,7 +161,17 @@ class VideoController extends Controller
         }
 
         if ($video->user_id !== Auth::id()) {
-            return response()->json(['message' => 'Unauthorized'], 403);
+            // Admins may view any recording (read-only) for support/QA review.
+            if (! $this->videoManager->isAdminViewer(Auth::id())) {
+                return response()->json(['message' => 'Unauthorized'], 403);
+            }
+
+            // Viewing someone else's private recording is privileged — record it.
+            Log::info('Admin viewed another user\'s video', [
+                'admin_id' => Auth::id(),
+                'video_id' => $video->id,
+                'owner_id' => $video->user_id,
+            ]);
         }
 
         return response()->json([
@@ -363,7 +373,7 @@ class VideoController extends Controller
     {
         $video = $this->videoManager->findByShareTokenOrFail($token);
 
-        $videoDetails = $this->videoManager->getSharedVideoDetails($video);
+        $videoDetails = $this->videoManager->getSharedVideoDetails($video, Auth::id());
 
         if ($videoDetails === null) {
             return response()->json([
@@ -517,7 +527,7 @@ class VideoController extends Controller
     {
         $video = $this->videoManager->findByShareTokenOrFail($token);
 
-        if (! $video->isShareLinkValid()) {
+        if (! $this->videoManager->canAccessSharedVideo($video, Auth::id())) {
             return response()->json(['message' => 'This video is no longer available'], 403);
         }
 
@@ -614,7 +624,7 @@ class VideoController extends Controller
     {
         $video = $this->videoManager->findVideoOrFail($id);
 
-        if ($video->user_id !== Auth::id()) {
+        if ($video->user_id !== Auth::id() && ! $this->videoManager->isAdminViewer(Auth::id())) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
@@ -627,7 +637,7 @@ class VideoController extends Controller
     {
         $video = $this->videoManager->findVideoOrFail($id);
 
-        if ($video->user_id !== Auth::id()) {
+        if ($video->user_id !== Auth::id() && ! $this->videoManager->isAdminViewer(Auth::id())) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
@@ -651,7 +661,7 @@ class VideoController extends Controller
     {
         $video = $this->videoManager->findVideoOrFail($id);
 
-        if ($video->user_id !== Auth::id()) {
+        if ($video->user_id !== Auth::id() && ! $this->videoManager->isAdminViewer(Auth::id())) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 

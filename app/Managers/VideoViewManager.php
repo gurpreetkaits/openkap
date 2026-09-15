@@ -19,6 +19,29 @@ class VideoViewManager
     ) {}
 
     /**
+     * Viewers whose watching is not genuine audience interest, and so must never
+     * land in view counts, analytics or owner notifications.
+     *
+     * Owners were always excluded. Admins are excluded for the same reason: they
+     * open other people's recordings from the admin dashboard to check whether a
+     * user's captures actually work, and that review would otherwise inflate that
+     * user's stats. An admin viewing their OWN recording was already covered by
+     * the owner rule.
+     */
+    private function isNonAudienceViewer(?int $userId, Video $video): bool
+    {
+        if (! $userId) {
+            return false;
+        }
+
+        if ($userId === $video->user_id) {
+            return true;
+        }
+
+        return (bool) $this->users->findById($userId)?->isAdmin();
+    }
+
+    /**
      * @param  array{referrer?: string|null, timezone?: string|null, session_id?: string|null}  $tracking
      */
     public function recordView(
@@ -30,7 +53,7 @@ class VideoViewManager
         bool $completed = false,
         array $tracking = []
     ): ?array {
-        if ($userId && $userId === $video->user_id) {
+        if ($this->isNonAudienceViewer($userId, $video)) {
             return ['message' => 'Own video view not recorded', 'view' => null];
         }
 
@@ -66,7 +89,7 @@ class VideoViewManager
         ?string $userAgent,
         array $tracking = []
     ): ?array {
-        if ($userId && $userId === $video->user_id) {
+        if ($this->isNonAudienceViewer($userId, $video)) {
             return ['message' => 'Own video view not recorded', 'view' => null];
         }
 
@@ -99,7 +122,7 @@ class VideoViewManager
         int $watchDuration,
         bool $completed
     ): ?VideoView {
-        if ($userId && $userId === $video->user_id) {
+        if ($this->isNonAudienceViewer($userId, $video)) {
             return null;
         }
 
@@ -178,7 +201,7 @@ class VideoViewManager
 
     protected function notifyVideoOwnerIfNeeded(Video $video, ?int $userId, VideoView $view): void
     {
-        if (! $userId || $userId === $video->user_id) {
+        if (! $userId || $this->isNonAudienceViewer($userId, $video)) {
             return;
         }
 

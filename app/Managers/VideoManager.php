@@ -409,9 +409,10 @@ class VideoManager
         return $video;
     }
 
-    public function getSharedVideoDetails(Video $video): ?array
+    public function getSharedVideoDetails(Video $video, ?int $viewerId = null): ?array
     {
-        if (! $video->isShareLinkValid()) {
+        // Admins may review a recording whose share link is off or expired.
+        if (! $video->isShareLinkValid() && ! $this->isAdminViewer($viewerId)) {
             return null;
         }
 
@@ -656,7 +657,26 @@ class VideoManager
     {
         $isOwner = $userId !== null && $userId === $video->user_id;
 
-        return $isOwner || $video->isShareLinkValid();
+        return $isOwner || $video->isShareLinkValid() || $this->isAdminViewer($userId);
+    }
+
+    /**
+     * Admins may VIEW any recording, including private ones, so they can check
+     * from the admin dashboard whether a user's captures actually work.
+     *
+     * This is deliberately READ-ONLY. Every mutating path (update, destroy,
+     * duplicate, trim, applyBlur, toggleSharing, regenerateShareToken, editing,
+     * transcription requests…) keeps its own strict `user_id !== Auth::id()`
+     * check, so being an admin never confers write access to someone else's
+     * recording.
+     */
+    public function isAdminViewer(?int $userId): bool
+    {
+        if ($userId === null) {
+            return false;
+        }
+
+        return (bool) $this->users->findById($userId)?->isAdmin();
     }
 
     public function findVideo(int $id): ?Video

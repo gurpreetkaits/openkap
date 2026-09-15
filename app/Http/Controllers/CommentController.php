@@ -20,7 +20,9 @@ class CommentController extends Controller
         }
 
         // Verify user has access to this video (owner, public, or workspace member)
-        if (! $video->canBeAccessedBy(Auth::user())) {
+        // Admins may read comments while reviewing a recording (read-only; posting
+        // a comment still goes through the unchanged canBeAccessedBy check).
+        if (! $video->canBeAccessedBy(Auth::user()) && ! Auth::user()?->isAdmin()) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
@@ -91,7 +93,9 @@ class CommentController extends Controller
             return response()->json(['message' => 'Video not found'], 404);
         }
 
-        if (! $video->canBeAccessedBy(Auth::user())) {
+        // Admins may read comments while reviewing a recording (read-only; posting
+        // a comment still goes through the unchanged canBeAccessedBy check).
+        if (! $video->canBeAccessedBy(Auth::user()) && ! Auth::user()?->isAdmin()) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 

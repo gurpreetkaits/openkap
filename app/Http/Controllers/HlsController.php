@@ -25,10 +25,15 @@ class HlsController extends Controller
             return true;
         }
 
-        // Allow if authenticated user is the owner
+        // Allow if authenticated user is the owner, or an admin reviewing the
+        // recording from the dashboard (read-only — see VideoManager::isAdminViewer).
         $user = Auth::guard('sanctum')->user();
 
-        return $user && $user->id === $video->user_id;
+        if (! $user) {
+            return false;
+        }
+
+        return $user->id === $video->user_id || $user->isAdmin();
     }
 
     /**

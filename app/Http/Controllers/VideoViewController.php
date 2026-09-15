@@ -27,7 +27,12 @@ class VideoViewController extends Controller
 
         $video = $this->videoRepository->findOrFail($id);
 
-        if (! $video->is_public && (! Auth::check() || $video->user_id !== Auth::id())) {
+        // Admins may reach a private recording from the dashboard; let the request
+        // through so the player does not error, and rely on VideoViewManager to
+        // refuse to record the view.
+        if (! $video->is_public
+            && (! Auth::check() || $video->user_id !== Auth::id())
+            && ! Auth::user()?->isAdmin()) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
@@ -87,7 +92,12 @@ class VideoViewController extends Controller
 
         $video = $this->videoRepository->findOrFail($id);
 
-        if (! $video->is_public && (! Auth::check() || $video->user_id !== Auth::id())) {
+        // Admins may reach a private recording from the dashboard; let the request
+        // through so the player does not error, and rely on VideoViewManager to
+        // refuse to record the view.
+        if (! $video->is_public
+            && (! Auth::check() || $video->user_id !== Auth::id())
+            && ! Auth::user()?->isAdmin()) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 

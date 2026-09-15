@@ -211,7 +211,7 @@
               </svg>
             </button>
             <div v-show="showOptionsMenu" class="absolute right-0 top-full mt-1.5 menu-panel w-52">
-              <button @click="handleDownload(); showOptionsMenu = false" class="menu-item">
+              <button v-if="canDownload" @click="handleDownload(); showOptionsMenu = false" class="menu-item">
                 <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
                 </svg>
@@ -857,7 +857,7 @@
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
                 {{ copied ? 'Copied!' : 'Copy Link' }}
               </button>
-              <button @click="handleDownload" class="flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-gray-50 text-gray-600 text-xs font-medium rounded-lg border border-gray-200 transition-colors flex-shrink-0">
+              <button v-if="canDownload" @click="handleDownload" class="flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-gray-50 text-gray-600 text-xs font-medium rounded-lg border border-gray-200 transition-colors flex-shrink-0">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                 Download
               </button>
@@ -1465,6 +1465,11 @@ export default {
 
     // Ownership check
     const isOwner = computed(() => currentUser.value?.id && video.value?.user_id && Number(currentUser.value.id) === Number(video.value.user_id))
+
+    // Downloading someone else's private recording stays owner-only on the API, so
+    // an admin reviewing a recording must not be offered a button that would 403.
+    // Shared mode is unaffected — viewers of a valid share link can still download.
+    const canDownload = computed(() => isSharedMode.value || isOwner.value)
 
     // Transcription state
     const transcription = ref(null)
@@ -3357,7 +3362,7 @@ export default {
 
     return {
       branding, auth, isAuthenticated, currentUser, userInitial,
-      isSharedMode, isOwner, token,
+      isSharedMode, isOwner, canDownload, token,
       video, loading, error, videoRef, progressBar, speedMenuRef, playerContainer,
       isPlaying, isBuffering, videoLoading, isMuted, isFullscreen, volume, currentTime, duration,
       bufferedPercent, progressPercent, playbackSpeed, controlsVisible, hoverTime,
