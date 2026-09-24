@@ -55,23 +55,7 @@
             <p class="text-sm font-medium text-gray-900">Include camera overlay</p>
             <p class="text-xs text-gray-500">Merge your webcam as picture-in-picture</p>
           </div>
-          <button
-            type="button"
-            role="switch"
-            :aria-checked="options.includeCamera"
-            @click="options.includeCamera = !options.includeCamera"
-            :class="[
-              'relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-hidden focus:ring-2 focus:ring-orange-500 focus:ring-offset-2',
-              options.includeCamera ? 'bg-orange-500' : 'bg-gray-200'
-            ]"
-          >
-            <span
-              :class="[
-                'pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow-sm transform ring-0 transition duration-200 ease-in-out',
-                options.includeCamera ? 'translate-x-4' : 'translate-x-0'
-              ]"
-            />
-          </button>
+          <Switch v-model="options.includeCamera" />
         </div>
 
         <!-- Camera sub-options -->
@@ -126,23 +110,7 @@
           <p class="text-sm font-medium text-gray-900">Burn captions into video</p>
           <p class="text-xs text-gray-500">English captions available from transcription</p>
         </div>
-        <button
-          type="button"
-          role="switch"
-          :aria-checked="options.includeCaptions"
-          @click="options.includeCaptions = !options.includeCaptions"
-          :class="[
-            'relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-hidden focus:ring-2 focus:ring-orange-500 focus:ring-offset-2',
-            options.includeCaptions ? 'bg-orange-500' : 'bg-gray-200'
-          ]"
-        >
-          <span
-            :class="[
-              'pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow-sm transform ring-0 transition duration-200 ease-in-out',
-              options.includeCaptions ? 'translate-x-4' : 'translate-x-0'
-            ]"
-          />
-        </button>
+        <Switch v-model="options.includeCaptions" />
       </div>
 
       <div class="h-px bg-gray-100"></div>
@@ -206,10 +174,11 @@
 <script>
 import { computed, reactive } from 'vue'
 import SBModal from '@/components/Global/SBModal.vue'
+import { Switch } from '@/components/ui/switch'
 
 export default {
   name: 'SBDownloadModal',
-  components: { SBModal },
+  components: { SBModal, Switch },
   emits: ['update:modelValue', 'close', 'download'],
   props: {
     modelValue: { type: Boolean, required: true },
