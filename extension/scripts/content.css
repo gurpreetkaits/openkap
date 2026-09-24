@@ -1,9 +1,0 @@
-/* Styles for OpenKap camera overlay */
-
-#openkap-camera-overlay {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-}
-
-#openkap-camera-overlay * {
-  box-sizing: border-box;
-}
