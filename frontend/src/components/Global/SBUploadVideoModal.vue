@@ -96,29 +96,27 @@
             </p>
           </div>
 
-          <button
+          <Button variant="destructive"
             v-if="['queued', 'error', 'skipped', 'rejected'].includes(item.status)"
             @click="removeFile(idx)"
-            class="shrink-0 p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-sm transition-colors"
-            title="Remove"
-          >
+            class="shrink-0"
+            title="Remove">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
             </svg>
-          </button>
+          </Button>
         </div>
 
         <!-- Add more files -->
-        <button
+        <Button variant="outline" size="sm"
           v-if="!isUploading && !allFinished"
           @click="pickFiles"
-          class="w-full flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-medium text-gray-600 hover:text-orange-600 border border-dashed border-gray-300 hover:border-orange-300 rounded-lg transition-colors"
-        >
+          class="w-full flex items-center justify-center gap-1.5">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
           </svg>
           Add more files
-        </button>
+        </Button>
       </div>
 
       <input
@@ -153,25 +151,22 @@
           </template>
         </div>
         <div class="flex items-center gap-2">
-          <button
+          <Button variant="outline" size="sm"
             @click="handleClose"
-            :disabled="isUploading"
-            class="px-3.5 py-2 text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 border border-gray-300 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
+            :disabled="isUploading">
             {{ allFinished ? 'Close' : 'Cancel' }}
-          </button>
-          <button
+          </Button>
+          <Button size="sm"
             v-if="!allFinished"
             @click="startUpload"
             :disabled="!canStart"
-            class="inline-flex items-center gap-1.5 px-3.5 py-2 text-sm font-semibold text-white bg-orange-500 hover:bg-orange-600 rounded-lg shadow-xs shadow-orange-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
-          >
+            class="inline-flex items-center gap-1.5">
             <svg v-if="isUploading" class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
             </svg>
             {{ uploadButtonLabel }}
-          </button>
+          </Button>
         </div>
       </div>
     </template>
@@ -179,6 +174,7 @@
 </template>
 
 <script setup>
+import { Button } from '@/components/ui/button'
 import { ref, computed, watch } from 'vue'
 import SBModal from './SBModal.vue'
 

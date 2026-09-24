@@ -143,29 +143,27 @@
           <h3 class="font-semibold text-amber-800">Upgrade to Team Plan</h3>
           <p class="text-sm text-amber-700">Get video encoding, more storage, and advanced features for your team.</p>
         </div>
-        <button
+        <Button
           @click="startCheckout"
           :disabled="checkingOut"
-          class="px-4 py-2 bg-amber-600 text-white text-sm font-medium rounded-lg hover:bg-amber-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-        >
+          class="flex items-center gap-2">
           <div v-if="checkingOut" class="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
           {{ checkingOut ? 'Redirecting...' : 'Upgrade Now' }}
-        </button>
+        </Button>
       </div>
 
       <!-- Videos Section -->
       <div>
         <div class="flex items-center justify-between mb-4">
           <h2 class="text-xl font-semibold text-gray-900">Videos</h2>
-          <button
+          <Button
             v-if="workspace.can_record"
-            class="inline-flex items-center gap-2 px-4 py-2 bg-orange-500 text-white text-sm font-medium rounded-lg hover:bg-orange-600 transition-colors"
-          >
+            class="inline-flex items-center gap-2">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
             </svg>
             New Recording
-          </button>
+          </Button>
         </div>
 
         <!-- Videos Loading -->
@@ -188,15 +186,14 @@
           </div>
           <h3 class="text-lg font-semibold text-gray-900 mb-2">No videos yet</h3>
           <p class="text-gray-500 mb-4">Start recording to share videos with your team.</p>
-          <button
+          <Button
             v-if="workspace.can_record"
-            class="inline-flex items-center gap-2 px-4 py-2 bg-orange-500 text-white text-sm font-medium rounded-lg hover:bg-orange-600 transition-colors"
-          >
+            class="inline-flex items-center gap-2">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
             </svg>
             Start Recording
-          </button>
+          </Button>
         </div>
 
         <!-- Videos Grid -->
@@ -244,6 +241,7 @@
 </template>
 
 <script>
+import { Button } from '@/components/ui/button'
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import workspaceService from '@/services/workspaceService'
@@ -251,6 +249,7 @@ import toast from '@/services/toastService'
 
 export default {
   name: 'WorkspaceDetailView',
+  components: { Button },
   setup() {
     const route = useRoute()
     const slug = route.params.slug

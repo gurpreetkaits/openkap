@@ -8,16 +8,15 @@
           Conversations from users. All admins see this shared inbox.
         </p>
       </div>
-      <button
+      <Button variant="outline" size="sm"
         @click="loadConversations"
         :disabled="loadingList"
-        class="px-3 py-1.5 text-sm rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50 flex items-center gap-2"
-      >
+        class="flex items-center gap-2">
         <svg class="w-4 h-4" :class="{ 'animate-spin': loadingList }" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
         </svg>
         Refresh
-      </button>
+      </Button>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
@@ -98,21 +97,19 @@
 
         <!-- Pagination -->
         <div v-if="pagination.lastPage > 1" class="border-t border-gray-200 p-2 flex items-center justify-center gap-2 text-xs">
-          <button
+          <Button variant="outline" size="sm"
             @click="changePage(pagination.page - 1)"
-            :disabled="pagination.page <= 1"
-            class="px-2 py-1 rounded-sm border border-gray-300 disabled:opacity-40"
-          >
+            :disabled="pagination.page <= 1">
             Prev
-          </button>
+          </Button>
           <span class="text-gray-500">Page {{ pagination.page }} / {{ pagination.lastPage }}</span>
-          <button
+          <Button variant="ghost"
             @click="changePage(pagination.page + 1)"
-            :disabled="pagination.page >= pagination.lastPage"
+            :disabled="pagination.page>= pagination.lastPage"
             class="px-2 py-1 rounded-sm border border-gray-300 disabled:opacity-40"
           >
             Next
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -202,13 +199,12 @@
               @keydown.enter.exact.prevent="sendReply"
               class="flex-1 resize-none rounded-lg border border-gray-300 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 px-3 py-2 text-sm outline-hidden max-h-32"
             />
-            <button
+            <Button
               @click="sendReply"
               :disabled="!draft.trim() || sending"
-              class="h-9 px-4 rounded-lg bg-orange-600 text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-orange-700 transition text-sm font-medium"
-            >
+              class="h-9">
               {{ sending ? 'Sending…' : 'Send' }}
-            </button>
+            </Button>
           </div>
         </template>
       </div>
@@ -217,6 +213,7 @@
 </template>
 
 <script setup>
+import { Button } from '@/components/ui/button'
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import supportService from '@/services/supportService'
 

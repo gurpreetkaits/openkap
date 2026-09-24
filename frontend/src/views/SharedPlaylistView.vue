@@ -29,13 +29,12 @@
               :class="{ 'border-red-300 focus:ring-red-500 focus:border-red-500': passwordError }"
             />
             <p v-if="passwordError" class="text-sm text-red-600">{{ passwordError }}</p>
-            <button
+            <Button
               type="submit"
               :disabled="submittingPassword || !passwordInput"
-              class="w-full px-4 py-2.5 bg-orange-600 hover:bg-orange-700 disabled:bg-gray-300 text-white rounded-lg font-medium text-sm transition-colors"
-            >
+              class="w-full">
               {{ submittingPassword ? 'Checking...' : 'Unlock Playlist' }}
-            </button>
+            </Button>
           </form>
         </div>
       </div>
@@ -196,6 +195,7 @@
 </template>
 
 <script setup>
+import { Button } from '@/components/ui/button'
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import playlistService from '@/services/playlistService'

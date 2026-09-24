@@ -12,11 +12,11 @@
           <h3 class="text-sm font-semibold">Welcome to OpenKap Pro!</h3>
           <p class="text-xs text-gray-500">Your subscription is now active. Enjoy unlimited recordings!</p>
         </div>
-        <button @click="showSuccessAlert = false" class="ml-3 p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-md transition-colors">
+        <Button variant="ghost" @click="showSuccessAlert = false" class="ml-3">
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
           </svg>
-        </button>
+        </Button>
       </div>
     </div>
 
@@ -40,9 +40,9 @@
         </svg>
       </div>
       <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ error }}</h3>
-      <button @click="loadSubscription" class="inline-flex items-center px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-lg font-medium text-sm transition-colors">
+      <Button @click="loadSubscription" class="inline-flex items-center">
         Try Again
-      </button>
+      </Button>
     </div>
 
     <template v-else>
@@ -79,26 +79,24 @@
             </div>
           </div>
           <div class="flex items-center gap-2">
-            <button
+            <Button variant="outline" size="sm"
               v-if="subscription?.plan_type !== 'free'"
               @click="openBillingPortal"
               :disabled="loadingPortal"
-              class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
-            >
+              class="inline-flex items-center gap-1.5">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
               </svg>
               {{ loadingPortal ? 'Loading...' : 'Manage Billing' }}
-            </button>
-            <button
+            </Button>
+            <Button variant="destructive" size="sm"
               v-if="subscription?.plan_type !== 'free' && !subscription?.is_in_grace_period"
               @click="cancelSubscription"
               :disabled="canceling"
-              class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-red-600 bg-white border border-gray-200 rounded-lg hover:bg-red-50 hover:border-red-200 transition-colors disabled:opacity-50"
-            >
+              class="inline-flex items-center">
               {{ canceling ? 'Processing...' : 'Cancel Plan' }}
-            </button>
+            </Button>
           </div>
         </div>
         <!-- Monthly recording minutes usage (all plans with a cap) -->
@@ -147,9 +145,9 @@
           <h4 class="text-sm font-semibold text-gray-900">Need a custom enterprise plan?</h4>
           <p class="text-xs text-gray-500 mt-0.5">For large organizations with specific security, SSO, and compliance needs.</p>
         </div>
-        <button class="inline-flex items-center px-4 py-2 text-xs font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors shrink-0">
+        <Button variant="outline" size="sm" class="inline-flex items-center shrink-0">
           Contact Sales
-        </button>
+        </Button>
       </div>
 
       <!-- Billing History -->
@@ -189,6 +187,7 @@
 </template>
 
 <script setup>
+import { Button } from '@/components/ui/button'
 import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuth } from '@/stores/auth'

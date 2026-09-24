@@ -16,18 +16,18 @@
         </div>
         <p class="text-gray-900 text-lg font-medium">Authentication Failed</p>
         <p class="text-gray-500">{{ errorMessage }}</p>
-        <button
+        <Button
           @click="goToHome"
-          class="mt-4 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
-        >
+          class="mt-4">
           Go to Home
-        </button>
+        </Button>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
+import { Button } from '@/components/ui/button'
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '@/stores/auth'

@@ -3,9 +3,9 @@
     <div v-if="selectedItem" class="w-[260px] bg-white border-l border-gray-200 flex flex-col shrink-0 absolute lg:relative right-0 top-0 bottom-0 z-30 shadow-xl lg:shadow-none">
       <div class="p-3 border-b border-gray-100 flex items-center justify-between">
         <p class="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Properties</p>
-        <button @click="selectedItemId = null" class="text-gray-400 hover:text-gray-600 transition-colors">
+        <Button variant="ghost" @click="selectedItemId = null">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-        </button>
+        </Button>
       </div>
 
       <div class="p-3 space-y-4 overflow-y-auto flex-1">
@@ -99,16 +99,17 @@
         </div>
 
         <!-- Delete -->
-        <button @click="deleteItem(selectedItem.id)"
-          class="w-full px-4 py-2 text-sm font-medium text-red-600 bg-white rounded-lg border border-red-200 hover:bg-red-50 transition-colors">
+        <Button variant="destructive" @click="deleteItem(selectedItem.id)"
+          class="w-full">
           Delete
-        </button>
+        </Button>
       </div>
     </div>
   </transition>
 </template>
 
 <script setup>
+import { Button } from '@/components/ui/button'
 import { useEditorState } from '@/composables/useEditorState'
 
 const { selectedItem, selectedItemId, duration, deleteItem } = useEditorState()

@@ -15,15 +15,14 @@
         >
           {{ subscription.is_active ? 'Pro Plan' : 'Free Plan' }}
         </span>
-        <button
+        <Button
           @click="showCreateModal = true"
-          class="inline-flex items-center gap-2 px-4 py-2 bg-orange-500 text-white text-sm font-medium rounded-lg hover:bg-orange-600 transition-colors"
-        >
+          class="inline-flex items-center gap-2">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
           </svg>
           New Workspace
-        </button>
+        </Button>
       </div>
     </div>
 
@@ -50,15 +49,14 @@
       </div>
       <h3 class="text-lg font-semibold text-gray-900 mb-2">No workspaces yet</h3>
       <p class="text-gray-500 mb-6">Create your first workspace to start collaborating with your team.</p>
-      <button
+      <Button
         @click="showCreateModal = true"
-        class="inline-flex items-center gap-2 px-4 py-2 bg-orange-500 text-white text-sm font-medium rounded-lg hover:bg-orange-600 transition-colors"
-      >
+        class="inline-flex items-center gap-2">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
         </svg>
         Create Workspace
-      </button>
+      </Button>
     </div>
 
     <!-- Workspaces Grid -->
@@ -153,19 +151,15 @@
               </div>
 
               <div class="flex justify-end gap-3 mt-6">
-                <button
-                  @click="showCreateModal = false"
-                  class="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-                >
+                <Button variant="ghost"
+                  @click="showCreateModal = false">
                   Cancel
-                </button>
-                <button
+                </Button>
+                <Button
                   @click="createWorkspace"
-                  :disabled="!newWorkspace.name.trim() || creating"
-                  class="px-4 py-2 text-sm font-medium text-white bg-orange-500 rounded-lg hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
+                  :disabled="!newWorkspace.name.trim() || creating">
                   {{ creating ? 'Creating...' : 'Create Workspace' }}
-                </button>
+                </Button>
               </div>
             </div>
           </Transition>
@@ -176,6 +170,7 @@
 </template>
 
 <script>
+import { Button } from '@/components/ui/button'
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import workspaceService from '@/services/workspaceService'
@@ -183,6 +178,7 @@ import { useAuth } from '@/stores/auth'
 
 export default {
   name: 'WorkspacesView',
+  components: { Button },
   setup() {
     const router = useRouter()
     const auth = useAuth()

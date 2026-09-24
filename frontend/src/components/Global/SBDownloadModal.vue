@@ -143,18 +143,15 @@
     <!-- Footer -->
     <template #footer>
       <div class="flex items-center justify-end gap-3">
-        <button
+        <Button variant="outline"
           @click="$emit('close')"
-          :disabled="isDownloading"
-          class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
-        >
+          :disabled="isDownloading">
           Cancel
-        </button>
-        <button
+        </Button>
+        <Button
           @click="handleDownload"
           :disabled="isDownloading"
-          class="px-5 py-2 text-sm font-semibold text-white bg-orange-600 rounded-lg hover:bg-orange-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-        >
+          class="flex items-center gap-2">
           <svg
             v-if="isDownloading"
             class="animate-spin w-4 h-4"
@@ -165,20 +162,21 @@
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
           </svg>
           {{ isDownloading ? 'Starting...' : 'Download MP4' }}
-        </button>
+        </Button>
       </div>
     </template>
   </SBModal>
 </template>
 
 <script>
+import { Button } from '@/components/ui/button'
 import { computed, reactive } from 'vue'
 import SBModal from '@/components/Global/SBModal.vue'
 import { Switch } from '@/components/ui/switch'
 
 export default {
   name: 'SBDownloadModal',
-  components: { SBModal, Switch },
+  components: { Button, SBModal, Switch },
   emits: ['update:modelValue', 'close', 'download'],
   props: {
     modelValue: { type: Boolean, required: true },

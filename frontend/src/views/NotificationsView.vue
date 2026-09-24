@@ -6,13 +6,11 @@
         <h1 class="text-lg font-semibold text-gray-900">Notifications</h1>
         <p class="text-xs text-gray-500">Stay updated on your videos and activity</p>
       </div>
-      <button
+      <Button size="sm"
         v-if="hasUnread"
-        @click="markAllRead"
-        class="px-3 py-1.5 text-xs font-medium text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
-      >
+        @click="markAllRead">
         Mark all read
-      </button>
+      </Button>
     </div>
 
     <!-- Loading -->
@@ -67,25 +65,23 @@
 
           <!-- Actions -->
           <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-            <button
+            <Button
               v-if="!notification.read"
               @click.stop="markAsRead(notification)"
-              class="p-1.5 text-gray-400 hover:text-orange-600 hover:bg-orange-50 rounded-sm transition-colors"
-              title="Mark as read"
-            >
+             
+              title="Mark as read">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
               </svg>
-            </button>
-            <button
+            </Button>
+            <Button variant="destructive"
               @click.stop="deleteNotification(notification)"
-              class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-sm transition-colors"
-              title="Delete"
-            >
+             
+              title="Delete">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
               </svg>
-            </button>
+            </Button>
           </div>
 
           <!-- Unread dot -->
@@ -95,13 +91,11 @@
 
       <!-- Load More -->
       <div v-if="hasMore" class="p-3 border-t border-gray-100 text-center">
-        <button
+        <Button variant="ghost" size="sm"
           @click="loadMore"
-          :disabled="loadingMore"
-          class="text-xs font-medium text-orange-600 hover:text-orange-700 disabled:opacity-50"
-        >
+          :disabled="loadingMore">
           {{ loadingMore ? 'Loading...' : 'Load more' }}
-        </button>
+        </Button>
       </div>
     </div>
 
@@ -113,6 +107,7 @@
 </template>
 
 <script setup>
+import { Button } from '@/components/ui/button'
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { formatDistanceToNow } from 'date-fns'

@@ -14,20 +14,22 @@
           </svg>
         </div>
         <p class="text-sm text-red-600">{{ error }}</p>
-        <button @click="$router.push('/integrations')" class="text-sm text-orange-600 hover:text-orange-700 font-medium">
+        <Button variant="ghost" @click="$router.push('/integrations')">
           Go to Integrations
-        </button>
+        </Button>
       </div>
     </div>
   </div>
 </template>
 
 <script>
+import { Button } from '@/components/ui/button'
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 
 export default {
   name: 'TrelloCallbackView',
+  components: { Button },
   setup() {
     const router = useRouter()
     const processing = ref(true)

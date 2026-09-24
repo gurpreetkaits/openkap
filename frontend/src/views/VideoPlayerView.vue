@@ -39,9 +39,9 @@
           </svg>
         </div>
         <h3 class="text-lg font-semibold text-gray-900 mb-3">{{ error }}</h3>
-        <button v-if="!isSharedMode" @click="goBack" class="px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-medium transition-colors">
+        <Button size="lg" v-if="!isSharedMode" @click="goBack">
           Go Back
-        </button>
+        </Button>
         <a v-else href="/" class="px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-medium transition-colors inline-block">
           Go Home
         </a>
@@ -173,7 +173,7 @@
           <div class="flex items-center gap-2 shrink-0 ml-auto">
           <!-- Share Dropdown -->
           <div class="relative" ref="shareDropdownRef">
-            <button @click="showShareDropdown = !showShareDropdown" class="bg-orange-600 hover:bg-orange-700 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5">
+            <Button size="sm" @click="showShareDropdown = !showShareDropdown" class="flex items-center gap-1.5">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
               </svg>
@@ -181,14 +181,14 @@
               <svg class="w-2.5 h-2.5 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
               </svg>
-            </button>
+            </Button>
             <div v-show="showShareDropdown" class="absolute right-0 top-full mt-1.5 menu-panel w-48">
-              <button @click="() => { copyShareLink(); showShareDropdown = false }" class="menu-item">
+              <Button variant="ghost" @click="() => { copyShareLink(); showShareDropdown = false }" class="menu-item">
                 <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
                 </svg>
                 Copy link
-              </button>
+              </Button>
               <button v-if="!isSharedMode || isOwner" @click="copyEmbedCode(); showShareDropdown = false" class="menu-item">
                 <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
@@ -203,13 +203,13 @@
 
           <!-- Options Menu (three-dot) -->
           <div class="relative" ref="optionsMenuRef">
-            <button @click="showOptionsMenu = !showOptionsMenu" class="p-2 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors">
+            <Button variant="ghost" @click="showOptionsMenu = !showOptionsMenu">
               <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                 <circle cx="12" cy="5" r="1.5"/>
                 <circle cx="12" cy="12" r="1.5"/>
                 <circle cx="12" cy="19" r="1.5"/>
               </svg>
-            </button>
+            </Button>
             <div v-show="showOptionsMenu" class="absolute right-0 top-full mt-1.5 menu-panel w-52">
               <button v-if="canDownload" @click="handleDownload(); showOptionsMenu = false" class="menu-item">
                 <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -327,11 +327,11 @@
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-md relative z-10 border border-gray-100 overflow-hidden transform transition-all duration-200">
           <div class="p-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
             <h3 class="text-sm font-semibold text-gray-900">Share Recording</h3>
-            <button @click="showShareModal = false" class="text-gray-400 hover:text-gray-600">
+            <Button variant="ghost" @click="showShareModal = false">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
               </svg>
-            </button>
+            </Button>
           </div>
           <div class="p-5">
             <div class="flex gap-4 mb-6">
@@ -343,14 +343,14 @@
                 </div>
                 <span class="text-xs font-medium text-gray-600 group-hover:text-orange-700">Email</span>
               </a>
-              <button @click="copyEmbedCode" class="flex-1 flex flex-col items-center gap-2 p-3 rounded-lg border border-gray-200 hover:border-orange-500 hover:bg-orange-50/50 transition-all group">
+              <Button @click="copyEmbedCode" class="flex-1 flex flex-col items-center gap-2 group">
                 <div class="w-8 h-8 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center group-hover:scale-110 transition-transform">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
                   </svg>
                 </div>
                 <span class="text-xs font-medium text-gray-600 group-hover:text-pink-700">{{ copiedEmbed ? 'Copied!' : 'Embed' }}</span>
-              </button>
+              </Button>
               <a :href="`https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl || '')}&text=${encodeURIComponent(video.title || 'Check out this video')}`" target="_blank" rel="noopener noreferrer" class="flex-1 flex flex-col items-center gap-2 p-3 rounded-lg border border-gray-200 hover:border-orange-500 hover:bg-orange-50/50 transition-all group no-underline">
                 <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform">
                   <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
@@ -369,9 +369,9 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
                 </svg>
               </div>
-              <button @click="copyShareLink" class="bg-orange-600 hover:bg-orange-700 text-white px-3 py-2 rounded-lg text-xs font-medium transition-colors">
+              <Button size="sm" @click="copyShareLink">
                 {{ copied ? 'Copied!' : 'Copy' }}
-              </button>
+              </Button>
             </div>
 
             <!-- Integration Sharing (owner mode only) -->
@@ -402,18 +402,17 @@
             >
 
               <!-- Sidebar Toggle — top right of video -->
-              <button
+              <Button variant="ghost" size="icon"
                 @click.stop="sidebarVisible = !sidebarVisible"
-                class="absolute top-3 right-3 z-40 w-8 h-8 flex items-center justify-center rounded-lg bg-black/50 backdrop-blur-xs text-white/80 hover:text-white hover:bg-black/70 transition-all"
-                :title="sidebarVisible ? 'Hide sidebar' : 'Show sidebar'"
-              >
+                class="absolute top-3 right-3 z-40 w-8 h-8 flex items-center justify-center text-white hover:bg-white/20"
+                :title="sidebarVisible ? 'Hide sidebar' : 'Show sidebar'">
                 <svg v-if="!sidebarVisible" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M3 5h18M3 12h18M3 19h18"/>
                 </svg>
                 <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
                 </svg>
-              </button>
+              </Button>
 
 
               <!-- Video Loading Text -->
@@ -520,15 +519,14 @@
 
                   <!-- Toggle visibility button on hover -->
                   <div class="absolute -top-2 -right-2 opacity-0 group-hover/cam:opacity-100 transition-opacity duration-200 z-10">
-                    <button
+                    <Button variant="ghost" size="icon"
                       @click.stop="toggleCameraOverlay"
-                      class="w-6 h-6 flex items-center justify-center rounded-full bg-black/70 text-white/80 hover:text-white hover:bg-black/90 backdrop-blur-xs transition-all cursor-pointer"
-                      title="Hide camera"
-                    >
+                      class="w-6 h-6 flex items-center justify-center text-white hover:bg-white/20"
+                      title="Hide camera">
                       <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
                       </svg>
-                    </button>
+                    </Button>
                   </div>
                 </div>
               </transition>
@@ -545,24 +543,23 @@
                   class="absolute inset-0 bg-black/40 flex flex-col items-center justify-center"
                   @click="togglePlay"
                 >
-                  <button class="group/btn relative flex items-center justify-center w-24 h-24 bg-white/5 backdrop-blur-xs rounded-full border border-white/10 hover:scale-105 hover:bg-orange-600 hover:border-orange-500 transition-all duration-300 shadow-2xl cursor-pointer">
+                  <Button variant="secondary" size="icon"
+                    class="group/btn relative flex items-center justify-center size-24 rounded-full bg-white/10 hover:bg-primary border border-white/15 backdrop-blur-xs shadow-2xl">
                     <svg class="w-10 h-10 text-white fill-white ml-1" viewBox="0 0 24 24">
                       <path d="M8 5v14l11-7z"/>
                     </svg>
                     <div class="absolute inset-0 rounded-full border border-white/10 animate-ping opacity-20 group-hover/btn:opacity-0"></div>
-                  </button>
+                  </Button>
                   <!-- Pre-play controls -->
                   <div class="flex items-center gap-3 mt-4" @click.stop>
                     <span class="text-white/80 text-xs font-mono bg-black/50 backdrop-blur-xs px-2.5 py-1.5 rounded-lg">
                       {{ formatTime(duration) }}
                     </span>
                     <div class="relative">
-                      <button
-                        @click.stop="showPrePlaySpeedMenu = !showPrePlaySpeedMenu"
-                        class="text-white/80 text-xs font-bold bg-black/50 backdrop-blur-xs px-2.5 py-1.5 rounded-lg hover:bg-white/20 transition-colors cursor-pointer"
-                      >
+                      <Button variant="ghost" size="sm"
+                        @click.stop="showPrePlaySpeedMenu = !showPrePlaySpeedMenu">
                         {{ playbackSpeed }}x
-                      </button>
+                      </Button>
                         <div
                           v-show="showPrePlaySpeedMenu"
                           class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 menu-panel-dark min-w-[80px] py-2"
@@ -578,17 +575,15 @@
                         </button>
                       </div>
                     </div>
-                    <button
-                      @click.stop="toggleMute"
-                      class="text-white/80 bg-black/50 backdrop-blur-xs p-1.5 rounded-lg hover:bg-white/20 transition-colors cursor-pointer"
-                    >
+                    <Button variant="ghost"
+                      @click.stop="toggleMute">
                       <svg v-if="isMuted || volume === 0" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>
                       </svg>
                       <svg v-else class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
                       </svg>
-                    </button>
+                    </Button>
                   </div>
                 </div>
               </transition>
@@ -663,14 +658,14 @@
                       </button>
                       <!-- Volume -->
                       <div class="ctrl-tip flex items-center group/vol bg-white/10 hover:bg-white/20 rounded-full h-7 px-1.5 transition-all" :data-tip="isMuted ? 'Unmute' : 'Volume'">
-                        <button @click.stop="toggleMute" class="flex items-center justify-center w-5 h-5 opacity-80 hover:opacity-100 transition-all">
+                        <Button variant="ghost" size="icon" @click.stop="toggleMute" class="flex items-center justify-center w-5 h-5 opacity-80 hover:opacity-100 text-white hover:bg-white/20">
                           <svg v-if="isMuted || volume === 0" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                             <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>
                           </svg>
                           <svg v-else class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                             <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
                           </svg>
-                        </button>
+                        </Button>
                         <input
                           type="range" min="0" max="1" step="0.05" v-model="volume" @input="updateVolume"
                           class="volume-slider w-0 group-hover/vol:w-16 opacity-0 group-hover/vol:opacity-100 transition-all duration-200 ml-1"
@@ -684,12 +679,11 @@
                     <div class="flex items-center gap-2">
                       <!-- Quality -->
                       <div v-if="availableQualities.length > 0" class="relative ctrl-tip" ref="qualityMenuRef" data-tip="Quality">
-                        <button
+                        <Button variant="ghost" size="icon"
                           @click.stop.prevent="toggleQualityMenu"
-                          class="text-[10px] font-bold text-white/70 hover:text-white h-7 px-2.5 flex items-center rounded-full bg-white/10 hover:bg-white/20 transition-all"
-                        >
+                          class="h-7 flex items-center text-white hover:bg-white/20">
                           {{ getCurrentQualityLabel() }}
-                        </button>
+                        </Button>
                         <div
                           v-show="showQualityMenu"
                           class="absolute bottom-full right-0 mb-2 menu-panel-dark min-w-[100px]"
@@ -714,12 +708,11 @@
                       </div>
                       <!-- Speed -->
                       <div class="relative ctrl-tip" ref="speedMenuRef" data-tip="Speed">
-                        <button
+                        <Button variant="ghost" size="icon"
                           @click.stop.prevent="toggleSpeedMenu"
-                          class="text-[10px] font-bold text-white/70 hover:text-white h-7 px-2.5 flex items-center rounded-full bg-white/10 hover:bg-white/20 transition-all"
-                        >
+                          class="h-7 flex items-center text-white hover:bg-white/20">
                           {{ playbackSpeed }}x
-                        </button>
+                        </Button>
                         <div
                           v-show="showSpeedMenu"
                           class="absolute bottom-full right-0 mb-2 menu-panel-dark min-w-[80px]"
@@ -836,44 +829,44 @@
                   </div>
                 </div>
                 <div class="flex items-center gap-0.5 shrink-0">
-                  <button v-for="emoji in quickEmojis" :key="emoji" @click="newComment += emoji" class="w-6 h-6 flex items-center justify-center text-sm hover:bg-gray-100 rounded-full transition-colors">{{ emoji }}</button>
+                  <Button variant="ghost" v-for="emoji in quickEmojis" :key="emoji" @click="newComment += emoji" class="w-6 h-6 flex items-center justify-center">{{ emoji }}</Button>
                 </div>
-                <button @click="triggerMention" class="w-6 h-6 flex items-center justify-center text-gray-400 hover:text-orange-600 hover:bg-orange-50 rounded-full transition-colors shrink-0" title="Mention someone">
+                <Button size="icon" @click="triggerMention" class="w-6 h-6 flex items-center justify-center shrink-0" title="Mention someone">
                   <span class="text-sm font-bold">@</span>
-                </button>
-                <button @click="addComment" :disabled="!newComment.trim() || isSavingComment" class="shrink-0 bg-orange-600 text-white px-3 py-1 rounded-full text-[11px] font-semibold hover:bg-orange-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed">
+                </Button>
+                <Button size="sm" @click="addComment" :disabled="!newComment.trim() || isSavingComment" class="shrink-0">
                   Send
-                </button>
+                </Button>
               </div>
               </transition>
 
               <div v-if="!showCommentBox" class="flex-1"></div>
 
-              <button v-if="!showCommentBox" @click="isAuthenticated ? openCommentBox() : loginToComment()" class="flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-gray-50 text-gray-600 text-xs font-medium rounded-lg border border-gray-200 transition-colors shrink-0">
+              <Button variant="outline" size="sm" v-if="!showCommentBox" @click="isAuthenticated ? openCommentBox() : loginToComment()" class="flex items-center gap-1.5 shrink-0">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
                 Comment
-              </button>
-              <button @click="copyShareLink" class="flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-gray-50 text-gray-600 text-xs font-medium rounded-lg border border-gray-200 transition-colors shrink-0">
+              </Button>
+              <Button variant="outline" size="sm" @click="copyShareLink" class="flex items-center gap-1.5 shrink-0">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
                 {{ copied ? 'Copied!' : 'Copy Link' }}
-              </button>
-              <button v-if="canDownload" @click="handleDownload" class="flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-gray-50 text-gray-600 text-xs font-medium rounded-lg border border-gray-200 transition-colors shrink-0">
+              </Button>
+              <Button variant="outline" size="sm" v-if="canDownload" @click="handleDownload" class="flex items-center gap-1.5 shrink-0">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                 Download
-              </button>
-              <button v-if="isOwner" @click="showPrivacyConfirm = true" class="flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-gray-50 text-gray-600 text-xs font-medium rounded-lg border border-gray-200 transition-colors shrink-0">
+              </Button>
+              <Button variant="outline" size="sm" v-if="isOwner" @click="showPrivacyConfirm = true" class="flex items-center gap-1.5 shrink-0">
                 <svg v-if="video.is_public" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
                 <svg v-else class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 {{ video.is_public ? 'Make Private' : 'Make Public' }}
-              </button>
-              <button v-if="isOwner" @click="showDuplicateConfirm = true" class="flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-gray-50 text-gray-600 text-xs font-medium rounded-lg border border-gray-200 transition-colors shrink-0">
+              </Button>
+              <Button variant="outline" size="sm" v-if="isOwner" @click="showDuplicateConfirm = true" class="flex items-center gap-1.5 shrink-0">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
                 Duplicate
-              </button>
-              <button v-if="isOwner" @click="showDeleteConfirm = true" class="flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-red-50 text-red-600 text-xs font-medium rounded-lg border border-gray-200 hover:border-red-200 transition-colors shrink-0">
+              </Button>
+              <Button variant="destructive" size="sm" v-if="isOwner" @click="showDeleteConfirm = true" class="flex items-center gap-1.5 shrink-0">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                 Delete
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -956,13 +949,12 @@
                       </div>
                       <p class="text-[12px] text-gray-700 leading-relaxed comment-content" v-html="renderCommentContent(comment.content)"></p>
                     </div>
-                    <button
+                    <Button variant="ghost"
                       v-if="comment.timestamp_seconds != null"
                       @click="seekToTime(comment.timestamp_seconds)"
-                      class="text-[9px] font-mono text-orange-500 hover:text-orange-600 mt-0.5 ml-1 transition-colors"
-                    >
+                      class="font-mono mt-0.5 ml-1">
                       {{ formatTime(comment.timestamp_seconds) }}
-                    </button>
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -984,26 +976,24 @@
                 <!-- Toolbar -->
                 <div class="sticky top-0 bg-white z-10 border-b border-gray-100 shrink-0">
                   <div class="flex items-center gap-2 px-5 py-2.5">
-                    <button
+                    <Button variant="outline" size="sm"
                       @click="copyTranscript"
-                      class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200"
-                    >
+                      class="flex items-center gap-1.5">
                       <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
                       </svg>
                       {{ copiedTranscript ? 'Copied!' : 'Copy' }}
-                    </button>
+                    </Button>
                     <template v-if="!isSharedMode">
                       <div class="relative export-menu-container">
-                        <button
+                        <Button variant="outline" size="sm"
                           @click="showExportMenu = !showExportMenu"
-                          class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200"
-                        >
+                          class="flex items-center gap-1.5">
                           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
                           </svg>
                           Download
-                        </button>
+                        </Button>
                         <div v-if="showExportMenu" class="absolute left-0 mt-1 menu-panel w-40">
                           <button @click="exportTranscript('txt')" class="menu-item">
                             Plain Text (.txt)
@@ -1039,15 +1029,14 @@
               <div v-else-if="transcription" class="p-5">
                 <div class="flex items-center justify-between mb-3">
                   <span class="text-xs font-medium text-gray-500">Full transcript</span>
-                  <button
+                  <Button size="sm"
                     @click="copyTranscript"
-                    class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
-                  >
+                    class="flex items-center gap-1.5">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
                     </svg>
                     {{ copiedTranscript ? 'Copied!' : 'Copy' }}
-                  </button>
+                  </Button>
                 </div>
                 <p class="text-[12px] text-gray-600 leading-relaxed whitespace-pre-wrap">{{ transcription }}</p>
               </div>
@@ -1075,15 +1064,14 @@
                     </svg>
                     <span class="text-xs font-semibold text-gray-900">AI Summary</span>
                   </div>
-                  <button
+                  <Button size="sm"
                     @click="copySummary"
-                    class="flex items-center gap-1 px-2 py-1 text-[10px] font-medium text-gray-500 hover:text-orange-600 hover:bg-orange-50 rounded-md transition-colors"
-                  >
+                    class="flex items-center gap-1">
                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
                     </svg>
                     {{ copiedSummary ? 'Copied!' : 'Copy' }}
-                  </button>
+                  </Button>
                 </div>
                 <div class="prose prose-sm max-w-none text-gray-600 leading-relaxed text-[12px]" v-html="formattedSummary"></div>
               </div>
@@ -1178,10 +1166,9 @@
                   :key="bug.id"
                   class="border border-gray-200 rounded-lg overflow-hidden transition-all hover:border-gray-300"
                 >
-                  <button
+                  <Button variant="ghost" size="lg"
                     @click="expandedBugId = expandedBugId === bug.id ? null : bug.id"
-                    class="w-full px-4 py-3 flex items-center gap-3 text-left hover:bg-gray-50 transition-colors"
-                  >
+                    class="w-full flex items-center gap-3 text-left">
                     <span
                       class="w-2.5 h-2.5 rounded-full shrink-0"
                       :class="{
@@ -1212,7 +1199,7 @@
                     >
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                     </svg>
-                  </button>
+                  </Button>
 
                   <div v-if="expandedBugId === bug.id" class="px-4 pb-4 border-t border-gray-100 space-y-3">
                     <div v-if="bug.description" class="pt-3">
@@ -1226,12 +1213,11 @@
                       </ol>
                     </div>
                     <div v-if="bug.mentioned_at_seconds != null">
-                      <button
+                      <Button size="sm"
                         @click="seekToTime(bug.mentioned_at_seconds)"
-                        class="text-xs font-mono bg-orange-50 text-orange-600 px-2 py-1 rounded-sm hover:bg-orange-100 transition-colors"
-                      >
+                        class="font-mono">
                         Mentioned at {{ formatTime(bug.mentioned_at_seconds) }}
-                      </button>
+                      </Button>
                     </div>
                     <div class="pt-2">
                       <a
@@ -1255,12 +1241,11 @@
                         </svg>
                         Creating in Jira...
                       </span>
-                      <button
+                      <Button variant="ghost" size="sm"
                         v-else
                         @click="createBugInJira(bug)"
                         :disabled="creatingBugId === bug.id || !selectedBugProject"
-                        class="inline-flex items-center gap-2 px-3 py-2 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
-                      >
+                        class="inline-flex items-center gap-2">
                         <svg v-if="creatingBugId === bug.id" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
                           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                           <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -1269,7 +1254,7 @@
                           <path d="M11.571 11.513H0a5.218 5.218 0 0 0 5.232 5.215h2.13v2.057A5.215 5.215 0 0 0 12.575 24V12.518a1.005 1.005 0 0 0-1.005-1.005zm5.723-5.756H5.736a5.215 5.215 0 0 0 5.215 5.214h2.129v2.058a5.218 5.218 0 0 0 5.215 5.214V6.758a1.001 1.001 0 0 0-1.001-1.001zM23.013 0H11.455a5.215 5.215 0 0 0 5.215 5.215h2.129v2.057A5.215 5.215 0 0 0 24.013 12.487V1.005A1.005 1.005 0 0 0 23.013 0z"/>
                         </svg>
                         Create Bug in Jira
-                      </button>
+                      </Button>
                       <p v-if="!selectedBugProject && !bug.jira_url && !bug.jira_queued" class="text-[11px] text-gray-400 mt-1">Select a Jira project above first</p>
                     </div>
                   </div>
@@ -1296,24 +1281,22 @@
                     @ {{ formatTime(currentTime) }}
                   </span>
                 </div>
-                <button
+                <Button
                   @click="addComment"
                   :disabled="!newComment.trim() || isSavingComment"
-                  class="bg-orange-600 text-white p-2 rounded-xl hover:bg-orange-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed shrink-0"
-                >
+                  class="shrink-0">
                   <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
                   </svg>
-                </button>
+                </Button>
               </div>
             </div>
             <!-- Sign In Prompt (shared mode, non-authenticated) -->
             <div v-else-if="isSharedMode" class="p-2.5 bg-gray-50 rounded-xl border border-gray-200">
               <p class="text-gray-500 text-[10px] mb-1.5 text-center">Sign in to comment</p>
-              <button
+              <Button variant="outline" size="sm"
                 @click="loginToComment"
-                class="flex items-center justify-center w-full px-3 py-1.5 text-[11px] font-medium text-gray-700 bg-white rounded-lg hover:bg-gray-100 transition-colors border border-gray-200"
-              >
+                class="flex items-center justify-center w-full">
                 <svg class="w-3.5 h-3.5 mr-1.5" viewBox="0 0 24 24">
                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                   <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -1321,7 +1304,7 @@
                   <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                 </svg>
                 Sign in with Google
-              </button>
+              </Button>
             </div>
           </div>
         </aside>
@@ -1348,6 +1331,7 @@
 </template>
 
 <script>
+import { Button } from '@/components/ui/button'
 import { ref, onMounted, onUnmounted, computed, watch, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuth } from '@/stores/auth'
@@ -1368,7 +1352,7 @@ const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8888'
 
 export default {
   name: 'VideoPlayerView',
-  components: {
+  components: { Button,
     SBConfirmModal,
     SBDownloadModal,
     VideoShareIntegrations,

@@ -41,13 +41,12 @@
               </button>
             </div>
 
-            <button
+            <Button size="lg"
               @click="nextStep"
               :disabled="!form.heardFrom"
-              class="mt-6 w-full py-3 rounded-xl bg-orange-500 text-white font-semibold text-sm transition-all hover:bg-orange-600 disabled:opacity-40 disabled:cursor-not-allowed"
-            >
+              class="mt-6 w-full">
               Continue
-            </button>
+            </Button>
           </div>
         </Transition>
 
@@ -78,9 +77,9 @@
                   class="flex-1 text-sm text-stone-800 border-0 outline-hidden focus:ring-0 focus:outline-hidden placeholder:text-stone-400 bg-transparent"
                   autocomplete="off"
                 />
-                <button v-if="orgSearch" @click="orgSearch = ''; form.organizationName = ''" class="text-stone-300 hover:text-stone-500">
+                <Button variant="ghost" v-if="orgSearch" @click="orgSearch = ''; form.organizationName = ''">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                </button>
+                </Button>
               </div>
 
               <!-- Dropdown -->
@@ -97,13 +96,12 @@
                 >
                   {{ org }}
                 </button>
-                <button
+                <Button variant="outline"
                   v-if="orgSearch && !filteredOrgs.includes(orgSearch)"
                   @mousedown.prevent="selectOrg(orgSearch)"
-                  class="w-full text-left px-4 py-2.5 text-sm text-stone-500 hover:bg-stone-50 border-t border-stone-100"
-                >
+                  class="w-full text-left">
                   Use "<strong class="text-stone-700">{{ orgSearch }}</strong>"
-                </button>
+                </Button>
               </div>
             </div>
 
@@ -112,15 +110,14 @@
             </p>
 
             <div class="flex gap-3 mt-6">
-              <button @click="step--" class="px-5 py-3 rounded-xl border border-stone-200 text-stone-600 text-sm font-medium hover:bg-stone-50 transition-colors">
+              <Button variant="outline" size="lg" @click="step--">
                 Back
-              </button>
-              <button
+              </Button>
+              <Button size="lg"
                 @click="nextStep"
-                class="flex-1 py-3 rounded-xl bg-orange-500 text-white font-semibold text-sm transition-all hover:bg-orange-600"
-              >
+                class="flex-1">
                 Continue
-              </button>
+              </Button>
             </div>
           </div>
         </Transition>
@@ -149,20 +146,19 @@
             </div>
 
             <div class="flex gap-3 mt-6">
-              <button @click="step--" class="px-5 py-3 rounded-xl border border-stone-200 text-stone-600 text-sm font-medium hover:bg-stone-50 transition-colors">
+              <Button variant="outline" size="lg" @click="step--">
                 Back
-              </button>
-              <button
+              </Button>
+              <Button size="lg"
                 @click="submit"
                 :disabled="loading || !form.workspaceName.trim()"
-                class="flex-1 py-3 rounded-xl bg-orange-500 text-white font-semibold text-sm transition-all hover:bg-orange-600 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-              >
+                class="flex-1 flex items-center justify-center gap-2">
                 <svg v-if="loading" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                   <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
                 </svg>
                 {{ loading ? 'Setting up…' : 'Get started' }}
-              </button>
+              </Button>
             </div>
           </div>
         </Transition>
@@ -176,6 +172,7 @@
 </template>
 
 <script setup>
+import { Button } from '@/components/ui/button'
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '@/stores/auth'

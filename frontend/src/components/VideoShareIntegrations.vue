@@ -4,12 +4,11 @@
 
     <!-- Connected Integrations -->
     <div class="space-y-2">
-      <button
+      <Button
         v-for="integration in integrations"
         :key="integration.id"
         @click="openShareModal(integration)"
-        class="w-full flex items-center gap-3 p-2.5 rounded-lg border border-gray-100 hover:border-orange-200 hover:bg-orange-50/50 transition-all group text-left"
-      >
+        class="w-full flex items-center gap-3 group text-left">
         <div class="w-7 h-7 rounded-md flex items-center justify-center" :class="getProviderBgColor(integration.id)">
           <!-- Jira -->
           <svg v-if="integration.id === 'jira'" class="w-3.5 h-3.5 text-blue-600" viewBox="0 0 24 24" fill="currentColor">
@@ -22,7 +21,7 @@
         <svg class="w-3.5 h-3.5 text-gray-400 group-hover:text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
         </svg>
-      </button>
+      </Button>
     </div>
 
     <!-- Share History -->
@@ -58,11 +57,11 @@
       <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm relative z-10 border border-gray-100 overflow-hidden">
         <div class="p-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
           <h3 class="text-sm font-semibold text-gray-900">Share to {{ selectedProvider?.name }}</h3>
-          <button @click="closeShareModal" class="text-gray-400 hover:text-gray-600">
+          <Button variant="ghost" @click="closeShareModal">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
             </svg>
-          </button>
+          </Button>
         </div>
         <div class="p-5 space-y-4">
           <!-- Target Selector -->
@@ -99,17 +98,16 @@
           </div>
 
           <!-- Send Button -->
-          <button
+          <Button
             @click="executeShare"
             :disabled="!shareForm.target_id || sharing"
-            class="w-full px-4 py-2.5 text-sm font-semibold rounded-lg bg-orange-600 text-white hover:bg-orange-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-          >
+            class="w-full flex items-center justify-center gap-2">
             <div v-if="sharing" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
             <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
             </svg>
             {{ sharing ? 'Sharing...' : 'Share' }}
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -117,6 +115,7 @@
 </template>
 
 <script>
+import { Button } from '@/components/ui/button'
 import { ref, onMounted, watch } from 'vue'
 import integrationService from '@/services/integrationService'
 import { useToast } from '@/services/toastService'
@@ -124,6 +123,7 @@ import { formatDistanceToNow } from 'date-fns'
 
 export default {
   name: 'VideoShareIntegrations',
+  components: { Button },
   props: {
     videoId: {
       type: [Number, String],

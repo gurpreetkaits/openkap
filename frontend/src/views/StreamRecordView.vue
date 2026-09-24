@@ -79,15 +79,14 @@
 
         <!-- Record Button -->
         <div class="text-center">
-          <button
+          <Button variant="ghost" size="lg"
             @click="startRecording"
             :disabled="!canRecord || isStartingRecording"
-            class="group relative inline-flex items-center gap-3 px-12 py-4 text-lg font-semibold rounded-2xl text-white bg-linear-to-r from-orange-500 to-rose-500 hover:from-orange-600 hover:to-rose-600 shadow-lg shadow-orange-200 hover:shadow-xl hover:shadow-orange-300 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:shadow-lg transform active:scale-[0.98]"
-          >
+            class="group relative inline-flex items-center gap-3 from-orange-500 to-rose-500 hover:from-orange-600 hover:to-rose-600 transform active:scale-[0.98]">
             <svg v-if="!isStartingRecording" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><circle cx="10" cy="10" r="6"/></svg>
             <svg v-else class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
             {{ isStartingRecording ? 'Starting...' : 'Start Recording' }}
-          </button>
+          </Button>
           <p class="mt-4 text-xs text-gray-400">You'll choose what to share after clicking</p>
         </div>
       </div>
@@ -112,21 +111,21 @@
         </div>
 
         <div class="flex items-center justify-center gap-3">
-          <button v-if="!isPaused" @click="pauseRecording"
-            class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 shadow-xs transition-colors">
+          <Button variant="outline" v-if="!isPaused" @click="pauseRecording"
+            class="inline-flex items-center gap-2">
             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M5.5 3.5A1.5 1.5 0 017 2h6a1.5 1.5 0 011.5 1.5v13a1.5 1.5 0 01-1.5 1.5H7A1.5 1.5 0 015.5 16.5v-13z"/></svg>
             Pause
-          </button>
-          <button v-if="isPaused" @click="resumeRecording"
-            class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium text-white bg-orange-500 hover:bg-orange-600 shadow-xs transition-colors">
+          </Button>
+          <Button v-if="isPaused" @click="resumeRecording"
+            class="inline-flex items-center gap-2">
             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.841z"/></svg>
             Resume
-          </button>
-          <button @click="stopRecording"
-            class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium text-white bg-red-500 hover:bg-red-600 shadow-xs transition-colors">
+          </Button>
+          <Button variant="destructive" @click="stopRecording"
+            class="inline-flex items-center gap-2">
             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><rect x="4" y="4" width="12" height="12" rx="2"/></svg>
             Stop
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -150,6 +149,7 @@
 </template>
 
 <script>
+import { Button } from '@/components/ui/button'
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useAuth } from '@/stores/auth'
 import { buildApiUrl } from '@/config/api'
@@ -160,7 +160,7 @@ import ZoomSettingsPanel from '@/components/Zoom/ZoomSettingsPanel.vue'
 
 export default {
   name: 'RecordView',
-  components: {
+  components: { Button,
     ZoomSettingsPanel
   },
   setup() {

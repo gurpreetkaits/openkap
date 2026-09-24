@@ -3,36 +3,33 @@
     <!-- Action Bar -->
     <div class="flex items-center justify-end gap-2 mb-5">
       <!-- New Folder Button -->
-      <button
+      <Button size="sm"
         v-if="activeTab !== 'screenshots'"
         @click="showNewFolderModal = true"
-        class="group inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-dashed border-gray-300 rounded-lg text-sm text-gray-500 hover:border-orange-300 hover:text-orange-500 hover:bg-orange-50 transition-all"
-      >
+        class="group inline-flex items-center gap-1.5">
         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
         </svg>
         <span class="font-medium">New folder</span>
-      </button>
+      </Button>
 
       <!-- Upload Video Button -->
-      <button
+      <Button size="sm"
         v-if="activeTab !== 'screenshots'"
         @click="handleUpload"
-        class="inline-flex items-center gap-1.5 px-3.5 py-2 text-sm font-semibold text-white bg-orange-500 hover:bg-orange-600 rounded-lg shadow-xs shadow-orange-200 transition-all"
-      >
+        class="inline-flex items-center gap-1.5">
         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
         </svg>
         Upload Video
-      </button>
+      </Button>
 
       <!-- Upload Screenshot Button -->
-      <button
+      <Button size="sm"
         v-if="activeTab === 'screenshots'"
         @click="handleScreenshotUpload"
-        class="inline-flex items-center gap-1.5 px-3.5 py-2 text-sm font-semibold text-white bg-orange-500 hover:bg-orange-600 rounded-lg shadow-xs shadow-orange-200 transition-all"
-        :disabled="uploadingScreenshot"
-      >
+        class="inline-flex items-center gap-1.5"
+        :disabled="uploadingScreenshot">
         <svg v-if="!uploadingScreenshot" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
         </svg>
@@ -41,7 +38,7 @@
           <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
         </svg>
         {{ uploadingScreenshot ? 'Uploading...' : 'Upload Screenshot' }}
-      </button>
+      </Button>
 
       <!-- Hidden file input for screenshot upload -->
       <input ref="screenshotFileInput" type="file" accept="image/png,image/jpeg,image/webp" class="hidden" @change="onScreenshotFileSelected" />
@@ -70,17 +67,16 @@
           <span class="text-sm font-medium text-gray-700 group-hover:text-gray-900 truncate max-w-[140px] transition-colors">{{ folder.name }}</span>
           <span class="text-[11px] font-medium text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded-full leading-none">{{ folder.videos_count }}</span>
           <!-- Three-dot menu -->
-          <button
+          <Button variant="ghost"
             @click.stop="handleFolderMenuClick($event, folder)"
-            class="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded-sm text-gray-400 hover:text-gray-700 hover:bg-gray-100"
-            title="Folder options"
-          >
+            class="opacity-0 group-hover:opacity-100"
+            title="Folder options">
             <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 16 16">
               <circle cx="8" cy="3" r="1.5"/>
               <circle cx="8" cy="8" r="1.5"/>
               <circle cx="8" cy="13" r="1.5"/>
             </svg>
-          </button>
+          </Button>
         </div>
 
       </div>
@@ -137,10 +133,9 @@
             {{ selectedVideos.length }} selected
           </span>
           <div class="relative" ref="bulkActionsDropdownRef">
-            <button
+            <Button size="sm"
               @click="showBulkActionsDropdown = !showBulkActionsDropdown"
-              class="flex items-center gap-2 text-[13px] font-medium text-white bg-orange-600 hover:bg-orange-700 px-3 py-1.5 rounded-lg transition-all shadow-xs"
-            >
+              class="flex items-center gap-2">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"/>
               </svg>
@@ -148,7 +143,7 @@
               <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
               </svg>
-            </button>
+            </Button>
 
             <!-- Bulk Actions Dropdown Menu -->
             <Transition name="dropdown">
@@ -165,8 +160,8 @@
                   </svg>
                   Add to Favourites
                 </button>
-                <button
-                  v-if="folders.length > 0"
+                <Button variant="ghost"
+                  v-if="folders.length> 0"
                   @click="openBulkMoveToFolderModal"
               class="menu-item flex items-center gap-2.5"
               >
@@ -174,7 +169,7 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
                 </svg>
                 Move to Folder
-              </button>
+              </Button>
               <div class="menu-divider"></div>
                 <button
                   @click="showBulkDeleteModal = true; showBulkActionsDropdown = false"
@@ -204,13 +199,13 @@
         </div>
 
         <!-- Cancel Selection (shown when videos are selected) -->
-        <button
-          v-if="selectedVideos.length > 0"
+        <Button variant="ghost"
+          v-if="selectedVideos.length> 0"
           @click="clearSelection"
           class="text-[13px] font-medium text-gray-500 hover:text-gray-700 px-2 py-1"
         >
           Cancel
-        </button>
+        </Button>
 
         <!-- Search -->
         <div class="relative group">
@@ -223,28 +218,26 @@
             placeholder="Search..."
             class="pl-9 pr-8 py-1.5 text-sm font-medium bg-white border border-gray-200 focus:border-orange-500/30 focus:ring-4 focus:ring-orange-500/5 rounded-lg w-48 transition-all outline-hidden placeholder:text-gray-400 shadow-xs"
           />
-          <button
+          <Button variant="ghost"
             v-if="searchQuery"
             @click="searchQuery = ''"
-            class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-          >
+            class="absolute right-2.5 top-1/2 -translate-y-1/2">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
             </svg>
-          </button>
+          </Button>
         </div>
 
         <!-- Sort Dropdown -->
         <div class="relative" ref="sortDropdownRef">
-          <button
+          <Button variant="outline" size="sm"
             @click="showSortDropdown = !showSortDropdown"
-            class="flex items-center gap-2 text-sm font-medium text-gray-600 bg-white border border-gray-200 px-3 py-1.5 rounded-lg hover:bg-gray-50 transition-all shadow-xs"
-          >
+            class="flex items-center gap-2">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/>
             </svg>
             {{ currentSortLabel }}
-          </button>
+          </Button>
 
           <!-- Sort Dropdown Menu -->
           <Transition name="dropdown">
@@ -326,12 +319,11 @@
 
               <!-- Clear Filters -->
               <div v-if="activeDateFilter !== 'all'" class="px-3 pt-2 mt-1.5 border-t border-gray-100">
-                <button
+                <Button size="sm"
                   @click="clearFilters(); showFilterDropdown = false"
-                  class="w-full text-center text-sm text-orange-600 hover:text-orange-700 font-medium py-1.5 hover:bg-orange-50 rounded-lg transition-colors"
-                >
+                  class="w-full text-center">
                   Clear Filters
-                </button>
+                </Button>
               </div>
             </div>
           </Transition>
@@ -382,12 +374,11 @@
         </svg>
       </div>
       <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ error }}</h3>
-      <button
+      <Button
         @click="fetchVideos"
-        class="inline-flex items-center px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-lg font-medium text-sm shadow-xs transition-colors"
-      >
+        class="inline-flex items-center">
         Try Again
-      </button>
+      </Button>
     </div>
 
     <!-- Videos Grid View -->
@@ -502,26 +493,24 @@
                 </svg>
               </button>
               <!-- Copy Link -->
-              <button
+              <Button variant="ghost"
                 @click.stop="shareVideo(video)"
-                class="p-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
-                title="Copy link"
-              >
+               
+                title="Copy link">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
                 </svg>
-              </button>
+              </Button>
               <!-- More Options (opens context menu on hover) -->
-              <button
+              <Button variant="ghost"
                 @mouseenter="handleVideoMenuClick($event, video)"
                 @click.stop
-                class="p-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
-                title="More options"
-              >
+               
+                title="More options">
                 <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"/>
                 </svg>
-              </button>
+              </Button>
             </div>
           </div>
           <!-- Meta Info -->
@@ -654,22 +643,21 @@
             </svg>
           </button>
           <!-- Copy Link -->
-          <button @click="shareVideo(video)" class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors" title="Copy link">
+          <Button variant="ghost" @click="shareVideo(video)" title="Copy link">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
             </svg>
-          </button>
+          </Button>
           <!-- More Options (context menu - teleported to body) -->
           <div class="relative">
-            <button
+            <Button variant="ghost"
               @click.stop="handleVideoMenuClick($event, video)"
-              class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-              title="More options"
-            >
+             
+              title="More options">
               <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"/>
               </svg>
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -784,24 +772,22 @@
           </div>
           <!-- Actions (visible on hover) -->
           <div class="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1" @click.stop>
-            <button
+            <Button variant="secondary"
               @click="copyScreenshotLink(screenshot)"
-              class="p-1.5 bg-white/90 hover:bg-white rounded-lg shadow-xs transition-colors"
-              title="Copy share link"
-            >
+             
+              title="Copy share link">
               <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/>
               </svg>
-            </button>
-            <button
+            </Button>
+            <Button variant="destructive"
               @click="deleteScreenshot(screenshot)"
-              class="p-1.5 bg-white/90 hover:bg-red-50 rounded-lg shadow-xs transition-colors"
-              title="Delete screenshot"
-            >
+             
+              title="Delete screenshot">
               <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
               </svg>
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -817,15 +803,14 @@
         <p class="text-sm text-gray-500 max-w-md mx-auto mb-6">
           Take screenshots using the browser extension or upload images directly.
         </p>
-        <button
+        <Button
           @click="handleScreenshotUpload"
-          class="inline-flex items-center px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-lg font-medium text-sm shadow-xs transition-colors"
-        >
+          class="inline-flex items-center">
           <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
           </svg>
           Upload Screenshot
-        </button>
+        </Button>
       </div>
     </template>
 
@@ -845,13 +830,12 @@
       <p class="text-sm text-gray-500 max-w-md mx-auto mb-6">
         {{ activeTab === 'favourites' ? 'Mark videos as favourites to see them here.' : (videos.length === 0 ? 'Start by recording your first screen capture. It only takes a few seconds.' : 'Try adjusting your date filter to see more videos.') }}
       </p>
-      <button
+      <Button variant="outline"
         v-if="activeTab === 'favourites'"
         @click="activeTab = 'videos'"
-        class="inline-flex items-center px-4 py-2 bg-white border border-gray-100 hover:bg-gray-50 text-gray-700 rounded-lg font-medium text-sm shadow-xs transition-colors"
-      >
+        class="inline-flex items-center">
         Browse Videos
-      </button>
+      </Button>
       <button
         v-else-if="videos.length === 0"
         @click="goToRecord"
@@ -864,13 +848,12 @@
         </svg>
         Record Your First Video
       </button>
-      <button
+      <Button variant="outline"
         v-else
         @click="clearFilters"
-        class="inline-flex items-center px-4 py-2 bg-white border border-gray-100 hover:bg-gray-50 text-gray-700 rounded-lg font-medium text-sm shadow-xs transition-colors"
-      >
+        class="inline-flex items-center">
         Clear Filters
-      </button>
+      </Button>
     </div>
 
     <!-- Delete Video Modal -->
@@ -904,24 +887,21 @@
       </div>
       <template #footer>
         <div class="flex justify-end gap-3">
-          <button
+          <Button variant="outline"
             @click="showArchiveModal = false"
-            :disabled="isArchiving"
-            class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
-          >
+            :disabled="isArchiving">
             Cancel
-          </button>
-          <button
+          </Button>
+          <Button
             @click="confirmArchiveVideo"
             :disabled="isArchiving"
-            class="px-4 py-2 text-sm font-medium text-white bg-amber-600 hover:bg-amber-700 rounded-lg transition-colors disabled:opacity-50 inline-flex items-center gap-2"
-          >
+            class="inline-flex items-center gap-2">
             <svg v-if="isArchiving" class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
             {{ isArchiving ? 'Archiving...' : 'Archive' }}
-          </button>
+          </Button>
         </div>
       </template>
     </SBModal>
@@ -946,14 +926,13 @@
         >
           <div class="relative max-w-5xl max-h-[90vh] w-full">
             <!-- Close Button -->
-            <button
+            <Button variant="ghost"
               @click="closeScreenshotPreview"
-              class="absolute -top-12 right-0 p-2 text-white/80 hover:text-white transition-colors"
-            >
+              class="absolute -top-12 right-0">
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
               </svg>
-            </button>
+            </Button>
             <!-- Image -->
             <img
               :src="selectedScreenshot.imageUrl"
@@ -968,18 +947,14 @@
                   <p class="text-sm text-white/70">{{ formatDate(selectedScreenshot.createdAt) }}</p>
                 </div>
                 <div class="flex items-center gap-2">
-                  <button
-                    @click="copyScreenshotLink(selectedScreenshot)"
-                    class="px-3 py-1.5 bg-white/20 hover:bg-white/30 rounded-lg text-sm font-medium transition-colors"
-                  >
+                  <Button variant="secondary" size="sm"
+                    @click="copyScreenshotLink(selectedScreenshot)">
                     Copy Link
-                  </button>
-                  <button
-                    @click="downloadScreenshot(selectedScreenshot)"
-                    class="px-3 py-1.5 bg-white/20 hover:bg-white/30 rounded-lg text-sm font-medium transition-colors"
-                  >
+                  </Button>
+                  <Button variant="secondary" size="sm"
+                    @click="downloadScreenshot(selectedScreenshot)">
                     Download
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>
@@ -1027,14 +1002,13 @@
               <!-- Header -->
               <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
                 <h2 class="text-lg font-semibold text-gray-900">Create New Folder</h2>
-                <button
+                <Button variant="ghost"
                   @click="closeNewFolderModal"
-                  class="p-1.5 -mr-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
-                >
+                  class="-mr-1.5">
                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                   </svg>
-                </button>
+                </Button>
               </div>
 
               <!-- Content -->
@@ -1056,19 +1030,15 @@
 
               <!-- Footer -->
               <div class="flex justify-end gap-3 px-6 py-4 bg-gray-50 border-t border-gray-100">
-                <button
-                  @click="closeNewFolderModal"
-                  class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                >
+                <Button variant="outline"
+                  @click="closeNewFolderModal">
                   Cancel
-                </button>
-                <button
+                </Button>
+                <Button
                   @click="createFolder"
-                  :disabled="!newFolderName.trim() || creatingFolder"
-                  class="px-4 py-2 text-sm font-medium text-white bg-orange-500 rounded-lg hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
+                  :disabled="!newFolderName.trim() || creatingFolder">
                   {{ creatingFolder ? 'Creating...' : 'Create Folder' }}
-                </button>
+                </Button>
               </div>
             </div>
           </Transition>
@@ -1089,14 +1059,13 @@
               <!-- Header -->
               <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
                 <h2 class="text-lg font-semibold text-gray-900">Move to Folder</h2>
-                <button
+                <Button variant="ghost"
                   @click="closeMoveToFolderModal"
-                  class="p-1.5 -mr-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
-                >
+                  class="-mr-1.5">
                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                   </svg>
-                </button>
+                </Button>
               </div>
 
               <!-- Content -->
@@ -1107,13 +1076,12 @@
 
                 <!-- Folder List -->
                 <div class="space-y-2 max-h-64 overflow-y-auto">
-                  <button
+                  <Button
                     v-for="folder in folders"
                     :key="folder.id"
                     @click="moveToFolder(folder)"
-                    class="w-full flex items-center gap-3 p-3 rounded-lg border border-gray-100 hover:border-orange-300 hover:bg-orange-50 transition-all text-left"
-                    :disabled="movingToFolder"
-                  >
+                    class="w-full flex items-center gap-3 text-left"
+                    :disabled="movingToFolder">
                     <div class="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center shrink-0">
                       <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
@@ -1123,18 +1091,16 @@
                       <p class="text-sm font-medium text-gray-900 truncate">{{ folder.name }}</p>
                       <p class="text-xs text-gray-500">{{ folder.videos_count }} videos</p>
                     </div>
-                  </button>
+                  </Button>
                 </div>
               </div>
 
               <!-- Footer -->
               <div class="flex justify-end px-6 py-4 bg-gray-50 border-t border-gray-100">
-                <button
-                  @click="closeMoveToFolderModal"
-                  class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                >
+                <Button variant="outline"
+                  @click="closeMoveToFolderModal">
                   Cancel
-                </button>
+                </Button>
               </div>
             </div>
           </Transition>
@@ -1154,14 +1120,13 @@
             <div class="bg-white rounded-xl shadow-xl max-w-sm w-full overflow-hidden">
               <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
                 <h2 class="text-lg font-semibold text-gray-900">Rename Video</h2>
-                <button
+                <Button variant="ghost"
                   @click="closeRenameVideoModal"
-                  class="p-1.5 -mr-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
-                >
+                  class="-mr-1.5">
                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                   </svg>
-                </button>
+                </Button>
               </div>
               <div class="px-6 py-4">
                 <input
@@ -1174,19 +1139,15 @@
                 <p v-if="renameVideoError" class="mt-2 text-sm text-red-600">{{ renameVideoError }}</p>
               </div>
               <div class="flex justify-end gap-2 px-6 py-4 bg-gray-50 border-t border-gray-100">
-                <button
-                  @click="closeRenameVideoModal"
-                  class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                >
+                <Button variant="outline"
+                  @click="closeRenameVideoModal">
                   Cancel
-                </button>
-                <button
+                </Button>
+                <Button
                   @click="confirmRenameVideo"
-                  :disabled="renamingVideo"
-                  class="px-4 py-2 text-sm font-medium text-white bg-orange-500 rounded-lg hover:bg-orange-600 transition-colors disabled:opacity-50"
-                >
+                  :disabled="renamingVideo">
                   {{ renamingVideo ? 'Saving...' : 'Save' }}
-                </button>
+                </Button>
               </div>
             </div>
           </Transition>
@@ -1207,14 +1168,13 @@
               <!-- Header -->
               <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
                 <h2 class="text-lg font-semibold text-gray-900">Rename Folder</h2>
-                <button
+                <Button variant="ghost"
                   @click="closeEditFolderModal"
-                  class="p-1.5 -mr-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
-                >
+                  class="-mr-1.5">
                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                   </svg>
-                </button>
+                </Button>
               </div>
 
               <!-- Content -->
@@ -1235,19 +1195,15 @@
 
               <!-- Footer -->
               <div class="flex justify-end gap-3 px-6 py-4 bg-gray-50 border-t border-gray-100">
-                <button
-                  @click="closeEditFolderModal"
-                  class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                >
+                <Button variant="outline"
+                  @click="closeEditFolderModal">
                   Cancel
-                </button>
-                <button
+                </Button>
+                <Button
                   @click="updateFolder"
-                  :disabled="!editFolderName.trim() || updatingFolder"
-                  class="px-4 py-2 text-sm font-medium text-white bg-orange-500 rounded-lg hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
+                  :disabled="!editFolderName.trim() || updatingFolder">
                   {{ updatingFolder ? 'Saving...' : 'Save' }}
-                </button>
+                </Button>
               </div>
             </div>
           </Transition>
@@ -1344,6 +1300,7 @@
 </template>
 
 <script>
+import { Button } from '@/components/ui/button'
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '@/stores/auth'
@@ -1361,7 +1318,7 @@ import { useDownloadTracker } from '@/composables/useDownloadTracker'
 
 export default {
   name: 'VideosView',
-  components: {
+  components: { Button,
     SBDeleteModal,
     SBUpgradeModal,
     SBModal,

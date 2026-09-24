@@ -29,12 +29,10 @@
             {{ headerText }}
           </span>
         </div>
-        <button
-          @click="clearAll"
-          class="text-[10px] text-gray-400 hover:text-gray-600 font-medium"
-        >
+        <Button variant="ghost"
+          @click="clearAll">
           Clear all
-        </button>
+        </Button>
       </div>
 
       <div class="max-h-[280px] overflow-y-auto divide-y divide-gray-50">
@@ -72,23 +70,20 @@
               </p>
             </div>
             <div class="flex items-center gap-1 shrink-0">
-              <button
+              <Button variant="ghost" size="sm"
                 v-if="dl.status === 'ready'"
                 @click="handleDownload(dl)"
-                :disabled="busyIds.has(dl.downloadId)"
-                class="px-2.5 py-1 text-[10px] font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-md transition-colors disabled:opacity-50"
-              >
+                :disabled="busyIds.has(dl.downloadId)">
                 {{ busyIds.has(dl.downloadId) ? '...' : 'Download' }}
-              </button>
-              <button
+              </Button>
+              <Button variant="ghost"
                 @click="removeDownload(dl.downloadId)"
-                class="p-1 text-gray-300 hover:text-gray-500 rounded-md transition-colors"
-                title="Dismiss"
-              >
+               
+                title="Dismiss">
                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -98,11 +93,13 @@
 </template>
 
 <script>
+import { Button } from '@/components/ui/button'
 import { computed, onMounted, onUnmounted, reactive } from 'vue'
 import { useDownloadProgress } from '@/composables/useDownloadProgress'
 
 export default {
   name: 'DownloadTray',
+  components: { Button },
   setup() {
     const {
       downloads,

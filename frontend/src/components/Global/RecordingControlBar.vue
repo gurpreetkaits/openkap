@@ -26,35 +26,32 @@
           <!-- Controls -->
           <div class="flex items-center gap-2">
             <!-- Pause/Resume Button -->
-            <button
+            <Button variant="ghost"
               v-if="!isPaused"
               @click="pauseRecording"
-              class="p-2.5 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors group"
-              title="Pause Recording"
-            >
+              class="group"
+              title="Pause Recording">
               <svg class="w-5 h-5 text-gray-700 group-hover:text-gray-900" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
               </svg>
-            </button>
+            </Button>
 
-            <button
+            <Button variant="ghost"
               v-else
               @click="resumeRecording"
-              class="p-2.5 rounded-full bg-blue-600 hover:bg-blue-700 transition-colors group"
-              title="Resume Recording"
-            >
+              class="group"
+              title="Resume Recording">
               <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M8 5v14l11-7z" />
               </svg>
-            </button>
+            </Button>
 
             <!-- Stop Button -->
-            <button
+            <Button
               @click="handleStopRecording"
               :disabled="saving"
-              class="p-2.5 rounded-full bg-orange-600 hover:bg-orange-700 transition-colors group disabled:opacity-50 disabled:cursor-not-allowed"
-              title="Stop & Save Recording"
-            >
+              class="group"
+              title="Stop & Save Recording">
               <svg v-if="!saving" class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M6 6h12v12H6z" />
               </svg>
@@ -62,18 +59,17 @@
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-            </button>
+            </Button>
 
             <!-- Delete Button -->
-            <button
+            <Button variant="destructive"
               @click="handleDeleteRecording"
-              class="p-2.5 rounded-full bg-red-600 hover:bg-red-700 transition-colors group"
-              title="Delete Recording"
-            >
+              class="group"
+              title="Delete Recording">
               <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
               </svg>
-            </button>
+            </Button>
           </div>
 
           <!-- Paused Indicator -->
@@ -112,18 +108,16 @@
             Are you sure you want to delete this recording? This action cannot be undone.
           </p>
           <div class="flex gap-3">
-            <button
+            <Button variant="destructive"
               @click="confirmDelete"
-              class="flex-1 px-4 py-2 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition-colors"
-            >
+              class="flex-1">
               Delete
-            </button>
-            <button
+            </Button>
+            <Button variant="ghost"
               @click="showDeleteConfirm = false"
-              class="flex-1 px-4 py-2 bg-gray-200 text-gray-700 font-medium rounded-lg hover:bg-gray-300 transition-colors"
-            >
+              class="flex-1">
               Cancel
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -132,6 +126,7 @@
 </template>
 
 <script setup>
+import { Button } from '@/components/ui/button'
 import { ref } from 'vue';
 import { useRecording } from '../../composables/useRecording';
 import { useRouter } from 'vue-router';

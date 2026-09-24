@@ -2,15 +2,14 @@
   <div class="animate-fade-in px-7 py-6">
     <!-- Toolbar -->
     <div class="flex items-center justify-between mb-5">
-      <button
+      <Button
         @click="showCreateModal = true"
-        class="inline-flex items-center gap-1.5 px-4 py-2 bg-gray-900 text-white text-[13px] font-semibold rounded-lg hover:bg-black hover:shadow-md hover:-translate-y-px transition-all"
-      >
+        class="inline-flex items-center gap-1.5">
         <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 12 12">
           <line x1="6" y1="1" x2="6" y2="11"/><line x1="1" y1="6" x2="11" y2="6"/>
         </svg>
         New Playlist
-      </button>
+      </Button>
       <div class="text-xs text-gray-400" v-if="!loading && playlists.length > 0">
         {{ playlists.length }} {{ playlists.length === 1 ? 'playlist' : 'playlists' }}
       </div>
@@ -90,33 +89,30 @@
 
           <!-- Hover actions -->
           <div class="absolute bottom-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200" @click.stop>
-            <button
+            <Button variant="secondary"
               @click="sharePlaylist(playlist)"
-              class="p-1.5 bg-black/20 hover:bg-black/40 backdrop-blur-xs rounded-md text-white/80 hover:text-white transition-colors"
-              :title="playlist.is_public ? 'Copy share link' : 'Make public to share'"
-            >
+             
+              :title="playlist.is_public ? 'Copy share link' : 'Make public to share'">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
               </svg>
-            </button>
-            <button
+            </Button>
+            <Button variant="secondary"
               @click="editPlaylist(playlist)"
-              class="p-1.5 bg-black/20 hover:bg-black/40 backdrop-blur-xs rounded-md text-white/80 hover:text-white transition-colors"
-              title="Edit playlist"
-            >
+             
+              title="Edit playlist">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
               </svg>
-            </button>
-            <button
+            </Button>
+            <Button variant="destructive"
               @click="confirmDelete(playlist)"
-              class="p-1.5 bg-black/20 hover:bg-black/40 backdrop-blur-xs rounded-md text-white/80 hover:text-red-300 transition-colors"
-              title="Delete playlist"
-            >
+             
+              title="Delete playlist">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
               </svg>
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -171,15 +167,14 @@
       <p class="text-[12.5px] text-gray-400 max-w-[260px] mx-auto leading-relaxed mb-6">
         Create playlists to organize your videos into collections.
       </p>
-      <button
+      <Button
         @click="showCreateModal = true"
-        class="inline-flex items-center gap-2 px-4 py-2.5 bg-gray-900 hover:bg-black text-white rounded-lg font-semibold text-[13px] shadow-xs hover:shadow-md hover:-translate-y-px transition-all"
-      >
+        class="inline-flex items-center gap-2">
         <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 12 12">
           <line x1="6" y1="1" x2="6" y2="11"/><line x1="1" y1="6" x2="11" y2="6"/>
         </svg>
         Create your first playlist
-      </button>
+      </Button>
     </div>
 
     <!-- Create/Edit Playlist Modal -->
@@ -231,20 +226,16 @@
                 </select>
               </div>
               <div class="flex justify-end gap-2 mt-5">
-                <button
+                <Button variant="outline"
                   type="button"
-                  @click="closeModal"
-                  class="px-4 py-2 text-[13px] font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-all"
-                >
+                  @click="closeModal">
                   Cancel
-                </button>
-                <button
+                </Button>
+                <Button
                   type="submit"
-                  :disabled="saving || !playlistForm.title.trim()"
-                  class="px-4 py-2 bg-gray-900 text-white rounded-lg text-[13px] font-semibold hover:bg-black hover:shadow-md transition-all disabled:bg-gray-300 disabled:cursor-not-allowed"
-                >
+                  :disabled="saving || !playlistForm.title.trim()">
                   {{ saving ? 'Saving...' : (editingPlaylist ? 'Save changes' : 'Create playlist') }}
-                </button>
+                </Button>
               </div>
             </form>
           </div>
@@ -264,6 +255,7 @@
 </template>
 
 <script setup>
+import { Button } from '@/components/ui/button'
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import playlistService from '@/services/playlistService'

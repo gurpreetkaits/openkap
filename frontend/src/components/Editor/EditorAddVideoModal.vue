@@ -58,10 +58,8 @@
       <!-- Selected count + Done -->
       <div v-if="mergeVideos.length" class="mt-3 flex items-center justify-between pt-3 border-t border-gray-100">
         <span class="text-xs text-gray-500">{{ mergeVideos.length }} video{{ mergeVideos.length > 1 ? 's' : '' }} selected</span>
-        <button
-          @click="$emit('close')"
-          class="px-4 py-1.5 bg-orange-600 hover:bg-orange-700 text-white text-xs font-medium rounded-lg transition-colors"
-        >Done</button>
+        <Button size="sm"
+          @click="$emit('close')">Done</Button>
       </div>
     </template>
 
@@ -84,6 +82,7 @@
 </template>
 
 <script setup>
+import { Button } from '@/components/ui/button'
 import { ref, computed, onMounted } from 'vue'
 import videoService from '@/services/videoService'
 import { useEditorState } from '@/composables/useEditorState'

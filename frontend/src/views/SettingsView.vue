@@ -80,25 +80,22 @@
 
             <!-- Actions -->
             <div class="flex items-center gap-2">
-              <button
+              <Button variant="outline" size="sm"
                 @click="$refs.logoInput.click()"
                 :disabled="uploadingLogo"
-                class="px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 rounded-lg transition-colors disabled:opacity-50 flex items-center gap-1.5"
-              >
+                class="flex items-center gap-1.5">
                 <svg v-if="uploadingLogo" class="animate-spin w-3 h-3" fill="none" viewBox="0 0 24 24">
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                   <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
                 {{ uploadingLogo ? 'Uploading...' : (logoPreview ? 'Change' : 'Upload') }}
-              </button>
-              <button
+              </Button>
+              <Button variant="destructive" size="sm"
                 v-if="logoPreview"
                 @click="removeLogo"
-                :disabled="uploadingLogo"
-                class="px-3 py-1.5 text-xs font-medium text-red-600 bg-white border border-red-200 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
-              >
+                :disabled="uploadingLogo">
                 Remove
-              </button>
+              </Button>
             </div>
 
             <input
@@ -138,12 +135,11 @@
 
               <!-- Custom picker -->
               <div class="relative">
-                <button
+                <Button variant="outline" size="icon"
                   @click="$refs.colorInput.click()"
-                  class="w-8 h-8 rounded-lg border border-gray-200 overflow-hidden cursor-pointer hover:ring-2 hover:ring-gray-300 hover:ring-offset-1 transition-all"
+                  class="w-8 h-8 overflow-hidden"
                   :style="{ backgroundColor: settings.brand_color }"
-                  title="Pick custom color"
-                />
+                  title="Pick custom color"/>
                 <input
                   ref="colorInput"
                   type="color"
@@ -170,17 +166,16 @@
             <router-link to="/subscription" class="text-orange-600 hover:text-orange-700 font-medium">Upgrade to Pro</router-link> to unlock custom branding.
           </p>
           <span v-else></span>
-          <button
+          <Button size="sm"
             @click="saveBranding"
             :disabled="savingBranding || !isPaid"
-            class="px-5 py-2 text-xs font-medium text-white bg-orange-500 hover:bg-orange-600 rounded-lg shadow-xs transition-colors disabled:opacity-50 flex items-center gap-2"
-          >
+            class="flex items-center gap-2">
             <svg v-if="savingBranding" class="animate-spin w-3.5 h-3.5" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
             {{ savingBranding ? 'Saving...' : 'Save Branding' }}
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -223,29 +218,23 @@
             <div class="text-sm font-medium text-gray-900">Profile Photo</div>
             <div class="text-xs text-gray-500 mt-0.5">JPG, PNG or GIF. Max 2MB.</div>
             <div class="mt-2 flex items-center gap-2">
-              <button
+              <Button variant="outline" size="sm"
                 @click="$refs.avatarInput.click()"
-                :disabled="savingProfile"
-                class="px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 rounded-lg disabled:opacity-50"
-              >
+                :disabled="savingProfile">
                 {{ avatarPreview ? 'Change' : 'Upload' }}
-              </button>
-              <button
+              </Button>
+              <Button variant="destructive" size="sm"
                 v-if="avatarPreview && !pendingAvatarFile"
                 @click="removeAvatar"
-                :disabled="savingProfile"
-                class="px-3 py-1.5 text-xs font-medium text-red-600 bg-white border border-red-200 hover:bg-red-50 rounded-lg disabled:opacity-50"
-              >
+                :disabled="savingProfile">
                 Remove
-              </button>
-              <button
+              </Button>
+              <Button variant="ghost" size="sm"
                 v-if="pendingAvatarFile"
                 @click="clearPendingAvatar"
-                :disabled="savingProfile"
-                class="text-xs text-gray-500 hover:text-gray-700 disabled:opacity-50"
-              >
+                :disabled="savingProfile">
                 Clear
-              </button>
+              </Button>
             </div>
             <input
               ref="avatarInput"
@@ -296,25 +285,22 @@
           <p v-if="profileDirty" class="text-xs text-orange-600">You have unsaved changes.</p>
           <span v-else></span>
           <div class="flex items-center gap-2">
-            <button
+            <Button variant="outline" size="sm"
               v-if="profileDirty"
               @click="resetProfileForm"
-              :disabled="savingProfile"
-              class="px-3 py-2 text-xs font-medium text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 rounded-lg disabled:opacity-50"
-            >
+              :disabled="savingProfile">
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button size="sm"
               @click="saveProfile"
               :disabled="savingProfile || !profileDirty"
-              class="px-5 py-2 text-xs font-medium text-white bg-orange-500 hover:bg-orange-600 rounded-lg shadow-xs disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-            >
+              class="flex items-center gap-2">
               <svg v-if="savingProfile" class="animate-spin w-3.5 h-3.5" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
               </svg>
               {{ savingProfile ? 'Saving…' : 'Save Profile' }}
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -352,11 +338,10 @@
                 <div v-else class="text-xs text-gray-500">Packaged as a single .zip download</div>
               </div>
             </div>
-            <button
+            <Button size="sm"
               @click="exportRecordingsZip"
               :disabled="exportingRecordings || videoCount === 0"
-              class="px-4 py-2 text-xs font-medium text-white bg-orange-500 hover:bg-orange-600 rounded-lg shadow-xs transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shrink-0"
-            >
+              class="flex items-center gap-2 shrink-0">
               <svg v-if="exportingRecordings" class="animate-spin w-3.5 h-3.5" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
@@ -365,7 +350,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
               </svg>
               {{ exportingRecordings ? 'Preparing…' : 'Export as Zip' }}
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -398,11 +383,10 @@
                 <div v-else class="text-xs text-gray-500">Machine-readable, includes transcripts</div>
               </div>
             </div>
-            <button
+            <Button variant="ghost" size="sm"
               @click="exportMetadataJson"
               :disabled="exportingMetadata || videoCount === 0"
-              class="px-4 py-2 text-xs font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-xs transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shrink-0"
-            >
+              class="flex items-center gap-2 shrink-0">
               <svg v-if="exportingMetadata" class="animate-spin w-3.5 h-3.5" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
@@ -411,7 +395,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
               </svg>
               {{ exportingMetadata ? 'Preparing…' : 'Export Metadata' }}
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -444,16 +428,15 @@
             <h3 class="text-sm font-semibold text-emerald-900">Your new token</h3>
             <p class="mt-1 text-xs text-emerald-700">Copy it now — for security, you won't be able to see it again.</p>
           </div>
-          <button @click="dismissCreatedToken" class="text-xs font-medium text-emerald-700 hover:text-emerald-900">Done</button>
+          <Button variant="ghost" size="sm" @click="dismissCreatedToken">Done</Button>
         </div>
         <div class="mt-3 flex items-center gap-2">
           <code class="flex-1 px-3 py-2 text-xs font-mono text-emerald-900 bg-white border border-emerald-200 rounded-lg break-all">{{ createdToken }}</code>
-          <button
+          <Button variant="ghost" size="sm"
             @click="copyCreatedToken"
-            class="px-3 py-2 text-xs font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-xs transition-colors shrink-0"
-          >
+            class="shrink-0">
             Copy
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -477,13 +460,12 @@
             <option value="90">Expires in 90 days</option>
             <option value="365">Expires in 1 year</option>
           </select>
-          <button
+          <Button size="sm"
             @click="createApiToken"
             :disabled="creatingToken || !newTokenName.trim()"
-            class="px-5 py-2 text-xs font-medium text-white bg-orange-500 hover:bg-orange-600 rounded-lg shadow-xs transition-colors disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
-          >
+            class="shrink-0">
             {{ creatingToken ? 'Creating…' : 'Create token' }}
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -509,12 +491,11 @@
                 <span v-else> · No expiration</span>
               </p>
             </div>
-            <button
+            <Button variant="destructive" size="sm"
               @click="askRevokeToken(token)"
-              class="px-3 py-1.5 text-xs font-medium text-red-600 bg-white border border-red-200 hover:bg-red-50 rounded-lg transition-colors shrink-0"
-            >
+              class="shrink-0">
               Revoke
-            </button>
+            </Button>
           </li>
         </ul>
       </div>
@@ -528,25 +509,22 @@
     </p>
     <template #footer>
       <div class="flex justify-end gap-2">
-        <button
-          @click="showRevokeModal = false"
-          class="px-4 py-2 text-xs font-medium text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 rounded-lg transition-colors"
-        >
+        <Button variant="outline" size="sm"
+          @click="showRevokeModal = false">
           Cancel
-        </button>
-        <button
+        </Button>
+        <Button variant="destructive" size="sm"
           @click="confirmRevokeToken"
-          :disabled="revokingToken"
-          class="px-4 py-2 text-xs font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg shadow-xs transition-colors disabled:opacity-50"
-        >
+          :disabled="revokingToken">
           {{ revokingToken ? 'Revoking…' : 'Revoke token' }}
-        </button>
+        </Button>
       </div>
     </template>
   </SBModal>
 </template>
 
 <script setup>
+import { Button } from '@/components/ui/button'
 import { ref, computed, h, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import settingsService from '@/services/settingsService'

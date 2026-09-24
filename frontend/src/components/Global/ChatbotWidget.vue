@@ -1,15 +1,14 @@
 <template>
   <Teleport to="body">
     <!-- Floating Chat Button -->
-    <button
+    <Button size="icon"
       v-if="!isOpen"
       @click="toggle"
-      class="fixed bottom-6 right-6 w-14 h-14 bg-orange-500 hover:bg-orange-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center z-50 group"
-    >
+      class="fixed bottom-6 right-6 w-14 h-14 flex items-center justify-center z-50 group">
       <svg class="w-6 h-6 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
       </svg>
-    </button>
+    </Button>
 
     <!-- Chat Panel -->
     <Transition name="chat-panel">
@@ -20,8 +19,8 @@
         <!-- Header -->
         <div class="flex items-center justify-between px-4 py-3 bg-orange-500 text-white shrink-0">
           <div class="flex items-center gap-2">
-            <button
-              v-if="currentConversationId || messages.length > 0"
+            <Button variant="ghost"
+              v-if="currentConversationId || messages.length> 0"
               @click="showConversationList"
               class="p-1 hover:bg-orange-600 rounded-lg transition-colors"
               title="Back to conversations"
@@ -29,30 +28,28 @@
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
               </svg>
-            </button>
+            </Button>
             <h3 class="text-sm font-semibold truncate">
               {{ currentConversation ? currentConversation.title : 'OpenKap Assistant' }}
             </h3>
           </div>
           <div class="flex items-center gap-1">
-            <button
+            <Button
               @click="startNewConversation"
-              class="p-1.5 hover:bg-orange-600 rounded-lg transition-colors"
-              title="New chat"
-            >
+             
+              title="New chat">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
               </svg>
-            </button>
-            <button
+            </Button>
+            <Button
               @click="close"
-              class="p-1.5 hover:bg-orange-600 rounded-lg transition-colors"
-              title="Close"
-            >
+             
+              title="Close">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
               </svg>
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -88,15 +85,14 @@
                   <p class="text-sm font-medium text-gray-900 truncate">{{ conv.title }}</p>
                   <p class="text-xs text-gray-400 mt-0.5">{{ formatTime(conv.created_at) }}</p>
                 </div>
-                <button
+                <Button variant="destructive"
                   @click.stop="handleDeleteConversation(conv.id)"
-                  class="p-1 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
-                  title="Delete conversation"
-                >
+                  class="opacity-0 group-hover:opacity-100"
+                  title="Delete conversation">
                   <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                   </svg>
-                </button>
+                </Button>
               </div>
             </div>
           </div>
@@ -166,15 +162,14 @@
               class="flex-1 resize-none border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-hidden focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all max-h-24 overflow-y-auto"
               :disabled="isSending"
             ></textarea>
-            <button
+            <Button
               @click="handleSend"
               :disabled="!inputText.trim() || isSending"
-              class="p-2 bg-orange-500 text-white rounded-xl hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shrink-0"
-            >
+              class="shrink-0">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
               </svg>
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -183,12 +178,14 @@
 </template>
 
 <script>
+import { Button } from '@/components/ui/button'
 import { ref, computed, watch, nextTick } from 'vue'
 import { useChatbot } from '@/composables/useChatbot'
 import { sanitizeHtml } from '@/utils/sanitize'
 
 export default {
   name: 'ChatbotWidget',
+  components: { Button },
   setup() {
     const chatbot = useChatbot()
     const inputText = ref('')

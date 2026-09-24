@@ -52,12 +52,11 @@
     </ul>
 
     <!-- CTA -->
-    <button
+    <Button variant="ghost" size="sm"
       v-if="isCurrentPlan"
-      class="w-full py-2 rounded-lg bg-gray-100 text-xs font-medium text-gray-600 cursor-default"
-    >
+      class="w-full cursor-default">
       Current plan
-    </button>
+    </Button>
     <button
       v-else
       @click="$emit('checkout', { plan: planKey, billingCycle })"
@@ -85,6 +84,7 @@
 </template>
 
 <script setup>
+import { Button } from '@/components/ui/button'
 import { ref, computed } from 'vue'
 
 const props = defineProps({

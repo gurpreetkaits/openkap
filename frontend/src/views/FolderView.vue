@@ -27,24 +27,22 @@
         </div>
 
         <div class="flex items-center gap-2">
-          <button
+          <Button variant="outline" size="sm"
             @click="showEditModal = true"
-            class="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-          >
+            class="inline-flex items-center gap-2">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
             </svg>
             Edit
-          </button>
-          <button
+          </Button>
+          <Button variant="destructive" size="sm"
             @click="showDeleteModal = true"
-            class="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-red-600 bg-white border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
-          >
+            class="inline-flex items-center gap-2">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
             </svg>
             Delete
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -131,15 +129,14 @@
             class="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200"
           >
             <!-- Remove from folder button -->
-            <button
+            <Button variant="destructive"
               @click.stop="removeFromFolder(video)"
-              class="absolute top-2 left-2 p-1.5 bg-white text-red-600 hover:text-red-700 rounded-lg shadow-xs transition-colors z-10"
-              title="Remove from folder"
-            >
+              class="absolute top-2 left-2 z-10"
+              title="Remove from folder">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
               </svg>
-            </button>
+            </Button>
 
             <div class="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center shadow-xl shadow-orange-500/25 transform group-hover:scale-100 scale-90 transition-transform duration-200 pointer-events-none">
               <svg class="w-5 h-5 text-white ml-0.5" fill="currentColor" viewBox="0 0 20 20">
@@ -161,15 +158,14 @@
             </h3>
             <!-- Hover Actions: Copy Link -->
             <div class="flex items-center gap-0.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity z-20" @click.stop>
-              <button
+              <Button variant="ghost"
                 @click.stop="copyShareLink(video)"
-                class="p-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
-                title="Copy link"
-              >
+               
+                title="Copy link">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
                 </svg>
-              </button>
+              </Button>
             </div>
           </div>
           <!-- Meta Info -->
@@ -249,19 +245,15 @@
               </div>
 
               <div class="flex justify-end gap-3 mt-6">
-                <button
-                  @click="showEditModal = false"
-                  class="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-                >
+                <Button variant="ghost"
+                  @click="showEditModal = false">
                   Cancel
-                </button>
-                <button
+                </Button>
+                <Button
                   @click="updateFolder"
-                  :disabled="!editFolderName.trim() || updating"
-                  class="px-4 py-2 text-sm font-medium text-white bg-orange-500 rounded-lg hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
+                  :disabled="!editFolderName.trim() || updating">
                   {{ updating ? 'Saving...' : 'Save Changes' }}
-                </button>
+                </Button>
               </div>
             </div>
           </Transition>
@@ -282,6 +274,7 @@
 </template>
 
 <script>
+import { Button } from '@/components/ui/button'
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import folderService from '@/services/folderService'
@@ -290,7 +283,7 @@ import SBDeleteModal from '@/components/Global/SBDeleteModal.vue'
 
 export default {
   name: 'FolderView',
-  components: {
+  components: { Button,
     SBDeleteModal
   },
   setup() {

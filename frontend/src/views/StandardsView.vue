@@ -37,13 +37,13 @@
     <section class="card card-pad-lg">
       <h2 class="text-lg font-semibold text-gray-900 mb-4">Button Variants</h2>
       <div class="flex flex-wrap items-center gap-3">
-        <button class="px-5 py-2 text-sm font-semibold text-white bg-orange-600 rounded-lg hover:bg-orange-700 transition-colors">Primary</button>
-        <button class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">Secondary</button>
-        <button class="p-2 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors">
+        <Button>Primary</Button>
+        <Button variant="outline">Secondary</Button>
+        <Button variant="ghost">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"/></svg>
-        </button>
-        <button class="px-4 py-2 text-sm font-medium text-red-600 bg-white border border-red-200 rounded-lg hover:bg-red-50">Danger</button>
-        <button class="px-5 py-2 text-sm font-semibold text-white bg-orange-600 rounded-lg opacity-50 cursor-not-allowed">Disabled</button>
+        </Button>
+        <Button variant="destructive">Danger</Button>
+        <Button class="opacity-50 cursor-not-allowed">Disabled</Button>
       </div>
       <div class="mt-4 grid grid-cols-2 gap-2 text-[11px] font-mono text-gray-500">
         <div><code class="bg-gray-100 px-1 rounded-sm">Primary</code> → px-5 py-2 text-sm font-semibold text-white bg-orange-600 rounded-lg hover:bg-orange-700 transition-colors</div>
@@ -107,10 +107,10 @@
           <div class="text-xs font-medium text-gray-500 mb-2">Dark dropdown (video player)</div>
           <div class="relative h-36 rounded-xl bg-gray-900 p-4">
             <div class="menu-panel-dark relative shadow-none bottom-0 right-0 w-36">
-              <button class="w-full text-left px-3 py-1.5 text-[11px] text-white/80 hover:bg-white/10 rounded-lg transition-colors">1080p</button>
-              <button class="w-full text-left px-3 py-1.5 text-[11px] text-white/80 hover:bg-white/10 rounded-lg transition-colors">720p</button>
-              <button class="w-full text-left px-3 py-1.5 text-[11px] text-white/80 hover:bg-white/10 rounded-lg transition-colors">480p</button>
-              <button class="w-full text-left px-3 py-1.5 text-[11px] text-white/80 hover:bg-white/10 rounded-lg transition-colors">Auto</button>
+              <Button variant="secondary" size="sm" class="w-full text-left">1080p</Button>
+              <Button variant="secondary" size="sm" class="w-full text-left">720p</Button>
+              <Button variant="secondary" size="sm" class="w-full text-left">480p</Button>
+              <Button variant="secondary" size="sm" class="w-full text-left">Auto</Button>
             </div>
           </div>
         </div>
@@ -235,10 +235,12 @@
 </template>
 
 <script>
+import { Button } from '@/components/ui/button'
 import { computed } from 'vue'
 
 export default {
   name: 'StandardsView',
+  components: { Button },
   setup() {
     const designTokens = computed(() => [
       { label: 'Brand', swatch: '#f97316', value: '#f97316 (orange-500)', usage: 'Primary buttons, toggles, focus rings' },

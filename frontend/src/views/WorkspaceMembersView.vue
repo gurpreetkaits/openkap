@@ -47,15 +47,14 @@
     <div v-if="activeTab === 'members'">
       <!-- Invite Button -->
       <div class="flex justify-end mb-4">
-        <button
+        <Button
           @click="showInviteModal = true"
-          class="inline-flex items-center gap-2 px-4 py-2 bg-orange-500 text-white text-sm font-medium rounded-lg hover:bg-orange-600 transition-colors"
-        >
+          class="inline-flex items-center gap-2">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
           </svg>
           Invite Member
-        </button>
+        </Button>
       </div>
 
       <!-- Members List -->
@@ -105,14 +104,12 @@
             </span>
 
             <div v-if="canManageMember(member)" class="relative">
-              <button
-                @click="toggleMemberMenu(member.user_id)"
-                class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-              >
+              <Button variant="ghost"
+                @click="toggleMemberMenu(member.user_id)">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"/>
                 </svg>
-              </button>
+              </Button>
 
               <div
                 v-if="openMemberMenu === member.user_id"
@@ -175,18 +172,14 @@
           </div>
 
           <div class="flex items-center gap-2">
-            <button
-              @click="resendInvitation(invitation.id)"
-              class="px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-            >
+            <Button variant="ghost" size="sm"
+              @click="resendInvitation(invitation.id)">
               Resend
-            </button>
-            <button
-              @click="cancelInvitation(invitation.id)"
-              class="px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-            >
+            </Button>
+            <Button variant="destructive" size="sm"
+              @click="cancelInvitation(invitation.id)">
               Cancel
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -241,19 +234,15 @@
               </div>
 
               <div class="flex justify-end gap-3 mt-6">
-                <button
-                  @click="showInviteModal = false"
-                  class="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-                >
+                <Button variant="ghost"
+                  @click="showInviteModal = false">
                   Cancel
-                </button>
-                <button
+                </Button>
+                <Button
                   @click="sendInvitation"
-                  :disabled="!inviteForm.email || inviting"
-                  class="px-4 py-2 text-sm font-medium text-white bg-orange-500 rounded-lg hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
+                  :disabled="!inviteForm.email || inviting">
                   {{ inviting ? 'Sending...' : 'Send Invitation' }}
-                </button>
+                </Button>
               </div>
             </div>
           </Transition>
@@ -278,19 +267,15 @@
               </p>
 
               <div class="flex justify-end gap-3">
-                <button
-                  @click="memberToRemove = null"
-                  class="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-                >
+                <Button variant="ghost"
+                  @click="memberToRemove = null">
                   Cancel
-                </button>
-                <button
+                </Button>
+                <Button variant="destructive"
                   @click="removeMember"
-                  :disabled="removing"
-                  class="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
-                >
+                  :disabled="removing">
                   {{ removing ? 'Removing...' : 'Remove Member' }}
-                </button>
+                </Button>
               </div>
             </div>
           </Transition>
@@ -301,6 +286,7 @@
 </template>
 
 <script>
+import { Button } from '@/components/ui/button'
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import workspaceService from '@/services/workspaceService'
@@ -308,6 +294,7 @@ import toast from '@/services/toastService'
 
 export default {
   name: 'WorkspaceMembersView',
+  components: { Button },
   setup() {
     const route = useRoute()
     const slug = route.params.slug

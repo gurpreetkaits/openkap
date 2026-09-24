@@ -6,21 +6,21 @@
       <button class="tl-icon" title="Trim" @click="toggleTrim" :class="trimEnabled ? 'text-orange-600! bg-orange-50' : ''">
         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M14.121 14.121L19 19m-7-7l7-7m-7 7l-2.879 2.879M12 12L9.121 9.121m0 5.758a3 3 0 10-4.243 4.243 3 3 0 004.243-4.243zm0-5.758a3 3 0 10-4.243-4.243 3 3 0 004.243 4.243z"/></svg>
       </button>
-      <button class="tl-icon" title="Split">
+      <Button variant="ghost" class="tl-icon" title="Split">
         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5"/></svg>
-      </button>
+      </Button>
 
       <div class="flex-1"></div>
 
       <!-- Zoom -->
       <div class="flex items-center gap-1">
-        <button @click="timeline.zoomOut()" :disabled="timeline.zoom.value <= 1" class="tl-icon w-5! h-5!">
+        <Button variant="ghost" size="icon" @click="timeline.zoomOut()" :disabled="timeline.zoom.value <= 1" class="tl-icon w-5! h-5!">
           <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" d="M5 12h14"/></svg>
-        </button>
+        </Button>
         <input type="range" :min="1" :max="20" v-model.number="timeline.zoom.value" class="w-16 h-1 accent-gray-400 cursor-pointer" />
-        <button @click="timeline.zoomIn()" :disabled="timeline.zoom.value >= 20" class="tl-icon w-5! h-5!">
+        <Button variant="ghost" @click="timeline.zoomIn()" :disabled="timeline.zoom.value>= 20" class="tl-icon w-5! h-5!">
           <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" d="M12 5v14M5 12h14"/></svg>
-        </button>
+        </Button>
       </div>
     </div>
 
@@ -82,13 +82,12 @@
             </div>
 
             <!-- Remove -->
-            <button
+            <Button variant="destructive" size="icon"
               v-if="!block.isMain"
               @click.stop="removeMergeVideo(block.id)"
-              class="absolute top-1 right-1 hidden group-hover/vblock:flex items-center justify-center w-4 h-4 rounded-full bg-red-500 text-white hover:bg-red-600 z-3"
-            >
+              class="absolute top-1 right-1 hidden group-hover/vblock:flex items-center justify-center w-4 h-4 z-3">
               <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"/></svg>
-            </button>
+            </Button>
           </div>
 
           <!-- Playhead -->
@@ -161,6 +160,7 @@
 </template>
 
 <script setup>
+import { Button } from '@/components/ui/button'
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useEditorState } from '@/composables/useEditorState'
 import { useEditorTimeline } from '@/composables/useEditorTimeline'
