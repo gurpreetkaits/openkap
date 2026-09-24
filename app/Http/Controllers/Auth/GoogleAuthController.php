@@ -36,11 +36,13 @@ class GoogleAuthController extends Controller
 
             $isNewUser = false;
 
+            $avatarUrl = $this->normaliseAvatarUrl($googleUser->avatar);
+
             if ($user) {
                 // Update existing user
                 $user->update([
                     'google_id' => $googleUser->id,
-                    'avatar_url' => $googleUser->avatar,
+                    'avatar_url' => $avatarUrl,
                 ]);
             } else {
                 // Create new user
@@ -49,7 +51,7 @@ class GoogleAuthController extends Controller
                     'name' => $googleUser->name,
                     'email' => $googleUser->email,
                     'google_id' => $googleUser->id,
-                    'avatar_url' => $googleUser->avatar,
+                    'avatar_url' => $avatarUrl,
                     'username' => User::generateUniqueUsername($googleUser->email),
                     'password' => null, // No password for OAuth users
                     'email_verified_at' => now(),
@@ -131,5 +133,20 @@ class GoogleAuthController extends Controller
                 'is_admin' => $user->isAdmin(),
             ],
         ]);
+    }
+
+    /**
+     * Keep an avatar URL within what the column can hold.
+     *
+     * A provider handing back an unusually long URL should cost the user
+     * their avatar, never their sign-in.
+     */
+    private function normaliseAvatarUrl(?string $url): ?string
+    {
+        if ($url === null || $url === '') {
+            return null;
+        }
+
+        return mb_strlen($url) > 2048 ? null : $url;
     }
 }

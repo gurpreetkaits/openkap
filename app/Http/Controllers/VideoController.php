@@ -17,6 +17,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class VideoController extends Controller
 {
@@ -544,6 +545,16 @@ class VideoController extends Controller
         ]);
     }
 
+    /**
+     * Number of bytes held in memory at a time while streaming a video.
+     *
+     * The previous implementation read the entire requested range into a
+     * string before sending it — up to 10 MB per request on a 2 GB box, so a
+     * handful of concurrent viewers could exhaust memory. Streaming keeps
+     * usage flat regardless of range size.
+     */
+    private const STREAM_BUFFER_BYTES = 262144;
+
     protected function buildStreamResponse(array $streamData): mixed
     {
         $filePath = $streamData['file_path'];
@@ -553,55 +564,105 @@ class VideoController extends Controller
         $isSmallFile = $streamData['is_small_file'];
         $range = $streamData['range_header'];
 
+        // Symfony's BinaryFileResponse already streams from disk and handles
+        // Range headers itself, so these need no help from us.
         if ($isWebM || $isSmallFile) {
             return response()->file($filePath, [
                 'Content-Type' => $mimeType,
                 'Content-Disposition' => 'inline',
                 'Accept-Ranges' => 'bytes',
-                'Cache-Control' => 'public, max-age=31536000',
+                'Cache-Control' => 'public, max-age=31536000, immutable',
             ]);
         }
 
         if (! $range) {
+            // No range asked for: hand back an opening slice so the player can
+            // start, and let it request the rest by range.
             $start = 0;
             $end = min(2 * 1024 * 1024, $fileSize - 1);
-            $length = $end - $start + 1;
 
-            $file = fopen($filePath, 'rb');
-            fseek($file, $start);
-            $data = fread($file, $length);
-            fclose($file);
-
-            return response($data, 206)
-                ->header('Content-Type', $mimeType)
-                ->header('Content-Length', $length)
-                ->header('Content-Range', "bytes $start-$end/$fileSize")
-                ->header('Accept-Ranges', 'bytes')
-                ->header('Cache-Control', 'public, max-age=31536000');
+            return $this->streamFileRange($filePath, $start, $end, $fileSize, $mimeType);
         }
 
-        preg_match('/bytes=(\d+)-(\d*)/', $range, $matches);
-        $start = intval($matches[1]);
-        $end = ! empty($matches[2]) ? intval($matches[2]) : $fileSize - 1;
+        if (preg_match('/bytes=(\d+)-(\d*)/', $range, $matches) !== 1) {
+            return response('', 416)->header('Content-Range', "bytes */{$fileSize}");
+        }
 
+        $start = (int) $matches[1];
+        $end = $matches[2] !== '' ? (int) $matches[2] : $fileSize - 1;
+
+        if ($start >= $fileSize || $start > $end) {
+            return response('', 416)->header('Content-Range', "bytes */{$fileSize}");
+        }
+
+        $end = min($end, $fileSize - 1);
+
+        // Cap how much one request will serve so a single viewer cannot hold a
+        // worker for an entire file on a one-core box. Players simply ask for
+        // the next range.
         $maxChunkSize = 10 * 1024 * 1024;
+
         if (($end - $start + 1) > $maxChunkSize) {
             $end = $start + $maxChunkSize - 1;
         }
 
+        return $this->streamFileRange($filePath, $start, $end, $fileSize, $mimeType);
+    }
+
+    /**
+     * Send one byte range straight from disk, a buffer at a time.
+     */
+    private function streamFileRange(
+        string $filePath,
+        int $start,
+        int $end,
+        int $fileSize,
+        string $mimeType
+    ): StreamedResponse {
         $length = $end - $start + 1;
 
-        $file = fopen($filePath, 'rb');
-        fseek($file, $start);
-        $data = fread($file, $length);
-        fclose($file);
+        $response = response()->stream(function () use ($filePath, $start, $length) {
+            $handle = fopen($filePath, 'rb');
 
-        return response($data, 206)
-            ->header('Content-Type', $mimeType)
-            ->header('Content-Length', $length)
-            ->header('Content-Range', "bytes $start-$end/$fileSize")
-            ->header('Accept-Ranges', 'bytes')
-            ->header('Cache-Control', 'public, max-age=31536000');
+            if ($handle === false) {
+                return;
+            }
+
+            try {
+                fseek($handle, $start);
+
+                $remaining = $length;
+
+                while ($remaining > 0 && ! feof($handle)) {
+                    // Stop reading the moment the viewer seeks away or closes
+                    // the tab — otherwise we keep pushing bytes nobody wants.
+                    if (connection_aborted() !== 0) {
+                        break;
+                    }
+
+                    $buffer = fread($handle, (int) min(self::STREAM_BUFFER_BYTES, $remaining));
+
+                    if ($buffer === false || $buffer === '') {
+                        break;
+                    }
+
+                    echo $buffer;
+                    flush();
+
+                    $remaining -= strlen($buffer);
+                }
+            } finally {
+                fclose($handle);
+            }
+        }, 206, [
+            'Content-Type' => $mimeType,
+            'Content-Length' => (string) $length,
+            'Content-Range' => "bytes {$start}-{$end}/{$fileSize}",
+            'Accept-Ranges' => 'bytes',
+            'Cache-Control' => 'public, max-age=31536000, immutable',
+        ]);
+
+        return $response;
     }
 
     public function requestTranscription(Request $request, $id)
