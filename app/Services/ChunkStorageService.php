@@ -189,6 +189,34 @@ class ChunkStorageService
         return $total;
     }
 
+    /**
+     * Bytes that could still be turned into a video for this session.
+     *
+     * Counts per-chunk files, a legacy pre-appended video.webm, and legacy
+     * pending_* files. That last part matters: the old append-in-place code
+     * routinely left a 0-byte video.webm next to tens of megabytes of
+     * stranded pending chunks, and treating those sessions as empty would
+     * delete a recording that is fully recoverable.
+     */
+    public function recoverableBytes(string $sessionId): int
+    {
+        $total = $this->totalSize($sessionId) + $this->totalSize($sessionId, self::TYPE_CAMERA);
+
+        $dir = $this->sessionDir($sessionId);
+
+        foreach (['video.webm', 'camera.webm'] as $legacyFile) {
+            if (is_file("{$dir}/{$legacyFile}")) {
+                $total += (int) filesize("{$dir}/{$legacyFile}");
+            }
+        }
+
+        foreach ((array) glob("{$dir}/*pending_*.webm") as $path) {
+            $total += (int) filesize((string) $path);
+        }
+
+        return $total;
+    }
+
     public function lastChunkAt(string $sessionId): ?int
     {
         $newest = null;

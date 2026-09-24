@@ -52,15 +52,12 @@ class ProcessStaleUploadSessionsCommand extends Command
 
             $inactiveSeconds = time() - $lastActivity;
             $receivedChunks = count($chunks->receivedIndexes($sessionId));
-            $bytes = $chunks->totalSize($sessionId);
 
-            // A legacy session has no per-chunk files but may still hold a
-            // pre-appended video.webm from before this format shipped.
-            $legacyBytes = is_file($chunks->sessionDir($sessionId).'/video.webm')
-                ? (int) filesize($chunks->sessionDir($sessionId).'/video.webm')
-                : 0;
-
-            $hasData = $bytes > 0 || $legacyBytes > 0;
+            // Anything recoverable counts, including a legacy session whose
+            // video.webm is empty but whose pending_* files hold the whole
+            // recording — the exact wreckage the old metadata race produced.
+            $bytes = $chunks->recoverableBytes($sessionId);
+            $hasData = $bytes > 0;
 
             if ($hasData && $inactiveSeconds >= $timeout) {
                 $this->info("Auto-completing {$sessionId} ({$receivedChunks} chunks, inactive {$inactiveSeconds}s)");

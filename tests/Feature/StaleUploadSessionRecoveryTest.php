@@ -113,6 +113,64 @@ class StaleUploadSessionRecoveryTest extends TestCase
         $this->assertSame('Mid-deploy recording', Video::first()->title);
     }
 
+    #[Test]
+    public function a_session_wrecked_by_the_old_metadata_race_is_recovered_not_deleted(): void
+    {
+        // The exact shape found in production: the server acknowledged every
+        // chunk, but the append cursor never advanced, so video.webm is empty
+        // and the whole recording sits in stranded pending_* files. Treating
+        // that as "no data" would delete a fully recoverable video.
+        $user = User::factory()->create();
+        $sessionId = '12341234-5678-5678-5678-123412341234';
+        $dir = $this->chunks->sessionDir($sessionId);
+
+        mkdir($dir, 0755, true);
+        file_put_contents("{$dir}/metadata.json", json_encode([
+            'user_id' => $user->id,
+            'title' => 'Wrecked recording',
+            'started_at' => now()->subHours(2)->toISOString(),
+            'next_expected_chunk' => 0,
+            'chunks_received' => 3,
+            'pending_chunks' => [0 => 1, 1 => 1, 2 => 1],
+        ]));
+
+        // Empty output, real data stranded alongside it.
+        file_put_contents("{$dir}/video.webm", '');
+        file_put_contents("{$dir}/pending_0.webm", self::WEBM_HEADER.str_repeat("\x00", 256));
+        file_put_contents("{$dir}/pending_1.webm", str_repeat('b', 128));
+        file_put_contents("{$dir}/pending_2.webm", str_repeat('c', 128));
+
+        foreach (['video.webm', 'pending_0.webm', 'pending_1.webm', 'pending_2.webm'] as $file) {
+            touch("{$dir}/{$file}", time() - 900);
+        }
+
+        $this->assertGreaterThan(0, $this->chunks->recoverableBytes($sessionId));
+
+        $this->artisan('uploads:process-stale', ['--timeout' => 300, '--cleanup' => 3600])
+            ->assertSuccessful();
+
+        $this->assertSame(1, Video::count(), 'the stranded recording must be salvaged');
+        $this->assertSame('Wrecked recording', Video::first()->title);
+        $this->assertFalse($this->chunks->sessionExists($sessionId));
+    }
+
+    #[Test]
+    public function recoverable_bytes_sees_stranded_pending_chunks(): void
+    {
+        $sessionId = '43214321-8765-8765-8765-432143214321';
+        $dir = $this->chunks->sessionDir($sessionId);
+
+        mkdir($dir, 0755, true);
+        file_put_contents("{$dir}/metadata.json", json_encode(['user_id' => 1]));
+        file_put_contents("{$dir}/video.webm", '');
+
+        $this->assertSame(0, $this->chunks->recoverableBytes($sessionId));
+
+        file_put_contents("{$dir}/pending_7.webm", str_repeat('x', 500));
+
+        $this->assertSame(500, $this->chunks->recoverableBytes($sessionId));
+    }
+
     private function seedSession(int $userId, int $chunkCount, int $ageSeconds): string
     {
         $sessionId = sprintf(
