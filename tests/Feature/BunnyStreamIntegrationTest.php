@@ -218,21 +218,8 @@ class BunnyStreamIntegrationTest extends TestCase
 
         $sessionId = $startResponse->json('session_id');
 
-        // Upload a chunk (we need actual file content for this)
-        $sessionDir = storage_path("app/temp/stream-uploads/{$sessionId}");
-        if (! file_exists($sessionDir)) {
-            mkdir($sessionDir, 0755, true);
-        }
-
-        // Create a minimal WebM file with proper EBML/Matroska header
-        $webmContent = $this->createWebmFileContent();
-        file_put_contents("{$sessionDir}/video.webm", $webmContent);
-
-        // Update metadata
-        $metadata = json_decode(file_get_contents("{$sessionDir}/metadata.json"), true);
-        $metadata['total_size'] = strlen($webmContent);
-        $metadata['chunks_received'] = 1;
-        file_put_contents("{$sessionDir}/metadata.json", json_encode($metadata));
+        // Upload one real chunk through the API, exactly as the extension does.
+        $this->uploadWebmChunk($this->user, $sessionId);
 
         // Complete upload
         $response = $this->actingAs($this->user)
@@ -296,13 +283,7 @@ class BunnyStreamIntegrationTest extends TestCase
 
         $sessionId = $startResponse->json('session_id');
 
-        // Create minimal video file with proper WebM header
-        $sessionDir = storage_path("app/temp/stream-uploads/{$sessionId}");
-        file_put_contents("{$sessionDir}/video.webm", $this->createWebmFileContent());
-        $metadata = json_decode(file_get_contents("{$sessionDir}/metadata.json"), true);
-        $metadata['total_size'] = strlen($this->createWebmFileContent());
-        $metadata['chunks_received'] = 1;
-        file_put_contents("{$sessionDir}/metadata.json", json_encode($metadata));
+        $this->uploadWebmChunk($proUser, $sessionId);
 
         $response = $this->actingAs($proUser)
             ->postJson("/api/stream/{$sessionId}/complete", ['duration' => 30]);
@@ -735,29 +716,8 @@ class BunnyStreamIntegrationTest extends TestCase
         $sessionId = $startResponse->json('session_id');
         $this->assertTrue($startResponse->json('will_use_bunny'));
 
-        // Step 2: Upload chunks using proper WebM content
-        $sessionDir = storage_path("app/temp/stream-uploads/{$sessionId}");
-
-        // Create a single chunk with proper WebM header
-        $webmContent = $this->createWebmFileContent();
-        $tempFile = tempnam(sys_get_temp_dir(), 'chunk');
-        file_put_contents($tempFile, $webmContent);
-
-        $chunk = new UploadedFile($tempFile, 'chunk_0.webm', 'video/webm', null, true);
-
-        $chunkResponse = $this->actingAs($proUser)
-            ->postJson("/api/stream/{$sessionId}/chunk", [
-                'chunk' => $chunk,
-                'chunk_index' => 0,
-            ]);
-
-        $chunkResponse->assertStatus(200);
-
-        // Replace the video.webm with proper WebM content before completing
-        file_put_contents("{$sessionDir}/video.webm", $webmContent);
-        $metadata = json_decode(file_get_contents("{$sessionDir}/metadata.json"), true);
-        $metadata['total_size'] = strlen($webmContent);
-        file_put_contents("{$sessionDir}/metadata.json", json_encode($metadata));
+        // Step 2: Upload the recording's chunk
+        $this->uploadWebmChunk($proUser, $sessionId);
 
         // Step 3: Complete upload
         $completeResponse = $this->actingAs($proUser)
@@ -824,6 +784,24 @@ class BunnyStreamIntegrationTest extends TestCase
 
     /**
      * Create minimal WebM file content with proper EBML/Matroska header.
+    /**
+     * Upload a chunk through the real API so the session ends up in whatever
+     * on-disk layout the server currently uses.
+     */
+    protected function uploadWebmChunk(User $user, string $sessionId, int $index = 0): void
+    {
+        $tempFile = tempnam(sys_get_temp_dir(), 'chunk');
+        file_put_contents($tempFile, $this->createWebmFileContent());
+
+        $this->actingAs($user)
+            ->post("/api/stream/{$sessionId}/chunk", [
+                'chunk' => new UploadedFile($tempFile, "chunk_{$index}.webm", 'video/webm', null, true),
+                'chunk_index' => $index,
+            ], ['Accept' => 'application/json'])
+            ->assertOk();
+    }
+
+    /**
      * This content will be detected as video/webm by PHP's finfo.
      */
     protected function createWebmFileContent(): string

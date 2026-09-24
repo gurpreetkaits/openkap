@@ -382,6 +382,9 @@ Route::middleware(['auth:sanctum', AdminMiddleware::class])
         Route::get('/users/{userId}/videos', [AdminDashboardController::class, 'userVideos'])
             ->whereNumber('userId');
 
+        // Extension error triage
+        Route::get('/extension-errors', [\App\Http\Controllers\ExtensionErrorController::class, 'index']);
+
         // Support inbox (admins)
         Route::prefix('support')->group(function () {
             Route::get('/conversations', [SupportAdminController::class, 'index']);
@@ -430,17 +433,27 @@ Route::prefix('recordings')->middleware('auth:sanctum')->group(function () {
 Route::middleware('auth:sanctum')->prefix('stream')->group(function () {
     // Starting a new upload requires subscription limit check + rate limit
     Route::post('/start', [\App\Http\Controllers\StreamVideoController::class, 'startUpload'])
-        ->middleware([CheckSubscriptionLimit::class, 'throttle:5,1']);
+        ->middleware([CheckSubscriptionLimit::class, 'throttle:stream-start']);
 
     Route::post('/{sessionId}/chunk', [\App\Http\Controllers\StreamVideoController::class, 'uploadChunk'])
-        ->middleware('throttle:120,1');
+        // Own bucket: re-sending a gap after a network blip bursts well above
+        // the ~20/min steady rate and must never be throttled for it.
+        ->middleware('throttle:stream-chunk');
     Route::post('/{sessionId}/complete', [\App\Http\Controllers\StreamVideoController::class, 'completeUpload'])
         ->middleware(CheckSubscriptionLimit::class);
     Route::post('/{sessionId}/cancel', [\App\Http\Controllers\StreamVideoController::class, 'cancelUpload'])
-        ->middleware('throttle:5,1');
+        ->middleware('throttle:stream-cancel');
     Route::get('/{sessionId}/status', [\App\Http\Controllers\StreamVideoController::class, 'getStatus'])
-        ->middleware('throttle:30,1');
+        ->middleware('throttle:stream-status');
 });
+
+// ============================================
+// EXTENSION TELEMETRY
+// ============================================
+// Unauthenticated on purpose: a failure in the sign-in or startup path is
+// exactly the kind of report we most want and cannot get behind auth.
+Route::post('/extension/errors', [\App\Http\Controllers\ExtensionErrorController::class, 'store'])
+    ->middleware('throttle:extension-errors');
 
 // ============================================
 // BUNNY STREAM ROUTES

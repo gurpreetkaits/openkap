@@ -2,14 +2,19 @@
 
 namespace App\Console\Commands;
 
-use App\Jobs\ConvertVideoToMp4Job;
-use App\Jobs\GenerateThumbnailJob;
-use App\Models\User;
-use App\Models\Video;
+use App\Data\CompleteStreamUploadData;
+use App\Managers\StreamUploadManager;
+use App\Services\ChunkStorageService;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * Safety net for recordings whose client disappeared before completing —
+ * a crashed browser, a closed laptop, a lost connection at the last second.
+ *
+ * Anything with chunks on disk and no activity for a while is assembled and
+ * turned into a video rather than being thrown away.
+ */
 class ProcessStaleUploadSessionsCommand extends Command
 {
     protected $signature = 'uploads:process-stale
@@ -18,53 +23,73 @@ class ProcessStaleUploadSessionsCommand extends Command
 
     protected $description = 'Auto-complete stale upload sessions that have chunks but no final complete call';
 
-    public function handle()
+    public function handle(ChunkStorageService $chunks, StreamUploadManager $uploads): int
     {
         $timeout = (int) $this->option('timeout');
         $cleanupTimeout = (int) $this->option('cleanup');
-        $baseDir = storage_path('app/temp/stream-uploads');
 
-        if (! is_dir($baseDir)) {
+        if (! is_dir($chunks->baseDir())) {
             $this->info('No upload sessions directory found.');
 
-            return 0;
+            return self::SUCCESS;
         }
 
-        $sessions = glob("{$baseDir}/*", GLOB_ONLYDIR);
         $processed = 0;
         $cleaned = 0;
 
-        foreach ($sessions as $sessionDir) {
-            $sessionId = basename($sessionDir);
-            $metadataPath = "{$sessionDir}/metadata.json";
+        foreach ($chunks->allSessionIds() as $sessionId) {
+            $session = $chunks->readSession($sessionId);
 
-            if (! file_exists($metadataPath)) {
-                // No metadata, clean up
-                $this->cleanupSession($sessionDir);
+            if ($session === null) {
+                $chunks->deleteSession($sessionId);
                 $cleaned++;
 
                 continue;
             }
 
-            $metadata = json_decode(file_get_contents($metadataPath), true);
-            $lastActivity = isset($metadata['last_chunk_at'])
-                ? strtotime($metadata['last_chunk_at'])
-                : strtotime($metadata['started_at']);
+            $lastActivity = $chunks->lastChunkAt($sessionId)
+                ?? strtotime((string) ($session['started_at'] ?? 'now'));
 
             $inactiveSeconds = time() - $lastActivity;
+            $receivedChunks = count($chunks->receivedIndexes($sessionId));
+            $bytes = $chunks->totalSize($sessionId);
 
-            // Check if video file has content
-            $videoPath = "{$sessionDir}/video.webm";
-            $videoSize = file_exists($videoPath) ? filesize($videoPath) : 0;
+            // A legacy session has no per-chunk files but may still hold a
+            // pre-appended video.webm from before this format shipped.
+            $legacyBytes = is_file($chunks->sessionDir($sessionId).'/video.webm')
+                ? (int) filesize($chunks->sessionDir($sessionId).'/video.webm')
+                : 0;
 
-            // Has video data and is stale - auto-complete
-            if ($videoSize > 0 && $inactiveSeconds >= $timeout) {
-                $this->info("Auto-completing session {$sessionId} ({$videoSize} bytes, inactive {$inactiveSeconds}s)");
+            $hasData = $bytes > 0 || $legacyBytes > 0;
+
+            if ($hasData && $inactiveSeconds >= $timeout) {
+                $this->info("Auto-completing {$sessionId} ({$receivedChunks} chunks, inactive {$inactiveSeconds}s)");
 
                 try {
-                    $this->autoCompleteSession($sessionId, $sessionDir, $metadata);
+                    // expected_chunks is deliberately null: the client is gone
+                    // and cannot tell us what it recorded, so we salvage
+                    // everything that did arrive rather than refusing.
+                    $video = $uploads->complete(new CompleteStreamUploadData(
+                        session_id: $sessionId,
+                        user_id: (int) $session['user_id'],
+                        title: $session['title'] ?? 'Recovered Recording',
+                        duration: null,
+                        expected_chunks: null,
+                        expected_camera_chunks: null,
+                        has_camera: (bool) ($session['has_camera'] ?? false),
+                        zoom_level: null,
+                        zoom_duration_ms: null,
+                        zoom_events: null,
+                    ));
+
+                    Log::info('Recovered stale upload session', [
+                        'session_id' => $sessionId,
+                        'video_id' => $video->id,
+                        'chunks' => $receivedChunks,
+                    ]);
+
                     $processed++;
-                } catch (\Exception $e) {
+                } catch (\Throwable $e) {
                     Log::error("Failed to auto-complete session {$sessionId}", [
                         'error' => $e->getMessage(),
                     ]);
@@ -74,107 +99,15 @@ class ProcessStaleUploadSessionsCommand extends Command
                 continue;
             }
 
-            // No video data and very stale - cleanup
-            if ($videoSize === 0 && $inactiveSeconds >= $cleanupTimeout) {
+            if (! $hasData && $inactiveSeconds >= $cleanupTimeout) {
                 $this->info("Cleaning up empty session {$sessionId}");
-                $this->cleanupSession($sessionDir);
+                $chunks->deleteSession($sessionId);
                 $cleaned++;
             }
         }
 
         $this->info("Processed: {$processed}, Cleaned: {$cleaned}");
 
-        return 0;
-    }
-
-    private function autoCompleteSession(string $sessionId, string $sessionDir, array $metadata): void
-    {
-        $videoPath = "{$sessionDir}/video.webm";
-
-        // Append any remaining pending chunks in order
-        if (! empty($metadata['pending_chunks'])) {
-            ksort($metadata['pending_chunks']);
-            foreach ($metadata['pending_chunks'] as $index => $size) {
-                $pendingPath = "{$sessionDir}/pending_{$index}.webm";
-                if (file_exists($pendingPath)) {
-                    $videoFile = fopen($videoPath, 'ab');
-                    $chunkFile = fopen($pendingPath, 'rb');
-                    stream_copy_to_stream($chunkFile, $videoFile);
-                    fclose($chunkFile);
-                    fclose($videoFile);
-                }
-            }
-        }
-
-        // Verify video file exists and has content
-        if (! file_exists($videoPath) || filesize($videoPath) === 0) {
-            throw new \Exception('Video file is empty');
-        }
-
-        // Create Video record and attach media in a transaction
-        // so a failed media attach doesn't leave an orphaned Video row
-        $userId = $metadata['user_id'];
-        $title = $metadata['title'] ?? 'Auto-recovered Recording';
-
-        $video = DB::transaction(function () use ($videoPath, $userId, $title) {
-            $video = Video::create([
-                'user_id' => $userId,
-                'title' => $title,
-                'description' => null,
-                'duration' => 0,
-                'is_public' => true,
-            ]);
-
-            $video->addMedia($videoPath)
-                ->preservingOriginal()
-                ->usingFileName("video_{$video->id}.webm")
-                ->withCustomProperties(['mime_type' => 'video/webm'])
-                ->toMediaCollection('videos');
-
-            // Force-update the media record's mime_type since Spatie may have detected it wrong
-            $addedMedia = $video->getFirstMedia('videos');
-            if ($addedMedia && $addedMedia->mime_type !== 'video/webm') {
-                $addedMedia->mime_type = 'video/webm';
-                $addedMedia->save();
-            }
-
-            return $video;
-        });
-
-        // Log recovery
-        Log::info('Auto-completing stale upload session', [
-            'session_id' => $sessionId,
-            'video_id' => $video->id,
-            'user_id' => $userId,
-            'total_size' => $metadata['total_size'] ?? 0,
-        ]);
-
-        // Dispatch background jobs for thumbnail and conversion
-        GenerateThumbnailJob::dispatch($video);
-        ConvertVideoToMp4Job::dispatch($video);
-
-        // Increment user's video count
-        $user = User::find($userId);
-        if ($user) {
-            $user->increment('videos_count');
-        }
-
-        // Clean up session
-        $this->cleanupSession($sessionDir);
-    }
-
-    private function cleanupSession(string $sessionDir): void
-    {
-        if (! is_dir($sessionDir)) {
-            return;
-        }
-
-        $files = glob("{$sessionDir}/*");
-        foreach ($files as $file) {
-            if (is_file($file)) {
-                unlink($file);
-            }
-        }
-        rmdir($sessionDir);
+        return self::SUCCESS;
     }
 }

@@ -26,9 +26,13 @@ return Application::configure(basePath: dirname(__DIR__))
         // Trust proxies for correct IP detection behind load balancers/reverse proxies
         $middleware->trustProxies(at: '*');
 
-        // Global API rate limiting: 120 requests per minute per IP
+        // Global API rate limiting. Uses the NAMED 'api' limiter defined in
+        // AppServiceProvider, not an inline `throttle:120,1`: a numeric
+        // throttle keys its counter on the user id alone, so it shared one
+        // bucket with every per-route throttle and could 429 a recording
+        // upload because of unrelated API traffic.
         $middleware->api(prepend: [
-            \Illuminate\Routing\Middleware\ThrottleRequests::class.':120,1',
+            \Illuminate\Routing\Middleware\ThrottleRequests::class.':api',
         ]);
 
         // Add security headers (X-Frame-Options, CSP, etc.) to prevent clickjacking
