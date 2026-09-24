@@ -873,7 +873,7 @@
 
         <!-- Sidebar — slides in/out from right, aligned with video -->
         <aside
-          class="sidebar-panel flex flex-col bg-card text-card-foreground rounded-none overflow-hidden shrink-0 my-6 mr-6 shadow-sm ring-1 ring-foreground/10/60"
+          class="sidebar-panel flex flex-col bg-card text-card-foreground rounded-none overflow-hidden shrink-0 my-6 mr-6 shadow-sm ring-1 ring-foreground/10"
           :class="sidebarVisible ? 'sidebar-open' : 'sidebar-closed'"
         >
           <!-- Tabs -->
