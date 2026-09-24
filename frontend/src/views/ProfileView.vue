@@ -10,7 +10,7 @@
       <!-- Profile Card -->
       <div class="bg-white rounded-xl border border-gray-100 overflow-hidden">
         <!-- Header with gradient background -->
-        <div class="bg-gradient-to-r from-orange-500 to-orange-600 h-24 relative">
+        <div class="bg-linear-to-r from-orange-500 to-orange-600 h-24 relative">
           <!-- Avatar positioned at bottom of header -->
           <div class="absolute -bottom-12 left-6">
             <img
@@ -19,7 +19,7 @@
               :alt="user.name"
               class="w-24 h-24 rounded-xl object-cover ring-4 ring-white shadow-lg"
             />
-            <div v-else class="w-24 h-24 bg-gradient-to-br from-gray-700 to-gray-900 rounded-xl flex items-center justify-center ring-4 ring-white shadow-lg">
+            <div v-else class="w-24 h-24 bg-linear-to-br from-gray-700 to-gray-900 rounded-xl flex items-center justify-center ring-4 ring-white shadow-lg">
               <span class="text-3xl font-bold text-white">{{ userInitial }}</span>
             </div>
           </div>

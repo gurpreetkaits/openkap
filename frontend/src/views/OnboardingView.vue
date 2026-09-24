@@ -3,7 +3,7 @@
     <!-- Logo -->
     <div class="w-full max-w-lg">
       <div class="text-center mb-8">
-        <img src="/logo.png" alt="OpenKap" class="mx-auto w-12 h-12 rounded-2xl shadow mb-4" />
+        <img src="/logo.png" alt="OpenKap" class="mx-auto w-12 h-12 rounded-2xl shadow-sm mb-4" />
         <div class="flex items-center justify-center gap-2 mb-1">
           <div
             v-for="i in 3"
@@ -18,7 +18,7 @@
         <p class="text-xs text-stone-400 mt-2">Step {{ step }} of 3</p>
       </div>
 
-      <div class="bg-white rounded-2xl shadow-sm border border-stone-100 p-8">
+      <div class="bg-white rounded-2xl shadow-xs border border-stone-100 p-8">
 
         <!-- Step 1: How did you hear about us -->
         <Transition name="slide" mode="out-in">
@@ -33,7 +33,7 @@
                 @click="form.heardFrom = option.value"
                 class="flex items-center gap-2.5 px-4 py-3 rounded-xl border text-sm font-medium text-left transition-all"
                 :class="form.heardFrom === option.value
-                  ? 'border-orange-400 bg-orange-50 text-orange-700 shadow-sm'
+                  ? 'border-orange-400 bg-orange-50 text-orange-700 shadow-xs'
                   : 'border-stone-200 text-stone-600 hover:border-stone-300 hover:bg-stone-50'"
               >
                 <span class="text-lg leading-none">{{ option.emoji }}</span>
@@ -62,7 +62,7 @@
                 class="flex items-center gap-2 border rounded-xl px-4 py-3 transition-all"
                 :class="comboboxOpen ? 'border-orange-400 ring-2 ring-orange-100' : 'border-stone-200'"
               >
-                <svg class="w-4 h-4 text-stone-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-4 h-4 text-stone-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/>
                 </svg>
                 <input
@@ -75,7 +75,7 @@
                   @keydown.arrow-down.prevent="highlightedIndex = Math.min(highlightedIndex + 1, filteredOrgs.length - 1)"
                   @keydown.arrow-up.prevent="highlightedIndex = Math.max(highlightedIndex - 1, 0)"
                   placeholder="e.g. Acme Corp, Google, your own name…"
-                  class="flex-1 text-sm text-stone-800 border-0 outline-none focus:ring-0 focus:outline-none placeholder:text-stone-400 bg-transparent"
+                  class="flex-1 text-sm text-stone-800 border-0 outline-hidden focus:ring-0 focus:outline-hidden placeholder:text-stone-400 bg-transparent"
                   autocomplete="off"
                 />
                 <button v-if="orgSearch" @click="orgSearch = ''; form.organizationName = ''" class="text-stone-300 hover:text-stone-500">
@@ -138,7 +138,7 @@
                 type="text"
                 placeholder="e.g. Acme Engineering, My Team…"
                 maxlength="100"
-                class="w-full border rounded-xl px-4 py-3 text-sm text-stone-800 placeholder:text-stone-400 outline-none transition-all focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
+                class="w-full border rounded-xl px-4 py-3 text-sm text-stone-800 placeholder:text-stone-400 outline-hidden transition-all focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
                 :class="workspaceError ? 'border-red-300' : 'border-stone-200'"
               />
               <p v-if="workspaceError" class="mt-1.5 text-xs text-red-500">{{ workspaceError }}</p>

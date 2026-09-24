@@ -14,7 +14,7 @@
         @click="handleBackdropClick"
       >
         <!-- Backdrop -->
-        <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity"></div>
+        <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-xs transition-opacity"></div>
 
         <!-- Modal Container -->
         <div class="flex min-h-full items-center justify-center p-4">
@@ -46,7 +46,7 @@
                 <button
                   v-if="closable"
                   @click="close"
-                  class="p-1.5 -mr-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 transition-colors"
+                  class="p-1.5 -mr-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 focus:outline-hidden focus:ring-2 focus:ring-gray-200 transition-colors"
                 >
                   <span class="sr-only">Close</span>
                   <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">

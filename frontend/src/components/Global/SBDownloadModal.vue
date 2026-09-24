@@ -11,7 +11,7 @@
     <div class="space-y-5">
       <!-- Video preview card -->
       <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-xl border border-gray-100">
-        <div class="w-16 h-9 rounded-lg bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center flex-shrink-0 shadow-sm">
+        <div class="w-16 h-9 rounded-lg bg-linear-to-br from-orange-400 to-orange-600 flex items-center justify-center shrink-0 shadow-xs">
           <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
             <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -39,7 +39,7 @@
             :class="[
               'px-3 py-2 text-xs font-medium rounded-lg border transition-all',
               options.quality === q.value
-                ? 'border-orange-300 bg-orange-50 text-orange-700 shadow-sm'
+                ? 'border-orange-300 bg-orange-50 text-orange-700 shadow-xs'
                 : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50'
             ]"
           >
@@ -61,13 +61,13 @@
             :aria-checked="options.includeCamera"
             @click="options.includeCamera = !options.includeCamera"
             :class="[
-              'relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2',
+              'relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-hidden focus:ring-2 focus:ring-orange-500 focus:ring-offset-2',
               options.includeCamera ? 'bg-orange-500' : 'bg-gray-200'
             ]"
           >
             <span
               :class="[
-                'pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow transform ring-0 transition duration-200 ease-in-out',
+                'pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow-sm transform ring-0 transition duration-200 ease-in-out',
                 options.includeCamera ? 'translate-x-4' : 'translate-x-0'
               ]"
             />
@@ -132,13 +132,13 @@
           :aria-checked="options.includeCaptions"
           @click="options.includeCaptions = !options.includeCaptions"
           :class="[
-            'relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2',
+            'relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-hidden focus:ring-2 focus:ring-orange-500 focus:ring-offset-2',
             options.includeCaptions ? 'bg-orange-500' : 'bg-gray-200'
           ]"
         >
           <span
             :class="[
-              'pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow transform ring-0 transition duration-200 ease-in-out',
+              'pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow-sm transform ring-0 transition duration-200 ease-in-out',
               options.includeCaptions ? 'translate-x-4' : 'translate-x-0'
             ]"
           />
@@ -165,7 +165,7 @@
 
       <!-- Info note -->
       <div class="flex items-start gap-2 p-2.5 bg-amber-50 rounded-lg border border-amber-100 text-[11px] text-amber-700 leading-relaxed">
-        <svg class="w-3.5 h-3.5 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+        <svg class="w-3.5 h-3.5 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
         </svg>
         <span>Your download will be converted in the background. You'll get a notification when it's ready — no need to wait on this page.</span>

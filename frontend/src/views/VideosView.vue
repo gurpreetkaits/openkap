@@ -18,7 +18,7 @@
       <button
         v-if="activeTab !== 'screenshots'"
         @click="handleUpload"
-        class="inline-flex items-center gap-1.5 px-3.5 py-2 text-sm font-semibold text-white bg-orange-500 hover:bg-orange-600 rounded-lg shadow-sm shadow-orange-200 transition-all"
+        class="inline-flex items-center gap-1.5 px-3.5 py-2 text-sm font-semibold text-white bg-orange-500 hover:bg-orange-600 rounded-lg shadow-xs shadow-orange-200 transition-all"
       >
         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
@@ -30,7 +30,7 @@
       <button
         v-if="activeTab === 'screenshots'"
         @click="handleScreenshotUpload"
-        class="inline-flex items-center gap-1.5 px-3.5 py-2 text-sm font-semibold text-white bg-orange-500 hover:bg-orange-600 rounded-lg shadow-sm shadow-orange-200 transition-all"
+        class="inline-flex items-center gap-1.5 px-3.5 py-2 text-sm font-semibold text-white bg-orange-500 hover:bg-orange-600 rounded-lg shadow-xs shadow-orange-200 transition-all"
         :disabled="uploadingScreenshot"
       >
         <svg v-if="!uploadingScreenshot" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -53,7 +53,7 @@
         <div
           v-for="folder in folders"
           :key="folder.id"
-          class="group relative flex items-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-xl shadow-sm transition-all cursor-pointer select-none"
+          class="group relative flex items-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-xl shadow-xs transition-all cursor-pointer select-none"
           :class="dragOverFolderId === folder.id
             ? 'border-orange-400 bg-orange-50 shadow-orange-100 scale-[1.02]'
             : 'hover:border-gray-300 hover:shadow-md hover:-translate-y-px'"
@@ -64,7 +64,7 @@
           @drop.prevent="handleDropOnFolder($event, folder)"
         >
           <!-- Folder icon -->
-          <svg class="w-4 h-4 flex-shrink-0 transition-colors" :class="dragOverFolderId === folder.id ? 'text-orange-500' : 'text-amber-400'" fill="currentColor" viewBox="0 0 20 20">
+          <svg class="w-4 h-4 shrink-0 transition-colors" :class="dragOverFolderId === folder.id ? 'text-orange-500' : 'text-amber-400'" fill="currentColor" viewBox="0 0 20 20">
             <path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"/>
           </svg>
           <span class="text-sm font-medium text-gray-700 group-hover:text-gray-900 truncate max-w-[140px] transition-colors">{{ folder.name }}</span>
@@ -72,7 +72,7 @@
           <!-- Three-dot menu -->
           <button
             @click.stop="handleFolderMenuClick($event, folder)"
-            class="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded text-gray-400 hover:text-gray-700 hover:bg-gray-100"
+            class="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded-sm text-gray-400 hover:text-gray-700 hover:bg-gray-100"
             title="Folder options"
           >
             <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 16 16">
@@ -92,7 +92,7 @@
       <div class="relative grid grid-cols-3 bg-gray-100 rounded-xl p-1 self-start" style="min-width: 320px;">
         <!-- Animated sliding pill -->
         <div
-          class="absolute top-1 bottom-1 bg-white rounded-[10px] shadow-sm pointer-events-none transition-all duration-200 ease-out"
+          class="absolute top-1 bottom-1 bg-white rounded-[10px] shadow-xs pointer-events-none transition-all duration-200 ease-out"
           :style="{ width: 'calc((100% - 8px) / 3)', left: `calc(4px + ${tabIndexMap[activeTab]} * ((100% - 8px) / 3))` }"
         ></div>
         <!-- Videos tab -->
@@ -110,7 +110,7 @@
           class="relative z-10 flex items-center justify-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg transition-colors duration-150 whitespace-nowrap"
           :class="activeTab === 'favourites' ? 'text-gray-900' : 'text-gray-500 hover:text-gray-700'"
         >
-          <svg class="w-3.5 h-3.5 flex-shrink-0" :fill="activeTab === 'favourites' ? 'currentColor' : 'none'" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+          <svg class="w-3.5 h-3.5 shrink-0" :fill="activeTab === 'favourites' ? 'currentColor' : 'none'" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
           </svg>
           Starred
@@ -122,7 +122,7 @@
           class="relative z-10 flex items-center justify-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg transition-colors duration-150 whitespace-nowrap"
           :class="activeTab === 'archived' ? 'text-gray-900' : 'text-gray-500 hover:text-gray-700'"
         >
-          <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+          <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M5 8h14M5 8a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v1a2 2 0 01-2 2M5 8v11a2 2 0 002 2h10a2 2 0 002-2V8M10 12h4"/>
           </svg>
           Archived
@@ -139,7 +139,7 @@
           <div class="relative" ref="bulkActionsDropdownRef">
             <button
               @click="showBulkActionsDropdown = !showBulkActionsDropdown"
-              class="flex items-center gap-2 text-[13px] font-medium text-white bg-orange-600 hover:bg-orange-700 px-3 py-1.5 rounded-lg transition-all shadow-sm"
+              class="flex items-center gap-2 text-[13px] font-medium text-white bg-orange-600 hover:bg-orange-700 px-3 py-1.5 rounded-lg transition-all shadow-xs"
             >
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"/>
@@ -198,7 +198,7 @@
             :checked="isAllSelected"
             :indeterminate="isPartiallySelected"
             @change="toggleSelectAll"
-            class="w-4 h-4 text-orange-600 bg-gray-100 border-gray-300 rounded focus:ring-orange-500 focus:ring-2"
+            class="w-4 h-4 text-orange-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-orange-500 focus:ring-2"
           />
           <label for="select-all" class="text-[13px] text-gray-600 cursor-pointer">All</label>
         </div>
@@ -221,7 +221,7 @@
             v-model="searchQuery"
             type="text"
             placeholder="Search..."
-            class="pl-9 pr-8 py-1.5 text-sm font-medium bg-white border border-gray-200 focus:border-orange-500/30 focus:ring-4 focus:ring-orange-500/5 rounded-lg w-48 transition-all outline-none placeholder:text-gray-400 shadow-sm"
+            class="pl-9 pr-8 py-1.5 text-sm font-medium bg-white border border-gray-200 focus:border-orange-500/30 focus:ring-4 focus:ring-orange-500/5 rounded-lg w-48 transition-all outline-hidden placeholder:text-gray-400 shadow-xs"
           />
           <button
             v-if="searchQuery"
@@ -238,7 +238,7 @@
         <div class="relative" ref="sortDropdownRef">
           <button
             @click="showSortDropdown = !showSortDropdown"
-            class="flex items-center gap-2 text-sm font-medium text-gray-600 bg-white border border-gray-200 px-3 py-1.5 rounded-lg hover:bg-gray-50 transition-all shadow-sm"
+            class="flex items-center gap-2 text-sm font-medium text-gray-600 bg-white border border-gray-200 px-3 py-1.5 rounded-lg hover:bg-gray-50 transition-all shadow-xs"
           >
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/>
@@ -272,7 +272,7 @@
         <div class="relative" ref="filterDropdownRef">
           <button
             @click="showFilterDropdown = !showFilterDropdown"
-            class="flex items-center gap-2 text-sm font-medium text-gray-600 bg-white border border-gray-200 px-3 py-1.5 rounded-lg hover:bg-gray-50 transition-all shadow-sm"
+            class="flex items-center gap-2 text-sm font-medium text-gray-600 bg-white border border-gray-200 px-3 py-1.5 rounded-lg hover:bg-gray-50 transition-all shadow-xs"
             :class="activeDateFilter !== 'all' ? 'border-orange-300 bg-orange-50 text-orange-700' : ''"
           >
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -311,7 +311,7 @@
                   <input
                     type="date"
                     v-model="customDateFrom"
-                    class="w-full px-2.5 py-1.5 text-sm border border-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                    class="w-full px-2.5 py-1.5 text-sm border border-gray-100 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
                   />
                 </div>
                 <div>
@@ -319,7 +319,7 @@
                   <input
                     type="date"
                     v-model="customDateTo"
-                    class="w-full px-2.5 py-1.5 text-sm border border-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                    class="w-full px-2.5 py-1.5 text-sm border border-gray-100 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
                   />
                 </div>
               </div>
@@ -368,8 +368,8 @@
       <div v-for="n in 8" :key="n" class="bg-white rounded-xl border border-gray-100 overflow-hidden">
         <div class="w-full bg-gray-200" style="aspect-ratio: 16/9;"></div>
         <div class="p-3 space-y-2">
-          <div class="h-4 w-3/4 bg-gray-200 rounded"></div>
-          <div class="h-3 w-1/2 bg-gray-100 rounded"></div>
+          <div class="h-4 w-3/4 bg-gray-200 rounded-sm"></div>
+          <div class="h-3 w-1/2 bg-gray-100 rounded-sm"></div>
         </div>
       </div>
     </div>
@@ -384,7 +384,7 @@
       <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ error }}</h3>
       <button
         @click="fetchVideos"
-        class="inline-flex items-center px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-lg font-medium text-sm shadow-sm transition-colors"
+        class="inline-flex items-center px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-lg font-medium text-sm shadow-xs transition-colors"
       >
         Try Again
       </button>
@@ -396,7 +396,7 @@
         v-for="video in paginatedVideos"
         :key="video.id"
         :data-video-id="video.id"
-        class="group bg-white border border-gray-100 rounded-xl overflow-hidden hover:border-gray-200 hover:shadow-sm transition-all"
+        class="group bg-white border border-gray-100 rounded-xl overflow-hidden hover:border-gray-200 hover:shadow-xs transition-all"
         :class="selectedVideos.includes(video.id) ? 'ring-2 ring-orange-500 ring-offset-2' : ''"
         :draggable="folders.length > 0"
         @dragstart="handleVideoDragStart($event, video)"
@@ -421,7 +421,7 @@
           <!-- Placeholder when no thumbnail -->
           <div
             v-if="!video.thumbnail"
-            class="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center"
+            class="w-full h-full bg-linear-to-br from-gray-100 to-gray-200 flex items-center justify-center"
           >
             <svg class="w-12 h-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
@@ -431,7 +431,7 @@
           <!-- Processing Badge -->
           <div
             v-if="video.conversion_status === 'processing'"
-            class="absolute top-2 left-2 z-10 bg-black/70 backdrop-blur-sm text-white text-[10px] font-medium px-2 py-1 rounded-md flex items-center gap-1.5"
+            class="absolute top-2 left-2 z-10 bg-black/70 backdrop-blur-xs text-white text-[10px] font-medium px-2 py-1 rounded-md flex items-center gap-1.5"
           >
             <div class="w-2 h-2 bg-orange-400 rounded-full animate-pulse"></div>
             Processing
@@ -440,20 +440,20 @@
           <!-- Bunny Encoding Badge -->
           <div
             v-else-if="video.storage_type === 'bunny' && video.bunny_status && video.bunny_status !== 'ready'"
-            class="absolute top-2 left-2 z-10 bg-black/70 backdrop-blur-sm text-white text-[10px] font-medium px-2 py-1 rounded-md flex items-center gap-1.5"
+            class="absolute top-2 left-2 z-10 bg-black/70 backdrop-blur-xs text-white text-[10px] font-medium px-2 py-1 rounded-md flex items-center gap-1.5"
           >
             <div class="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
             Encoding
           </div>
 
           <!-- Duration Badge -->
-          <div class="absolute bottom-2 right-2 z-10 bg-black/80 backdrop-blur-sm text-white text-[11px] font-medium px-2 py-0.5 rounded-md pointer-events-none">
+          <div class="absolute bottom-2 right-2 z-10 bg-black/80 backdrop-blur-xs text-white text-[11px] font-medium px-2 py-0.5 rounded-md pointer-events-none">
             {{ formatDuration(video.duration) }}
           </div>
 
           <!-- Favourite Badge -->
           <div v-if="video.is_favourite" class="absolute top-2 right-2 z-10 pointer-events-none">
-            <div class="bg-white/90 backdrop-blur-sm rounded-full p-1 shadow-sm">
+            <div class="bg-white/90 backdrop-blur-xs rounded-full p-1 shadow-xs">
               <svg class="w-3.5 h-3.5 text-orange-500" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
               </svg>
@@ -473,7 +473,7 @@
               type="checkbox"
               :checked="selectedVideos.includes(video.id)"
               @change="toggleVideoSelection(video.id)"
-              class="w-4 h-4 text-orange-500 bg-white border-2 border-white rounded shadow-sm focus:ring-0 cursor-pointer"
+              class="w-4 h-4 text-orange-500 bg-white border-2 border-white rounded-sm shadow-xs focus:ring-0 cursor-pointer"
             />
           </div>
         </div>
@@ -489,7 +489,7 @@
               {{ video.title }}
             </h3>
             <!-- Hover Actions: Star + Copy Link + More -->
-            <div class="flex items-center gap-0.5 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity z-20" @click.stop>
+            <div class="flex items-center gap-0.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity z-20" @click.stop>
               <!-- Star / Favourite toggle -->
               <button
                 @click.stop="toggleFavorite(video)"
@@ -560,14 +560,14 @@
         v-for="video in paginatedVideos"
         :key="video.id"
         :data-video-id="video.id"
-        class="group flex items-center gap-4 p-3.5 bg-white border border-gray-100 rounded-xl hover:shadow-sm hover:border-gray-200 transition-all cursor-pointer"
+        class="group flex items-center gap-4 p-3.5 bg-white border border-gray-100 rounded-xl hover:shadow-xs hover:border-gray-200 transition-all cursor-pointer"
         :class="selectedVideos.includes(video.id) ? 'ring-2 ring-orange-500 ring-offset-1 border-orange-200' : ''"
         @click="handleVideoClick(video.id)"
         @contextmenu.prevent="handleVideoContextMenu($event, video)"
       >
         <!-- Selection Checkbox -->
         <div
-          class="flex-shrink-0 transition-opacity duration-150"
+          class="shrink-0 transition-opacity duration-150"
           :class="selectedVideos.includes(video.id) || isSelectionMode ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'"
           @click.stop
         >
@@ -575,12 +575,12 @@
             type="checkbox"
             :checked="selectedVideos.includes(video.id)"
             @change="toggleVideoSelection(video.id)"
-            class="w-4 h-4 text-orange-500 border-gray-300 rounded focus:ring-orange-500 focus:ring-offset-0 cursor-pointer"
+            class="w-4 h-4 text-orange-500 border-gray-300 rounded-sm focus:ring-orange-500 focus:ring-offset-0 cursor-pointer"
           />
         </div>
 
         <!-- Thumbnail -->
-        <div class="relative flex-shrink-0 w-44 rounded-lg overflow-hidden group/thumb" style="aspect-ratio: 16/9;">
+        <div class="relative shrink-0 w-44 rounded-lg overflow-hidden group/thumb" style="aspect-ratio: 16/9;">
           <img
             v-if="video.thumbnail"
             :src="video.thumbnail"
@@ -591,7 +591,7 @@
           />
           <div
             v-if="!video.thumbnail"
-            class="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center"
+            class="w-full h-full bg-linear-to-br from-gray-100 to-gray-200 flex items-center justify-center"
           >
             <svg class="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
@@ -600,13 +600,13 @@
           <!-- Bunny Encoding Badge (list view) -->
           <div
             v-if="isBunnyEncoding(video)"
-            class="absolute top-1.5 left-1.5 z-10 bg-black/70 backdrop-blur-sm text-white text-[9px] font-medium px-1.5 py-0.5 rounded flex items-center gap-1"
+            class="absolute top-1.5 left-1.5 z-10 bg-black/70 backdrop-blur-xs text-white text-[9px] font-medium px-1.5 py-0.5 rounded-sm flex items-center gap-1"
           >
             <div class="w-1.5 h-1.5 bg-blue-400 rounded-full animate-pulse"></div>
             Encoding
           </div>
           <!-- Duration -->
-          <div class="absolute bottom-1.5 right-1.5 bg-black/75 backdrop-blur-sm text-white text-[10px] font-medium px-1.5 py-0.5 rounded">
+          <div class="absolute bottom-1.5 right-1.5 bg-black/75 backdrop-blur-xs text-white text-[10px] font-medium px-1.5 py-0.5 rounded-sm">
             {{ formatDuration(video.duration) }}
           </div>
           <!-- Play overlay -->
@@ -626,7 +626,7 @@
               {{ video.title }}
             </h3>
             <!-- Favourite Star -->
-            <div v-if="video.is_favourite" class="flex-shrink-0 bg-orange-50 rounded-full p-1">
+            <div v-if="video.is_favourite" class="shrink-0 bg-orange-50 rounded-full p-1">
               <svg class="w-3.5 h-3.5 text-orange-500" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
               </svg>
@@ -745,7 +745,7 @@
         <div
           v-for="screenshot in screenshots"
           :key="screenshot.id"
-          class="group relative bg-white rounded-xl border border-gray-100 overflow-hidden hover:shadow-sm hover:-translate-y-0.5 transition-all cursor-pointer"
+          class="group relative bg-white rounded-xl border border-gray-100 overflow-hidden hover:shadow-xs hover:-translate-y-0.5 transition-all cursor-pointer"
           @click="openScreenshotPreview(screenshot)"
         >
           <!-- Screenshot Image -->
@@ -786,7 +786,7 @@
           <div class="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1" @click.stop>
             <button
               @click="copyScreenshotLink(screenshot)"
-              class="p-1.5 bg-white/90 hover:bg-white rounded-lg shadow-sm transition-colors"
+              class="p-1.5 bg-white/90 hover:bg-white rounded-lg shadow-xs transition-colors"
               title="Copy share link"
             >
               <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -795,7 +795,7 @@
             </button>
             <button
               @click="deleteScreenshot(screenshot)"
-              class="p-1.5 bg-white/90 hover:bg-red-50 rounded-lg shadow-sm transition-colors"
+              class="p-1.5 bg-white/90 hover:bg-red-50 rounded-lg shadow-xs transition-colors"
               title="Delete screenshot"
             >
               <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -808,7 +808,7 @@
 
       <!-- Screenshots Empty State -->
       <div v-else class="text-center py-20">
-        <div class="w-20 h-20 mx-auto mb-5 bg-gradient-to-br from-orange-50 to-orange-100 rounded-2xl flex items-center justify-center shadow-sm border border-orange-100">
+        <div class="w-20 h-20 mx-auto mb-5 bg-linear-to-br from-orange-50 to-orange-100 rounded-2xl flex items-center justify-center shadow-xs border border-orange-100">
           <svg class="w-9 h-9 text-orange-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
           </svg>
@@ -819,7 +819,7 @@
         </p>
         <button
           @click="handleScreenshotUpload"
-          class="inline-flex items-center px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-lg font-medium text-sm shadow-sm transition-colors"
+          class="inline-flex items-center px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-lg font-medium text-sm shadow-xs transition-colors"
         >
           <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
@@ -831,7 +831,7 @@
 
     <!-- Videos Empty State -->
     <div v-else-if="activeTab !== 'screenshots' && !loading && filteredVideos.length === 0" class="text-center py-24">
-      <div class="w-20 h-20 mx-auto mb-5 bg-gradient-to-br from-orange-50 to-orange-100 rounded-2xl flex items-center justify-center shadow-sm border border-orange-100">
+      <div class="w-20 h-20 mx-auto mb-5 bg-linear-to-br from-orange-50 to-orange-100 rounded-2xl flex items-center justify-center shadow-xs border border-orange-100">
         <svg v-if="activeTab === 'favourites'" class="w-8 h-8 text-orange-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
         </svg>
@@ -848,14 +848,14 @@
       <button
         v-if="activeTab === 'favourites'"
         @click="activeTab = 'videos'"
-        class="inline-flex items-center px-4 py-2 bg-white border border-gray-100 hover:bg-gray-50 text-gray-700 rounded-lg font-medium text-sm shadow-sm transition-colors"
+        class="inline-flex items-center px-4 py-2 bg-white border border-gray-100 hover:bg-gray-50 text-gray-700 rounded-lg font-medium text-sm shadow-xs transition-colors"
       >
         Browse Videos
       </button>
       <button
         v-else-if="videos.length === 0"
         @click="goToRecord"
-        class="inline-flex items-center px-5 py-2.5 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-medium text-sm shadow-sm shadow-orange-200 transition-colors"
+        class="inline-flex items-center px-5 py-2.5 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-medium text-sm shadow-xs shadow-orange-200 transition-colors"
         :disabled="!canRecord"
         :class="{ 'opacity-50 cursor-not-allowed': !canRecord }"
       >
@@ -867,7 +867,7 @@
       <button
         v-else
         @click="clearFilters"
-        class="inline-flex items-center px-4 py-2 bg-white border border-gray-100 hover:bg-gray-50 text-gray-700 rounded-lg font-medium text-sm shadow-sm transition-colors"
+        class="inline-flex items-center px-4 py-2 bg-white border border-gray-100 hover:bg-gray-50 text-gray-700 rounded-lg font-medium text-sm shadow-xs transition-colors"
       >
         Clear Filters
       </button>
@@ -891,7 +891,7 @@
       @close="showArchiveModal = false"
     >
       <div class="flex gap-4">
-        <div class="flex-shrink-0 w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center">
+        <div class="shrink-0 w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center">
           <svg class="h-5 w-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" d="M5 8h14M5 8a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v1a2 2 0 01-2 2M5 8v11a2 2 0 002 2h10a2 2 0 002-2V8M10 12h4"/>
           </svg>
@@ -961,7 +961,7 @@
               class="w-full h-auto max-h-[85vh] object-contain rounded-lg shadow-2xl"
             />
             <!-- Info Bar -->
-            <div class="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/70 to-transparent rounded-b-lg">
+            <div class="absolute bottom-0 left-0 right-0 p-4 bg-linear-to-t from-black/70 to-transparent rounded-b-lg">
               <div class="flex items-center justify-between text-white">
                 <div>
                   <h3 class="font-medium">{{ selectedScreenshot.title }}</h3>
@@ -1019,7 +1019,7 @@
       <Transition name="modal">
         <div
           v-if="showNewFolderModal"
-          class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm"
+          class="fixed inset-0 z-100 flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-xs"
           @click.self="closeNewFolderModal"
         >
           <Transition name="modal-content" appear>
@@ -1047,7 +1047,7 @@
                     v-model="newFolderName"
                     type="text"
                     placeholder="e.g., Marketing Videos"
-                    class="w-full px-3.5 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none transition-all"
+                    class="w-full px-3.5 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-hidden transition-all"
                     @keyup.enter="createFolder"
                   />
                   <p v-if="folderError" class="mt-2 text-sm text-red-600">{{ folderError }}</p>
@@ -1081,7 +1081,7 @@
       <Transition name="modal">
         <div
           v-if="showMoveToFolderModal"
-          class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm"
+          class="fixed inset-0 z-100 flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-xs"
           @click.self="closeMoveToFolderModal"
         >
           <Transition name="modal-content" appear>
@@ -1114,7 +1114,7 @@
                     class="w-full flex items-center gap-3 p-3 rounded-lg border border-gray-100 hover:border-orange-300 hover:bg-orange-50 transition-all text-left"
                     :disabled="movingToFolder"
                   >
-                    <div class="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center flex-shrink-0">
+                    <div class="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center shrink-0">
                       <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
                       </svg>
@@ -1147,7 +1147,7 @@
       <Transition name="modal">
         <div
           v-if="showRenameVideoModal"
-          class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm"
+          class="fixed inset-0 z-100 flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-xs"
           @click.self="closeRenameVideoModal"
         >
           <Transition name="modal-content" appear>
@@ -1167,7 +1167,7 @@
                 <input
                   v-model="renameVideoTitle"
                   type="text"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                   placeholder="Video title"
                   @keydown.enter="confirmRenameVideo"
                 />
@@ -1199,7 +1199,7 @@
       <Transition name="modal">
         <div
           v-if="showEditFolderModal"
-          class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm"
+          class="fixed inset-0 z-100 flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-xs"
           @click.self="closeEditFolderModal"
         >
           <Transition name="modal-content" appear>
@@ -1226,7 +1226,7 @@
                     v-model="editFolderName"
                     type="text"
                     placeholder="Enter folder name"
-                    class="w-full px-3.5 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none transition-all"
+                    class="w-full px-3.5 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-hidden transition-all"
                     @keyup.enter="updateFolder"
                   />
                   <p v-if="editFolderError" class="mt-2 text-sm text-red-600">{{ editFolderError }}</p>
@@ -1272,7 +1272,7 @@
       style="top: -1000px; left: -1000px;"
     >
       <div class="flex items-center gap-2 px-3 py-2 bg-white rounded-lg shadow-lg border border-gray-100 max-w-[200px]">
-        <svg class="w-4 h-4 text-orange-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg class="w-4 h-4 text-orange-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
         </svg>
         <span class="text-sm font-medium text-gray-900 truncate">{{ draggedVideo?.title || 'Video' }}</span>
@@ -1284,7 +1284,7 @@
       <Transition name="dropdown">
         <div
           v-if="contextMenu.show"
-          class="menu-panel fixed z-[500] overflow-hidden"
+          class="menu-panel fixed z-500 overflow-hidden"
           :style="{ left: contextMenu.x + 'px', top: contextMenu.y + 'px', minWidth: '176px' }"
           @click.stop
           @mouseleave="closeContextMenu"
@@ -1292,12 +1292,12 @@
           <!-- Folder Context Menu -->
           <template v-if="contextMenu.type === 'folder'">
             <button @click="contextMenuAction('rename')" class="menu-item flex items-center gap-2.5">
-              <svg class="w-3.5 h-3.5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+              <svg class="w-3.5 h-3.5 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
               Rename
             </button>
             <div class="menu-divider"></div>
             <button @click="contextMenuAction('delete')" class="menu-item menu-item-danger flex items-center gap-2.5">
-              <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+              <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
               Delete
             </button>
           </template>
@@ -1305,15 +1305,15 @@
           <!-- Video Context Menu -->
           <template v-else-if="contextMenu.type === 'video'">
             <button @click="contextMenuAction('share')" class="menu-item flex items-center gap-2.5">
-              <svg class="w-3.5 h-3.5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
+              <svg class="w-3.5 h-3.5 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
               Copy Link
             </button>
             <button @click="contextMenuAction('rename')" class="menu-item flex items-center gap-2.5">
-              <svg class="w-3.5 h-3.5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+              <svg class="w-3.5 h-3.5 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
               Rename
             </button>
             <button @click="contextMenuAction('move')" class="menu-item flex items-center gap-2.5">
-              <svg class="w-3.5 h-3.5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
+              <svg class="w-3.5 h-3.5 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
               Move to Folder
             </button>
             <button
@@ -1323,16 +1323,16 @@
               class="menu-item flex items-center gap-2.5"
               :class="isBunnyEncoding(contextMenu.target) ? 'text-gray-300 cursor-not-allowed' : 'text-gray-700 hover:bg-gray-50'"
             >
-              <svg class="w-3.5 h-3.5 flex-shrink-0" :class="isBunnyEncoding(contextMenu.target) ? 'text-gray-300' : 'text-gray-400'" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+              <svg class="w-3.5 h-3.5 shrink-0" :class="isBunnyEncoding(contextMenu.target) ? 'text-gray-300' : 'text-gray-400'" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
               Download
             </button>
             <button @click="contextMenuAction('archive')" class="menu-item flex items-center gap-2.5">
-              <svg class="w-3.5 h-3.5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/></svg>
+              <svg class="w-3.5 h-3.5 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/></svg>
               Archive
             </button>
             <div class="menu-divider"></div>
             <button @click="contextMenuAction('delete')" class="menu-item menu-item-danger flex items-center gap-2.5">
-              <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+              <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
               Delete
             </button>
           </template>

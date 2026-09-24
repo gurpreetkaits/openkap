@@ -2,7 +2,7 @@
   <Transition name="tray">
     <div
       v-if="visibleDownloads.length > 0"
-      class="fixed bottom-4 right-4 z-[70] w-[340px] max-w-[calc(100vw-2rem)] bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden"
+      class="fixed bottom-4 right-4 z-70 w-[340px] max-w-[calc(100vw-2rem)] bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden"
     >
       <div class="flex items-center justify-between px-4 py-2.5 bg-gray-50 border-b border-gray-100">
         <div class="flex items-center gap-2">
@@ -71,7 +71,7 @@
                 {{ dl.errorMessage }}
               </p>
             </div>
-            <div class="flex items-center gap-1 flex-shrink-0">
+            <div class="flex items-center gap-1 shrink-0">
               <button
                 v-if="dl.status === 'ready'"
                 @click="handleDownload(dl)"

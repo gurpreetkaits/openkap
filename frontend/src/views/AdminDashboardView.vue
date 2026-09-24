@@ -131,7 +131,7 @@
                 <td class="py-2.5 pr-4">
                   <div class="flex items-center gap-2">
                     <img v-if="user.avatar" :src="user.avatar" class="w-6 h-6 rounded-full object-cover" />
-                    <div v-else class="w-6 h-6 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center">
+                    <div v-else class="w-6 h-6 rounded-full bg-linear-to-br from-orange-400 to-orange-600 flex items-center justify-center">
                       <span class="text-[10px] font-bold text-white">{{ (user.name || 'U').charAt(0).toUpperCase() }}</span>
                     </div>
                     <span class="font-medium text-gray-900">{{ user.name }}</span>
@@ -148,7 +148,7 @@
                     v-if="(user.videos_count ?? 0) > 0"
                     type="button"
                     @click="openUserVideos(user)"
-                    class="font-medium text-orange-600 underline decoration-orange-200 underline-offset-2 hover:text-orange-700 hover:decoration-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-300 rounded px-1 -mr-1 transition-colors"
+                    class="font-medium text-orange-600 underline decoration-orange-200 underline-offset-2 hover:text-orange-700 hover:decoration-orange-400 focus:outline-hidden focus:ring-2 focus:ring-orange-300 rounded-sm px-1 -mr-1 transition-colors"
                     :title="`View ${user.name}'s recordings`"
                   >
                     {{ user.videos_count }}
@@ -238,11 +238,11 @@
                       :href="videoHref(video.id)"
                       target="_blank"
                       rel="noopener"
-                      class="font-medium text-gray-900 hover:text-orange-600 hover:underline break-words"
+                      class="font-medium text-gray-900 hover:text-orange-600 hover:underline wrap-break-word"
                     >
                       {{ video.title }}
                     </a>
-                    <p v-if="video.error" class="text-xs text-red-600 mt-1 break-words">{{ video.error }}</p>
+                    <p v-if="video.error" class="text-xs text-red-600 mt-1 wrap-break-word">{{ video.error }}</p>
                   </td>
                   <td class="py-2.5 pr-4">
                     <span class="text-xs font-medium px-2 py-0.5 rounded-full whitespace-nowrap" :class="healthBadgeClass(video.health)">

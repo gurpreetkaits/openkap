@@ -44,7 +44,7 @@
     <!-- Features -->
     <ul class="space-y-2 text-sm text-gray-700 mb-5 flex-1">
       <li v-for="feature in features" :key="feature" class="flex items-start gap-2">
-        <svg class="w-4 h-4 text-orange-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg class="w-4 h-4 text-orange-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
         </svg>
         <span>{{ feature }}</span>

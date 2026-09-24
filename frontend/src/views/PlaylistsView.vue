@@ -27,7 +27,7 @@
       <div
         v-for="playlist in playlists"
         :key="playlist.id"
-        class="group bg-white border border-gray-100 rounded-xl overflow-hidden cursor-pointer transition-all duration-200 hover:border-gray-200 hover:shadow-lg hover:shadow-black/[0.06] hover:-translate-y-0.5"
+        class="group bg-white border border-gray-100 rounded-xl overflow-hidden cursor-pointer transition-all duration-200 hover:border-gray-200 hover:shadow-lg hover:shadow-black/6 hover:-translate-y-0.5"
         @click="openPlaylist(playlist.id)"
       >
         <!-- Cover -->
@@ -45,14 +45,14 @@
             <div
               v-for="n in Math.min(playlist.videos_count, 3)"
               :key="n"
-              class="flex-1 h-full rounded-[5px] overflow-hidden bg-white/[0.06] border border-white/[0.08]"
+              class="flex-1 h-full rounded-[5px] overflow-hidden bg-white/6 border border-white/8"
             >
               <div class="w-full h-full p-1 flex flex-col gap-0.5">
-                <div class="h-[5px] bg-white/[0.06] rounded-sm mb-0.5"></div>
-                <div class="h-[1.5px] rounded-sm" :class="n % 2 === 0 ? 'w-4/5 bg-white/[0.2]' : 'w-3/5 bg-white/[0.08]'"></div>
-                <div class="h-[1.5px] rounded-sm" :class="n % 2 === 1 ? 'w-4/5 bg-white/[0.2]' : 'w-3/4 bg-white/[0.08]'"></div>
-                <div class="h-[1.5px] rounded-sm" :class="n % 2 === 0 ? 'w-[45%] bg-white/[0.08]' : 'w-3/5 bg-white/[0.2]'"></div>
-                <div class="h-[1.5px] rounded-sm w-[70%] bg-white/[0.08]"></div>
+                <div class="h-[5px] bg-white/6 rounded-xs mb-0.5"></div>
+                <div class="h-[1.5px] rounded-xs" :class="n % 2 === 0 ? 'w-4/5 bg-white/20' : 'w-3/5 bg-white/8'"></div>
+                <div class="h-[1.5px] rounded-xs" :class="n % 2 === 1 ? 'w-4/5 bg-white/20' : 'w-3/4 bg-white/8'"></div>
+                <div class="h-[1.5px] rounded-xs" :class="n % 2 === 0 ? 'w-[45%] bg-white/8' : 'w-3/5 bg-white/20'"></div>
+                <div class="h-[1.5px] rounded-xs w-[70%] bg-white/8"></div>
               </div>
             </div>
           </div>
@@ -65,7 +65,7 @@
           </div>
 
           <!-- Views badge (top left) -->
-          <div class="absolute top-2 left-2 flex items-center gap-1 bg-black/45 backdrop-blur-sm border border-white/10 text-white/85 rounded-[5px] px-2 py-[3px] text-[11px]">
+          <div class="absolute top-2 left-2 flex items-center gap-1 bg-black/45 backdrop-blur-xs border border-white/10 text-white/85 rounded-[5px] px-2 py-[3px] text-[11px]">
             <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" stroke-width="1.4" viewBox="0 0 10 10">
               <path d="M1 5C1 5 2.5 2 5 2S9 5 9 5 7.5 8 5 8 1 5 1 5z"/>
               <circle cx="5" cy="5" r="1.5"/>
@@ -74,7 +74,7 @@
           </div>
 
           <!-- Visibility badge (top right) -->
-          <div class="absolute top-2 right-2 flex items-center gap-1 bg-black/55 backdrop-blur-sm border border-white/[0.12] text-white/90 rounded-[5px] px-2 py-[3px] text-[11px] font-medium">
+          <div class="absolute top-2 right-2 flex items-center gap-1 bg-black/55 backdrop-blur-xs border border-white/12 text-white/90 rounded-[5px] px-2 py-[3px] text-[11px] font-medium">
             <svg class="w-[9px] h-[9px]" fill="none" stroke="currentColor" stroke-width="1.4" viewBox="0 0 9 9">
               <template v-if="playlist.is_public">
                 <circle cx="4.5" cy="4.5" r="3.5"/>
@@ -92,7 +92,7 @@
           <div class="absolute bottom-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200" @click.stop>
             <button
               @click="sharePlaylist(playlist)"
-              class="p-1.5 bg-black/20 hover:bg-black/40 backdrop-blur-sm rounded-md text-white/80 hover:text-white transition-colors"
+              class="p-1.5 bg-black/20 hover:bg-black/40 backdrop-blur-xs rounded-md text-white/80 hover:text-white transition-colors"
               :title="playlist.is_public ? 'Copy share link' : 'Make public to share'"
             >
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -101,7 +101,7 @@
             </button>
             <button
               @click="editPlaylist(playlist)"
-              class="p-1.5 bg-black/20 hover:bg-black/40 backdrop-blur-sm rounded-md text-white/80 hover:text-white transition-colors"
+              class="p-1.5 bg-black/20 hover:bg-black/40 backdrop-blur-xs rounded-md text-white/80 hover:text-white transition-colors"
               title="Edit playlist"
             >
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -110,7 +110,7 @@
             </button>
             <button
               @click="confirmDelete(playlist)"
-              class="p-1.5 bg-black/20 hover:bg-black/40 backdrop-blur-sm rounded-md text-white/80 hover:text-red-300 transition-colors"
+              class="p-1.5 bg-black/20 hover:bg-black/40 backdrop-blur-xs rounded-md text-white/80 hover:text-red-300 transition-colors"
               title="Delete playlist"
             >
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -173,7 +173,7 @@
       </p>
       <button
         @click="showCreateModal = true"
-        class="inline-flex items-center gap-2 px-4 py-2.5 bg-gray-900 hover:bg-black text-white rounded-lg font-semibold text-[13px] shadow-sm hover:shadow-md hover:-translate-y-px transition-all"
+        class="inline-flex items-center gap-2 px-4 py-2.5 bg-gray-900 hover:bg-black text-white rounded-lg font-semibold text-[13px] shadow-xs hover:shadow-md hover:-translate-y-px transition-all"
       >
         <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 12 12">
           <line x1="6" y1="1" x2="6" y2="11"/><line x1="1" y1="6" x2="11" y2="6"/>
@@ -187,7 +187,7 @@
       <Transition name="modal">
         <div
           v-if="showCreateModal"
-          class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/25 backdrop-blur-[5px]"
+          class="fixed inset-0 z-200 flex items-center justify-center p-4 bg-black/25 backdrop-blur-[5px]"
           @click.self="closeModal"
         >
           <div class="bg-white border border-gray-200 rounded-xl p-6 w-[440px] max-w-[90vw] shadow-2xl animate-modal-up">
@@ -205,7 +205,7 @@
                   v-model="playlistForm.title"
                   type="text"
                   required
-                  class="w-full bg-gray-50 border border-gray-100 rounded-lg px-3 py-2.5 text-[13.5px] text-gray-900 placeholder-gray-400 outline-none focus:bg-white focus:border-gray-300 transition-all"
+                  class="w-full bg-gray-50 border border-gray-100 rounded-lg px-3 py-2.5 text-[13.5px] text-gray-900 placeholder-gray-400 outline-hidden focus:bg-white focus:border-gray-300 transition-all"
                   placeholder="e.g. Onboarding, Sprint demos..."
                 />
               </div>
@@ -216,7 +216,7 @@
                 <input
                   v-model="playlistForm.description"
                   type="text"
-                  class="w-full bg-gray-50 border border-gray-100 rounded-lg px-3 py-2.5 text-[13.5px] text-gray-900 placeholder-gray-400 outline-none focus:bg-white focus:border-gray-300 transition-all"
+                  class="w-full bg-gray-50 border border-gray-100 rounded-lg px-3 py-2.5 text-[13.5px] text-gray-900 placeholder-gray-400 outline-hidden focus:bg-white focus:border-gray-300 transition-all"
                   placeholder="What's this playlist about?"
                 />
               </div>
@@ -224,7 +224,7 @@
                 <label class="block text-[11.5px] font-medium text-gray-500 mb-1.5">Visibility</label>
                 <select
                   v-model="playlistForm.visibility"
-                  class="w-full bg-gray-50 border border-gray-100 rounded-lg px-3 py-2.5 text-[13px] text-gray-700 outline-none cursor-pointer focus:border-gray-300"
+                  class="w-full bg-gray-50 border border-gray-100 rounded-lg px-3 py-2.5 text-[13px] text-gray-700 outline-hidden cursor-pointer focus:border-gray-300"
                 >
                   <option value="private">Private — only you can see this</option>
                   <option value="public">Public — anyone with the link</option>

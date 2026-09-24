@@ -88,14 +88,14 @@ export default {
     }
   },
   setup(props) {
-    const baseClasses = 'inline-flex items-center justify-center font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed'
+    const baseClasses = 'inline-flex items-center justify-center font-medium transition-all duration-200 focus:outline-hidden focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed'
 
     const variantClasses = computed(() => {
       const variants = {
-        primary: 'text-white bg-orange-600 hover:bg-orange-700 focus:ring-orange-500 shadow-sm',
+        primary: 'text-white bg-orange-600 hover:bg-orange-700 focus:ring-orange-500 shadow-xs',
         secondary: 'text-orange-700 bg-orange-50 hover:bg-orange-100 focus:ring-orange-500 border border-orange-200',
-        danger: 'text-white bg-red-600 hover:bg-red-700 focus:ring-red-500 shadow-sm',
-        success: 'text-white bg-green-600 hover:bg-green-700 focus:ring-green-500 shadow-sm',
+        danger: 'text-white bg-red-600 hover:bg-red-700 focus:ring-red-500 shadow-xs',
+        success: 'text-white bg-green-600 hover:bg-green-700 focus:ring-green-500 shadow-xs',
         ghost: 'text-orange-600 hover:text-orange-700 hover:bg-orange-50 focus:ring-orange-500'
       }
       return variants[props.variant] || variants.primary
@@ -115,7 +115,7 @@ export default {
     const roundedClasses = computed(() => {
       const rounded = {
         none: 'rounded-none',
-        sm: 'rounded-sm',
+        sm: 'rounded-xs',
         md: 'rounded-md',
         lg: 'rounded-lg',
         full: 'rounded-full'

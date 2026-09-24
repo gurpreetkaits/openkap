@@ -8,9 +8,9 @@
 
     <template v-else-if="playlist">
       <!-- Hero Section -->
-      <div class="bg-gray-900 flex-shrink-0 relative overflow-hidden">
+      <div class="bg-gray-900 shrink-0 relative overflow-hidden">
         <!-- Background -->
-        <div class="absolute inset-0 bg-gradient-to-br from-gray-800 via-gray-900 to-black"></div>
+        <div class="absolute inset-0 bg-linear-to-br from-gray-800 via-gray-900 to-black"></div>
         <div class="absolute inset-0 opacity-[0.06]">
           <svg class="w-full h-full" viewBox="0 0 900 120" fill="none" preserveAspectRatio="xMidYMid slice">
             <circle cx="800" cy="20" r="100" fill="white"/>
@@ -21,12 +21,12 @@
 
         <div class="relative z-10 px-7 py-5 flex gap-5 items-start">
           <!-- Cover thumbnail -->
-          <div class="w-[88px] h-[68px] rounded-lg bg-white/[0.06] border border-white/10 flex-shrink-0 overflow-hidden">
+          <div class="w-[88px] h-[68px] rounded-lg bg-white/6 border border-white/10 shrink-0 overflow-hidden">
             <div class="w-full h-full grid grid-cols-2 gap-px p-1.5">
-              <div class="bg-white/[0.05] rounded-sm"></div>
-              <div class="bg-white/[0.08] rounded-sm"></div>
-              <div class="bg-white/[0.08] rounded-sm"></div>
-              <div class="bg-white/[0.05] rounded-sm"></div>
+              <div class="bg-white/5 rounded-xs"></div>
+              <div class="bg-white/8 rounded-xs"></div>
+              <div class="bg-white/8 rounded-xs"></div>
+              <div class="bg-white/5 rounded-xs"></div>
             </div>
           </div>
 
@@ -66,7 +66,7 @@
           </div>
 
           <!-- Actions -->
-          <div class="flex items-center gap-1.5 flex-shrink-0">
+          <div class="flex items-center gap-1.5 shrink-0">
             <!-- Play all -->
             <button
               v-if="playlist.videos && playlist.videos.length > 0"
@@ -80,7 +80,7 @@
             <!-- Share -->
             <button
               @click="copyShareLink"
-              class="flex items-center gap-1.5 px-3.5 py-[7px] bg-white/[0.08] border border-white/[0.12] text-white/80 rounded-lg text-[12.5px] font-medium hover:bg-white/[0.14] hover:text-white transition-colors"
+              class="flex items-center gap-1.5 px-3.5 py-[7px] bg-white/8 border border-white/12 text-white/80 rounded-lg text-[12.5px] font-medium hover:bg-white/[0.14] hover:text-white transition-colors"
             >
               <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 12 12">
                 <circle cx="9" cy="2" r="1.4"/><circle cx="9" cy="10" r="1.4"/><circle cx="2" cy="6" r="1.4"/>
@@ -93,7 +93,7 @@
             <div class="relative" data-dropdown-menu>
               <button
                 @click="showHeroMenu = !showHeroMenu"
-                class="w-8 h-8 bg-white/[0.08] border border-white/10 rounded-lg flex items-center justify-center text-white/60 hover:bg-white/[0.14] hover:text-white transition-colors"
+                class="w-8 h-8 bg-white/8 border border-white/10 rounded-lg flex items-center justify-center text-white/60 hover:bg-white/[0.14] hover:text-white transition-colors"
               >
                 <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 14 14">
                   <circle cx="3" cy="7" r="1.2"/><circle cx="7" cy="7" r="1.2"/><circle cx="11" cy="7" r="1.2"/>
@@ -121,7 +121,7 @@
             <!-- Back button -->
             <button
               @click="router.push('/playlists')"
-              class="w-8 h-8 bg-white/[0.08] border border-white/10 rounded-lg flex items-center justify-center text-white/60 hover:bg-white/[0.14] hover:text-white transition-colors"
+              class="w-8 h-8 bg-white/8 border border-white/10 rounded-lg flex items-center justify-center text-white/60 hover:bg-white/[0.14] hover:text-white transition-colors"
               title="Back to playlists"
             >
               <svg class="w-[13px] h-[13px]" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 13 13">
@@ -148,7 +148,7 @@
                   v-model="searchQuery"
                   type="text"
                   placeholder="Search in playlist..."
-                  class="bg-transparent border-none outline-none text-[12.5px] text-gray-900 placeholder-gray-400 w-40"
+                  class="bg-transparent border-none outline-hidden text-[12.5px] text-gray-900 placeholder-gray-400 w-40"
                 />
               </div>
 
@@ -211,7 +211,7 @@
               @click="openVideo(video.id)"
             >
               <!-- Thumbnail -->
-              <div class="relative w-[88px] h-[50px] rounded-md overflow-hidden bg-gray-200 flex-shrink-0">
+              <div class="relative w-[88px] h-[50px] rounded-md overflow-hidden bg-gray-200 shrink-0">
                 <img
                   v-if="video.thumbnail"
                   :src="video.thumbnail"
@@ -219,8 +219,8 @@
                   class="w-full h-full object-cover"
                   loading="lazy"
                 />
-                <div v-else class="w-full h-full bg-gradient-to-br from-gray-800 to-gray-900"></div>
-                <div class="absolute bottom-1 right-1 bg-black/75 text-white text-[9.5px] font-semibold px-1.5 py-[1.5px] rounded tracking-wide">
+                <div v-else class="w-full h-full bg-linear-to-br from-gray-800 to-gray-900"></div>
+                <div class="absolute bottom-1 right-1 bg-black/75 text-white text-[9.5px] font-semibold px-1.5 py-[1.5px] rounded-sm tracking-wide">
                   {{ formatDuration(video.duration) }}
                 </div>
               </div>
@@ -235,7 +235,7 @@
               </div>
 
               <!-- Stats -->
-              <div class="flex items-center gap-2 flex-shrink-0">
+              <div class="flex items-center gap-2 shrink-0">
                 <div class="flex items-center gap-1 text-[11.5px] text-gray-400">
                   <svg class="w-[11px] h-[11px]" fill="none" stroke="currentColor" stroke-width="1.3" viewBox="0 0 11 11">
                     <path d="M1 5.5C1 5.5 2.5 3 5.5 3S10 5.5 10 5.5 8.5 8 5.5 8 1 5.5 1 5.5z"/>
@@ -302,7 +302,7 @@
         </div>
 
         <!-- Sidebar -->
-        <div class="w-[280px] flex-shrink-0 border-l border-gray-100 px-[18px] py-[18px] overflow-y-auto">
+        <div class="w-[280px] shrink-0 border-l border-gray-100 px-[18px] py-[18px] overflow-y-auto">
           <!-- About -->
           <div class="mb-5">
             <div class="text-[10.5px] font-semibold text-gray-400 uppercase tracking-wider mb-2.5">About</div>
@@ -401,7 +401,7 @@
       <Transition name="modal">
         <div
           v-if="showEditModal"
-          class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/25 backdrop-blur-[5px]"
+          class="fixed inset-0 z-200 flex items-center justify-center p-4 bg-black/25 backdrop-blur-[5px]"
           @click.self="showEditModal = false"
         >
           <div class="bg-white border border-gray-200 rounded-xl p-6 w-[440px] max-w-[90vw] shadow-2xl animate-modal-up">
@@ -414,7 +414,7 @@
                   v-model="editForm.title"
                   type="text"
                   required
-                  class="w-full bg-gray-50 border border-gray-100 rounded-lg px-3 py-2.5 text-[13.5px] text-gray-900 placeholder-gray-400 outline-none focus:bg-white focus:border-gray-300 transition-all"
+                  class="w-full bg-gray-50 border border-gray-100 rounded-lg px-3 py-2.5 text-[13.5px] text-gray-900 placeholder-gray-400 outline-hidden focus:bg-white focus:border-gray-300 transition-all"
                 />
               </div>
               <div class="mb-3.5">
@@ -422,7 +422,7 @@
                 <input
                   v-model="editForm.description"
                   type="text"
-                  class="w-full bg-gray-50 border border-gray-100 rounded-lg px-3 py-2.5 text-[13.5px] text-gray-900 placeholder-gray-400 outline-none focus:bg-white focus:border-gray-300 transition-all"
+                  class="w-full bg-gray-50 border border-gray-100 rounded-lg px-3 py-2.5 text-[13.5px] text-gray-900 placeholder-gray-400 outline-hidden focus:bg-white focus:border-gray-300 transition-all"
                 />
               </div>
               <div class="flex justify-end gap-2 mt-5">
@@ -497,9 +497,9 @@
           class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer"
           @click="toggleVideoSelection(video)"
         >
-          <div class="flex-shrink-0">
+          <div class="shrink-0">
             <div
-              class="w-5 h-5 border-2 rounded flex items-center justify-center transition-colors"
+              class="w-5 h-5 border-2 rounded-sm flex items-center justify-center transition-colors"
               :class="selectedVideoIds.includes(video.id) ? 'bg-orange-600 border-orange-600' : 'border-gray-300'"
             >
               <svg v-if="selectedVideoIds.includes(video.id)" class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
@@ -507,7 +507,7 @@
               </svg>
             </div>
           </div>
-          <div class="w-20 aspect-video rounded overflow-hidden bg-gray-200 flex-shrink-0">
+          <div class="w-20 aspect-video rounded-sm overflow-hidden bg-gray-200 shrink-0">
             <img v-if="video.thumbnail" :src="video.thumbnail" :alt="video.title" class="w-full h-full object-cover" />
           </div>
           <div class="flex-1 min-w-0">

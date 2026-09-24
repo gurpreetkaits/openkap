@@ -3,7 +3,7 @@
 
     <!-- ─── Toolbar ─── -->
     <div class="h-9 flex items-center px-3 gap-1.5 border-b border-gray-100">
-      <button class="tl-icon" title="Trim" @click="toggleTrim" :class="trimEnabled ? '!text-orange-600 bg-orange-50' : ''">
+      <button class="tl-icon" title="Trim" @click="toggleTrim" :class="trimEnabled ? 'text-orange-600! bg-orange-50' : ''">
         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M14.121 14.121L19 19m-7-7l7-7m-7 7l-2.879 2.879M12 12L9.121 9.121m0 5.758a3 3 0 10-4.243 4.243 3 3 0 004.243-4.243zm0-5.758a3 3 0 10-4.243-4.243 3 3 0 004.243 4.243z"/></svg>
       </button>
       <button class="tl-icon" title="Split">
@@ -14,11 +14,11 @@
 
       <!-- Zoom -->
       <div class="flex items-center gap-1">
-        <button @click="timeline.zoomOut()" :disabled="timeline.zoom.value <= 1" class="tl-icon !w-5 !h-5">
+        <button @click="timeline.zoomOut()" :disabled="timeline.zoom.value <= 1" class="tl-icon w-5! h-5!">
           <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" d="M5 12h14"/></svg>
         </button>
         <input type="range" :min="1" :max="20" v-model.number="timeline.zoom.value" class="w-16 h-1 accent-gray-400 cursor-pointer" />
-        <button @click="timeline.zoomIn()" :disabled="timeline.zoom.value >= 20" class="tl-icon !w-5 !h-5">
+        <button @click="timeline.zoomIn()" :disabled="timeline.zoom.value >= 20" class="tl-icon w-5! h-5!">
           <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" d="M12 5v14M5 12h14"/></svg>
         </button>
       </div>
@@ -34,7 +34,7 @@
       <div :style="{ width: timeline.totalTimelineWidth.value + 'px', minWidth: '100%' }" class="h-full flex flex-col">
 
         <!-- Ruler -->
-        <div class="h-5 relative flex-shrink-0">
+        <div class="h-5 relative shrink-0">
           <template v-for="mark in timeline.generateRulerMarks()" :key="mark.time">
             <div class="absolute top-0 bottom-0" :style="{ left: mark.position + 'px' }">
               <div class="w-px h-2.5 bg-gray-300/60"></div>
@@ -57,17 +57,17 @@
           >
             <!-- Tick marks (visual filler like the reference) -->
             <div class="absolute inset-0 flex items-center opacity-20 pointer-events-none">
-              <div v-for="n in Math.max(1, Math.floor(timeline.timeToPixels(block.duration) / 12))" :key="n" class="w-px h-full bg-gray-400 flex-shrink-0" :style="{ marginLeft: '12px' }"></div>
+              <div v-for="n in Math.max(1, Math.floor(timeline.timeToPixels(block.duration) / 12))" :key="n" class="w-px h-full bg-gray-400 shrink-0" :style="{ marginLeft: '12px' }"></div>
             </div>
 
             <!-- Label -->
-            <div class="absolute inset-0 flex items-center justify-center pointer-events-none z-[1]">
+            <div class="absolute inset-0 flex items-center justify-center pointer-events-none z-1">
               <span class="text-[10px] font-medium text-gray-500 truncate px-6">{{ block.title }}</span>
             </div>
 
             <!-- Left trim handle -->
             <div
-              class="absolute left-0 top-0 bottom-0 w-2.5 bg-blue-500 cursor-ew-resize opacity-0 group-hover/vblock:opacity-100 transition-opacity flex items-center justify-center rounded-l-lg z-[2]"
+              class="absolute left-0 top-0 bottom-0 w-2.5 bg-blue-500 cursor-ew-resize opacity-0 group-hover/vblock:opacity-100 transition-opacity flex items-center justify-center rounded-l-lg z-2"
               @mousedown.stop="startTrimDrag('left', block, $event)"
             >
               <div class="w-0.5 h-5 bg-white/70 rounded-full"></div>
@@ -75,7 +75,7 @@
 
             <!-- Right trim handle -->
             <div
-              class="absolute right-0 top-0 bottom-0 w-2.5 bg-blue-500 cursor-ew-resize opacity-0 group-hover/vblock:opacity-100 transition-opacity flex items-center justify-center rounded-r-lg z-[2]"
+              class="absolute right-0 top-0 bottom-0 w-2.5 bg-blue-500 cursor-ew-resize opacity-0 group-hover/vblock:opacity-100 transition-opacity flex items-center justify-center rounded-r-lg z-2"
               @mousedown.stop="startTrimDrag('right', block, $event)"
             >
               <div class="w-0.5 h-5 bg-white/70 rounded-full"></div>
@@ -85,7 +85,7 @@
             <button
               v-if="!block.isMain"
               @click.stop="removeMergeVideo(block.id)"
-              class="absolute top-1 right-1 hidden group-hover/vblock:flex items-center justify-center w-4 h-4 rounded-full bg-red-500 text-white hover:bg-red-600 z-[3]"
+              class="absolute top-1 right-1 hidden group-hover/vblock:flex items-center justify-center w-4 h-4 rounded-full bg-red-500 text-white hover:bg-red-600 z-3"
             >
               <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
@@ -106,9 +106,9 @@
         </div>
 
         <!-- ─── Background Track ─── -->
-        <div v-if="hasBg" class="h-4 relative mx-0 mb-1 flex-shrink-0">
+        <div v-if="hasBg" class="h-4 relative mx-0 mb-1 shrink-0">
           <div class="absolute left-1 top-0 bottom-0 flex items-center z-10 pointer-events-none">
-            <span class="text-[8px] font-semibold text-gray-400 uppercase tracking-wider bg-white/80 px-1 rounded">BG</span>
+            <span class="text-[8px] font-semibold text-gray-400 uppercase tracking-wider bg-white/80 px-1 rounded-sm">BG</span>
           </div>
           <div
             class="absolute top-0.5 bottom-0.5 left-0 rounded-md border border-gray-200/60 overflow-hidden"
@@ -117,10 +117,10 @@
         </div>
 
         <!-- ─── Zoom Track ─── -->
-        <div v-if="zoomKeyframes.length" class="h-6 relative mx-0 mb-1.5 flex-shrink-0">
+        <div v-if="zoomKeyframes.length" class="h-6 relative mx-0 mb-1.5 shrink-0">
           <!-- Label -->
           <div class="absolute left-1 top-0 bottom-0 flex items-center z-10 pointer-events-none">
-            <span class="text-[8px] font-semibold text-orange-400 uppercase tracking-wider bg-white/80 px-1 rounded">Zoom</span>
+            <span class="text-[8px] font-semibold text-orange-400 uppercase tracking-wider bg-white/80 px-1 rounded-sm">Zoom</span>
           </div>
 
           <!-- Zoom blocks -->
@@ -139,18 +139,18 @@
           >
             <!-- Zoom label -->
             <div class="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden">
-              <span class="text-[9px] font-bold text-white/90 drop-shadow-sm">{{ kf.scale.toFixed(1) }}x</span>
+              <span class="text-[9px] font-bold text-white/90 drop-shadow-xs">{{ kf.scale.toFixed(1) }}x</span>
             </div>
 
             <!-- Left resize handle -->
             <div
-              class="absolute left-0 top-0 bottom-0 w-1.5 cursor-ew-resize opacity-0 group-hover/zblock:opacity-100 transition-opacity rounded-l-md bg-orange-700/50 z-[2]"
+              class="absolute left-0 top-0 bottom-0 w-1.5 cursor-ew-resize opacity-0 group-hover/zblock:opacity-100 transition-opacity rounded-l-md bg-orange-700/50 z-2"
               @mousedown.stop="startZoomResize(kf, 'left', $event)"
             ></div>
 
             <!-- Right resize handle -->
             <div
-              class="absolute right-0 top-0 bottom-0 w-1.5 cursor-ew-resize opacity-0 group-hover/zblock:opacity-100 transition-opacity rounded-r-md bg-orange-700/50 z-[2]"
+              class="absolute right-0 top-0 bottom-0 w-1.5 cursor-ew-resize opacity-0 group-hover/zblock:opacity-100 transition-opacity rounded-r-md bg-orange-700/50 z-2"
               @mousedown.stop="startZoomResize(kf, 'right', $event)"
             ></div>
           </div>
@@ -304,6 +304,10 @@ onBeforeUnmount(() => { window.removeEventListener('resize', updateContainerWidt
 </script>
 
 <style scoped>
+/* Tailwind v4 compiles each SFC style block on its own, so @apply
+   below needs an explicit reference to the theme. */
+@reference "../../style.css";
+
 .tl-icon {
   @apply w-7 h-7 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-30 disabled:cursor-not-allowed;
 }

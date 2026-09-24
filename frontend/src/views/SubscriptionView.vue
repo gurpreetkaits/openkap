@@ -2,8 +2,8 @@
   <div class="animate-fade-in max-w-4xl mx-auto">
     <!-- Success Alert -->
     <div v-if="showSuccessAlert" class="fixed top-20 left-1/2 -translate-x-1/2 z-50 animate-slide-down">
-      <div class="bg-white border border-green-200 text-gray-900 px-5 py-3.5 rounded-lg shadow-sm flex items-center gap-3">
-        <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+      <div class="bg-white border border-green-200 text-gray-900 px-5 py-3.5 rounded-lg shadow-xs flex items-center gap-3">
+        <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center shrink-0">
           <svg class="w-4 h-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
           </svg>

@@ -11,7 +11,7 @@
       <div class="flex items-center gap-1 border border-gray-100 rounded-lg p-0.5 bg-white">
         <button
           @click="viewMode = 'grid'"
-          class="p-1.5 rounded transition-colors"
+          class="p-1.5 rounded-sm transition-colors"
           :class="viewMode === 'grid' ? 'bg-gray-100 text-gray-900' : 'text-gray-400 hover:text-gray-600'"
           title="Grid view"
         >
@@ -21,7 +21,7 @@
         </button>
         <button
           @click="viewMode = 'list'"
-          class="p-1.5 rounded transition-colors"
+          class="p-1.5 rounded-sm transition-colors"
           :class="viewMode === 'list' ? 'bg-gray-100 text-gray-900' : 'text-gray-400 hover:text-gray-600'"
           title="List view"
         >
@@ -47,7 +47,7 @@
       >
         <!-- Thumbnail -->
         <div
-          class="relative aspect-video bg-gray-900 rounded-xl overflow-hidden mb-3 border border-gray-100/50 group-hover:shadow-sm transition-all cursor-pointer"
+          class="relative aspect-video bg-gray-900 rounded-xl overflow-hidden mb-3 border border-gray-100/50 group-hover:shadow-xs transition-all cursor-pointer"
           @click="openVideo(video.id)"
         >
           <img
@@ -57,7 +57,7 @@
             class="w-full h-full object-cover opacity-90 group-hover:scale-105 group-hover:opacity-100 transition-all duration-500"
             loading="lazy"
           />
-          <div v-else class="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900">
+          <div v-else class="w-full h-full flex items-center justify-center bg-linear-to-br from-gray-800 to-gray-900">
             <svg class="w-10 h-10 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
             </svg>
@@ -89,12 +89,12 @@
                 </svg>
               </button>
               <div class="flex gap-2">
-                <button @click.stop="shareVideo(video)" class="p-1.5 bg-white text-gray-700 hover:text-blue-600 rounded-lg shadow-sm transition-colors" title="Copy Link">
+                <button @click.stop="shareVideo(video)" class="p-1.5 bg-white text-gray-700 hover:text-blue-600 rounded-lg shadow-xs transition-colors" title="Copy Link">
                   <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
                   </svg>
                 </button>
-                <button @click.stop="downloadVideo(video)" class="p-1.5 bg-white text-gray-700 hover:text-green-600 rounded-lg shadow-sm transition-colors" title="Download">
+                <button @click.stop="downloadVideo(video)" class="p-1.5 bg-white text-gray-700 hover:text-green-600 rounded-lg shadow-xs transition-colors" title="Download">
                   <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
                   </svg>
@@ -104,7 +104,7 @@
 
             <!-- Center Play Button -->
             <div class="flex justify-center">
-              <div class="w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg text-orange-600 scale-90 hover:scale-110 transition-transform">
+              <div class="w-10 h-10 bg-white/90 backdrop-blur-xs rounded-full flex items-center justify-center shadow-lg text-orange-600 scale-90 hover:scale-110 transition-transform">
                 <svg class="w-4 h-4 ml-0.5 fill-current" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.841z"/>
                 </svg>
@@ -143,11 +143,11 @@
       <div
         v-for="video in videos"
         :key="video.id"
-        class="group cursor-pointer flex items-center gap-4 p-3 bg-white border border-gray-100 rounded-xl hover:border-orange-200 hover:shadow-sm transition-all duration-200"
+        class="group cursor-pointer flex items-center gap-4 p-3 bg-white border border-gray-100 rounded-xl hover:border-orange-200 hover:shadow-xs transition-all duration-200"
         @click="openVideo(video.id)"
       >
         <!-- Thumbnail -->
-        <div class="relative w-40 flex-shrink-0 aspect-video rounded-lg overflow-hidden bg-gray-900">
+        <div class="relative w-40 shrink-0 aspect-video rounded-lg overflow-hidden bg-gray-900">
           <img
             v-if="video.thumbnail"
             :src="video.thumbnail"
@@ -155,10 +155,10 @@
             class="w-full h-full object-cover"
             loading="lazy"
           />
-          <div class="absolute bottom-1.5 right-1.5 bg-black/70 text-white text-[10px] px-1.5 py-0.5 rounded font-medium">
+          <div class="absolute bottom-1.5 right-1.5 bg-black/70 text-white text-[10px] px-1.5 py-0.5 rounded-sm font-medium">
             {{ formatDuration(video.duration) }}
           </div>
-          <div class="absolute top-1.5 left-1.5 bg-orange-500 text-white p-0.5 rounded">
+          <div class="absolute top-1.5 left-1.5 bg-orange-500 text-white p-0.5 rounded-sm">
             <svg class="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 24 24">
               <path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
             </svg>
@@ -215,7 +215,7 @@
       </p>
       <router-link
         to="/videos"
-        class="inline-flex items-center px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-lg font-medium text-sm shadow-sm transition-colors"
+        class="inline-flex items-center px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-lg font-medium text-sm shadow-xs transition-colors"
       >
         Browse Library
       </router-link>

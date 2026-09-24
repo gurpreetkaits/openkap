@@ -8,7 +8,7 @@
       </div>
       <button
         @click="openNewModal"
-        class="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium rounded-lg transition-all duration-200 flex items-center gap-2 shadow-sm hover:shadow-md active:scale-[0.98]"
+        class="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium rounded-lg transition-all duration-200 flex items-center gap-2 shadow-xs hover:shadow-md active:scale-[0.98]"
       >
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
@@ -34,7 +34,7 @@
       </div>
       <h3 class="text-base font-medium text-gray-900 mb-1">No feedback yet</h3>
       <p class="text-sm text-gray-500 mb-4">Share your thoughts, report bugs, or suggest features</p>
-      <button @click="openNewModal" class="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium rounded-lg transition-all duration-200 shadow-sm hover:shadow-md">
+      <button @click="openNewModal" class="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium rounded-lg transition-all duration-200 shadow-xs hover:shadow-md">
         Send Your First Feedback
       </button>
     </div>
@@ -45,11 +45,11 @@
         v-for="item in feedbackList"
         :key="item.id"
         @click="viewFeedback(item)"
-        class="group bg-white rounded-xl border border-gray-100 p-4 cursor-pointer transition-all duration-200 hover:border-gray-300 hover:shadow-sm"
+        class="group bg-white rounded-xl border border-gray-100 p-4 cursor-pointer transition-all duration-200 hover:border-gray-300 hover:shadow-xs"
       >
         <div class="flex items-start gap-3">
           <!-- Type Icon -->
-          <div :class="typeIconBg(item.type)" class="flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center">
+          <div :class="typeIconBg(item.type)" class="shrink-0 w-10 h-10 rounded-lg flex items-center justify-center">
             <component :is="typeIcon(item.type)" class="w-5 h-5" :class="typeIconColor(item.type)" />
           </div>
 
@@ -83,7 +83,7 @@
               </div>
 
               <!-- Status Badge -->
-              <span :class="statusClass(item.status)" class="flex-shrink-0 px-2.5 py-1 text-xs font-medium rounded-full capitalize flex items-center gap-1">
+              <span :class="statusClass(item.status)" class="shrink-0 px-2.5 py-1 text-xs font-medium rounded-full capitalize flex items-center gap-1">
                 <span :class="statusDotClass(item.status)" class="w-1.5 h-1.5 rounded-full"></span>
                 {{ item.status }}
               </span>
@@ -140,8 +140,8 @@
         leave-from-class="opacity-100"
         leave-to-class="opacity-0"
       >
-        <div v-if="showModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4" @keydown.esc="handleEscape">
-          <div class="fixed inset-0 bg-black/50 backdrop-blur-sm" @click="handleBackdropClick"></div>
+        <div v-if="showModal" class="fixed inset-0 z-100 flex items-center justify-center p-4" @keydown.esc="handleEscape">
+          <div class="fixed inset-0 bg-black/50 backdrop-blur-xs" @click="handleBackdropClick"></div>
           <Transition
             enter-active-class="duration-200 ease-out"
             enter-from-class="opacity-0 scale-95"
@@ -197,7 +197,7 @@
                     placeholder="Brief summary of your feedback"
                     maxlength="255"
                     required
-                    class="w-full px-4 py-2.5 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-shadow"
+                    class="w-full px-4 py-2.5 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-hidden transition-shadow"
                     :disabled="submitting"
                   />
                   <div class="flex justify-end mt-1">
@@ -218,7 +218,7 @@
                     contenteditable="true"
                     @input="onDescriptionInput"
                     @paste="onPaste"
-                    class="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none min-h-[180px] max-h-[300px] overflow-y-auto transition-shadow"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-hidden min-h-[180px] max-h-[300px] overflow-y-auto transition-shadow"
                     :class="{ 'opacity-50 pointer-events-none': submitting }"
                     data-placeholder="Describe your feedback in detail. Screenshots help us understand better..."
                   ></div>
@@ -242,7 +242,7 @@
                   <button
                     type="submit"
                     :disabled="submitting || !isFormValid"
-                    class="px-5 py-2.5 bg-orange-500 hover:bg-orange-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white text-sm font-medium rounded-xl flex items-center gap-2 transition-all duration-200 shadow-sm hover:shadow-md"
+                    class="px-5 py-2.5 bg-orange-500 hover:bg-orange-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white text-sm font-medium rounded-xl flex items-center gap-2 transition-all duration-200 shadow-xs hover:shadow-md"
                   >
                     <svg v-if="submitting" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
                       <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -271,8 +271,8 @@
         leave-from-class="opacity-100"
         leave-to-class="opacity-0"
       >
-        <div v-if="selectedFeedback" class="fixed inset-0 z-[100] flex items-center justify-center p-4" @keydown.esc="selectedFeedback = null">
-          <div class="fixed inset-0 bg-black/50 backdrop-blur-sm" @click="selectedFeedback = null"></div>
+        <div v-if="selectedFeedback" class="fixed inset-0 z-100 flex items-center justify-center p-4" @keydown.esc="selectedFeedback = null">
+          <div class="fixed inset-0 bg-black/50 backdrop-blur-xs" @click="selectedFeedback = null"></div>
           <Transition
             enter-active-class="duration-200 ease-out"
             enter-from-class="opacity-0 scale-95"
@@ -285,7 +285,7 @@
               <!-- Header -->
               <div class="flex items-start justify-between p-5 border-b border-gray-100">
                 <div class="flex items-start gap-3 flex-1 min-w-0 pr-4">
-                  <div :class="typeIconBg(selectedFeedback.type)" class="flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center">
+                  <div :class="typeIconBg(selectedFeedback.type)" class="shrink-0 w-10 h-10 rounded-lg flex items-center justify-center">
                     <component :is="typeIcon(selectedFeedback.type)" class="w-5 h-5" :class="typeIconColor(selectedFeedback.type)" />
                   </div>
                   <div class="flex-1 min-w-0">
@@ -298,11 +298,11 @@
                         {{ selectedFeedback.status }}
                       </span>
                     </div>
-                    <h2 class="text-base font-semibold text-gray-900 break-words">{{ selectedFeedback.title }}</h2>
+                    <h2 class="text-base font-semibold text-gray-900 wrap-break-word">{{ selectedFeedback.title }}</h2>
                     <p class="text-xs text-gray-500 mt-0.5">{{ formatDate(selectedFeedback.created_at) }}</p>
                   </div>
                 </div>
-                <button @click="selectedFeedback = null" class="p-2 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0">
+                <button @click="selectedFeedback = null" class="p-2 hover:bg-gray-100 rounded-lg transition-colors shrink-0">
                   <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                   </svg>
@@ -393,8 +393,8 @@
         leave-from-class="opacity-100"
         leave-to-class="opacity-0"
       >
-        <div v-if="showUnsavedWarning" class="fixed inset-0 z-[110] flex items-center justify-center p-4">
-          <div class="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
+        <div v-if="showUnsavedWarning" class="fixed inset-0 z-110 flex items-center justify-center p-4">
+          <div class="fixed inset-0 bg-black/50 backdrop-blur-xs"></div>
           <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm z-10 p-5">
             <div class="flex items-center gap-3 mb-4">
               <div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
@@ -430,8 +430,8 @@
         leave-from-class="opacity-100"
         leave-to-class="opacity-0"
       >
-        <div v-if="showDeleteConfirm" class="fixed inset-0 z-[110] flex items-center justify-center p-4">
-          <div class="fixed inset-0 bg-black/50 backdrop-blur-sm" @click="showDeleteConfirm = false"></div>
+        <div v-if="showDeleteConfirm" class="fixed inset-0 z-110 flex items-center justify-center p-4">
+          <div class="fixed inset-0 bg-black/50 backdrop-blur-xs" @click="showDeleteConfirm = false"></div>
           <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm z-10 p-5">
             <div class="flex items-center gap-3 mb-4">
               <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">

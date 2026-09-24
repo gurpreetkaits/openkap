@@ -33,11 +33,11 @@
         <div class="flex items-start gap-3 mb-4">
           <div class="w-10 h-10 rounded-lg bg-gray-200"></div>
           <div class="flex-1">
-            <div class="h-5 bg-gray-200 rounded w-32 mb-2"></div>
-            <div class="h-4 bg-gray-200 rounded w-20"></div>
+            <div class="h-5 bg-gray-200 rounded-sm w-32 mb-2"></div>
+            <div class="h-4 bg-gray-200 rounded-sm w-20"></div>
           </div>
         </div>
-        <div class="h-4 bg-gray-200 rounded w-48"></div>
+        <div class="h-4 bg-gray-200 rounded-sm w-48"></div>
       </div>
     </div>
 
@@ -67,7 +67,7 @@
         v-for="workspace in workspaces"
         :key="workspace.id"
         :to="`/workspace/${workspace.slug}`"
-        class="bg-white rounded-xl border border-gray-100 p-5 hover:shadow-sm hover:border-gray-300 transition-all group"
+        class="bg-white rounded-xl border border-gray-100 p-5 hover:shadow-xs hover:border-gray-300 transition-all group"
       >
         <div class="flex items-start justify-between mb-4">
           <div class="flex items-center gap-3">
@@ -120,7 +120,7 @@
       <Transition name="modal">
         <div
           v-if="showCreateModal"
-          class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50"
+          class="fixed inset-0 z-100 flex items-center justify-center p-4 bg-black/50"
           @click.self="showCreateModal = false"
         >
           <Transition name="modal-content" appear>
@@ -136,7 +136,7 @@
                     v-model="newWorkspace.name"
                     type="text"
                     placeholder="My Team"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-hidden transition-all"
                   />
                   <p v-if="createError" class="mt-1 text-sm text-red-600">{{ createError }}</p>
                 </div>
@@ -147,7 +147,7 @@
                     v-model="newWorkspace.description"
                     placeholder="What's this workspace for?"
                     rows="3"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all resize-none"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-hidden transition-all resize-none"
                   ></textarea>
                 </div>
               </div>

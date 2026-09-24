@@ -5,7 +5,7 @@
     @mousedown.stop="startDrag"
   >
     <!-- Playhead handle -->
-    <div class="absolute -top-0.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-orange-500 rounded-sm rotate-45 -mt-1"></div>
+    <div class="absolute -top-0.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-orange-500 rounded-xs rotate-45 -mt-1"></div>
   </div>
 </template>
 

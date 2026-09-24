@@ -65,7 +65,7 @@
       <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ error }}</h3>
       <router-link
         to="/videos"
-        class="inline-flex items-center px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-lg font-medium text-sm shadow-sm transition-colors"
+        class="inline-flex items-center px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-lg font-medium text-sm shadow-xs transition-colors"
       >
         Back to Library
       </router-link>
@@ -96,7 +96,7 @@
           <!-- Placeholder when no thumbnail -->
           <div
             v-if="!video.thumbnail"
-            class="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center"
+            class="w-full h-full bg-linear-to-br from-gray-100 to-gray-200 flex items-center justify-center"
           >
             <svg class="w-12 h-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
@@ -106,20 +106,20 @@
           <!-- Processing Badge -->
           <div
             v-if="video.conversion_status === 'processing'"
-            class="absolute top-2 left-2 z-10 bg-black/70 backdrop-blur-sm text-white text-[10px] font-medium px-2 py-1 rounded-md flex items-center gap-1.5"
+            class="absolute top-2 left-2 z-10 bg-black/70 backdrop-blur-xs text-white text-[10px] font-medium px-2 py-1 rounded-md flex items-center gap-1.5"
           >
             <div class="w-2 h-2 bg-orange-400 rounded-full animate-pulse"></div>
             Processing
           </div>
 
           <!-- Duration Badge -->
-          <div class="absolute bottom-2 right-2 z-10 bg-black/80 backdrop-blur-sm text-white text-[11px] font-medium px-2 py-0.5 rounded-md pointer-events-none">
+          <div class="absolute bottom-2 right-2 z-10 bg-black/80 backdrop-blur-xs text-white text-[11px] font-medium px-2 py-0.5 rounded-md pointer-events-none">
             {{ formatDuration(video.duration) }}
           </div>
 
           <!-- Favourite Badge -->
           <div v-if="video.is_favourite" class="absolute top-2 right-2 z-10 pointer-events-none">
-            <div class="bg-white/90 backdrop-blur-sm rounded-full p-1 shadow-sm">
+            <div class="bg-white/90 backdrop-blur-xs rounded-full p-1 shadow-xs">
               <svg class="w-3.5 h-3.5 text-orange-500" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
               </svg>
@@ -133,7 +133,7 @@
             <!-- Remove from folder button -->
             <button
               @click.stop="removeFromFolder(video)"
-              class="absolute top-2 left-2 p-1.5 bg-white text-red-600 hover:text-red-700 rounded-lg shadow-sm transition-colors z-10"
+              class="absolute top-2 left-2 p-1.5 bg-white text-red-600 hover:text-red-700 rounded-lg shadow-xs transition-colors z-10"
               title="Remove from folder"
             >
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -160,7 +160,7 @@
               {{ video.title }}
             </h3>
             <!-- Hover Actions: Copy Link -->
-            <div class="flex items-center gap-0.5 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity z-20" @click.stop>
+            <div class="flex items-center gap-0.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity z-20" @click.stop>
               <button
                 @click.stop="copyShareLink(video)"
                 class="p-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
@@ -215,7 +215,7 @@
       </p>
       <router-link
         to="/videos"
-        class="inline-flex items-center px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-lg font-medium text-sm shadow-sm transition-colors"
+        class="inline-flex items-center px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-lg font-medium text-sm shadow-xs transition-colors"
       >
         Browse Library
       </router-link>
@@ -226,7 +226,7 @@
       <Transition name="modal">
         <div
           v-if="showEditModal"
-          class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50"
+          class="fixed inset-0 z-100 flex items-center justify-center p-4 bg-black/50"
           @click.self="showEditModal = false"
         >
           <Transition name="modal-content" appear>
@@ -241,7 +241,7 @@
                     id="edit-folder-name"
                     v-model="editFolderName"
                     type="text"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-hidden transition-all"
                     @keyup.enter="updateFolder"
                   />
                   <p v-if="editError" class="mt-1 text-sm text-red-600">{{ editError }}</p>

@@ -4,7 +4,7 @@
     <button
       v-show="!isOpen"
       @click="openWidget"
-      class="fixed bottom-6 right-6 z-40 h-14 w-14 rounded-full bg-orange-600 text-white shadow-lg hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 transition flex items-center justify-center"
+      class="fixed bottom-6 right-6 z-40 h-14 w-14 rounded-full bg-orange-600 text-white shadow-lg hover:bg-orange-700 focus:outline-hidden focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 transition flex items-center justify-center"
       aria-label="Open support chat"
     >
       <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -44,7 +44,7 @@
           </div>
           <button
             @click="closeWidget"
-            class="ml-2 p-1 rounded hover:bg-orange-700 focus:outline-none"
+            class="ml-2 p-1 rounded-sm hover:bg-orange-700 focus:outline-hidden"
             aria-label="Close"
           >
             <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -72,7 +72,7 @@
                   @click="sendFaqMessage(item)"
                   class="w-full text-left px-3 py-2 rounded-lg bg-white border border-gray-200 hover:border-orange-400 hover:bg-orange-50 text-sm text-gray-700 flex items-center"
                 >
-                  <svg class="w-4 h-4 mr-2 text-orange-500 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <svg class="w-4 h-4 mr-2 text-orange-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                   {{ item.question }}
@@ -101,7 +101,7 @@
                 >
                   {{ message.sender_name || 'Support' }}
                 </div>
-                <div class="whitespace-pre-wrap break-words">{{ message.body }}</div>
+                <div class="whitespace-pre-wrap wrap-break-word">{{ message.body }}</div>
                 <div
                   class="text-[10px] mt-1"
                   :class="message.sender_type === 'user' ? 'text-orange-100' : 'text-gray-400'"
@@ -125,7 +125,7 @@
             rows="1"
             :disabled="sending"
             @keydown.enter.exact.prevent="handleSend"
-            class="flex-1 resize-none rounded-lg border border-gray-300 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 px-3 py-2 text-sm outline-none max-h-32"
+            class="flex-1 resize-none rounded-lg border border-gray-300 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 px-3 py-2 text-sm outline-hidden max-h-32"
           />
           <button
             @click="handleSend"

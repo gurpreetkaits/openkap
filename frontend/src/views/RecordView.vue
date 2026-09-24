@@ -1,10 +1,10 @@
 <template>
-  <div class="bg-gradient-to-br from-orange-50 via-white to-red-50 min-h-full">
+  <div class="bg-linear-to-br from-orange-50 via-white to-red-50 min-h-full">
     <!-- Recording Status Bar -->
-    <div v-if="isRecording" class="bg-white border-b border-gray-200 px-4 sm:px-6 lg:px-8 py-3 shadow-sm">
+    <div v-if="isRecording" class="bg-white border-b border-gray-200 px-4 sm:px-6 lg:px-8 py-3 shadow-xs">
       <div class="max-w-5xl mx-auto">
         <div class="flex items-center justify-center">
-          <div class="flex items-center space-x-2 bg-red-50 text-red-700 px-5 py-2.5 rounded-full shadow-sm">
+          <div class="flex items-center space-x-2 bg-red-50 text-red-700 px-5 py-2.5 rounded-full shadow-xs">
             <div class="w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse"></div>
             <span class="text-sm font-semibold">Recording {{ formatTime(recordingTime) }}</span>
           </div>
@@ -88,7 +88,7 @@
         <button
           @click="startRecording"
           :disabled="!canRecord || isStartingRecording"
-          class="group relative inline-flex items-center px-8 sm:px-12 py-4 sm:py-5 border border-transparent text-lg sm:text-xl font-semibold rounded-full text-white bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 focus:outline-none focus:ring-4 focus:ring-orange-300 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:scale-105"
+          class="group relative inline-flex items-center px-8 sm:px-12 py-4 sm:py-5 border border-transparent text-lg sm:text-xl font-semibold rounded-full text-white bg-linear-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 focus:outline-hidden focus:ring-4 focus:ring-orange-300 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:scale-105"
         >
           <svg v-if="!isStartingRecording" class="w-7 h-7 mr-3" fill="currentColor" viewBox="0 0 20 20">
             <circle cx="10" cy="10" r="7" fill="currentColor"/>
@@ -136,7 +136,7 @@
           <button
             @click="pauseRecording"
             v-if="!isPaused"
-            class="inline-flex items-center px-6 py-3 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors duration-200"
+            class="inline-flex items-center px-6 py-3 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors duration-200"
           >
             <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
               <path d="M5.5 3.5A1.5 1.5 0 017 2h6a1.5 1.5 0 011.5 1.5v13a1.5 1.5 0 01-1.5 1.5H7A1.5 1.5 0 015.5 16.5v-13zM9 4H7v12h2V4zm4 0h-2v12h2V4z"/>
@@ -147,7 +147,7 @@
           <button
             @click="resumeRecording"
             v-if="isPaused"
-            class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors duration-200"
+            class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors duration-200"
           >
             <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
               <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.841z"/>
@@ -157,7 +157,7 @@
 
           <button
             @click="stopRecording"
-            class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200"
+            class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200"
           >
             <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
               <rect x="4" y="4" width="12" height="12" rx="2" ry="2"/>

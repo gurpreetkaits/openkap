@@ -13,7 +13,7 @@
           v-for="tab in tabs"
           :key="tab.id"
           @click="setActiveTab(tab.id)"
-          class="py-3 px-1 border-b-2 font-medium text-sm transition-colors focus:outline-none"
+          class="py-3 px-1 border-b-2 font-medium text-sm transition-colors focus:outline-hidden"
           :class="
             activeTab === tab.id
               ? 'border-orange-500 text-orange-600'
@@ -69,7 +69,7 @@
           <div class="flex items-center gap-4">
             <!-- Logo Preview -->
             <div
-              class="w-16 h-16 rounded-xl border-2 border-dashed flex items-center justify-center flex-shrink-0 overflow-hidden"
+              class="w-16 h-16 rounded-xl border-2 border-dashed flex items-center justify-center shrink-0 overflow-hidden"
               :class="logoPreview ? 'border-gray-200 bg-white' : 'border-gray-300 bg-gray-50'"
             >
               <img v-if="logoPreview" :src="logoPreview" alt="Logo" class="w-full h-full object-contain p-1" />
@@ -130,7 +130,7 @@
                   :key="color"
                   @click="settings.brand_color = color"
                   class="w-6 h-6 rounded-full border-2 transition-all hover:scale-110"
-                  :class="settings.brand_color === color ? 'border-gray-900 ring-2 ring-offset-1 ring-gray-300' : 'border-white shadow-sm'"
+                  :class="settings.brand_color === color ? 'border-gray-900 ring-2 ring-offset-1 ring-gray-300' : 'border-white shadow-xs'"
                   :style="{ backgroundColor: color }"
                   :title="color"
                 />
@@ -157,7 +157,7 @@
                 v-model="settings.brand_color"
                 type="text"
                 maxlength="7"
-                class="w-20 px-2 py-1.5 text-xs font-mono text-gray-700 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
+                class="w-20 px-2 py-1.5 text-xs font-mono text-gray-700 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-hidden"
                 placeholder="#F97316"
               />
             </div>
@@ -173,7 +173,7 @@
           <button
             @click="saveBranding"
             :disabled="savingBranding || !isPaid"
-            class="px-5 py-2 text-xs font-medium text-white bg-orange-500 hover:bg-orange-600 rounded-lg shadow-sm transition-colors disabled:opacity-50 flex items-center gap-2"
+            class="px-5 py-2 text-xs font-medium text-white bg-orange-500 hover:bg-orange-600 rounded-lg shadow-xs transition-colors disabled:opacity-50 flex items-center gap-2"
           >
             <svg v-if="savingBranding" class="animate-spin w-3.5 h-3.5" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -266,7 +266,7 @@
               type="text"
               maxlength="255"
               :disabled="savingProfile"
-              class="mt-1 w-full px-3 py-2 text-sm bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none disabled:opacity-50"
+              class="mt-1 w-full px-3 py-2 text-sm bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-hidden disabled:opacity-50"
               placeholder="Your name"
             />
           </div>
@@ -307,7 +307,7 @@
             <button
               @click="saveProfile"
               :disabled="savingProfile || !profileDirty"
-              class="px-5 py-2 text-xs font-medium text-white bg-orange-500 hover:bg-orange-600 rounded-lg shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              class="px-5 py-2 text-xs font-medium text-white bg-orange-500 hover:bg-orange-600 rounded-lg shadow-xs disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
               <svg v-if="savingProfile" class="animate-spin w-3.5 h-3.5" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -339,7 +339,7 @@
 
           <div class="p-5 flex items-center justify-between gap-4">
             <div class="flex items-center gap-3 min-w-0">
-              <svg class="w-5 h-5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <svg class="w-5 h-5 text-gray-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
               </svg>
               <div class="min-w-0">
@@ -355,7 +355,7 @@
             <button
               @click="exportRecordingsZip"
               :disabled="exportingRecordings || videoCount === 0"
-              class="px-4 py-2 text-xs font-medium text-white bg-orange-500 hover:bg-orange-600 rounded-lg shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 flex-shrink-0"
+              class="px-4 py-2 text-xs font-medium text-white bg-orange-500 hover:bg-orange-600 rounded-lg shadow-xs transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shrink-0"
             >
               <svg v-if="exportingRecordings" class="animate-spin w-3.5 h-3.5" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -387,7 +387,7 @@
 
           <div class="p-5 flex items-center justify-between gap-4">
             <div class="flex items-center gap-3 min-w-0">
-              <svg class="w-5 h-5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <svg class="w-5 h-5 text-gray-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
               </svg>
               <div class="min-w-0">
@@ -401,7 +401,7 @@
             <button
               @click="exportMetadataJson"
               :disabled="exportingMetadata || videoCount === 0"
-              class="px-4 py-2 text-xs font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 flex-shrink-0"
+              class="px-4 py-2 text-xs font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-xs transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shrink-0"
             >
               <svg v-if="exportingMetadata" class="animate-spin w-3.5 h-3.5" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -428,8 +428,8 @@
         <h2 class="text-lg font-semibold text-gray-900">API Tokens</h2>
         <p class="mt-1 text-sm text-gray-500">
           Personal tokens let you upload recordings to your workspace from anywhere — the qa-record skill, a script, or CI.
-          Send the token as <code class="px-1 py-0.5 text-xs bg-gray-100 rounded">Authorization: Bearer &lt;token&gt;</code>
-          when calling <code class="px-1 py-0.5 text-xs bg-gray-100 rounded">POST /api/videos</code>.
+          Send the token as <code class="px-1 py-0.5 text-xs bg-gray-100 rounded-sm">Authorization: Bearer &lt;token&gt;</code>
+          when calling <code class="px-1 py-0.5 text-xs bg-gray-100 rounded-sm">POST /api/videos</code>.
         </p>
         <p class="mt-3 text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
           A token has <strong>full access to your account</strong> — treat it like a password. Keep it in an environment
@@ -450,7 +450,7 @@
           <code class="flex-1 px-3 py-2 text-xs font-mono text-emerald-900 bg-white border border-emerald-200 rounded-lg break-all">{{ createdToken }}</code>
           <button
             @click="copyCreatedToken"
-            class="px-3 py-2 text-xs font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-sm transition-colors flex-shrink-0"
+            class="px-3 py-2 text-xs font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-xs transition-colors shrink-0"
           >
             Copy
           </button>
@@ -466,11 +466,11 @@
             type="text"
             placeholder="Token name (e.g. qa-record)"
             @keyup.enter="createApiToken"
-            class="flex-1 px-3 py-2 text-sm bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
+            class="flex-1 px-3 py-2 text-sm bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-hidden"
           />
           <select
             v-model="newTokenExpiry"
-            class="px-3 py-2 text-sm bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
+            class="px-3 py-2 text-sm bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-hidden"
           >
             <option value="">No expiration</option>
             <option value="30">Expires in 30 days</option>
@@ -480,7 +480,7 @@
           <button
             @click="createApiToken"
             :disabled="creatingToken || !newTokenName.trim()"
-            class="px-5 py-2 text-xs font-medium text-white bg-orange-500 hover:bg-orange-600 rounded-lg shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+            class="px-5 py-2 text-xs font-medium text-white bg-orange-500 hover:bg-orange-600 rounded-lg shadow-xs transition-colors disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
           >
             {{ creatingToken ? 'Creating…' : 'Create token' }}
           </button>
@@ -511,7 +511,7 @@
             </div>
             <button
               @click="askRevokeToken(token)"
-              class="px-3 py-1.5 text-xs font-medium text-red-600 bg-white border border-red-200 hover:bg-red-50 rounded-lg transition-colors flex-shrink-0"
+              class="px-3 py-1.5 text-xs font-medium text-red-600 bg-white border border-red-200 hover:bg-red-50 rounded-lg transition-colors shrink-0"
             >
               Revoke
             </button>
@@ -537,7 +537,7 @@
         <button
           @click="confirmRevokeToken"
           :disabled="revokingToken"
-          class="px-4 py-2 text-xs font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg shadow-sm transition-colors disabled:opacity-50"
+          class="px-4 py-2 text-xs font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg shadow-xs transition-colors disabled:opacity-50"
         >
           {{ revokingToken ? 'Revoking…' : 'Revoke token' }}
         </button>

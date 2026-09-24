@@ -31,7 +31,7 @@
       <nav class="h-14 border-b border-gray-200/60 bg-white/80 backdrop-blur-md flex items-center justify-between px-4 lg:px-6 z-50 fixed top-0 w-full">
         <div class="flex items-center gap-3">
           <a href="/" class="flex items-center gap-2 hover:opacity-80 transition-opacity">
-            <img :src="branding.logoUrl.value || '/logo.png'" alt="OpenKap" class="w-8 h-8 rounded-lg shadow-sm" />
+            <img :src="branding.logoUrl.value || '/logo.png'" alt="OpenKap" class="w-8 h-8 rounded-lg shadow-xs" />
             <span class="text-sm font-semibold text-gray-900">OpenKap</span>
           </a>
         </div>
@@ -59,8 +59,8 @@
       </nav>
 
       <!-- Share Modal -->
-      <div v-if="showShareModal" class="fixed inset-0 z-[60] flex items-center justify-center">
-        <div class="absolute inset-0 bg-gray-900/20 backdrop-blur-sm transition-opacity" @click="showShareModal = false"></div>
+      <div v-if="showShareModal" class="fixed inset-0 z-60 flex items-center justify-center">
+        <div class="absolute inset-0 bg-gray-900/20 backdrop-blur-xs transition-opacity" @click="showShareModal = false"></div>
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-md relative z-10 border border-gray-100 overflow-hidden transform transition-all duration-200 mx-4">
           <div class="p-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
             <h3 class="text-sm font-semibold text-gray-900">Share Screenshot</h3>
@@ -93,7 +93,7 @@
             <label class="text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-2 block">Public Link</label>
             <div class="flex gap-2">
               <div class="flex-1 relative">
-                <input type="text" :value="shareUrl" class="w-full pl-9 pr-3 py-2 text-xs bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500 text-gray-600" readonly>
+                <input type="text" :value="shareUrl" class="w-full pl-9 pr-3 py-2 text-xs bg-gray-50 border border-gray-200 rounded-lg focus:outline-hidden focus:border-orange-500 text-gray-600" readonly>
                 <svg class="w-3.5 h-3.5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
                 </svg>

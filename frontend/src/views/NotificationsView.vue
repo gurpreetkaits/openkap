@@ -39,12 +39,12 @@
           :class="{ 'bg-orange-50/40': !notification.read }"
         >
           <!-- Actor Avatar or Type Icon -->
-          <div v-if="notification.actor?.avatar_url" class="flex-shrink-0">
+          <div v-if="notification.actor?.avatar_url" class="shrink-0">
             <img :src="notification.actor.avatar_url" :alt="notification.actor.name" class="w-8 h-8 rounded-full">
           </div>
           <div
             v-else
-            class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
+            class="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
             :class="getIconClass(notification.type)"
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -70,7 +70,7 @@
             <button
               v-if="!notification.read"
               @click.stop="markAsRead(notification)"
-              class="p-1.5 text-gray-400 hover:text-orange-600 hover:bg-orange-50 rounded transition-colors"
+              class="p-1.5 text-gray-400 hover:text-orange-600 hover:bg-orange-50 rounded-sm transition-colors"
               title="Mark as read"
             >
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -79,7 +79,7 @@
             </button>
             <button
               @click.stop="deleteNotification(notification)"
-              class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+              class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-sm transition-colors"
               title="Delete"
             >
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -89,7 +89,7 @@
           </div>
 
           <!-- Unread dot -->
-          <div v-if="!notification.read" class="w-2 h-2 bg-orange-500 rounded-full flex-shrink-0 mt-1.5"></div>
+          <div v-if="!notification.read" class="w-2 h-2 bg-orange-500 rounded-full shrink-0 mt-1.5"></div>
         </div>
       </div>
 

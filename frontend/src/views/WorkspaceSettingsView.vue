@@ -16,10 +16,10 @@
     <!-- Loading State -->
     <div v-if="loading" class="space-y-6 animate-pulse">
       <div class="bg-white rounded-xl border border-gray-100 p-6">
-        <div class="h-6 bg-gray-200 rounded w-32 mb-4"></div>
+        <div class="h-6 bg-gray-200 rounded-sm w-32 mb-4"></div>
         <div class="space-y-4">
-          <div class="h-10 bg-gray-200 rounded w-full"></div>
-          <div class="h-20 bg-gray-200 rounded w-full"></div>
+          <div class="h-10 bg-gray-200 rounded-sm w-full"></div>
+          <div class="h-20 bg-gray-200 rounded-sm w-full"></div>
         </div>
       </div>
     </div>
@@ -38,7 +38,7 @@
               v-model="form.name"
               type="text"
               :disabled="!canEdit"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all disabled:bg-gray-100 disabled:cursor-not-allowed"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-hidden transition-all disabled:bg-gray-100 disabled:cursor-not-allowed"
             />
           </div>
 
@@ -50,7 +50,7 @@
               placeholder="What's this workspace for?"
               rows="3"
               :disabled="!canEdit"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all resize-none disabled:bg-gray-100 disabled:cursor-not-allowed"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-hidden transition-all resize-none disabled:bg-gray-100 disabled:cursor-not-allowed"
             ></textarea>
           </div>
 
@@ -64,7 +64,7 @@
                 type="text"
                 :disabled="!canEdit"
                 @input="sanitizeSlug"
-                class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all disabled:bg-gray-100 disabled:cursor-not-allowed"
+                class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-hidden transition-all disabled:bg-gray-100 disabled:cursor-not-allowed"
               />
             </div>
             <p class="text-xs text-gray-500 mt-1">Only lowercase letters, numbers, and hyphens allowed.</p>
@@ -203,7 +203,7 @@
       <Transition name="modal">
         <div
           v-if="showLeaveModal"
-          class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50"
+          class="fixed inset-0 z-100 flex items-center justify-center p-4 bg-black/50"
           @click.self="showLeaveModal = false"
         >
           <Transition name="modal-content" appear>
@@ -239,7 +239,7 @@
       <Transition name="modal">
         <div
           v-if="showDeleteModal"
-          class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50"
+          class="fixed inset-0 z-100 flex items-center justify-center p-4 bg-black/50"
           @click.self="showDeleteModal = false"
         >
           <Transition name="modal-content" appear>
@@ -256,7 +256,7 @@
                 v-model="deleteConfirmName"
                 type="text"
                 :placeholder="workspaceName"
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none mb-6"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-hidden mb-6"
               />
 
               <div class="flex justify-end gap-3">

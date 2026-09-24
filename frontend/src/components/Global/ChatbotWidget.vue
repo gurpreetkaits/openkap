@@ -18,7 +18,7 @@
         class="fixed bottom-6 right-6 w-[400px] h-[600px] bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col z-50 overflow-hidden"
       >
         <!-- Header -->
-        <div class="flex items-center justify-between px-4 py-3 bg-orange-500 text-white flex-shrink-0">
+        <div class="flex items-center justify-between px-4 py-3 bg-orange-500 text-white shrink-0">
           <div class="flex items-center gap-2">
             <button
               v-if="currentConversationId || messages.length > 0"
@@ -155,7 +155,7 @@
         </div>
 
         <!-- Input Area -->
-        <div v-if="!showingList" class="px-4 py-3 border-t border-gray-100 flex-shrink-0">
+        <div v-if="!showingList" class="px-4 py-3 border-t border-gray-100 shrink-0">
           <div class="flex items-end gap-2">
             <textarea
               ref="inputRef"
@@ -163,13 +163,13 @@
               @keydown.enter.exact.prevent="handleSend"
               placeholder="Type a message..."
               rows="1"
-              class="flex-1 resize-none border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all max-h-24 overflow-y-auto"
+              class="flex-1 resize-none border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-hidden focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all max-h-24 overflow-y-auto"
               :disabled="isSending"
             ></textarea>
             <button
               @click="handleSend"
               :disabled="!inputText.trim() || isSending"
-              class="p-2 bg-orange-500 text-white rounded-xl hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex-shrink-0"
+              class="p-2 bg-orange-500 text-white rounded-xl hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shrink-0"
             >
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
@@ -230,7 +230,7 @@ export default {
         // Code blocks
         .replace(/```(\w*)\n([\s\S]*?)```/g, '<pre class="bg-gray-800 text-gray-100 rounded-lg p-2 my-1 text-xs overflow-x-auto"><code>$2</code></pre>')
         // Inline code
-        .replace(/`([^`]+)`/g, '<code class="bg-gray-200 text-orange-700 px-1 py-0.5 rounded text-xs">$1</code>')
+        .replace(/`([^`]+)`/g, '<code class="bg-gray-200 text-orange-700 px-1 py-0.5 rounded-sm text-xs">$1</code>')
         // Bold
         .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
         // Italic

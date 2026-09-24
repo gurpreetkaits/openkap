@@ -46,10 +46,10 @@
         <button class="px-5 py-2 text-sm font-semibold text-white bg-orange-600 rounded-lg opacity-50 cursor-not-allowed">Disabled</button>
       </div>
       <div class="mt-4 grid grid-cols-2 gap-2 text-[11px] font-mono text-gray-500">
-        <div><code class="bg-gray-100 px-1 rounded">Primary</code> → px-5 py-2 text-sm font-semibold text-white bg-orange-600 rounded-lg hover:bg-orange-700 transition-colors</div>
-        <div><code class="bg-gray-100 px-1 rounded">Secondary</code> → px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors</div>
-        <div><code class="bg-gray-100 px-1 rounded">Ghost</code> → p-2 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors</div>
-        <div><code class="bg-gray-100 px-1 rounded">Danger</code> → px-4 py-2 text-sm font-medium text-red-600 bg-white border border-red-200 rounded-lg hover:bg-red-50</div>
+        <div><code class="bg-gray-100 px-1 rounded-sm">Primary</code> → px-5 py-2 text-sm font-semibold text-white bg-orange-600 rounded-lg hover:bg-orange-700 transition-colors</div>
+        <div><code class="bg-gray-100 px-1 rounded-sm">Secondary</code> → px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors</div>
+        <div><code class="bg-gray-100 px-1 rounded-sm">Ghost</code> → p-2 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors</div>
+        <div><code class="bg-gray-100 px-1 rounded-sm">Danger</code> → px-4 py-2 text-sm font-medium text-red-600 bg-white border border-red-200 rounded-lg hover:bg-red-50</div>
       </div>
     </section>
 
@@ -72,7 +72,7 @@
       </div>
       <div class="mt-4 text-[11px] font-mono text-gray-500 space-y-1">
         <div><code>card</code> → bg-white rounded-xl border border-gray-100</div>
-        <div><code>card-hover</code> → hover:border-gray-200 hover:shadow-sm transition-all duration-200</div>
+        <div><code>card-hover</code> → hover:border-gray-200 hover:shadow-xs transition-all duration-200</div>
         <div><code>card-selected</code> → ring-2 ring-orange-500 ring-offset-2 border-orange-300</div>
         <div>Padding variants: <code>card-pad-sm</code> (p-3) · <code>card-pad-md</code> (p-4) · <code>card-pad-lg</code> (p-5)</div>
         <div class="text-amber-600 mt-2">Always use <code>card</code> class instead of writing <code>bg-white rounded-xl border border-gray-100</code> inline.</div>
@@ -161,7 +161,7 @@
       <div class="mt-4 text-[11px] font-mono text-gray-500 space-y-1">
         <div><code>form-group</code> → space-y-1.5 (wraps label+input+error)</div>
         <div><code>form-label</code> → block text-xs font-medium text-gray-700</div>
-        <div><code>form-input</code> → w-full px-3 py-2 text-sm border border-gray-200 rounded-lg placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-300</div>
+        <div><code>form-input</code> → w-full px-3 py-2 text-sm border border-gray-200 rounded-lg placeholder:text-gray-400 focus:outline-hidden focus:ring-2 focus:ring-orange-500 focus:border-orange-300</div>
         <div><code>form-error</code> → text-xs text-red-600 mt-1</div>
       </div>
     </section>

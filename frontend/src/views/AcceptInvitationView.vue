@@ -3,8 +3,8 @@
     <!-- Loading State -->
     <div v-if="loading" class="bg-white rounded-xl shadow-lg max-w-md w-full p-6 text-center animate-pulse">
       <div class="w-16 h-16 rounded-lg bg-gray-200 mx-auto mb-4"></div>
-      <div class="h-6 bg-gray-200 rounded w-48 mx-auto mb-2"></div>
-      <div class="h-4 bg-gray-200 rounded w-64 mx-auto"></div>
+      <div class="h-6 bg-gray-200 rounded-sm w-48 mx-auto mb-2"></div>
+      <div class="h-4 bg-gray-200 rounded-sm w-64 mx-auto"></div>
     </div>
 
     <!-- Error State -->

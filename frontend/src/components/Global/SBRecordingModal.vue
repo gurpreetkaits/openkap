@@ -82,7 +82,7 @@
             <button
               @click="startRecording"
               :disabled="isStartingRecording"
-              class="inline-flex items-center px-8 py-4 border border-transparent text-lg font-semibold rounded-full text-white bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 focus:outline-none focus:ring-4 focus:ring-orange-300 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
+              class="inline-flex items-center px-8 py-4 border border-transparent text-lg font-semibold rounded-full text-white bg-linear-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 focus:outline-hidden focus:ring-4 focus:ring-orange-300 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
             >
               <svg v-if="!isStartingRecording" class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20">
                 <circle cx="10" cy="10" r="7"/>
@@ -190,7 +190,7 @@
               <button
                 @click="saveRecording"
                 :disabled="isDiscarding"
-                class="inline-flex items-center px-6 py-3 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 transition-colors disabled:opacity-50"
+                class="inline-flex items-center px-6 py-3 border border-transparent text-sm font-medium rounded-lg text-white bg-linear-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 transition-colors disabled:opacity-50"
               >
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>

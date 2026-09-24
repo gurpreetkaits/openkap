@@ -87,7 +87,7 @@
         <!-- Playlist Info -->
         <div class="mb-8">
           <div class="flex items-start gap-4">
-            <div class="w-16 h-16 bg-gradient-to-br from-orange-100 to-orange-200 rounded-xl flex items-center justify-center flex-shrink-0">
+            <div class="w-16 h-16 bg-linear-to-br from-orange-100 to-orange-200 rounded-xl flex items-center justify-center shrink-0">
               <svg class="w-8 h-8 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
               </svg>
@@ -118,7 +118,7 @@
             </div>
 
             <!-- Thumbnail -->
-            <div class="relative w-40 sm:w-48 flex-shrink-0 aspect-video rounded-lg overflow-hidden bg-gray-900">
+            <div class="relative w-40 sm:w-48 shrink-0 aspect-video rounded-lg overflow-hidden bg-gray-900">
               <img
                 v-if="video.thumbnail"
                 :src="video.thumbnail"
@@ -126,14 +126,14 @@
                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 loading="lazy"
               />
-              <div v-else class="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900">
+              <div v-else class="w-full h-full flex items-center justify-center bg-linear-to-br from-gray-800 to-gray-900">
                 <svg class="w-10 h-10 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
                 </svg>
               </div>
 
               <!-- Duration Badge -->
-              <div class="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-1.5 py-0.5 rounded font-medium">
+              <div class="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-1.5 py-0.5 rounded-sm font-medium">
                 {{ formatDuration(video.duration) }}
               </div>
 

@@ -8,10 +8,10 @@
 
     <!-- Success/Error Alerts -->
     <div v-if="alertMessage" class="mb-6 p-4 rounded-xl border text-sm flex items-center gap-3" :class="alertType === 'success' ? 'bg-green-50 border-green-200 text-green-800' : 'bg-red-50 border-red-200 text-red-800'">
-      <svg v-if="alertType === 'success'" class="w-5 h-5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg v-if="alertType === 'success'" class="w-5 h-5 text-green-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
       </svg>
-      <svg v-else class="w-5 h-5 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg v-else class="w-5 h-5 text-red-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
       </svg>
       {{ alertMessage }}
@@ -35,7 +35,7 @@
       <div
         v-for="provider in providers"
         :key="provider.id"
-        class="bg-white rounded-xl border border-gray-100 p-5 hover:shadow-sm transition-shadow"
+        class="bg-white rounded-xl border border-gray-100 p-5 hover:shadow-xs transition-shadow"
       >
         <div class="flex items-start justify-between">
           <div class="flex items-center gap-3">
@@ -103,7 +103,7 @@
     <!-- Disconnect Confirmation Modal -->
     <Teleport to="body">
       <div v-if="showDisconnectModal" class="fixed inset-0 z-50 flex items-center justify-center">
-        <div class="absolute inset-0 bg-gray-900/20 backdrop-blur-sm" @click="showDisconnectModal = false"></div>
+        <div class="absolute inset-0 bg-gray-900/20 backdrop-blur-xs" @click="showDisconnectModal = false"></div>
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm relative z-10 border border-gray-100 p-6">
           <div class="text-center">
             <div class="w-12 h-12 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">

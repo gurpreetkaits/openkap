@@ -5,14 +5,14 @@
       <div class="flex items-center gap-4 mb-8">
         <div class="w-12 h-12 rounded-lg bg-gray-200"></div>
         <div>
-          <div class="h-6 bg-gray-200 rounded w-48 mb-2"></div>
-          <div class="h-4 bg-gray-200 rounded w-32"></div>
+          <div class="h-6 bg-gray-200 rounded-sm w-48 mb-2"></div>
+          <div class="h-4 bg-gray-200 rounded-sm w-32"></div>
         </div>
       </div>
       <div class="grid gap-4 md:grid-cols-3 mb-8">
         <div v-for="i in 3" :key="i" class="bg-white rounded-xl border border-gray-100 p-4">
-          <div class="h-4 bg-gray-200 rounded w-20 mb-2"></div>
-          <div class="h-6 bg-gray-200 rounded w-16"></div>
+          <div class="h-4 bg-gray-200 rounded-sm w-20 mb-2"></div>
+          <div class="h-6 bg-gray-200 rounded-sm w-16"></div>
         </div>
       </div>
     </div>
@@ -173,8 +173,8 @@
           <div v-for="i in 3" :key="i" class="bg-white rounded-xl border border-gray-100 overflow-hidden animate-pulse">
             <div class="aspect-video bg-gray-200"></div>
             <div class="p-4">
-              <div class="h-5 bg-gray-200 rounded w-3/4 mb-2"></div>
-              <div class="h-4 bg-gray-200 rounded w-1/2"></div>
+              <div class="h-5 bg-gray-200 rounded-sm w-3/4 mb-2"></div>
+              <div class="h-4 bg-gray-200 rounded-sm w-1/2"></div>
             </div>
           </div>
         </div>
@@ -204,7 +204,7 @@
           <div
             v-for="video in videos"
             :key="video.id"
-            class="bg-white rounded-xl border border-gray-100 overflow-hidden hover:shadow-sm transition-shadow"
+            class="bg-white rounded-xl border border-gray-100 overflow-hidden hover:shadow-xs transition-shadow"
           >
             <div class="relative aspect-video bg-gray-100">
               <img
@@ -218,7 +218,7 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
                 </svg>
               </div>
-              <span class="absolute bottom-2 right-2 px-1.5 py-0.5 text-xs font-medium text-white bg-black/70 rounded">
+              <span class="absolute bottom-2 right-2 px-1.5 py-0.5 text-xs font-medium text-white bg-black/70 rounded-sm">
                 {{ formatDuration(video.duration) }}
               </span>
             </div>

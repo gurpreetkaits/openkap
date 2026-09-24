@@ -3,14 +3,14 @@
     <!-- Top Navigation Header (replaces left sidebar) -->
     <header
       v-if="!isFullWidthRoute"
-      class="h-14 grid grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 lg:px-6 border-b border-gray-200 bg-white/90 backdrop-blur-md sticky top-0 z-30 flex-shrink-0"
+      class="h-14 grid grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 lg:px-6 border-b border-gray-200 bg-white/90 backdrop-blur-md sticky top-0 z-30 shrink-0"
     >
       <!-- Left: Mobile menu + Logo -->
       <div class="flex items-center gap-3 min-w-0">
         <!-- Mobile Menu Button -->
         <button
           @click="sidebarOpen = true"
-          class="lg:hidden p-2 -ml-2 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100 focus:outline-none"
+          class="lg:hidden p-2 -ml-2 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100 focus:outline-hidden"
         >
           <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
@@ -18,8 +18,8 @@
         </button>
 
         <!-- Logo -->
-        <router-link to="/videos" class="flex items-center gap-2.5 group cursor-pointer flex-shrink-0">
-          <img :src="branding.logoUrl.value || '/logo.png'" alt="OpenKap" class="w-7 h-7 rounded-lg shadow-sm" />
+        <router-link to="/videos" class="flex items-center gap-2.5 group cursor-pointer shrink-0">
+          <img :src="branding.logoUrl.value || '/logo.png'" alt="OpenKap" class="w-7 h-7 rounded-lg shadow-xs" />
           <span class="text-gray-900 font-bold text-sm tracking-tight">OpenKap</span>
           <span
             v-if="isAuthenticated"
@@ -138,7 +138,7 @@
       </nav>
 
       <!-- Right: CTA + Bell + User -->
-      <div class="flex items-center gap-2 flex-shrink-0 justify-self-end">
+      <div class="flex items-center gap-2 shrink-0 justify-self-end">
         <!-- Free plan: Upgrade pill -->
         <button
           v-if="isAuthenticated && subscription && !subscription.is_active"
@@ -156,7 +156,7 @@
         <button
           v-if="isAuthenticated"
           @click="handleNewRecording"
-          class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium rounded-lg shadow-sm shadow-orange-100 transition-all"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium rounded-lg shadow-xs shadow-orange-100 transition-all"
         >
           <div class="w-3.5 h-3.5 rounded-full bg-white/25 flex items-center justify-center">
             <svg class="w-2 h-2" fill="currentColor" viewBox="0 0 10 10"><circle cx="5" cy="5" r="4"/></svg>
@@ -181,7 +181,7 @@
                   :alt="userInfo.name"
                   class="w-7 h-7 rounded-full bg-gray-200 object-cover"
                 />
-                <div v-else class="w-7 h-7 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center">
+                <div v-else class="w-7 h-7 rounded-full bg-linear-to-br from-orange-400 to-orange-600 flex items-center justify-center">
                   <span class="text-xs font-bold text-white">{{ userInfo.initial }}</span>
                 </div>
               </div>
@@ -287,7 +287,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
               </svg>
               Dashboard
-              <span class="ml-auto text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-orange-100 text-orange-700">Admin</span>
+              <span class="ml-auto text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-sm bg-orange-100 text-orange-700">Admin</span>
             </router-link>
 
             <!-- Admin Support (Mobile) -->
@@ -302,7 +302,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
               </svg>
               Support
-              <span class="ml-auto text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-orange-100 text-orange-700">Admin</span>
+              <span class="ml-auto text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-sm bg-orange-100 text-orange-700">Admin</span>
             </router-link>
 
             <router-link
@@ -366,7 +366,7 @@
                 :alt="userInfo.name"
                 class="w-8 h-8 rounded-full bg-gray-200 object-cover ring-2 ring-white"
               />
-              <div v-else class="w-8 h-8 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center ring-2 ring-white">
+              <div v-else class="w-8 h-8 rounded-full bg-linear-to-br from-orange-400 to-orange-600 flex items-center justify-center ring-2 ring-white">
                 <span class="text-xs font-bold text-white">{{ userInfo.initial }}</span>
               </div>
             </div>
@@ -425,11 +425,11 @@
 
     <!-- Extension Install Modal -->
     <Transition name="dropdown">
-      <div v-if="showExtensionModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" @click="showExtensionModal = false"></div>
+      <div v-if="showExtensionModal" class="fixed inset-0 z-100 flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/40 backdrop-blur-xs" @click="showExtensionModal = false"></div>
         <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-fade-in">
           <!-- Header with gradient -->
-          <div class="bg-gradient-to-br from-orange-500 to-orange-600 px-6 pt-8 pb-10 text-center relative">
+          <div class="bg-linear-to-br from-orange-500 to-orange-600 px-6 pt-8 pb-10 text-center relative">
             <button @click="showExtensionModal = false" class="absolute top-3 right-3 text-white/70 hover:text-white transition-colors">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -446,7 +446,7 @@
           <div class="px-6 py-5 -mt-4">
             <div class="bg-gray-50 rounded-xl p-4 border border-gray-100">
               <div class="flex items-start gap-3">
-                <div class="w-8 h-8 rounded-lg bg-orange-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <div class="w-8 h-8 rounded-lg bg-orange-100 flex items-center justify-center shrink-0 mt-0.5">
                   <svg class="w-4 h-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                   </svg>
@@ -462,7 +462,7 @@
               :href="extensionStoreUrl"
               target="_blank"
               rel="noopener noreferrer"
-              class="flex items-center justify-center gap-2 w-full mt-4 px-4 py-3 bg-orange-600 hover:bg-orange-700 text-white text-sm font-semibold rounded-xl shadow-sm transition-all hover:shadow-md"
+              class="flex items-center justify-center gap-2 w-full mt-4 px-4 py-3 bg-orange-600 hover:bg-orange-700 text-white text-sm font-semibold rounded-xl shadow-xs transition-all hover:shadow-md"
             >
               <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>

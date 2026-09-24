@@ -33,7 +33,7 @@
               @input="onSearchInput"
               type="text"
               placeholder="Search by name or email"
-              class="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-gray-300 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none"
+              class="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-gray-300 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-hidden"
             />
           </div>
         </div>
@@ -54,7 +54,7 @@
             class="w-full text-left px-3 py-3 border-b border-gray-100 hover:bg-gray-50 flex items-start gap-3"
             :class="{ 'bg-orange-50': selectedConversationId === conv.id }"
           >
-            <div class="flex-shrink-0">
+            <div class="shrink-0">
               <img
                 v-if="conv.user?.avatar_url"
                 :src="conv.user.avatar_url"
@@ -73,7 +73,7 @@
                 <div class="font-medium text-sm text-gray-900 truncate">
                   {{ conv.user?.name || 'Unknown user' }}
                 </div>
-                <div v-if="conv.last_message_at" class="text-[11px] text-gray-400 flex-shrink-0">
+                <div v-if="conv.last_message_at" class="text-[11px] text-gray-400 shrink-0">
                   {{ formatTime(conv.last_message_at) }}
                 </div>
               </div>
@@ -87,7 +87,7 @@
                 </div>
                 <span
                   v-if="conv.unread_count_admin > 0"
-                  class="flex-shrink-0 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-semibold flex items-center justify-center"
+                  class="shrink-0 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-semibold flex items-center justify-center"
                 >
                   {{ conv.unread_count_admin > 9 ? '9+' : conv.unread_count_admin }}
                 </span>
@@ -101,7 +101,7 @@
           <button
             @click="changePage(pagination.page - 1)"
             :disabled="pagination.page <= 1"
-            class="px-2 py-1 rounded border border-gray-300 disabled:opacity-40"
+            class="px-2 py-1 rounded-sm border border-gray-300 disabled:opacity-40"
           >
             Prev
           </button>
@@ -109,7 +109,7 @@
           <button
             @click="changePage(pagination.page + 1)"
             :disabled="pagination.page >= pagination.lastPage"
-            class="px-2 py-1 rounded border border-gray-300 disabled:opacity-40"
+            class="px-2 py-1 rounded-sm border border-gray-300 disabled:opacity-40"
           >
             Next
           </button>
@@ -180,7 +180,7 @@
                   >
                     {{ message.sender_name }}
                   </div>
-                  <div class="whitespace-pre-wrap break-words">{{ message.body }}</div>
+                  <div class="whitespace-pre-wrap wrap-break-word">{{ message.body }}</div>
                   <div
                     class="text-[10px] mt-1"
                     :class="message.sender_type === 'admin' ? 'text-orange-100' : 'text-gray-400'"
@@ -200,7 +200,7 @@
               rows="1"
               :disabled="sending"
               @keydown.enter.exact.prevent="sendReply"
-              class="flex-1 resize-none rounded-lg border border-gray-300 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 px-3 py-2 text-sm outline-none max-h-32"
+              class="flex-1 resize-none rounded-lg border border-gray-300 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 px-3 py-2 text-sm outline-hidden max-h-32"
             />
             <button
               @click="sendReply"

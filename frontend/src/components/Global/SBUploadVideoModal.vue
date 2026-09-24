@@ -48,7 +48,7 @@
           class="flex items-center gap-3 px-3 py-2.5 bg-white border border-gray-200 rounded-lg"
         >
           <!-- Status icon -->
-          <div class="flex-shrink-0 w-8 h-8 rounded-md flex items-center justify-center"
+          <div class="shrink-0 w-8 h-8 rounded-md flex items-center justify-center"
                :class="statusBg(item.status)">
             <svg v-if="item.status === 'done'" class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
@@ -68,8 +68,8 @@
           <div class="flex-1 min-w-0">
             <div class="flex items-baseline gap-2">
               <p class="text-sm font-medium text-gray-800 truncate">{{ item.file.name }}</p>
-              <span class="text-xs text-gray-400 flex-shrink-0">{{ formatBytes(item.file.size) }}</span>
-              <span v-if="item.duration > 0" class="text-xs text-gray-400 flex-shrink-0">· {{ formatDuration(item.duration) }}</span>
+              <span class="text-xs text-gray-400 shrink-0">{{ formatBytes(item.file.size) }}</span>
+              <span v-if="item.duration > 0" class="text-xs text-gray-400 shrink-0">· {{ formatDuration(item.duration) }}</span>
             </div>
 
             <!-- Progress bar -->
@@ -88,7 +88,7 @@
             <p v-else-if="item.status === 'done'" class="mt-1 text-[11px] text-green-600">
               Uploaded
             </p>
-            <p v-else-if="item.status === 'error' || item.status === 'rejected'" class="mt-1 text-[11px] text-red-600 break-words" :title="item.error">
+            <p v-else-if="item.status === 'error' || item.status === 'rejected'" class="mt-1 text-[11px] text-red-600 wrap-break-word" :title="item.error">
               {{ item.error || 'Upload failed' }}
             </p>
             <p v-else-if="item.status === 'skipped'" class="mt-1 text-[11px] text-amber-600">
@@ -99,7 +99,7 @@
           <button
             v-if="['queued', 'error', 'skipped', 'rejected'].includes(item.status)"
             @click="removeFile(idx)"
-            class="flex-shrink-0 p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors"
+            class="shrink-0 p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-sm transition-colors"
             title="Remove"
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -132,7 +132,7 @@
 
       <!-- Quota warning -->
       <div v-if="quotaWarning" class="mt-3 flex items-start gap-2 px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg">
-        <svg class="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg class="w-4 h-4 text-amber-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
         </svg>
         <p class="text-xs text-amber-800">{{ quotaWarning }}</p>
@@ -164,7 +164,7 @@
             v-if="!allFinished"
             @click="startUpload"
             :disabled="!canStart"
-            class="inline-flex items-center gap-1.5 px-3.5 py-2 text-sm font-semibold text-white bg-orange-500 hover:bg-orange-600 rounded-lg shadow-sm shadow-orange-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
+            class="inline-flex items-center gap-1.5 px-3.5 py-2 text-sm font-semibold text-white bg-orange-500 hover:bg-orange-600 rounded-lg shadow-xs shadow-orange-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
           >
             <svg v-if="isUploading" class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>

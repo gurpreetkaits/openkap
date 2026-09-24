@@ -64,8 +64,8 @@
           <div v-for="i in 3" :key="i" class="flex items-center gap-4 py-3">
             <div class="w-10 h-10 rounded-full bg-gray-200"></div>
             <div class="flex-1">
-              <div class="h-4 bg-gray-200 rounded w-32 mb-2"></div>
-              <div class="h-3 bg-gray-200 rounded w-48"></div>
+              <div class="h-4 bg-gray-200 rounded-sm w-32 mb-2"></div>
+              <div class="h-3 bg-gray-200 rounded-sm w-48"></div>
             </div>
           </div>
         </div>
@@ -151,8 +151,8 @@
         <div v-if="invitationsLoading" class="p-4 animate-pulse">
           <div v-for="i in 2" :key="i" class="flex items-center gap-4 py-3">
             <div class="flex-1">
-              <div class="h-4 bg-gray-200 rounded w-48 mb-2"></div>
-              <div class="h-3 bg-gray-200 rounded w-32"></div>
+              <div class="h-4 bg-gray-200 rounded-sm w-48 mb-2"></div>
+              <div class="h-3 bg-gray-200 rounded-sm w-32"></div>
             </div>
           </div>
         </div>
@@ -197,7 +197,7 @@
       <Transition name="modal">
         <div
           v-if="showInviteModal"
-          class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50"
+          class="fixed inset-0 z-100 flex items-center justify-center p-4 bg-black/50"
           @click.self="showInviteModal = false"
         >
           <Transition name="modal-content" appear>
@@ -223,7 +223,7 @@
                     v-model="inviteForm.email"
                     type="email"
                     placeholder="colleague@company.com"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-hidden transition-all"
                   />
                   <p v-if="inviteError" class="mt-1 text-sm text-red-600">{{ inviteError }}</p>
                 </div>
@@ -232,7 +232,7 @@
                   <select
                     id="invite-role"
                     v-model="inviteForm.role"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-hidden transition-all"
                   >
                     <option value="member">Member</option>
                     <option value="admin">Admin</option>
@@ -266,7 +266,7 @@
       <Transition name="modal">
         <div
           v-if="memberToRemove"
-          class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50"
+          class="fixed inset-0 z-100 flex items-center justify-center p-4 bg-black/50"
           @click.self="memberToRemove = null"
         >
           <Transition name="modal-content" appear>

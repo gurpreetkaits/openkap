@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-full bg-gradient-to-br from-orange-50/80 via-white to-rose-50/80">
+  <div class="min-h-full bg-linear-to-br from-orange-50/80 via-white to-rose-50/80">
     <!-- Recording Status Bar (compact, floats during recording) -->
     <div v-if="isRecording" class="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-red-100 px-4 py-2.5">
       <div class="max-w-5xl mx-auto flex items-center justify-between">
@@ -21,7 +21,7 @@
       <div v-if="!isRecording && !hasRecorded">
         <!-- Header -->
         <div class="text-center mb-10">
-          <div class="inline-flex items-center justify-center w-14 h-14 bg-gradient-to-br from-orange-400 to-orange-600 rounded-2xl mb-5 shadow-lg shadow-orange-200">
+          <div class="inline-flex items-center justify-center w-14 h-14 bg-linear-to-br from-orange-400 to-orange-600 rounded-2xl mb-5 shadow-lg shadow-orange-200">
             <svg class="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 20 20"><circle cx="10" cy="10" r="6"/></svg>
           </div>
           <h1 class="text-3xl font-bold text-gray-900 mb-2">Record your screen</h1>
@@ -38,7 +38,7 @@
               @click="selectedSource = src.key"
               class="group flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all duration-150"
               :class="selectedSource === src.key
-                ? 'border-orange-400 bg-orange-50 shadow-sm'
+                ? 'border-orange-400 bg-orange-50 shadow-xs'
                 : 'border-gray-100 bg-white hover:border-gray-200 hover:bg-gray-50'"
             >
               <div class="w-10 h-10 rounded-lg flex items-center justify-center transition-colors"
@@ -53,7 +53,7 @@
         <!-- Options -->
         <div class="mb-8 space-y-2">
           <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 text-center">Options</p>
-          <div class="bg-white rounded-xl border border-gray-100 divide-y divide-gray-50 shadow-sm">
+          <div class="bg-white rounded-xl border border-gray-100 divide-y divide-gray-50 shadow-xs">
             <label class="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50/50 transition-colors rounded-t-xl">
               <div class="flex items-center gap-3">
                 <div class="w-9 h-9 rounded-lg flex items-center justify-center" :class="recordingOptions.microphone ? 'bg-orange-100 text-orange-600' : 'bg-gray-100 text-gray-400'">
@@ -82,7 +82,7 @@
           <button
             @click="startRecording"
             :disabled="!canRecord || isStartingRecording"
-            class="group relative inline-flex items-center gap-3 px-12 py-4 text-lg font-semibold rounded-2xl text-white bg-gradient-to-r from-orange-500 to-rose-500 hover:from-orange-600 hover:to-rose-600 shadow-lg shadow-orange-200 hover:shadow-xl hover:shadow-orange-300 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:shadow-lg transform active:scale-[0.98]"
+            class="group relative inline-flex items-center gap-3 px-12 py-4 text-lg font-semibold rounded-2xl text-white bg-linear-to-r from-orange-500 to-rose-500 hover:from-orange-600 hover:to-rose-600 shadow-lg shadow-orange-200 hover:shadow-xl hover:shadow-orange-300 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:shadow-lg transform active:scale-[0.98]"
           >
             <svg v-if="!isStartingRecording" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><circle cx="10" cy="10" r="6"/></svg>
             <svg v-else class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
@@ -101,29 +101,29 @@
 
         <div class="bg-gray-900 rounded-2xl overflow-hidden aspect-video max-w-3xl mx-auto mb-8 relative shadow-2xl">
           <video ref="previewVideo" autoplay muted class="w-full h-full object-cover"></video>
-          <div class="absolute top-4 left-4 flex items-center gap-2 bg-black/60 backdrop-blur-sm text-white px-3 py-2 rounded-lg text-xs font-mono tabular-nums">
+          <div class="absolute top-4 left-4 flex items-center gap-2 bg-black/60 backdrop-blur-xs text-white px-3 py-2 rounded-lg text-xs font-mono tabular-nums">
             <div class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
             {{ formatTime(recordingTime) }}
           </div>
           <!-- Upload progress overlay -->
-          <div v-if="uploadedBytes > 0" class="absolute bottom-4 right-4 bg-black/60 backdrop-blur-sm text-white px-3 py-1.5 rounded-lg text-xs">
+          <div v-if="uploadedBytes > 0" class="absolute bottom-4 right-4 bg-black/60 backdrop-blur-xs text-white px-3 py-1.5 rounded-lg text-xs">
             {{ formatBytes(uploadedBytes) }} uploaded
           </div>
         </div>
 
         <div class="flex items-center justify-center gap-3">
           <button v-if="!isPaused" @click="pauseRecording"
-            class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 shadow-sm transition-colors">
+            class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 shadow-xs transition-colors">
             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M5.5 3.5A1.5 1.5 0 017 2h6a1.5 1.5 0 011.5 1.5v13a1.5 1.5 0 01-1.5 1.5H7A1.5 1.5 0 015.5 16.5v-13z"/></svg>
             Pause
           </button>
           <button v-if="isPaused" @click="resumeRecording"
-            class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium text-white bg-orange-500 hover:bg-orange-600 shadow-sm transition-colors">
+            class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium text-white bg-orange-500 hover:bg-orange-600 shadow-xs transition-colors">
             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.841z"/></svg>
             Resume
           </button>
           <button @click="stopRecording"
-            class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium text-white bg-red-500 hover:bg-red-600 shadow-sm transition-colors">
+            class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium text-white bg-red-500 hover:bg-red-600 shadow-xs transition-colors">
             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><rect x="4" y="4" width="12" height="12" rx="2"/></svg>
             Stop
           </button>
@@ -132,7 +132,7 @@
 
       <!-- Processing -->
       <div v-if="hasRecorded && isFinishing" class="text-center py-16">
-        <div class="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-orange-100 to-orange-200 rounded-2xl mb-6 shadow-lg">
+        <div class="inline-flex items-center justify-center w-20 h-20 bg-linear-to-br from-orange-100 to-orange-200 rounded-2xl mb-6 shadow-lg">
           <svg class="w-10 h-10 text-orange-500 animate-spin" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"/>
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
@@ -141,7 +141,7 @@
         <h2 class="text-2xl font-bold text-gray-900 mb-2">Saving your recording</h2>
         <p class="text-gray-500 mb-8">Finalizing and preparing your video...</p>
         <div class="w-64 mx-auto bg-gray-100 rounded-full h-1.5 overflow-hidden">
-          <div class="h-full bg-gradient-to-r from-orange-400 to-orange-600 rounded-full transition-all duration-500" :style="{ width: uploadProgress + '%' }"></div>
+          <div class="h-full bg-linear-to-r from-orange-400 to-orange-600 rounded-full transition-all duration-500" :style="{ width: uploadProgress + '%' }"></div>
         </div>
         <p class="mt-3 text-xs text-gray-400">{{ uploadProgress }}%</p>
       </div>

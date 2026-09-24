@@ -103,7 +103,7 @@
     >
       <div
         v-if="showDeleteConfirm"
-        class="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm"
+        class="fixed inset-0 z-60 flex items-center justify-center bg-black/50 backdrop-blur-xs"
         @click.self="showDeleteConfirm = false"
       >
         <div class="bg-white rounded-xl shadow-2xl p-6 max-w-md mx-4">

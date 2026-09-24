@@ -1,7 +1,7 @@
 <template>
   <div class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
     <!-- Header -->
-    <div class="bg-gradient-to-r from-orange-500 to-red-500 px-6 py-4">
+    <div class="bg-linear-to-r from-orange-500 to-red-500 px-6 py-4">
       <h3 class="text-lg font-semibold text-white">Zoom Events Editor</h3>
       <p class="text-sm text-orange-100 mt-1">Review and edit zoom points for your video</p>
     </div>
@@ -10,7 +10,7 @@
     <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
       <div class="relative h-12 bg-gray-200 rounded-lg overflow-hidden">
         <!-- Video duration bar -->
-        <div class="absolute inset-0 bg-gradient-to-r from-orange-200 to-orange-300"></div>
+        <div class="absolute inset-0 bg-linear-to-r from-orange-200 to-orange-300"></div>
 
         <!-- Event markers -->
         <div
@@ -132,13 +132,13 @@
         <div class="flex space-x-2">
           <button
             @click="enableAll"
-            class="px-3 py-1 text-sm font-medium text-orange-600 hover:bg-orange-50 rounded transition-colors"
+            class="px-3 py-1 text-sm font-medium text-orange-600 hover:bg-orange-50 rounded-sm transition-colors"
           >
             Enable All
           </button>
           <button
             @click="disableAll"
-            class="px-3 py-1 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded transition-colors"
+            class="px-3 py-1 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-sm transition-colors"
           >
             Disable All
           </button>
