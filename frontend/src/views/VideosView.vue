@@ -85,46 +85,28 @@
     <!-- Library Toolbar -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
       <!-- Modern Segmented Tab Switch -->
-      <div class="relative grid grid-cols-3 bg-gray-100 rounded-xl p-1 self-start" style="min-width: 320px;">
-        <!-- Animated sliding pill -->
-        <div
-          class="absolute top-1 bottom-1 bg-white rounded-[10px] shadow-xs pointer-events-none transition-all duration-200 ease-out"
-          :style="{ width: 'calc((100% - 8px) / 3)', left: `calc(4px + ${tabIndexMap[activeTab]} * ((100% - 8px) / 3))` }"
-        ></div>
-        <!-- Videos tab -->
-        <button
-          @click="activeTab = 'videos'"
-          class="relative z-10 flex items-center justify-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg transition-colors duration-150 whitespace-nowrap"
-          :class="activeTab === 'videos' ? 'text-gray-900' : 'text-gray-500 hover:text-gray-700'"
-        >
-          Videos
-          <span v-if="videos.length > 0" class="text-[11px] font-semibold px-1.5 py-0.5 rounded-full leading-none" :class="activeTab === 'videos' ? 'bg-orange-100 text-orange-600' : 'bg-gray-200/80 text-gray-500'">{{ videos.length }}</span>
-        </button>
-        <!-- Starred/Favourites tab -->
-        <button
-          @click="activeTab = 'favourites'"
-          class="relative z-10 flex items-center justify-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg transition-colors duration-150 whitespace-nowrap"
-          :class="activeTab === 'favourites' ? 'text-gray-900' : 'text-gray-500 hover:text-gray-700'"
-        >
-          <svg class="w-3.5 h-3.5 shrink-0" :fill="activeTab === 'favourites' ? 'currentColor' : 'none'" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
-          </svg>
-          Starred
-          <span v-if="favouriteCount > 0" class="text-[11px] font-semibold px-1.5 py-0.5 rounded-full leading-none" :class="activeTab === 'favourites' ? 'bg-orange-100 text-orange-600' : 'bg-gray-200/80 text-gray-500'">{{ favouriteCount }}</span>
-        </button>
-        <!-- Archived tab -->
-        <button
-          @click="activeTab = 'archived'"
-          class="relative z-10 flex items-center justify-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg transition-colors duration-150 whitespace-nowrap"
-          :class="activeTab === 'archived' ? 'text-gray-900' : 'text-gray-500 hover:text-gray-700'"
-        >
-          <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M5 8h14M5 8a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v1a2 2 0 01-2 2M5 8v11a2 2 0 002 2h10a2 2 0 002-2V8M10 12h4"/>
-          </svg>
-          Archived
-          <span v-if="archivedCount > 0" class="text-[11px] font-semibold px-1.5 py-0.5 rounded-full leading-none" :class="activeTab === 'archived' ? 'bg-orange-100 text-orange-600' : 'bg-gray-200/80 text-gray-500'">{{ archivedCount }}</span>
-        </button>
-      </div>
+      <Tabs v-model="activeTab" class="self-start">
+        <TabsList>
+          <TabsTrigger value="videos">
+            Videos
+            <Badge v-if="videos.length > 0" variant="secondary">{{ videos.length }}</Badge>
+          </TabsTrigger>
+          <TabsTrigger value="favourites">
+            <svg class="size-3.5 shrink-0" :fill="activeTab === 'favourites' ? 'currentColor' : 'none'" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.196-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
+            </svg>
+            Starred
+            <Badge v-if="favouriteCount > 0" variant="secondary">{{ favouriteCount }}</Badge>
+          </TabsTrigger>
+          <TabsTrigger value="archived">
+            <svg class="size-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 8h14M5 8a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v1a2 2 0 01-2 2M5 8l1 12a2 2 0 002 2h8a2 2 0 002-2l1-12M10 12h4"/>
+            </svg>
+            Archived
+            <Badge v-if="archivedCount > 0" variant="secondary">{{ archivedCount }}</Badge>
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
 
       <div class="flex items-center gap-3">
         <!-- Bulk Actions Dropdown (shown when items are selected) -->
@@ -357,13 +339,13 @@
 
     <!-- Loading State (Skeleton Grid) -->
     <div v-if="loading" class="grid grid-cols-4 lg:grid-cols-5 gap-5 animate-pulse">
-      <div v-for="n in 8" :key="n" class="bg-white rounded-xl border border-gray-100 overflow-hidden">
+      <Card v-for="n in 8" :key="n" class="gap-0 overflow-hidden py-0">
         <div class="w-full bg-gray-200" style="aspect-ratio: 16/9;"></div>
         <div class="p-3 space-y-2">
           <div class="h-4 w-3/4 bg-gray-200 rounded-sm"></div>
           <div class="h-3 w-1/2 bg-gray-100 rounded-sm"></div>
         </div>
-      </div>
+      </Card>
     </div>
 
     <!-- Error State -->
@@ -383,12 +365,12 @@
 
     <!-- Videos Grid View -->
     <div v-else-if="activeTab !== 'screenshots' && filteredVideos.length > 0 && viewMode === 'grid'" :key="activeTab + '-grid'" class="grid grid-cols-4 lg:grid-cols-5 gap-5 animate-fade-in">
-      <div
+      <Card
         v-for="video in paginatedVideos"
         :key="video.id"
         :data-video-id="video.id"
-        class="group bg-white border border-gray-100 rounded-xl overflow-hidden hover:border-gray-200 hover:shadow-xs transition-all"
-        :class="selectedVideos.includes(video.id) ? 'ring-2 ring-orange-500 ring-offset-2' : ''"
+        class="group gap-0 overflow-hidden py-0 transition-all"
+        :class="selectedVideos.includes(video.id) ? 'ring-2 ring-primary ring-offset-2' : ''"
         :draggable="folders.length > 0"
         @dragstart="handleVideoDragStart($event, video)"
         @dragend="handleVideoDragEnd"
@@ -482,16 +464,18 @@
             <!-- Hover Actions: Star + Copy Link + More -->
             <div class="flex items-center gap-0.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity z-20" @click.stop>
               <!-- Star / Favourite toggle -->
-              <button
+              <Button
+                variant="ghost"
+                size="icon"
                 @click.stop="toggleFavorite(video)"
-                class="p-1 rounded-lg transition-colors"
-                :class="video.is_favourite ? 'text-orange-500 hover:text-orange-600 hover:bg-orange-50' : 'text-gray-400 hover:text-orange-500 hover:bg-orange-50'"
+                class="size-7"
+                :class="video.is_favourite ? 'text-primary' : 'text-muted-foreground'"
                 :title="video.is_favourite ? 'Remove from starred' : 'Add to starred'"
               >
                 <svg class="w-3.5 h-3.5" :fill="video.is_favourite ? 'currentColor' : 'none'" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
                 </svg>
-              </button>
+              </Button>
               <!-- Copy Link -->
               <Button variant="ghost"
                 @click.stop="shareVideo(video)"
@@ -540,17 +524,17 @@
             </span>
           </div>
         </div>
-      </div>
+      </Card>
     </div>
 
     <!-- Videos List View -->
     <div v-else-if="activeTab !== 'screenshots' && filteredVideos.length > 0 && viewMode === 'list'" :key="activeTab + '-list'" class="space-y-1.5 animate-fade-in">
-      <div
+      <Card
         v-for="video in paginatedVideos"
         :key="video.id"
         :data-video-id="video.id"
-        class="group flex items-center gap-4 p-3.5 bg-white border border-gray-100 rounded-xl hover:shadow-xs hover:border-gray-200 transition-all cursor-pointer"
-        :class="selectedVideos.includes(video.id) ? 'ring-2 ring-orange-500 ring-offset-1 border-orange-200' : ''"
+        class="group flex-row items-center gap-4 p-3.5 transition-all cursor-pointer"
+        :class="selectedVideos.includes(video.id) ? 'ring-2 ring-primary ring-offset-1' : ''"
         @click="handleVideoClick(video.id)"
         @contextmenu.prevent="handleVideoContextMenu($event, video)"
       >
@@ -660,7 +644,7 @@
             </Button>
           </div>
         </div>
-      </div>
+      </Card>
     </div>
 
     <!-- Pagination -->
@@ -1301,6 +1285,9 @@
 
 <script>
 import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Badge } from '@/components/ui/badge'
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '@/stores/auth'
@@ -1318,7 +1305,7 @@ import { useDownloadTracker } from '@/composables/useDownloadTracker'
 
 export default {
   name: 'VideosView',
-  components: { Button,
+  components: { Button, Card, Tabs, TabsList, TabsTrigger, Badge,
     SBDeleteModal,
     SBUpgradeModal,
     SBModal,

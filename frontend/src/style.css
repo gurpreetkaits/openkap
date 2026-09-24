@@ -83,33 +83,41 @@
 @utility menu-panel {
   /* =============================================
      DROPDOWN MENUS
+
+     These mirror shadcn's DropdownMenuContent tokens so menus that are
+     positioned by hand (right-click menus, hover menus anchored to a
+     cursor) look identical to the ones built from the component.
      ============================================= */
-  @apply absolute bg-white rounded-xl shadow-lg border border-gray-100 py-1.5 z-50;
+  @apply absolute z-50 min-w-32 overflow-hidden rounded-none p-1
+           bg-popover text-popover-foreground shadow-md ring-1 ring-foreground/10;
 }
 
 @utility menu-panel-dark {
-  @apply absolute bg-black/80 backdrop-blur-xl rounded-lg shadow-2xl border border-white/10 py-1.5 z-50;
+  @apply absolute z-50 min-w-32 overflow-hidden rounded-none p-1
+           bg-popover/90 text-popover-foreground backdrop-blur-xl shadow-2xl ring-1 ring-foreground/10;
 }
 
 @utility menu-item {
-  /* =============================================
-     DROPDOWN MENU ITEMS
-     ============================================= */
-  @apply w-full flex items-center gap-3 px-3.5 py-2 text-xs text-gray-700
-           hover:bg-gray-50 rounded-lg transition-colors duration-150
-           focus:outline-hidden focus:ring-2 focus:ring-orange-500 focus:ring-offset-1;
+  /* Mirrors shadcn's DropdownMenuItem. */
+  @apply relative flex w-full cursor-default select-none items-center gap-2
+           rounded-none px-2 py-2 text-xs outline-hidden
+           hover:bg-accent hover:text-accent-foreground
+           focus:bg-accent focus:text-accent-foreground
+           disabled:pointer-events-none disabled:opacity-50
+           [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*=size-])]:size-4;
 }
 
 @utility menu-item-danger {
-  @apply text-red-600 hover:bg-red-50;
+  @apply text-destructive hover:bg-destructive/10 focus:bg-destructive/10
+           hover:text-destructive focus:text-destructive [&_svg]:text-destructive;
 }
 
 @utility menu-item-active {
-  @apply text-orange-600 font-medium bg-orange-50;
+  @apply bg-accent text-accent-foreground font-medium;
 }
 
 @utility menu-divider {
-  @apply h-px bg-gray-100 mx-2 my-1;
+  @apply bg-border -mx-1 my-1 h-px;
 }
 
 @utility form-group {
