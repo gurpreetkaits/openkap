@@ -37,6 +37,12 @@ use Illuminate\Support\Str;
  */
 class StreamUploadManager
 {
+    /**
+     * How far past the plan limit a recording may run before it is worth
+     * logging. Covers the service worker's twenty-second backup check.
+     */
+    public const DURATION_GRACE_SECONDS = 30;
+
     public function __construct(
         protected ChunkStorageService $chunks,
         protected VideoRepository $videos,
@@ -289,7 +295,6 @@ class StreamUploadManager
         }
 
         $minDuration = $user->getMinRecordingSeconds();
-        $maxDuration = $user->getMaxRecordingSeconds();
 
         if ($duration < $minDuration) {
             $this->chunks->deleteSession($data->session_id);
@@ -300,13 +305,30 @@ class StreamUploadManager
             );
         }
 
-        if ($duration > $maxDuration) {
-            $this->chunks->deleteSession($data->session_id);
+        // An over-length recording is NOT rejected.
+        //
+        // The plan limit is a stop trigger, not a reason to destroy work the
+        // user already waited to upload. The client stops the recorder when
+        // the limit is reached, and it can only ever do so a beat late — the
+        // in-page timer fires on a one-second tick and the service worker's
+        // backup check runs every twenty. Rejecting `duration > limit` meant
+        // any free user who recorded up to the cap uploaded the whole thing
+        // and then lost it, which is exactly what happened in production.
+        //
+        // Monthly recording minutes remain enforced downstream from a
+        // server-probed duration, so nothing here is load-bearing for
+        // billing.
+        $maxDuration = $user->getMaxRecordingSeconds();
 
-            throw StreamSessionException::rejected(
-                'Recording cannot exceed '.($maxDuration / 60).' minutes on the free plan.',
-                'duration_too_long'
-            );
+        if ($duration > $maxDuration + self::DURATION_GRACE_SECONDS) {
+            // Saved anyway, but worth seeing: either a client failed to stop
+            // itself or someone is bypassing the limit.
+            Log::warning('Recording saved well past the plan limit', [
+                'session_id' => $data->session_id,
+                'user_id' => $user->id,
+                'duration' => $duration,
+                'max_duration' => $maxDuration,
+            ]);
         }
     }
 

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Setting;
 use App\Models\User;
 use App\Models\Video;
 use App\Services\ChunkStorageService;
@@ -238,6 +239,84 @@ class StreamChunkUploadTest extends TestCase
             ->postJson("/api/stream/{$sessionId}/complete", ['duration' => 5])
             ->assertStatus(400)
             ->assertJsonPath('error', 'no_video_data');
+
+        $this->assertSame(0, Video::count());
+    }
+
+    // ---------------------------------------------------------------
+    // Plan limits — a finished upload is never thrown away
+    // ---------------------------------------------------------------
+
+    #[Test]
+    public function a_recording_slightly_over_the_plan_limit_is_still_saved(): void
+    {
+        // What happened in production: a free user recorded to the 5-minute
+        // cap, all 100 chunks uploaded, and the save was refused for being
+        // one second over. The recording was deleted.
+        $limit = $this->user->getMaxRecordingSeconds();
+
+        $sessionId = $this->newUploadSession();
+
+        foreach ([0, 1, 2] as $index) {
+            $this->uploadChunk($sessionId, $index);
+        }
+
+        $this->completeSession($sessionId, expectedChunks: 3, duration: $limit + 1)
+            ->assertCreated();
+
+        $this->assertSame(1, Video::count(), 'an uploaded recording must never be discarded for length');
+        $this->assertSame($limit + 1, Video::first()->duration);
+    }
+
+    #[Test]
+    public function a_recording_well_over_the_plan_limit_is_still_saved(): void
+    {
+        // Even when a client fails to stop itself, the user's work is kept.
+        // The monthly minutes cap is enforced downstream from a probed
+        // duration, so nothing here is load-bearing for billing.
+        $limit = $this->user->getMaxRecordingSeconds();
+
+        $sessionId = $this->newUploadSession();
+        $this->uploadChunk($sessionId, 0);
+
+        $this->completeSession($sessionId, expectedChunks: 1, duration: $limit * 4)
+            ->assertCreated();
+
+        $this->assertSame(1, Video::count());
+    }
+
+    #[Test]
+    public function a_recording_exactly_at_the_plan_limit_is_saved(): void
+    {
+        $limit = $this->user->getMaxRecordingSeconds();
+
+        $sessionId = $this->newUploadSession();
+        $this->uploadChunk($sessionId, 0);
+
+        $this->completeSession($sessionId, expectedChunks: 1, duration: $limit)
+            ->assertCreated();
+
+        $this->assertSame($limit, Video::first()->duration);
+    }
+
+    #[Test]
+    public function a_recording_below_the_minimum_is_still_rejected(): void
+    {
+        // Unchanged behaviour: an accidental sub-second recording is not
+        // worth keeping, and the user has not invested an upload in it.
+        Setting::updateOrCreate(
+            ['key' => 'min_recording_duration_limit'],
+            ['value' => '5']
+        );
+
+        $this->assertSame(5, $this->user->getMinRecordingSeconds());
+
+        $sessionId = $this->newUploadSession();
+        $this->uploadChunk($sessionId, 0);
+
+        $this->completeSession($sessionId, expectedChunks: 1, duration: 2)
+            ->assertStatus(422)
+            ->assertJsonPath('error', 'duration_too_short');
 
         $this->assertSame(0, Video::count());
     }
