@@ -150,11 +150,11 @@
       <div class="max-w-sm space-y-4">
         <div class="form-group">
           <label class="form-label">Label</label>
-          <input type="text" class="form-input" placeholder="Placeholder text" />
+          <Input type="text" class="form-input" placeholder="Placeholder text" />
         </div>
         <div class="form-group">
           <label class="form-label">With error</label>
-          <input type="text" class="form-input border-red-300 focus:ring-red-500 focus:border-red-300" value="bad value" />
+          <Input type="text" class="form-input" value="bad value" />
           <p class="form-error">This field has an error.</p>
         </div>
       </div>
@@ -235,12 +235,13 @@
 </template>
 
 <script>
+import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { computed } from 'vue'
 
 export default {
   name: 'StandardsView',
-  components: { Button },
+  components: { Input, Button },
   setup() {
     const designTokens = computed(() => [
       { label: 'Brand', swatch: '#f97316', value: '#f97316 (orange-500)', usage: 'Primary buttons, toggles, focus rings' },

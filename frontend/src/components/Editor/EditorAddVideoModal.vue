@@ -15,12 +15,10 @@
     <template v-if="activeTab === 'library'">
       <!-- Search -->
       <div class="mb-3">
-        <input
+        <Input
           v-model="searchQuery"
           type="text"
-          placeholder="Search videos..."
-          class="w-full px-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:border-orange-500/30 focus:ring-4 focus:ring-orange-500/5 outline-hidden transition-all"
-        />
+          placeholder="Search videos..." />
       </div>
 
       <!-- Loading -->
@@ -82,6 +80,7 @@
 </template>
 
 <script setup>
+import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { ref, computed, onMounted } from 'vue'
 import videoService from '@/services/videoService'

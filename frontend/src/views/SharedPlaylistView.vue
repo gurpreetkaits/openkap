@@ -20,14 +20,13 @@
           <h2 class="text-xl font-semibold text-gray-900 mb-2">Password Protected</h2>
           <p class="text-gray-500 mb-6 text-sm">This playlist is password protected. Enter the password to view it.</p>
           <form @submit.prevent="submitPassword" class="space-y-4">
-            <input
+            <Input
               v-model="passwordInput"
               type="password"
               placeholder="Enter password"
               required
-              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm"
-              :class="{ 'border-red-300 focus:ring-red-500 focus:border-red-500': passwordError }"
-            />
+             
+              :class="{ 'border-red-300 focus:ring-red-500 focus:border-red-500': passwordError }" />
             <p v-if="passwordError" class="text-sm text-red-600">{{ passwordError }}</p>
             <Button
               type="submit"
@@ -195,6 +194,7 @@
 </template>
 
 <script setup>
+import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'

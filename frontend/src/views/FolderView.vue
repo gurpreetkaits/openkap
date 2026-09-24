@@ -233,13 +233,12 @@
               <div class="space-y-4">
                 <div>
                   <label for="edit-folder-name" class="block text-sm font-medium text-gray-700 mb-1">Folder Name</label>
-                  <input
+                  <Input
                     id="edit-folder-name"
                     v-model="editFolderName"
                     type="text"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-hidden transition-all"
-                    @keyup.enter="updateFolder"
-                  />
+                   
+                    @keyup.enter="updateFolder" />
                   <p v-if="editError" class="mt-1 text-sm text-red-600">{{ editError }}</p>
                 </div>
               </div>
@@ -274,6 +273,7 @@
 </template>
 
 <script>
+import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -283,7 +283,7 @@ import SBDeleteModal from '@/components/Global/SBDeleteModal.vue'
 
 export default {
   name: 'FolderView',
-  components: { Button,
+  components: { Input, Button,
     SBDeleteModal
   },
   setup() {

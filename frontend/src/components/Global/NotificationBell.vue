@@ -9,7 +9,7 @@
       </svg>
       <span
         v-if="unreadCount > 0"
-        class="absolute -top-0.5 -right-0.5 min-w-[16px] h-[16px] px-1 flex items-center justify-center text-[9px] font-bold text-white bg-orange-500 rounded-full border-2 border-white"
+        class="absolute -top-0.5 -right-0.5 min-w-4 h-4 px-1 flex items-center justify-center text-[9px] font-bold bg-primary text-primary-foreground rounded-full"
       >
         {{ unreadCount > 9 ? '9+' : unreadCount }}
       </span>
@@ -19,15 +19,14 @@
     <Transition name="dropdown">
       <div
         v-show="showDropdown"
-        class="absolute right-0 mt-2 w-[480px] bg-white rounded-xl shadow-xl border border-gray-200 z-50 overflow-hidden"
+        class="absolute right-0 mt-2 w-[480px] bg-popover text-popover-foreground rounded-none shadow-md ring-1 ring-foreground/10 z-50 overflow-hidden"
       >
         <!-- Header -->
         <div class="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
           <h3 class="text-sm font-semibold text-gray-900">Notifications</h3>
-          <Button variant="ghost"
+          <Button variant="link" size="sm"
             v-if="unreadCount> 0"
             @click="handleMarkAllAsRead"
-            class="text-xs text-orange-600 hover:text-orange-700 font-medium"
           >
             Mark all as read
           </Button>

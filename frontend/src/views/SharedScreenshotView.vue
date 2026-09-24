@@ -91,7 +91,7 @@
             <label class="text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-2 block">Public Link</label>
             <div class="flex gap-2">
               <div class="flex-1 relative">
-                <input type="text" :value="shareUrl" class="w-full pl-9 pr-3 py-2 text-xs bg-gray-50 border border-gray-200 rounded-lg focus:outline-hidden focus:border-orange-500 text-gray-600" readonly>
+                <Input type="text" :value="shareUrl" class="pl-9 pr-3" readonly />
                 <svg class="w-3.5 h-3.5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
                 </svg>
@@ -150,6 +150,7 @@
 </template>
 
 <script>
+import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
@@ -159,7 +160,7 @@ import toast from '@/services/toastService'
 
 export default {
   name: 'SharedScreenshotView',
-  components: { Button },
+  components: { Input, Button },
   setup() {
     const route = useRoute()
     const branding = useBranding()

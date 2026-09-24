@@ -194,12 +194,11 @@
           <svg class="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-orange-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
           </svg>
-          <input
+          <Input
             v-model="searchQuery"
             type="text"
             placeholder="Search..."
-            class="pl-9 pr-8 py-1.5 text-sm font-medium bg-white border border-gray-200 focus:border-orange-500/30 focus:ring-4 focus:ring-orange-500/5 rounded-lg w-48 transition-all outline-hidden placeholder:text-gray-400 shadow-xs"
-          />
+            class="pl-9 pr-8 w-48" />
           <Button variant="ghost"
             v-if="searchQuery"
             @click="searchQuery = ''"
@@ -283,19 +282,15 @@
               <div v-if="activeDateFilter === 'custom'" class="px-3 pt-3 mt-1.5 border-t border-gray-100 space-y-3 pb-2">
                 <div>
                   <label class="text-xs font-medium text-gray-500 mb-1 block">From</label>
-                  <input
+                  <Input
                     type="date"
-                    v-model="customDateFrom"
-                    class="w-full px-2.5 py-1.5 text-sm border border-gray-100 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
-                  />
+                    v-model="customDateFrom" />
                 </div>
                 <div>
                   <label class="text-xs font-medium text-gray-500 mb-1 block">To</label>
-                  <input
+                  <Input
                     type="date"
-                    v-model="customDateTo"
-                    class="w-full px-2.5 py-1.5 text-sm border border-gray-100 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
-                  />
+                    v-model="customDateTo" />
                 </div>
               </div>
 
@@ -974,61 +969,33 @@
     />
 
     <!-- New Folder Modal -->
-    <Teleport to="body">
-      <Transition name="modal">
-        <div
-          v-if="showNewFolderModal"
-          class="fixed inset-0 z-100 flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-xs"
-          @click.self="closeNewFolderModal"
-        >
-          <Transition name="modal-content" appear>
-            <div class="bg-white rounded-xl shadow-xl max-w-md w-full overflow-hidden">
-              <!-- Header -->
-              <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-                <h2 class="text-lg font-semibold text-gray-900">Create New Folder</h2>
-                <Button variant="ghost"
-                  @click="closeNewFolderModal"
-                  class="-mr-1.5">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                  </svg>
-                </Button>
-              </div>
+    <Dialog v-model:open="showNewFolderModal">
+      <DialogContent class="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Create New Folder</DialogTitle>
+          <DialogDescription>Organize your videos into folders for easier access.</DialogDescription>
+        </DialogHeader>
 
-              <!-- Content -->
-              <div class="px-6 py-5">
-                <p class="text-sm text-gray-500 mb-4">Organize your videos into folders for easier access.</p>
-                <div>
-                  <label for="folder-name" class="block text-sm font-medium text-gray-700 mb-1.5">Folder Name</label>
-                  <input
-                    id="folder-name"
-                    v-model="newFolderName"
-                    type="text"
-                    placeholder="e.g., Marketing Videos"
-                    class="w-full px-3.5 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-hidden transition-all"
-                    @keyup.enter="createFolder"
-                  />
-                  <p v-if="folderError" class="mt-2 text-sm text-red-600">{{ folderError }}</p>
-                </div>
-              </div>
-
-              <!-- Footer -->
-              <div class="flex justify-end gap-3 px-6 py-4 bg-gray-50 border-t border-gray-100">
-                <Button variant="outline"
-                  @click="closeNewFolderModal">
-                  Cancel
-                </Button>
-                <Button
-                  @click="createFolder"
-                  :disabled="!newFolderName.trim() || creatingFolder">
-                  {{ creatingFolder ? 'Creating...' : 'Create Folder' }}
-                </Button>
-              </div>
-            </div>
-          </Transition>
+        <div class="grid gap-2">
+          <Label for="folder-name">Folder Name</Label>
+          <Input
+            id="folder-name"
+            v-model="newFolderName"
+            type="text"
+            placeholder="e.g., Marketing Videos"
+            @keyup.enter="createFolder"
+          />
+          <p v-if="folderError" class="text-destructive text-xs">{{ folderError }}</p>
         </div>
-      </Transition>
-    </Teleport>
+
+        <DialogFooter>
+          <Button variant="outline" @click="closeNewFolderModal">Cancel</Button>
+          <Button @click="createFolder" :disabled="!newFolderName.trim() || creatingFolder">
+            {{ creatingFolder ? 'Creating...' : 'Create Folder' }}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
 
     <!-- Move to Folder Modal -->
     <Teleport to="body">
@@ -1113,13 +1080,12 @@
                 </Button>
               </div>
               <div class="px-6 py-4">
-                <input
+                <Input
                   v-model="renameVideoTitle"
                   type="text"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                 
                   placeholder="Video title"
-                  @keydown.enter="confirmRenameVideo"
-                />
+                  @keydown.enter="confirmRenameVideo" />
                 <p v-if="renameVideoError" class="mt-2 text-sm text-red-600">{{ renameVideoError }}</p>
               </div>
               <div class="flex justify-end gap-2 px-6 py-4 bg-gray-50 border-t border-gray-100">
@@ -1165,14 +1131,13 @@
               <div class="px-6 py-5">
                 <div>
                   <label for="edit-folder-name" class="block text-sm font-medium text-gray-700 mb-1.5">Folder Name</label>
-                  <input
+                  <Input
                     id="edit-folder-name"
                     v-model="editFolderName"
                     type="text"
                     placeholder="Enter folder name"
-                    class="w-full px-3.5 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-hidden transition-all"
-                    @keyup.enter="updateFolder"
-                  />
+                   
+                    @keyup.enter="updateFolder" />
                   <p v-if="editFolderError" class="mt-2 text-sm text-red-600">{{ editFolderError }}</p>
                 </div>
               </div>
@@ -1288,6 +1253,9 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '@/stores/auth'
@@ -1305,7 +1273,8 @@ import { useDownloadTracker } from '@/composables/useDownloadTracker'
 
 export default {
   name: 'VideosView',
-  components: { Button, Card, Tabs, TabsList, TabsTrigger, Badge,
+  components: { Button, Card, Tabs, TabsList, TabsTrigger, Badge, Input, Label,
+    Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
     SBDeleteModal,
     SBUpgradeModal,
     SBModal,

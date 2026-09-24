@@ -21,19 +21,18 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
       <!-- Conversation list -->
-      <div class="lg:col-span-4 bg-white border border-gray-200 rounded-xl overflow-hidden flex flex-col" style="height: calc(100vh - 180px); min-height: 500px">
+      <Card class="lg:col-span-4 overflow-hidden flex flex-col gap-0 py-0" style="height: calc(100vh - 180px); min-height: 500px">
         <div class="p-3 border-b border-gray-200">
           <div class="relative">
             <svg class="w-4 h-4 absolute left-3 top-2.5 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
-            <input
+            <Input
               v-model="search"
               @input="onSearchInput"
               type="text"
               placeholder="Search by name or email"
-              class="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-gray-300 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-hidden"
-            />
+              class="pl-9 pr-3" />
           </div>
         </div>
 
@@ -111,10 +110,10 @@
             Next
           </Button>
         </div>
-      </div>
+      </Card>
 
       <!-- Thread view -->
-      <div class="lg:col-span-8 bg-white border border-gray-200 rounded-xl flex flex-col" style="height: calc(100vh - 180px); min-height: 500px">
+      <Card class="lg:col-span-8 flex flex-col gap-0 py-0" style="height: calc(100vh - 180px); min-height: 500px">
         <div v-if="!selectedConversationId" class="flex-1 flex items-center justify-center text-center text-gray-400 px-6">
           <div>
             <svg class="w-12 h-12 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
@@ -207,12 +206,14 @@
             </Button>
           </div>
         </template>
-      </div>
+      </Card>
     </div>
   </div>
 </template>
 
 <script setup>
+import { Card } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import supportService from '@/services/supportService'

@@ -25,7 +25,7 @@
           </div>
           <div class="flex items-center gap-2">
             <input type="color" v-model="styleBackground.color" class="w-8 h-8 rounded-lg border border-gray-200 cursor-pointer p-0.5" />
-            <input type="text" v-model="styleBackground.color" class="flex-1 px-2 py-1.5 text-[11px] font-mono bg-gray-50 rounded-lg border border-gray-200 outline-hidden focus:border-orange-400 text-gray-700" />
+            <Input type="text" v-model="styleBackground.color" class="flex-1 font-mono" />
           </div>
         </div>
 
@@ -234,6 +234,7 @@
 </template>
 
 <script setup>
+import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { ref } from 'vue'
 import { useEditorState } from '@/composables/useEditorState'

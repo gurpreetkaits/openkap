@@ -33,13 +33,12 @@
         <div class="space-y-4">
           <div>
             <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Workspace Name</label>
-            <input
+            <Input
               id="name"
               v-model="form.name"
               type="text"
               :disabled="!canEdit"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-hidden transition-all disabled:bg-gray-100 disabled:cursor-not-allowed"
-            />
+              class="disabled:bg-gray-100 disabled:cursor-not-allowed" />
           </div>
 
           <div>
@@ -58,14 +57,13 @@
             <label for="slug" class="block text-sm font-medium text-gray-700 mb-1">URL Slug</label>
             <div class="flex items-center gap-2">
               <span class="text-sm text-gray-500">/workspace/</span>
-              <input
+              <Input
                 id="slug"
                 v-model="form.slug"
                 type="text"
                 :disabled="!canEdit"
                 @input="sanitizeSlug"
-                class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-hidden transition-all disabled:bg-gray-100 disabled:cursor-not-allowed"
-              />
+                class="flex-1 disabled:bg-gray-100 disabled:cursor-not-allowed" />
             </div>
             <p class="text-xs text-gray-500 mt-1">Only lowercase letters, numbers, and hyphens allowed.</p>
           </div>
@@ -242,12 +240,11 @@
                 Type <strong>{{ workspaceName }}</strong> to confirm.
               </p>
 
-              <input
+              <Input
                 v-model="deleteConfirmName"
                 type="text"
                 :placeholder="workspaceName"
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-hidden mb-6"
-              />
+                class="mb-6" />
 
               <div class="flex justify-end gap-3">
                 <Button variant="ghost"
@@ -269,6 +266,7 @@
 </template>
 
 <script>
+import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -278,7 +276,7 @@ import toast from '@/services/toastService'
 
 export default {
   name: 'WorkspaceSettingsView',
-  components: { Button },
+  components: { Input, Button },
   setup() {
     const route = useRoute()
     const router = useRouter()

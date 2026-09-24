@@ -141,12 +141,11 @@
                 <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 12 12">
                   <circle cx="5" cy="5" r="3.5"/><path d="M8 8l2.5 2.5"/>
                 </svg>
-                <input
+                <Input
                   v-model="searchQuery"
                   type="text"
                   placeholder="Search in playlist..."
-                  class="bg-transparent border-none outline-hidden text-[12.5px] text-gray-900 placeholder-gray-400 w-40"
-                />
+                  class="w-40" />
               </div>
 
               <!-- Sort -->
@@ -403,20 +402,16 @@
             <form @submit.prevent="savePlaylist">
               <div class="mb-3.5">
                 <label class="block text-[11.5px] font-medium text-gray-500 mb-1.5">Name</label>
-                <input
+                <Input
                   v-model="editForm.title"
                   type="text"
-                  required
-                  class="w-full bg-gray-50 border border-gray-100 rounded-lg px-3 py-2.5 text-[13.5px] text-gray-900 placeholder-gray-400 outline-hidden focus:bg-white focus:border-gray-300 transition-all"
-                />
+                  required />
               </div>
               <div class="mb-3.5">
                 <label class="block text-[11.5px] font-medium text-gray-500 mb-1.5">Description <span class="text-gray-300">(optional)</span></label>
-                <input
+                <Input
                   v-model="editForm.description"
-                  type="text"
-                  class="w-full bg-gray-50 border border-gray-100 rounded-lg px-3 py-2.5 text-[13.5px] text-gray-900 placeholder-gray-400 outline-hidden focus:bg-white focus:border-gray-300 transition-all"
-                />
+                  type="text" />
               </div>
               <div class="flex justify-end gap-2 mt-5">
                 <Button variant="outline" type="button" @click="showEditModal = false">Cancel</Button>
@@ -438,14 +433,13 @@
         </p>
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-          <input
+          <Input
             v-model="passwordForm.password"
             type="password"
-            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm"
+           
             placeholder="Enter password (min 4 characters)"
             :required="!playlist?.has_password"
-            minlength="4"
-          />
+            minlength="4" />
         </div>
         <div class="flex items-center justify-between pt-4 border-t border-gray-100">
           <Button variant="destructive"
@@ -531,6 +525,7 @@
 </template>
 
 <script setup>
+import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'

@@ -211,13 +211,11 @@
               <div class="space-y-4">
                 <div>
                   <label for="invite-email" class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
-                  <input
+                  <Input
                     id="invite-email"
                     v-model="inviteForm.email"
                     type="email"
-                    placeholder="colleague@company.com"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-hidden transition-all"
-                  />
+                    placeholder="colleague@company.com" />
                   <p v-if="inviteError" class="mt-1 text-sm text-red-600">{{ inviteError }}</p>
                 </div>
                 <div>
@@ -286,6 +284,7 @@
 </template>
 
 <script>
+import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
@@ -294,7 +293,7 @@ import toast from '@/services/toastService'
 
 export default {
   name: 'WorkspaceMembersView',
-  components: { Button },
+  components: { Input, Button },
   setup() {
     const route = useRoute()
     const slug = route.params.slug

@@ -159,7 +159,7 @@
             <label class="text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-2 block">Public Link</label>
             <div class="flex gap-2">
               <div class="flex-1 relative">
-                <input type="text" :value="timestampedShareUrl || shareUrl" class="w-full pl-9 pr-3 py-2 text-xs bg-gray-50 border border-gray-200 rounded-lg focus:outline-hidden focus:border-orange-500 text-gray-600" readonly>
+                <Input type="text" :value="timestampedShareUrl || shareUrl" class="pl-9 pr-3" readonly />
                 <svg class="w-3.5 h-3.5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
                 </svg>
@@ -815,14 +815,13 @@
 
                   <!-- Input -->
                   <div v-if="transcriptChatRemaining > 0" class="flex gap-2">
-                    <input
+                    <Input
                       v-model="transcriptChatInput"
                       type="text"
                       placeholder="Ask about the transcript..."
                       @keydown.enter.prevent="askTranscriptQuestion"
                       :disabled="transcriptChatLoading"
-                      class="flex-1 bg-gray-50 border border-gray-200 text-[11px] text-gray-900 placeholder:text-gray-400 focus:outline-hidden focus:border-orange-400 focus:ring-1 focus:ring-orange-400 rounded-lg px-3 py-1.5 transition-colors disabled:opacity-50"
-                    />
+                      class="flex-1 disabled:opacity-50" />
                     <Button size="sm"
                       @click="askTranscriptQuestion"
                       :disabled="!transcriptChatInput.trim() || transcriptChatLoading"
@@ -961,6 +960,7 @@
 </template>
 
 <script>
+import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { ref, onMounted, onUnmounted, computed, watch, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
@@ -976,7 +976,7 @@ const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8888'
 
 export default {
   name: 'SharedVideoView',
-  components: { Button, NotificationBell },
+  components: { Input, Button, NotificationBell },
   setup() {
     const route = useRoute()
     const auth = useAuth()

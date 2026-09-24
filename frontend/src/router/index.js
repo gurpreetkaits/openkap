@@ -18,10 +18,12 @@ const routes = [
     component: () => import("../components/Layout/AppLayout.vue"),
     meta: { requiresAuth: true },
     children: [
+      // Recording is extension-only. The in-app recorder page is gone; the
+      // "New Recording" control asks the extension to open its own recorder.
+      // Anyone landing on an old /record link goes back to the library.
       {
         path: "record",
-        name: "Record",
-        component: () => import("../views/StreamRecordView.vue"),
+        redirect: { name: "Videos" },
       },
       {
         path: "videos",

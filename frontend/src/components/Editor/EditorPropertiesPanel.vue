@@ -15,13 +15,11 @@
           <div class="grid grid-cols-2 gap-2">
             <div>
               <label class="text-[10px] text-gray-400 block mb-0.5">X %</label>
-              <input type="number" v-model.number="selectedItem.x" min="0" max="100" step="0.1"
-                class="w-full px-2 py-1.5 text-xs bg-gray-100 border border-transparent rounded-lg focus:bg-white focus:border-orange-500/30 focus:ring-4 focus:ring-orange-500/5 outline-hidden transition-all" />
+              <Input type="number" v-model.number="selectedItem.x" min="0" max="100" step="0.1" />
             </div>
             <div>
               <label class="text-[10px] text-gray-400 block mb-0.5">Y %</label>
-              <input type="number" v-model.number="selectedItem.y" min="0" max="100" step="0.1"
-                class="w-full px-2 py-1.5 text-xs bg-gray-100 border border-transparent rounded-lg focus:bg-white focus:border-orange-500/30 focus:ring-4 focus:ring-orange-500/5 outline-hidden transition-all" />
+              <Input type="number" v-model.number="selectedItem.y" min="0" max="100" step="0.1" />
             </div>
           </div>
         </div>
@@ -32,13 +30,11 @@
           <div class="grid grid-cols-2 gap-2">
             <div>
               <label class="text-[10px] text-gray-400 block mb-0.5">Width %</label>
-              <input type="number" v-model.number="selectedItem.width" min="1" max="100" step="0.1"
-                class="w-full px-2 py-1.5 text-xs bg-gray-100 border border-transparent rounded-lg focus:bg-white focus:border-orange-500/30 focus:ring-4 focus:ring-orange-500/5 outline-hidden transition-all" />
+              <Input type="number" v-model.number="selectedItem.width" min="1" max="100" step="0.1" />
             </div>
             <div>
               <label class="text-[10px] text-gray-400 block mb-0.5">Height %</label>
-              <input type="number" v-model.number="selectedItem.height" min="1" max="100" step="0.1"
-                class="w-full px-2 py-1.5 text-xs bg-gray-100 border border-transparent rounded-lg focus:bg-white focus:border-orange-500/30 focus:ring-4 focus:ring-orange-500/5 outline-hidden transition-all" />
+              <Input type="number" v-model.number="selectedItem.height" min="1" max="100" step="0.1" />
             </div>
           </div>
         </div>
@@ -87,13 +83,11 @@
           <div v-if="!selectedItem.entireVideo" class="grid grid-cols-2 gap-2">
             <div>
               <label class="text-[10px] text-gray-400 block mb-0.5">Start (s)</label>
-              <input type="number" v-model.number="selectedItem.start_time" min="0" :max="duration" step="0.1"
-                class="w-full px-2 py-1.5 text-xs bg-gray-100 border border-transparent rounded-lg focus:bg-white focus:border-orange-500/30 focus:ring-4 focus:ring-orange-500/5 outline-hidden transition-all" />
+              <Input type="number" v-model.number="selectedItem.start_time" min="0" :max="duration" step="0.1" />
             </div>
             <div>
               <label class="text-[10px] text-gray-400 block mb-0.5">End (s)</label>
-              <input type="number" v-model.number="selectedItem.end_time" min="0" :max="duration" step="0.1"
-                class="w-full px-2 py-1.5 text-xs bg-gray-100 border border-transparent rounded-lg focus:bg-white focus:border-orange-500/30 focus:ring-4 focus:ring-orange-500/5 outline-hidden transition-all" />
+              <Input type="number" v-model.number="selectedItem.end_time" min="0" :max="duration" step="0.1" />
             </div>
           </div>
         </div>
@@ -109,6 +103,7 @@
 </template>
 
 <script setup>
+import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { useEditorState } from '@/composables/useEditorState'
 

@@ -364,7 +364,7 @@
             <label class="text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-2 block">Public Link</label>
             <div class="flex gap-2">
               <div class="flex-1 relative">
-                <input type="text" :value="shareUrl" class="w-full pl-9 pr-3 py-2 text-xs bg-gray-50 border border-gray-200 rounded-lg focus:outline-hidden focus:border-orange-500 text-gray-600" readonly>
+                <Input type="text" :value="shareUrl" class="pl-9 pr-3" readonly />
                 <svg class="w-3.5 h-3.5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
                 </svg>
@@ -873,45 +873,25 @@
 
         <!-- Sidebar — slides in/out from right, aligned with video -->
         <aside
-          class="sidebar-panel flex flex-col bg-white rounded-xl overflow-hidden shrink-0 my-6 mr-6 shadow-xs ring-1 ring-gray-200/60"
+          class="sidebar-panel flex flex-col bg-card text-card-foreground rounded-none overflow-hidden shrink-0 my-6 mr-6 shadow-sm ring-1 ring-foreground/10/60"
           :class="sidebarVisible ? 'sidebar-open' : 'sidebar-closed'"
         >
           <!-- Tabs -->
           <div class="px-4 pt-3 pb-2 shrink-0">
-            <div class="flex bg-gray-100 rounded-lg p-0.5" :class="tabGridCols">
-              <button
-                @click="activeTab = 'transcript'"
-                class="flex-1 px-3 py-1.5 text-xs font-medium rounded-md transition-all text-center truncate"
-                :class="activeTab === 'transcript' ? 'bg-white text-gray-900 shadow-xs' : 'text-gray-500 hover:text-gray-700'"
-              >
-                Transcript
-              </button>
-              <button
-                v-if="showSummaryTab"
-                @click="activeTab = 'summary'"
-                class="flex-1 px-3 py-1.5 text-xs font-medium rounded-md transition-all text-center truncate"
-                :class="activeTab === 'summary' ? 'bg-white text-gray-900 shadow-xs' : 'text-gray-500 hover:text-gray-700'"
-              >
-                Summary
-              </button>
-              <button
-                @click="activeTab = 'comments'"
-                class="flex-1 px-3 py-1.5 text-xs font-medium rounded-md transition-all text-center truncate flex items-center justify-center gap-1"
-                :class="activeTab === 'comments' ? 'bg-white text-gray-900 shadow-xs' : 'text-gray-500 hover:text-gray-700'"
-              >
-                Comments
-                <span v-if="comments.length" class="text-[10px] text-gray-400 font-normal">{{ comments.length }}</span>
-              </button>
-              <button
-                v-if="!isSharedMode && jiraConnected"
-                @click="activeTab = 'bugs'; loadBugTabData()"
-                class="flex-1 px-3 py-1.5 text-xs font-medium rounded-md transition-all text-center truncate flex items-center justify-center gap-1"
-                :class="activeTab === 'bugs' ? 'bg-white text-gray-900 shadow-xs' : 'text-gray-500 hover:text-gray-700'"
-              >
-                Bugs
-                <span v-if="detectedBugs.length" class="text-[10px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full font-medium">{{ detectedBugs.length }}</span>
-              </button>
-            </div>
+            <Tabs v-model="activeTab">
+              <TabsList class="w-full">
+                <TabsTrigger value="transcript" class="flex-1">Transcript</TabsTrigger>
+                <TabsTrigger v-if="showSummaryTab" value="summary" class="flex-1">Summary</TabsTrigger>
+                <TabsTrigger value="comments" class="flex-1">
+                  Comments
+                  <Badge v-if="comments.length" variant="secondary">{{ comments.length }}</Badge>
+                </TabsTrigger>
+                <TabsTrigger v-if="!isSharedMode && jiraConnected" value="bugs" class="flex-1" @click="loadBugTabData()">
+                  Bugs
+                  <Badge v-if="detectedBugs.length" variant="destructive">{{ detectedBugs.length }}</Badge>
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
           </div>
 
           <!-- Content Area -->
@@ -1331,6 +1311,10 @@
 </template>
 
 <script>
+import { Card } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { ref, onMounted, onUnmounted, computed, watch, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
@@ -1352,7 +1336,7 @@ const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8888'
 
 export default {
   name: 'VideoPlayerView',
-  components: { Button,
+  components: { Input, Button, Card, Badge, Tabs, TabsList, TabsTrigger,
     SBConfirmModal,
     SBDownloadModal,
     VideoShareIntegrations,

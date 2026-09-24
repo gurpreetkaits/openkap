@@ -139,16 +139,20 @@
       <!-- Right: CTA + Bell + User -->
       <div class="flex items-center gap-2 shrink-0 justify-self-end">
         <!-- Free plan: Upgrade pill -->
-        <Button size="sm"
+        <Badge
           v-if="isAuthenticated && subscription && !subscription.is_active"
+          variant="secondary"
+          role="button"
+          tabindex="0"
           @click="router.push('/subscription')"
-          class="hidden md:inline-flex items-center gap-1.5"
+          @keyup.enter="router.push('/subscription')"
+          class="hidden md:inline-flex items-center gap-1.5 cursor-pointer"
           :title="`${minutesUsed} / ${minutesLimit} min this month — click to upgrade`">
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
           </svg>
           {{ minutesUsed }}/{{ minutesLimit }} min
-        </Button>
+        </Badge>
 
         <!-- New Recording -->
         <Button size="sm"
@@ -480,6 +484,7 @@
 
 <script>
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { SBLogoutModal, SBDropdown } from '../Global'
@@ -493,7 +498,7 @@ import { useBranding } from '@/composables/useBranding'
 
 export default {
   name: 'AppLayout',
-  components: { Button,
+  components: { Button, Badge,
     SBLogoutModal,
     SBDropdown,
     RecordingSetupPanel,
@@ -552,8 +557,31 @@ export default {
       return route.path.startsWith('/video/')
     })
 
+    // Recording happens in the extension, not in the web app. Ask it to open
+    // its recorder on this tab; if it is not installed there is nothing to
+    // fall back to, so point the user at the install page.
     const handleNewRecording = () => {
-      router.push('/record')
+      const extensionId = document.documentElement.getAttribute('data-openkap-extension-id')
+
+      if (extensionId && window.chrome?.runtime?.sendMessage) {
+        try {
+          chrome.runtime.sendMessage(extensionId, { action: 'startRecording' }, (response) => {
+            if (chrome.runtime.lastError || !response?.success) {
+              promptExtensionInstall()
+            }
+          })
+          return
+        } catch (e) {
+          // fall through to the install prompt
+        }
+      }
+
+      promptExtensionInstall()
+    }
+
+    // Reuse the install modal this layout already ships rather than a toast.
+    const promptExtensionInstall = () => {
+      showExtensionModal.value = true
     }
 
     const handleLogin = () => {

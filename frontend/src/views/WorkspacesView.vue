@@ -129,13 +129,11 @@
               <div class="space-y-4">
                 <div>
                   <label for="workspace-name" class="block text-sm font-medium text-gray-700 mb-1">Workspace Name</label>
-                  <input
+                  <Input
                     id="workspace-name"
                     v-model="newWorkspace.name"
                     type="text"
-                    placeholder="My Team"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-hidden transition-all"
-                  />
+                    placeholder="My Team" />
                   <p v-if="createError" class="mt-1 text-sm text-red-600">{{ createError }}</p>
                 </div>
                 <div>
@@ -170,6 +168,7 @@
 </template>
 
 <script>
+import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
@@ -178,7 +177,7 @@ import { useAuth } from '@/stores/auth'
 
 export default {
   name: 'WorkspacesView',
-  components: { Button },
+  components: { Input, Button },
   setup() {
     const router = useRouter()
     const auth = useAuth()

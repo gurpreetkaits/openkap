@@ -7,38 +7,27 @@
     </div>
 
     <!-- Tabs -->
-    <div class="border-b border-gray-200 mb-6">
-      <nav class="-mb-px flex gap-6" aria-label="Settings tabs">
-        <button
-          v-for="tab in tabs"
-          :key="tab.id"
-          @click="setActiveTab(tab.id)"
-          class="py-3 px-1 border-b-2 font-medium text-sm transition-colors focus:outline-hidden"
-          :class="
-            activeTab === tab.id
-              ? 'border-orange-500 text-orange-600'
-              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-          "
-        >
-          <span class="inline-flex items-center gap-2">
-            <component :is="tab.iconComponent" />
-            {{ tab.label }}
-          </span>
-        </button>
-      </nav>
-    </div>
+    <Tabs :model-value="activeTab" @update:model-value="setActiveTab" class="mb-6">
+      <TabsList>
+        <TabsTrigger v-for="tab in tabs" :key="tab.id" :value="tab.id">
+          <component :is="tab.iconComponent" />
+          {{ tab.label }}
+        </TabsTrigger>
+      </TabsList>
+    </Tabs>
+
 
     <!-- Loading State -->
-    <div v-if="loading" class="bg-white rounded-xl border border-gray-100 p-12 text-center">
+    <Card v-if="loading" class="p-12 text-center">
       <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-orange-50 mb-3">
         <div class="animate-spin rounded-full h-6 w-6 border-2 border-orange-500 border-t-transparent"></div>
       </div>
       <p class="text-sm text-gray-500">Loading settings...</p>
-    </div>
+    </Card>
 
     <!-- BRANDING TAB -->
     <div v-else-if="activeTab === 'branding'" class="space-y-6">
-      <div class="bg-white rounded-xl border border-gray-100" :class="{ 'opacity-60 pointer-events-none': !isPaid }">
+      <Card>
         <!-- Header -->
         <div class="p-5 border-b border-gray-100">
           <div class="flex items-center gap-3">
@@ -149,13 +138,12 @@
               </div>
 
               <!-- Hex input -->
-              <input
+              <Input
                 v-model="settings.brand_color"
                 type="text"
                 maxlength="7"
-                class="w-20 px-2 py-1.5 text-xs font-mono text-gray-700 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-hidden"
-                placeholder="#F97316"
-              />
+                class="w-20 font-mono"
+                placeholder="#F97316" />
             </div>
           </div>
         </div>
@@ -177,13 +165,13 @@
             {{ savingBranding ? 'Saving...' : 'Save Branding' }}
           </Button>
         </div>
-      </div>
+      </Card>
     </div>
 
     <!-- ACCOUNT TAB -->
     <div v-else-if="activeTab === 'account'" class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
       <!-- LEFT: Profile Card -->
-      <div class="bg-white rounded-xl border border-gray-100">
+      <Card>
         <div class="p-5 border-b border-gray-100">
           <div class="flex items-center gap-3">
             <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -250,14 +238,13 @@
         <div class="p-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div class="sm:col-span-2">
             <label class="text-xs font-medium text-gray-500 uppercase tracking-wide">Name</label>
-            <input
+            <Input
               v-model="profileForm.name"
               type="text"
               maxlength="255"
               :disabled="savingProfile"
-              class="mt-1 w-full px-3 py-2 text-sm bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-hidden disabled:opacity-50"
-              placeholder="Your name"
-            />
+              class="mt-1 disabled:opacity-50"
+              placeholder="Your name" />
           </div>
           <div>
             <label class="text-xs font-medium text-gray-500 uppercase tracking-wide">Email</label>
@@ -303,12 +290,12 @@
             </Button>
           </div>
         </div>
-      </div>
+      </Card>
 
       <!-- RIGHT: Export cards stacked -->
       <div class="space-y-6">
         <!-- Recordings -->
-        <div class="bg-white rounded-xl border border-gray-100">
+        <Card>
           <div class="p-5 border-b border-gray-100">
             <div class="flex items-center gap-3">
               <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
@@ -352,10 +339,10 @@
               {{ exportingRecordings ? 'Preparing…' : 'Export as Zip' }}
             </Button>
           </div>
-        </div>
+        </Card>
 
         <!-- Metadata / Transcriptions -->
-        <div class="bg-white rounded-xl border border-gray-100">
+        <Card>
           <div class="p-5 border-b border-gray-100">
             <div class="flex items-center gap-3">
               <div class="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
@@ -397,7 +384,7 @@
               {{ exportingMetadata ? 'Preparing…' : 'Export Metadata' }}
             </Button>
           </div>
-        </div>
+        </Card>
 
         <p v-if="videoCount === 0 && !exportLoading" class="text-xs text-gray-500 text-center">
           You don't have any recordings yet.
@@ -408,7 +395,7 @@
     <!-- API Tokens tab -->
     <div v-else-if="activeTab === 'api-tokens'" class="space-y-6">
       <!-- Intro -->
-      <div class="bg-white rounded-xl border border-gray-100 p-5">
+      <Card class="p-5">
         <h2 class="text-lg font-semibold text-gray-900">API Tokens</h2>
         <p class="mt-1 text-sm text-gray-500">
           Personal tokens let you upload recordings to your workspace from anywhere — the qa-record skill, a script, or CI.
@@ -419,7 +406,7 @@
           A token has <strong>full access to your account</strong> — treat it like a password. Keep it in an environment
           variable or CI secret, never in committed code, and revoke it if it leaks.
         </p>
-      </div>
+      </Card>
 
       <!-- Just-created token (shown once) -->
       <div v-if="createdToken" class="bg-emerald-50 border border-emerald-200 rounded-xl p-5">
@@ -441,16 +428,15 @@
       </div>
 
       <!-- Create form -->
-      <div class="bg-white rounded-xl border border-gray-100 p-5">
+      <Card class="p-5">
         <h3 class="text-sm font-semibold text-gray-900 mb-3">Create a token</h3>
         <div class="flex flex-col sm:flex-row gap-3">
-          <input
+          <Input
             v-model="newTokenName"
             type="text"
             placeholder="Token name (e.g. qa-record)"
             @keyup.enter="createApiToken"
-            class="flex-1 px-3 py-2 text-sm bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-hidden"
-          />
+            class="flex-1" />
           <select
             v-model="newTokenExpiry"
             class="px-3 py-2 text-sm bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-hidden"
@@ -467,10 +453,10 @@
             {{ creatingToken ? 'Creating…' : 'Create token' }}
           </Button>
         </div>
-      </div>
+      </Card>
 
       <!-- Token list -->
-      <div class="bg-white rounded-xl border border-gray-100 p-5">
+      <Card class="p-5">
         <h3 class="text-sm font-semibold text-gray-900 mb-3">Your tokens</h3>
 
         <div v-if="tokensLoading" class="py-6 text-center text-sm text-gray-400">Loading…</div>
@@ -498,7 +484,7 @@
             </Button>
           </li>
         </ul>
-      </div>
+      </Card>
     </div>
   </div>
 
@@ -524,6 +510,9 @@
 </template>
 
 <script setup>
+import { Input } from '@/components/ui/input'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { ref, computed, h, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'

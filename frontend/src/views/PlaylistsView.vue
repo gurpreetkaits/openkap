@@ -23,10 +23,10 @@
 
     <!-- Playlists Grid -->
     <div v-else-if="playlists.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5">
-      <div
+      <Card
         v-for="playlist in playlists"
         :key="playlist.id"
-        class="group bg-white border border-gray-100 rounded-xl overflow-hidden cursor-pointer transition-all duration-200 hover:border-gray-200 hover:shadow-lg hover:shadow-black/6 hover:-translate-y-0.5"
+        class="group overflow-hidden cursor-pointer gap-0 py-0 transition-all"
         @click="openPlaylist(playlist.id)"
       >
         <!-- Cover -->
@@ -138,7 +138,7 @@
             </div>
           </div>
         </div>
-      </div>
+      </Card>
 
       <!-- New Playlist Card -->
       <div
@@ -196,24 +196,22 @@
             <form @submit.prevent="savePlaylist">
               <div class="mb-3.5">
                 <label class="block text-[11.5px] font-medium text-gray-500 mb-1.5">Name</label>
-                <input
+                <Input
                   v-model="playlistForm.title"
                   type="text"
                   required
-                  class="w-full bg-gray-50 border border-gray-100 rounded-lg px-3 py-2.5 text-[13.5px] text-gray-900 placeholder-gray-400 outline-hidden focus:bg-white focus:border-gray-300 transition-all"
-                  placeholder="e.g. Onboarding, Sprint demos..."
-                />
+                 
+                  placeholder="e.g. Onboarding, Sprint demos..." />
               </div>
               <div class="mb-3.5">
                 <label class="block text-[11.5px] font-medium text-gray-500 mb-1.5">
                   Description <span class="text-gray-300">(optional)</span>
                 </label>
-                <input
+                <Input
                   v-model="playlistForm.description"
                   type="text"
-                  class="w-full bg-gray-50 border border-gray-100 rounded-lg px-3 py-2.5 text-[13.5px] text-gray-900 placeholder-gray-400 outline-hidden focus:bg-white focus:border-gray-300 transition-all"
-                  placeholder="What's this playlist about?"
-                />
+                 
+                  placeholder="What's this playlist about?" />
               </div>
               <div class="mb-3.5" v-if="!editingPlaylist">
                 <label class="block text-[11.5px] font-medium text-gray-500 mb-1.5">Visibility</label>
@@ -255,6 +253,8 @@
 </template>
 
 <script setup>
+import { Card } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'

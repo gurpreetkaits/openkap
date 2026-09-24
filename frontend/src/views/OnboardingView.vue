@@ -129,15 +129,14 @@
             <p class="text-sm text-stone-500 mb-6">This is where your recordings will live. You can change it later.</p>
 
             <div>
-              <input
+              <Input
                 v-model="form.workspaceName"
                 @keydown.enter="submit"
                 type="text"
                 placeholder="e.g. Acme Engineering, My Team…"
                 maxlength="100"
-                class="w-full border rounded-xl px-4 py-3 text-sm text-stone-800 placeholder:text-stone-400 outline-hidden transition-all focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
-                :class="workspaceError ? 'border-red-300' : 'border-stone-200'"
-              />
+               
+                :class="workspaceError ? 'border-red-300' : 'border-stone-200'" />
               <p v-if="workspaceError" class="mt-1.5 text-xs text-red-500">{{ workspaceError }}</p>
             </div>
 
@@ -172,6 +171,7 @@
 </template>
 
 <script setup>
+import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
