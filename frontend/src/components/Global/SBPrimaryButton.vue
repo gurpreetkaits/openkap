@@ -1,145 +1,100 @@
 <template>
-  <button
+  <Button
     :type="type"
+    :variant="shadcnVariant"
+    :size="shadcnSize"
     :disabled="disabled || loading"
-    :class="buttonClasses"
+    :class="cn(extraClasses, fullWidth && 'w-full')"
     @click="$emit('click', $event)"
     v-bind="$attrs"
   >
-    <!-- Loading Spinner -->
-    <svg
-      v-if="loading"
-      class="animate-spin -ml-1 mr-3 h-4 w-4 text-white"
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
-      viewBox="0 0 24 24"
-    >
-      <circle
-        class="opacity-25"
-        cx="12"
-        cy="12"
-        r="10"
-        stroke="currentColor"
-        stroke-width="4"
-      ></circle>
-      <path
-        class="opacity-75"
-        fill="currentColor"
-        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-      ></path>
-    </svg>
+    <LoaderCircleIcon v-if="loading" class="animate-spin" />
 
-    <!-- Icon (left) -->
-    <span v-if="$slots.iconLeft && !loading" class="mr-2">
-      <slot name="iconLeft" />
-    </span>
+    <slot name="iconLeft" v-if="$slots.iconLeft && !loading" />
 
-    <!-- Button Text -->
-    <span>
-      <slot />
-    </span>
+    <slot />
 
-    <!-- Icon (right) -->
-    <span v-if="$slots.iconRight && !loading" class="ml-2">
-      <slot name="iconRight" />
-    </span>
-  </button>
+    <slot name="iconRight" v-if="$slots.iconRight && !loading" />
+  </Button>
 </template>
 
-<script>
+<script setup>
+/**
+ * Thin wrapper over the shadcn Button.
+ *
+ * The original props (variant/size/rounded/fullWidth/loading) are kept so the
+ * existing call sites do not have to change; they are mapped onto shadcn's
+ * variants here. New code should reach for `@/components/ui/button` directly.
+ */
 import { computed } from 'vue'
+import { LoaderCircleIcon } from "@lucide/vue"
+import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 
-export default {
-  name: 'SBPrimaryButton',
-  inheritAttrs: false,
-  emits: ['click'],
-  props: {
-    variant: {
-      type: String,
-      default: 'primary',
-      validator: (value) => ['primary', 'secondary', 'danger', 'success', 'ghost'].includes(value)
-    },
-    size: {
-      type: String,
-      default: 'md',
-      validator: (value) => ['xs', 'sm', 'md', 'lg', 'xl'].includes(value)
-    },
-    type: {
-      type: String,
-      default: 'button',
-      validator: (value) => ['button', 'submit', 'reset'].includes(value)
-    },
-    disabled: {
-      type: Boolean,
-      default: false
-    },
-    loading: {
-      type: Boolean,
-      default: false
-    },
-    fullWidth: {
-      type: Boolean,
-      default: false
-    },
-    rounded: {
-      type: String,
-      default: 'md',
-      validator: (value) => ['none', 'sm', 'md', 'lg', 'full'].includes(value)
-    }
+defineOptions({ name: 'SBPrimaryButton', inheritAttrs: false })
+defineEmits(['click'])
+
+const props = defineProps({
+  variant: {
+    type: String,
+    default: 'primary',
+    validator: (v) => ['primary', 'secondary', 'danger', 'success', 'ghost'].includes(v),
   },
-  setup(props) {
-    const baseClasses = 'inline-flex items-center justify-center font-medium transition-all duration-200 focus:outline-hidden focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed'
+  size: {
+    type: String,
+    default: 'md',
+    validator: (v) => ['xs', 'sm', 'md', 'lg', 'xl'].includes(v),
+  },
+  type: {
+    type: String,
+    default: 'button',
+    validator: (v) => ['button', 'submit', 'reset'].includes(v),
+  },
+  disabled: { type: Boolean, default: false },
+  loading: { type: Boolean, default: false },
+  fullWidth: { type: Boolean, default: false },
+  rounded: {
+    type: String,
+    default: 'md',
+    validator: (v) => ['none', 'sm', 'md', 'lg', 'full'].includes(v),
+  },
+})
 
-    const variantClasses = computed(() => {
-      const variants = {
-        primary: 'text-white bg-orange-600 hover:bg-orange-700 focus:ring-orange-500 shadow-xs',
-        secondary: 'text-orange-700 bg-orange-50 hover:bg-orange-100 focus:ring-orange-500 border border-orange-200',
-        danger: 'text-white bg-red-600 hover:bg-red-700 focus:ring-red-500 shadow-xs',
-        success: 'text-white bg-green-600 hover:bg-green-700 focus:ring-green-500 shadow-xs',
-        ghost: 'text-orange-600 hover:text-orange-700 hover:bg-orange-50 focus:ring-orange-500'
-      }
-      return variants[props.variant] || variants.primary
-    })
+const shadcnVariant = computed(() => ({
+  primary: 'default',
+  secondary: 'secondary',
+  danger: 'destructive',
+  success: 'default',
+  ghost: 'ghost',
+}[props.variant] ?? 'default'))
 
-    const sizeClasses = computed(() => {
-      const sizes = {
-        xs: 'px-2.5 py-1.5 text-xs',
-        sm: 'px-3 py-2 text-sm',
-        md: 'px-4 py-2 text-sm',
-        lg: 'px-4 py-2 text-base',
-        xl: 'px-6 py-3 text-base'
-      }
-      return sizes[props.size] || sizes.md
-    })
+const shadcnSize = computed(() => ({
+  xs: 'sm',
+  sm: 'sm',
+  md: 'default',
+  lg: 'lg',
+  xl: 'lg',
+}[props.size] ?? 'default'))
 
-    const roundedClasses = computed(() => {
-      const rounded = {
-        none: 'rounded-none',
-        sm: 'rounded-xs',
-        md: 'rounded-md',
-        lg: 'rounded-lg',
-        full: 'rounded-full'
-      }
-      return rounded[props.rounded] || rounded.md
-    })
+// Success has no shadcn equivalent, and `rounded` is not part of the Button
+// API, so both are applied as overrides on top of the variant.
+const extraClasses = computed(() => {
+  const classes = []
 
-    const widthClasses = computed(() => {
-      return props.fullWidth ? 'w-full' : ''
-    })
-
-    const buttonClasses = computed(() => {
-      return [
-        baseClasses,
-        variantClasses.value,
-        sizeClasses.value,
-        roundedClasses.value,
-        widthClasses.value
-      ].join(' ')
-    })
-
-    return {
-      buttonClasses
-    }
+  if (props.variant === 'success') {
+    classes.push('bg-emerald-600 text-white hover:bg-emerald-700')
   }
-}
+
+  const radius = {
+    none: 'rounded-none',
+    sm: 'rounded-xs',
+    md: 'rounded-md',
+    lg: 'rounded-lg',
+    full: 'rounded-full',
+  }[props.rounded]
+
+  if (radius) classes.push(radius)
+
+  return classes
+})
 </script>
