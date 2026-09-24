@@ -14,7 +14,7 @@
     <!-- Error State -->
     <div v-else-if="error" class="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
       <p class="text-sm text-red-700">{{ error }}</p>
-      <button @click="loadStats" class="mt-3 text-sm font-medium text-red-600 hover:text-red-700">Try again</button>
+      <Button variant="destructive" @click="loadStats" class="mt-3">Try again</Button>
     </div>
 
     <template v-else-if="stats">
@@ -131,7 +131,7 @@
                 <td class="py-2.5 pr-4">
                   <div class="flex items-center gap-2">
                     <img v-if="user.avatar" :src="user.avatar" class="w-6 h-6 rounded-full object-cover" />
-                    <div v-else class="w-6 h-6 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center">
+                    <div v-else class="w-6 h-6 rounded-full bg-linear-to-br from-orange-400 to-orange-600 flex items-center justify-center">
                       <span class="text-[10px] font-bold text-white">{{ (user.name || 'U').charAt(0).toUpperCase() }}</span>
                     </div>
                     <span class="font-medium text-gray-900">{{ user.name }}</span>
@@ -144,15 +144,15 @@
                   </span>
                 </td>
                 <td class="py-2.5 pr-4 text-right tabular-nums">
-                  <button
-                    v-if="(user.videos_count ?? 0) > 0"
+                  <Button variant="ghost"
+                    v-if="(user.videos_count ?? 0)> 0"
                     type="button"
                     @click="openUserVideos(user)"
-                    class="font-medium text-orange-600 underline decoration-orange-200 underline-offset-2 hover:text-orange-700 hover:decoration-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-300 rounded px-1 -mr-1 transition-colors"
+                    class="font-medium text-orange-600 underline decoration-orange-200 underline-offset-2 hover:text-orange-700 hover:decoration-orange-400 focus:outline-hidden focus:ring-2 focus:ring-orange-300 rounded-sm px-1 -mr-1 transition-colors"
                     :title="`View ${user.name}'s recordings`"
                   >
                     {{ user.videos_count }}
-                  </button>
+                  </Button>
                   <span v-else class="text-gray-400">0</span>
                 </td>
                 <td class="py-2.5 pr-4 text-right tabular-nums text-gray-900">
@@ -184,13 +184,12 @@
 
         <div v-else-if="videosError" class="py-12 text-center">
           <p class="text-sm text-red-600">{{ videosError }}</p>
-          <button
+          <Button variant="ghost"
             type="button"
             @click="openUserVideos(selectedUser)"
-            class="mt-3 text-sm font-medium text-orange-600 hover:text-orange-700"
-          >
+            class="mt-3">
             Try again
-          </button>
+          </Button>
         </div>
 
         <div v-else-if="userVideos && userVideos.videos.length === 0" class="py-12 text-center text-sm text-gray-500">
@@ -238,11 +237,11 @@
                       :href="videoHref(video.id)"
                       target="_blank"
                       rel="noopener"
-                      class="font-medium text-gray-900 hover:text-orange-600 hover:underline break-words"
+                      class="font-medium text-gray-900 hover:text-orange-600 hover:underline wrap-break-word"
                     >
                       {{ video.title }}
                     </a>
-                    <p v-if="video.error" class="text-xs text-red-600 mt-1 break-words">{{ video.error }}</p>
+                    <p v-if="video.error" class="text-xs text-red-600 mt-1 wrap-break-word">{{ video.error }}</p>
                   </td>
                   <td class="py-2.5 pr-4">
                     <span class="text-xs font-medium px-2 py-0.5 rounded-full whitespace-nowrap" :class="healthBadgeClass(video.health)">
@@ -281,6 +280,7 @@
 </template>
 
 <script>
+import { Button } from '@/components/ui/button'
 import { ref, computed, onMounted } from 'vue'
 import adminService from '@/services/adminService'
 import { SBModal } from '@/components/Global'
@@ -340,7 +340,7 @@ const BarChart = {
 
 export default {
   name: 'AdminDashboardView',
-  components: { StatCard, BarChart, SBModal },
+  components: { Button, StatCard, BarChart, SBModal },
   setup() {
     const stats = ref(null)
     const loading = ref(true)

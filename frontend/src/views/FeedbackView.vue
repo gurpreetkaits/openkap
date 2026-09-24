@@ -6,15 +6,14 @@
         <h1 class="text-xl font-semibold text-gray-900">Feedback</h1>
         <p class="text-sm text-gray-500 mt-0.5">Help us improve OpenKap</p>
       </div>
-      <button
+      <Button
         @click="openNewModal"
-        class="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium rounded-lg transition-all duration-200 flex items-center gap-2 shadow-sm hover:shadow-md active:scale-[0.98]"
-      >
+        class="flex items-center gap-2 active:scale-[0.98]">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
         </svg>
         New Feedback
-      </button>
+      </Button>
     </div>
 
     <!-- Loading -->
@@ -34,9 +33,9 @@
       </div>
       <h3 class="text-base font-medium text-gray-900 mb-1">No feedback yet</h3>
       <p class="text-sm text-gray-500 mb-4">Share your thoughts, report bugs, or suggest features</p>
-      <button @click="openNewModal" class="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium rounded-lg transition-all duration-200 shadow-sm hover:shadow-md">
+      <Button @click="openNewModal">
         Send Your First Feedback
-      </button>
+      </Button>
     </div>
 
     <!-- Feedback List -->
@@ -45,11 +44,11 @@
         v-for="item in feedbackList"
         :key="item.id"
         @click="viewFeedback(item)"
-        class="group bg-white rounded-xl border border-gray-100 p-4 cursor-pointer transition-all duration-200 hover:border-gray-300 hover:shadow-sm"
+        class="group bg-white rounded-xl border border-gray-100 p-4 cursor-pointer transition-all duration-200 hover:border-gray-300 hover:shadow-xs"
       >
         <div class="flex items-start gap-3">
           <!-- Type Icon -->
-          <div :class="typeIconBg(item.type)" class="flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center">
+          <div :class="typeIconBg(item.type)" class="shrink-0 w-10 h-10 rounded-lg flex items-center justify-center">
             <component :is="typeIcon(item.type)" class="w-5 h-5" :class="typeIconColor(item.type)" />
           </div>
 
@@ -83,7 +82,7 @@
               </div>
 
               <!-- Status Badge -->
-              <span :class="statusClass(item.status)" class="flex-shrink-0 px-2.5 py-1 text-xs font-medium rounded-full capitalize flex items-center gap-1">
+              <span :class="statusClass(item.status)" class="shrink-0 px-2.5 py-1 text-xs font-medium rounded-full capitalize flex items-center gap-1">
                 <span :class="statusDotClass(item.status)" class="w-1.5 h-1.5 rounded-full"></span>
                 {{ item.status }}
               </span>
@@ -98,26 +97,24 @@
           Showing {{ pagination.from }}-{{ pagination.to }} of {{ pagination.total }}
         </span>
         <div class="flex gap-2">
-          <button
+          <Button variant="outline" size="sm"
             @click="goToPage(pagination.currentPage - 1)"
             :disabled="pagination.currentPage === 1"
-            class="px-3 py-1.5 text-sm font-medium rounded-lg border border-gray-100 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-1"
-          >
+            class="flex items-center gap-1">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
             </svg>
             Previous
-          </button>
-          <button
+          </Button>
+          <Button variant="outline" size="sm"
             @click="goToPage(pagination.currentPage + 1)"
             :disabled="pagination.currentPage === pagination.lastPage"
-            class="px-3 py-1.5 text-sm font-medium rounded-lg border border-gray-100 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-1"
-          >
+            class="flex items-center gap-1">
             Next
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
             </svg>
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -140,8 +137,8 @@
         leave-from-class="opacity-100"
         leave-to-class="opacity-0"
       >
-        <div v-if="showModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4" @keydown.esc="handleEscape">
-          <div class="fixed inset-0 bg-black/50 backdrop-blur-sm" @click="handleBackdropClick"></div>
+        <div v-if="showModal" class="fixed inset-0 z-100 flex items-center justify-center p-4" @keydown.esc="handleEscape">
+          <div class="fixed inset-0 bg-black/50 backdrop-blur-xs" @click="handleBackdropClick"></div>
           <Transition
             enter-active-class="duration-200 ease-out"
             enter-from-class="opacity-0 scale-95"
@@ -154,11 +151,11 @@
               <!-- Header -->
               <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
                 <h2 class="text-lg font-semibold text-gray-900">New Feedback</h2>
-                <button @click="handleBackdropClick" class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                <Button variant="ghost" @click="handleBackdropClick">
                   <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                   </svg>
-                </button>
+                </Button>
               </div>
 
               <form @submit.prevent="submitFeedback" class="p-5 space-y-4">
@@ -197,7 +194,7 @@
                     placeholder="Brief summary of your feedback"
                     maxlength="255"
                     required
-                    class="w-full px-4 py-2.5 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-shadow"
+                    class="w-full px-4 py-2.5 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-hidden transition-shadow"
                     :disabled="submitting"
                   />
                   <div class="flex justify-end mt-1">
@@ -218,7 +215,7 @@
                     contenteditable="true"
                     @input="onDescriptionInput"
                     @paste="onPaste"
-                    class="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none min-h-[180px] max-h-[300px] overflow-y-auto transition-shadow"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-hidden min-h-[180px] max-h-[300px] overflow-y-auto transition-shadow"
                     :class="{ 'opacity-50 pointer-events-none': submitting }"
                     data-placeholder="Describe your feedback in detail. Screenshots help us understand better..."
                   ></div>
@@ -231,19 +228,17 @@
 
                 <!-- Actions -->
                 <div class="flex justify-end gap-3 pt-2">
-                  <button
+                  <Button variant="ghost"
                     type="button"
                     @click="handleBackdropClick"
-                    class="px-4 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-xl transition-colors"
-                    :disabled="submitting"
-                  >
+                   
+                    :disabled="submitting">
                     Cancel
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="submit"
                     :disabled="submitting || !isFormValid"
-                    class="px-5 py-2.5 bg-orange-500 hover:bg-orange-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white text-sm font-medium rounded-xl flex items-center gap-2 transition-all duration-200 shadow-sm hover:shadow-md"
-                  >
+                    class="flex items-center gap-2">
                     <svg v-if="submitting" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
                       <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                       <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -252,7 +247,7 @@
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
                     </svg>
                     {{ submitting ? 'Sending...' : 'Send Feedback' }}
-                  </button>
+                  </Button>
                 </div>
               </form>
             </div>
@@ -271,8 +266,8 @@
         leave-from-class="opacity-100"
         leave-to-class="opacity-0"
       >
-        <div v-if="selectedFeedback" class="fixed inset-0 z-[100] flex items-center justify-center p-4" @keydown.esc="selectedFeedback = null">
-          <div class="fixed inset-0 bg-black/50 backdrop-blur-sm" @click="selectedFeedback = null"></div>
+        <div v-if="selectedFeedback" class="fixed inset-0 z-100 flex items-center justify-center p-4" @keydown.esc="selectedFeedback = null">
+          <div class="fixed inset-0 bg-black/50 backdrop-blur-xs" @click="selectedFeedback = null"></div>
           <Transition
             enter-active-class="duration-200 ease-out"
             enter-from-class="opacity-0 scale-95"
@@ -285,7 +280,7 @@
               <!-- Header -->
               <div class="flex items-start justify-between p-5 border-b border-gray-100">
                 <div class="flex items-start gap-3 flex-1 min-w-0 pr-4">
-                  <div :class="typeIconBg(selectedFeedback.type)" class="flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center">
+                  <div :class="typeIconBg(selectedFeedback.type)" class="shrink-0 w-10 h-10 rounded-lg flex items-center justify-center">
                     <component :is="typeIcon(selectedFeedback.type)" class="w-5 h-5" :class="typeIconColor(selectedFeedback.type)" />
                   </div>
                   <div class="flex-1 min-w-0">
@@ -298,15 +293,15 @@
                         {{ selectedFeedback.status }}
                       </span>
                     </div>
-                    <h2 class="text-base font-semibold text-gray-900 break-words">{{ selectedFeedback.title }}</h2>
+                    <h2 class="text-base font-semibold text-gray-900 wrap-break-word">{{ selectedFeedback.title }}</h2>
                     <p class="text-xs text-gray-500 mt-0.5">{{ formatDate(selectedFeedback.created_at) }}</p>
                   </div>
                 </div>
-                <button @click="selectedFeedback = null" class="p-2 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0">
+                <Button variant="ghost" @click="selectedFeedback = null" class="shrink-0">
                   <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                   </svg>
-                </button>
+                </Button>
               </div>
 
               <!-- Content -->
@@ -354,12 +349,11 @@
 
               <!-- Footer -->
               <div class="p-4 border-t border-gray-100 flex items-center justify-between">
-                <button
+                <Button variant="destructive" size="sm"
                   v-if="selectedFeedback.status === 'pending'"
                   @click="confirmDelete"
                   :disabled="deleting"
-                  class="px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors flex items-center gap-1.5"
-                >
+                  class="flex items-center gap-1.5">
                   <svg v-if="deleting" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -368,14 +362,12 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                   </svg>
                   {{ deleting ? 'Deleting...' : 'Delete' }}
-                </button>
+                </Button>
                 <div v-else></div>
-                <button
-                  @click="selectedFeedback = null"
-                  class="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-                >
+                <Button variant="ghost"
+                  @click="selectedFeedback = null">
                   Close
-                </button>
+                </Button>
               </div>
             </div>
           </Transition>
@@ -393,8 +385,8 @@
         leave-from-class="opacity-100"
         leave-to-class="opacity-0"
       >
-        <div v-if="showUnsavedWarning" class="fixed inset-0 z-[110] flex items-center justify-center p-4">
-          <div class="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
+        <div v-if="showUnsavedWarning" class="fixed inset-0 z-110 flex items-center justify-center p-4">
+          <div class="fixed inset-0 bg-black/50 backdrop-blur-xs"></div>
           <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm z-10 p-5">
             <div class="flex items-center gap-3 mb-4">
               <div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
@@ -408,12 +400,12 @@
               </div>
             </div>
             <div class="flex justify-end gap-2">
-              <button @click="showUnsavedWarning = false" class="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+              <Button variant="ghost" @click="showUnsavedWarning = false">
                 Keep editing
-              </button>
-              <button @click="discardAndClose" class="px-4 py-2 text-sm font-medium text-white bg-red-500 hover:bg-red-600 rounded-lg transition-colors">
+              </Button>
+              <Button variant="destructive" @click="discardAndClose">
                 Discard
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -430,8 +422,8 @@
         leave-from-class="opacity-100"
         leave-to-class="opacity-0"
       >
-        <div v-if="showDeleteConfirm" class="fixed inset-0 z-[110] flex items-center justify-center p-4">
-          <div class="fixed inset-0 bg-black/50 backdrop-blur-sm" @click="showDeleteConfirm = false"></div>
+        <div v-if="showDeleteConfirm" class="fixed inset-0 z-110 flex items-center justify-center p-4">
+          <div class="fixed inset-0 bg-black/50 backdrop-blur-xs" @click="showDeleteConfirm = false"></div>
           <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm z-10 p-5">
             <div class="flex items-center gap-3 mb-4">
               <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
@@ -445,12 +437,12 @@
               </div>
             </div>
             <div class="flex justify-end gap-2">
-              <button @click="showDeleteConfirm = false" class="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+              <Button variant="ghost" @click="showDeleteConfirm = false">
                 Cancel
-              </button>
-              <button @click="deleteFeedback" class="px-4 py-2 text-sm font-medium text-white bg-red-500 hover:bg-red-600 rounded-lg transition-colors">
+              </Button>
+              <Button variant="destructive" @click="deleteFeedback">
                 Delete
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -460,6 +452,7 @@
 </template>
 
 <script setup>
+import { Button } from '@/components/ui/button'
 import { ref, computed, onMounted, onUnmounted, watch, nextTick, h } from 'vue'
 import { useAuth } from '@/stores/auth'
 import toast from '@/services/toastService'

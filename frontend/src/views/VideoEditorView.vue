@@ -13,36 +13,32 @@
           <svg class="w-10 h-10 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
         </div>
         <h3 class="text-lg font-semibold text-gray-900 mb-3">{{ error }}</h3>
-        <button @click="goBack" class="px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-medium transition-colors">Go Back</button>
+        <Button size="lg" @click="goBack">Go Back</Button>
       </div>
     </div>
 
     <template v-else>
       <!-- ─── Top Nav ─── -->
-      <nav class="h-12 bg-white border-b border-gray-200/80 flex items-center justify-between px-5 z-50 flex-shrink-0">
+      <nav class="h-12 bg-white border-b border-gray-200/80 flex items-center justify-between px-5 z-50 shrink-0">
         <div class="flex items-center gap-3">
-          <button @click="goBack" class="text-gray-400 hover:text-gray-700 transition-colors">
+          <Button variant="ghost" @click="goBack">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
-          </button>
+          </Button>
           <span class="text-sm font-semibold text-gray-800 truncate max-w-[300px]">{{ video?.title || 'Untitled' }}</span>
         </div>
         <div class="flex items-center gap-3">
-          <button v-if="!isApplying" @click="goBack" class="px-4 py-1.5 text-gray-500 hover:text-gray-700 text-sm font-medium transition-colors">Cancel</button>
-          <button
+          <Button variant="ghost" size="sm" v-if="!isApplying" @click="goBack">Cancel</Button>
+          <Button variant="outline" size="sm"
             v-if="!isApplying"
             @click="saveNow"
-            :disabled="isSaving"
-            class="px-4 py-1.5 text-gray-700 hover:text-gray-900 border border-gray-200 hover:border-gray-300 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
-          >
+            :disabled="isSaving">
             {{ isSaving ? 'Saving...' : saveLabel }}
-          </button>
-          <button
+          </Button>
+          <Button size="sm"
             v-if="!isApplying"
-            @click="applyEdits"
-            class="px-5 py-1.5 bg-gray-900 hover:bg-gray-800 text-white rounded-lg text-sm font-semibold transition-colors"
-          >
+            @click="applyEdits">
             Export
-          </button>
+          </Button>
           <!-- Export progress indicator -->
           <div v-if="isApplying" class="flex items-center gap-3">
             <div class="flex items-center gap-2 px-4 py-1.5 bg-gray-100 rounded-lg">
@@ -68,31 +64,31 @@
           </div>
 
           <!-- Playback Controls Card (separate, detached) -->
-          <div class="flex-shrink-0 flex items-center justify-center gap-2 bg-white rounded-xl shadow-sm border border-gray-200/50 px-4 h-10">
+          <div class="shrink-0 flex items-center justify-center gap-2 bg-white rounded-xl shadow-xs border border-gray-200/50 px-4 h-10">
             <span class="text-[11px] font-mono text-gray-400 tabular-nums">{{ displayCurrentTime }}</span>
             <span class="text-[10px] text-gray-300 mx-0.5">/</span>
             <span class="text-[11px] font-mono text-gray-300 tabular-nums">{{ displayDuration }}</span>
             <div class="w-px h-4 bg-gray-200 mx-2"></div>
-            <button @click="skip(-5)" class="w-6 h-6 flex items-center justify-center rounded text-gray-400 hover:text-gray-600 transition-colors">
+            <Button variant="ghost" size="icon" @click="skip(-5)" class="w-6 h-6 flex items-center justify-center">
               <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
-            </button>
-            <button @click="togglePlay" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-900 hover:bg-gray-800 text-white transition-colors">
+            </Button>
+            <Button size="icon" @click="togglePlay" class="w-8 h-8 flex items-center justify-center">
               <svg v-if="!isPlaying" class="w-3.5 h-3.5 ml-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
               <svg v-else class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/></svg>
-            </button>
-            <button @click="skip(5)" class="w-6 h-6 flex items-center justify-center rounded text-gray-400 hover:text-gray-600 transition-colors">
+            </Button>
+            <Button variant="ghost" size="icon" @click="skip(5)" class="w-6 h-6 flex items-center justify-center">
               <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M16 18h2V6h-2zM6 18l8.5-6L6 6z"/></svg>
-            </button>
+            </Button>
           </div>
 
           <!-- Timeline Card -->
-          <div class="flex-shrink-0 bg-white rounded-xl shadow-sm border border-gray-200/50 overflow-hidden">
+          <div class="shrink-0 bg-white rounded-xl shadow-xs border border-gray-200/50 overflow-hidden">
             <EditorTimeline @addVideo="showAddVideoModal = true" />
           </div>
         </div>
 
         <!-- ─── Right Sidebar Card ─── -->
-        <div class="w-[380px] flex-shrink-0 bg-white rounded-xl shadow-sm border border-gray-200/50 hidden lg:flex flex-col min-h-0 overflow-hidden">
+        <div class="w-[380px] shrink-0 bg-white rounded-xl shadow-xs border border-gray-200/50 hidden lg:flex flex-col min-h-0 overflow-hidden">
           <div class="flex-1 overflow-y-auto min-h-0">
             <EditorToolPanel />
           </div>
@@ -106,6 +102,7 @@
 </template>
 
 <script setup>
+import { Button } from '@/components/ui/button'
 import { ref, computed, onMounted, onBeforeUnmount, nextTick, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import videoService from '@/services/videoService'

@@ -4,12 +4,11 @@
 
     <!-- Connected Integrations -->
     <div class="space-y-2">
-      <button
+      <Button
         v-for="integration in integrations"
         :key="integration.id"
         @click="openShareModal(integration)"
-        class="w-full flex items-center gap-3 p-2.5 rounded-lg border border-gray-100 hover:border-orange-200 hover:bg-orange-50/50 transition-all group text-left"
-      >
+        class="w-full flex items-center gap-3 group text-left">
         <div class="w-7 h-7 rounded-md flex items-center justify-center" :class="getProviderBgColor(integration.id)">
           <!-- Jira -->
           <svg v-if="integration.id === 'jira'" class="w-3.5 h-3.5 text-blue-600" viewBox="0 0 24 24" fill="currentColor">
@@ -22,7 +21,7 @@
         <svg class="w-3.5 h-3.5 text-gray-400 group-hover:text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
         </svg>
-      </button>
+      </Button>
     </div>
 
     <!-- Share History -->
@@ -34,15 +33,15 @@
           :key="item.id"
           class="flex items-center gap-2 text-xs text-gray-500 py-1"
         >
-          <span class="w-1.5 h-1.5 rounded-full flex-shrink-0" :class="item.status === 'completed' ? 'bg-green-400' : item.status === 'failed' ? 'bg-red-400' : 'bg-yellow-400'"></span>
+          <span class="w-1.5 h-1.5 rounded-full shrink-0" :class="item.status === 'completed' ? 'bg-green-400' : item.status === 'failed' ? 'bg-red-400' : 'bg-yellow-400'"></span>
           <span class="font-medium text-gray-600 capitalize">{{ formatProviderName(item.provider) }}</span>
           <span v-if="item.target_name" class="truncate">{{ item.target_name }}</span>
-          <span class="ml-auto text-gray-400 flex-shrink-0">{{ formatTime(item.created_at) }}</span>
+          <span class="ml-auto text-gray-400 shrink-0">{{ formatTime(item.created_at) }}</span>
           <a
             v-if="item.external_url"
             :href="item.external_url"
             target="_blank"
-            class="text-orange-500 hover:text-orange-600 flex-shrink-0"
+            class="text-orange-500 hover:text-orange-600 shrink-0"
           >
             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
@@ -53,16 +52,16 @@
     </div>
 
     <!-- Share Modal -->
-    <div v-if="showShareModal" class="fixed inset-0 z-[70] flex items-center justify-center">
-      <div class="absolute inset-0 bg-gray-900/20 backdrop-blur-sm" @click="closeShareModal"></div>
+    <div v-if="showShareModal" class="fixed inset-0 z-70 flex items-center justify-center">
+      <div class="absolute inset-0 bg-gray-900/20 backdrop-blur-xs" @click="closeShareModal"></div>
       <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm relative z-10 border border-gray-100 overflow-hidden">
         <div class="p-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
           <h3 class="text-sm font-semibold text-gray-900">Share to {{ selectedProvider?.name }}</h3>
-          <button @click="closeShareModal" class="text-gray-400 hover:text-gray-600">
+          <Button variant="ghost" @click="closeShareModal">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
             </svg>
-          </button>
+          </Button>
         </div>
         <div class="p-5 space-y-4">
           <!-- Target Selector -->
@@ -77,7 +76,7 @@
             <select
               v-else
               v-model="shareForm.target_id"
-              class="w-full rounded-lg border border-gray-200 text-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              class="w-full rounded-lg border border-gray-200 text-sm py-2 px-3 focus:outline-hidden focus:ring-2 focus:ring-orange-500 focus:border-transparent"
             >
               <option value="" disabled>Select...</option>
               <option v-for="target in targets" :key="target.id" :value="target.id">
@@ -93,23 +92,22 @@
               v-model="shareForm.message"
               rows="3"
               maxlength="1000"
-              class="w-full rounded-lg border border-gray-200 text-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-none"
+              class="w-full rounded-lg border border-gray-200 text-sm py-2 px-3 focus:outline-hidden focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-none"
               placeholder="Add a message..."
             ></textarea>
           </div>
 
           <!-- Send Button -->
-          <button
+          <Button
             @click="executeShare"
             :disabled="!shareForm.target_id || sharing"
-            class="w-full px-4 py-2.5 text-sm font-semibold rounded-lg bg-orange-600 text-white hover:bg-orange-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-          >
+            class="w-full flex items-center justify-center gap-2">
             <div v-if="sharing" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
             <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
             </svg>
             {{ sharing ? 'Sharing...' : 'Share' }}
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -117,6 +115,7 @@
 </template>
 
 <script>
+import { Button } from '@/components/ui/button'
 import { ref, onMounted, watch } from 'vue'
 import integrationService from '@/services/integrationService'
 import { useToast } from '@/services/toastService'
@@ -124,6 +123,7 @@ import { formatDistanceToNow } from 'date-fns'
 
 export default {
   name: 'VideoShareIntegrations',
+  components: { Button },
   props: {
     videoId: {
       type: [Number, String],

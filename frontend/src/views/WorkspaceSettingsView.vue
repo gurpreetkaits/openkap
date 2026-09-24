@@ -16,10 +16,10 @@
     <!-- Loading State -->
     <div v-if="loading" class="space-y-6 animate-pulse">
       <div class="bg-white rounded-xl border border-gray-100 p-6">
-        <div class="h-6 bg-gray-200 rounded w-32 mb-4"></div>
+        <div class="h-6 bg-gray-200 rounded-sm w-32 mb-4"></div>
         <div class="space-y-4">
-          <div class="h-10 bg-gray-200 rounded w-full"></div>
-          <div class="h-20 bg-gray-200 rounded w-full"></div>
+          <div class="h-10 bg-gray-200 rounded-sm w-full"></div>
+          <div class="h-20 bg-gray-200 rounded-sm w-full"></div>
         </div>
       </div>
     </div>
@@ -33,13 +33,12 @@
         <div class="space-y-4">
           <div>
             <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Workspace Name</label>
-            <input
+            <Input
               id="name"
               v-model="form.name"
               type="text"
               :disabled="!canEdit"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all disabled:bg-gray-100 disabled:cursor-not-allowed"
-            />
+              class="disabled:bg-gray-100 disabled:cursor-not-allowed" />
           </div>
 
           <div>
@@ -50,7 +49,7 @@
               placeholder="What's this workspace for?"
               rows="3"
               :disabled="!canEdit"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all resize-none disabled:bg-gray-100 disabled:cursor-not-allowed"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-hidden transition-all resize-none disabled:bg-gray-100 disabled:cursor-not-allowed"
             ></textarea>
           </div>
 
@@ -58,26 +57,23 @@
             <label for="slug" class="block text-sm font-medium text-gray-700 mb-1">URL Slug</label>
             <div class="flex items-center gap-2">
               <span class="text-sm text-gray-500">/workspace/</span>
-              <input
+              <Input
                 id="slug"
                 v-model="form.slug"
                 type="text"
                 :disabled="!canEdit"
                 @input="sanitizeSlug"
-                class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all disabled:bg-gray-100 disabled:cursor-not-allowed"
-              />
+                class="flex-1 disabled:bg-gray-100 disabled:cursor-not-allowed" />
             </div>
             <p class="text-xs text-gray-500 mt-1">Only lowercase letters, numbers, and hyphens allowed.</p>
           </div>
 
-          <button
+          <Button
             v-if="canEdit"
             @click="saveSettings"
-            :disabled="saving || !hasChanges"
-            class="px-4 py-2 text-sm font-medium text-white bg-orange-500 rounded-lg hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
+            :disabled="saving || !hasChanges">
             {{ saving ? 'Saving...' : 'Save Changes' }}
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -151,12 +147,11 @@
             <span class="text-gray-900">{{ formatDate(workspace.subscription_expires_at) }}</span>
           </div>
 
-          <button
+          <Button
             v-if="!workspace.has_active_subscription"
-            class="w-full mt-4 px-4 py-2 text-sm font-medium text-white bg-orange-500 rounded-lg hover:bg-orange-600 transition-colors"
-          >
+            class="w-full mt-4">
             Upgrade to Team
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -171,12 +166,10 @@
             <p class="font-medium text-gray-900">Leave Workspace</p>
             <p class="text-sm text-gray-500">You will lose access to all workspace videos</p>
           </div>
-          <button
-            @click="showLeaveModal = true"
-            class="px-4 py-2 text-sm font-medium text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
-          >
+          <Button variant="destructive"
+            @click="showLeaveModal = true">
             Leave
-          </button>
+          </Button>
         </div>
 
         <!-- Delete Workspace (for owners) -->
@@ -185,15 +178,14 @@
             <p class="font-medium text-gray-900">Delete Workspace</p>
             <p class="text-sm text-gray-500">Permanently delete this workspace and all its data</p>
           </div>
-          <button
+          <Button variant="destructive"
             @click="showDeleteModal = true"
-            class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors"
-          >
+            class="inline-flex items-center gap-2">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
             </svg>
             Delete
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -203,7 +195,7 @@
       <Transition name="modal">
         <div
           v-if="showLeaveModal"
-          class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50"
+          class="fixed inset-0 z-100 flex items-center justify-center p-4 bg-black/50"
           @click.self="showLeaveModal = false"
         >
           <Transition name="modal-content" appear>
@@ -214,19 +206,15 @@
               </p>
 
               <div class="flex justify-end gap-3">
-                <button
-                  @click="showLeaveModal = false"
-                  class="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-                >
+                <Button variant="ghost"
+                  @click="showLeaveModal = false">
                   Cancel
-                </button>
-                <button
+                </Button>
+                <Button variant="destructive"
                   @click="leaveWorkspace"
-                  :disabled="leaving"
-                  class="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
-                >
+                  :disabled="leaving">
                   {{ leaving ? 'Leaving...' : 'Leave Workspace' }}
-                </button>
+                </Button>
               </div>
             </div>
           </Transition>
@@ -239,7 +227,7 @@
       <Transition name="modal">
         <div
           v-if="showDeleteModal"
-          class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50"
+          class="fixed inset-0 z-100 flex items-center justify-center p-4 bg-black/50"
           @click.self="showDeleteModal = false"
         >
           <Transition name="modal-content" appear>
@@ -252,27 +240,22 @@
                 Type <strong>{{ workspaceName }}</strong> to confirm.
               </p>
 
-              <input
+              <Input
                 v-model="deleteConfirmName"
                 type="text"
                 :placeholder="workspaceName"
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none mb-6"
-              />
+                class="mb-6" />
 
               <div class="flex justify-end gap-3">
-                <button
-                  @click="showDeleteModal = false; deleteConfirmName = ''"
-                  class="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-                >
+                <Button variant="ghost"
+                  @click="showDeleteModal = false; deleteConfirmName = ''">
                   Cancel
-                </button>
-                <button
+                </Button>
+                <Button variant="destructive"
                   @click="deleteWorkspace"
-                  :disabled="deleteConfirmName !== workspaceName || deleting"
-                  class="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
+                  :disabled="deleteConfirmName !== workspaceName || deleting">
                   {{ deleting ? 'Deleting...' : 'Delete Workspace' }}
-                </button>
+                </Button>
               </div>
             </div>
           </Transition>
@@ -283,6 +266,8 @@
 </template>
 
 <script>
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import workspaceService from '@/services/workspaceService'
@@ -291,6 +276,7 @@ import toast from '@/services/toastService'
 
 export default {
   name: 'WorkspaceSettingsView',
+  components: { Input, Button },
   setup() {
     const route = useRoute()
     const router = useRouter()

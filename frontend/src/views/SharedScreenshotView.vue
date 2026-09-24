@@ -31,76 +31,74 @@
       <nav class="h-14 border-b border-gray-200/60 bg-white/80 backdrop-blur-md flex items-center justify-between px-4 lg:px-6 z-50 fixed top-0 w-full">
         <div class="flex items-center gap-3">
           <a href="/" class="flex items-center gap-2 hover:opacity-80 transition-opacity">
-            <img :src="branding.logoUrl.value || '/logo.png'" alt="OpenKap" class="w-8 h-8 rounded-lg shadow-sm" />
+            <img :src="branding.logoUrl.value || '/logo.png'" alt="OpenKap" class="w-8 h-8 rounded-lg shadow-xs" />
             <span class="text-sm font-semibold text-gray-900">OpenKap</span>
           </a>
         </div>
 
         <div class="flex items-center gap-2">
-          <button
+          <Button variant="ghost" size="sm"
             @click="downloadScreenshot"
-            class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-2"
-          >
+            class="flex items-center gap-2">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
             </svg>
             Download
-          </button>
-          <button
+          </Button>
+          <Button size="sm"
             @click="showShareModal = true"
-            class="bg-orange-600 hover:bg-orange-700 text-white px-3 py-1.5 rounded-lg text-xs font-medium shadow-md shadow-orange-200 transition-all flex items-center gap-2"
-          >
+            class="flex items-center gap-2">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
             </svg>
             Share
-          </button>
+          </Button>
         </div>
       </nav>
 
       <!-- Share Modal -->
-      <div v-if="showShareModal" class="fixed inset-0 z-[60] flex items-center justify-center">
-        <div class="absolute inset-0 bg-gray-900/20 backdrop-blur-sm transition-opacity" @click="showShareModal = false"></div>
+      <div v-if="showShareModal" class="fixed inset-0 z-60 flex items-center justify-center">
+        <div class="absolute inset-0 bg-gray-900/20 backdrop-blur-xs transition-opacity" @click="showShareModal = false"></div>
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-md relative z-10 border border-gray-100 overflow-hidden transform transition-all duration-200 mx-4">
           <div class="p-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
             <h3 class="text-sm font-semibold text-gray-900">Share Screenshot</h3>
-            <button @click="showShareModal = false" class="text-gray-400 hover:text-gray-600">
+            <Button variant="ghost" @click="showShareModal = false">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
               </svg>
-            </button>
+            </Button>
           </div>
           <div class="p-5">
             <div class="flex gap-4 mb-6">
-              <button @click="shareViaEmail" class="flex-1 flex flex-col items-center gap-2 p-3 rounded-lg border border-gray-200 hover:border-orange-500 hover:bg-orange-50/50 transition-all group">
+              <Button @click="shareViaEmail" class="flex-1 flex flex-col items-center gap-2 group">
                 <div class="w-8 h-8 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center group-hover:scale-110 transition-transform">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                   </svg>
                 </div>
                 <span class="text-xs font-medium text-gray-600 group-hover:text-orange-700">Email</span>
-              </button>
-              <button @click="shareOnTwitter" class="flex-1 flex flex-col items-center gap-2 p-3 rounded-lg border border-gray-200 hover:border-orange-500 hover:bg-orange-50/50 transition-all group">
+              </Button>
+              <Button @click="shareOnTwitter" class="flex-1 flex flex-col items-center gap-2 group">
                 <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform">
                   <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
                   </svg>
                 </div>
                 <span class="text-xs font-medium text-gray-600 group-hover:text-blue-700">Twitter</span>
-              </button>
+              </Button>
             </div>
 
             <label class="text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-2 block">Public Link</label>
             <div class="flex gap-2">
               <div class="flex-1 relative">
-                <input type="text" :value="shareUrl" class="w-full pl-9 pr-3 py-2 text-xs bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500 text-gray-600" readonly>
+                <Input type="text" :value="shareUrl" class="pl-9 pr-3" readonly />
                 <svg class="w-3.5 h-3.5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
                 </svg>
               </div>
-              <button @click="copyLink" class="bg-orange-600 hover:bg-orange-700 text-white px-3 py-2 rounded-lg text-xs font-medium transition-colors">
+              <Button size="sm" @click="copyLink">
                 {{ copied ? 'Copied!' : 'Copy' }}
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -152,6 +150,8 @@
 </template>
 
 <script>
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
 import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import screenshotService from '@/services/screenshotService'
@@ -160,6 +160,7 @@ import toast from '@/services/toastService'
 
 export default {
   name: 'SharedScreenshotView',
+  components: { Input, Button },
   setup() {
     const route = useRoute()
     const branding = useBranding()

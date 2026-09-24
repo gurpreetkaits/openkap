@@ -11,7 +11,7 @@
         <!-- Type pills -->
         <div class="flex p-0.5 bg-gray-100 rounded-lg">
           <button v-for="t in ['none','solid','gradient','image']" :key="t" @click="styleBackground.type = t"
-            :class="styleBackground.type === t ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500'"
+            :class="styleBackground.type === t ? 'bg-white shadow-xs text-gray-900' : 'text-gray-500'"
             class="flex-1 py-1.5 text-[11px] font-medium rounded-md transition-all capitalize">{{ t === 'none' ? 'Off' : t }}</button>
         </div>
 
@@ -25,7 +25,7 @@
           </div>
           <div class="flex items-center gap-2">
             <input type="color" v-model="styleBackground.color" class="w-8 h-8 rounded-lg border border-gray-200 cursor-pointer p-0.5" />
-            <input type="text" v-model="styleBackground.color" class="flex-1 px-2 py-1.5 text-[11px] font-mono bg-gray-50 rounded-lg border border-gray-200 outline-none focus:border-orange-400 text-gray-700" />
+            <Input type="text" v-model="styleBackground.color" class="flex-1 font-mono" />
           </div>
         </div>
 
@@ -42,7 +42,7 @@
             <input type="color" v-model="styleBackground.gradientFrom" class="w-7 h-7 rounded-lg border border-gray-200 cursor-pointer p-0.5" />
             <svg class="w-3 h-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
             <input type="color" v-model="styleBackground.gradientTo" class="w-7 h-7 rounded-lg border border-gray-200 cursor-pointer p-0.5" />
-            <select v-model="styleBackground.gradientDirection" class="flex-1 text-[11px] px-2 py-1.5 bg-gray-50 rounded-lg border border-gray-200 outline-none text-gray-700">
+            <select v-model="styleBackground.gradientDirection" class="flex-1 text-[11px] px-2 py-1.5 bg-gray-50 rounded-lg border border-gray-200 outline-hidden text-gray-700">
               <option value="b">Vertical</option>
               <option value="br">Diagonal</option>
               <option value="r">Horizontal</option>
@@ -90,7 +90,7 @@
           <div class="relative">
             <input type="checkbox" v-model="styleShadow" class="sr-only peer" />
             <div class="w-9 h-5 bg-gray-200 peer-checked:bg-orange-500 rounded-full transition-colors"></div>
-            <div class="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow peer-checked:translate-x-4 transition-transform"></div>
+            <div class="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow-sm peer-checked:translate-x-4 transition-transform"></div>
           </div>
         </label>
       </div></div>
@@ -106,22 +106,21 @@
 
         <!-- Placement mode banner -->
         <div v-if="zoomPlacementMode" class="flex items-center gap-2 px-3 py-2.5 bg-orange-50 border border-orange-200 rounded-lg">
-          <svg class="w-4 h-4 text-orange-500 flex-shrink-0 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>
+          <svg class="w-4 h-4 text-orange-500 shrink-0 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>
           <span class="text-[11px] text-orange-700 font-medium flex-1">Click on the video to set zoom focus point</span>
-          <button @click="zoomPlacementMode = false" class="text-orange-400 hover:text-orange-600">
+          <Button variant="ghost" @click="zoomPlacementMode = false">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-          </button>
+          </Button>
         </div>
 
         <!-- Add zoom button -->
-        <button
+        <Button size="sm"
           v-if="!zoomPlacementMode"
           @click="handleAddZoom"
-          class="w-full flex items-center justify-center gap-2 px-3 py-2.5 bg-gray-900 hover:bg-gray-800 text-white rounded-lg text-[12px] font-semibold transition-colors"
-        >
+          class="w-full flex items-center justify-center gap-2">
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7"/></svg>
           Add Zoom
-        </button>
+        </Button>
 
         <!-- Keyframe list -->
         <div v-if="zoomKeyframes.length" class="space-y-1.5">
@@ -133,15 +132,15 @@
           >
             <!-- Header row: time + delete -->
             <div class="flex items-center gap-2 mb-2">
-              <button @click.stop="seekTo(kf.time)" class="text-[11px] font-mono text-orange-600 hover:text-orange-700 font-medium">
+              <Button variant="ghost" @click.stop="seekTo(kf.time)" class="font-mono">
                 {{ formatTime(kf.time) }}
-              </button>
+              </Button>
               <span class="text-[10px] text-gray-300">-</span>
               <span class="text-[11px] font-mono text-gray-400">{{ formatTime(kf.time + kf.duration) }}</span>
               <div class="flex-1"></div>
-              <button @click.stop="removeZoomKeyframe(kf.id)" class="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-400 transition-all">
+              <Button variant="destructive" @click.stop="removeZoomKeyframe(kf.id)" class="opacity-0 group-hover:opacity-100">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-              </button>
+              </Button>
             </div>
 
             <!-- Controls (shown when selected) -->
@@ -160,13 +159,12 @@
                   min="0.5" max="10" step="0.1" class="slider"
                 />
               </div>
-              <button
+              <Button variant="ghost" size="sm"
                 @click.stop="startRepositionZoom(kf.id)"
-                class="w-full flex items-center justify-center gap-1.5 px-3 py-1.5 text-[11px] font-medium text-gray-500 hover:text-gray-700 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors"
-              >
+                class="w-full flex items-center justify-center gap-1.5">
                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>
                 Reposition Focus Point
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -187,7 +185,7 @@
           <div class="relative">
             <input type="checkbox" v-model="cameraEnabled" class="sr-only peer" />
             <div class="w-9 h-5 bg-gray-200 peer-checked:bg-orange-500 rounded-full transition-colors"></div>
-            <div class="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow peer-checked:translate-x-4 transition-transform"></div>
+            <div class="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow-sm peer-checked:translate-x-4 transition-transform"></div>
           </div>
         </label>
 
@@ -205,7 +203,7 @@
             <label class="text-[10px] text-gray-500 block mb-1.5 font-medium uppercase tracking-wider">Shape</label>
             <div class="flex p-0.5 bg-gray-100 rounded-lg">
               <button v-for="s in ['portrait','circle','square']" :key="s" @click="cameraShape = s"
-                :class="cameraShape === s ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500'"
+                :class="cameraShape === s ? 'bg-white shadow-xs text-gray-900' : 'text-gray-500'"
                 class="flex-1 py-1.5 text-[11px] font-medium rounded-md transition-all capitalize">{{ s }}</button>
             </div>
           </div>
@@ -236,6 +234,8 @@
 </template>
 
 <script setup>
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
 import { ref } from 'vue'
 import { useEditorState } from '@/composables/useEditorState'
 
@@ -288,8 +288,12 @@ function handleBgImageUpload(e) {
 </script>
 
 <style scoped>
+/* Tailwind v4 compiles each SFC style block on its own, so @apply
+   below needs an explicit reference to the theme. */
+@reference "../../style.css";
+
 .sec-header {
-  @apply flex items-center justify-between w-full text-[11px] font-semibold text-gray-400 uppercase tracking-wider outline-none cursor-pointer;
+  @apply flex items-center justify-between w-full text-[11px] font-semibold text-gray-400 uppercase tracking-wider outline-hidden cursor-pointer;
 }
 .slider-label {
   @apply text-[12px] text-gray-600 flex justify-between mb-1.5;

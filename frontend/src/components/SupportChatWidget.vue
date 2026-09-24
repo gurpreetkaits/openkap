@@ -1,12 +1,11 @@
 <template>
   <div>
     <!-- Floating launcher -->
-    <button
+    <Button size="icon"
       v-show="!isOpen"
       @click="openWidget"
-      class="fixed bottom-6 right-6 z-40 h-14 w-14 rounded-full bg-orange-600 text-white shadow-lg hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 transition flex items-center justify-center"
-      aria-label="Open support chat"
-    >
+      class="fixed bottom-6 right-6 z-40 h-14 w-14 flex items-center justify-center"
+      aria-label="Open support chat">
       <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round"
           d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
@@ -17,7 +16,7 @@
       >
         {{ unreadCount > 9 ? '9+' : unreadCount }}
       </span>
-    </button>
+    </Button>
 
     <!-- Chat panel -->
     <transition
@@ -42,15 +41,14 @@
             <div class="text-sm font-semibold leading-tight">Help & Support</div>
             <div class="text-[11px] text-orange-100">We usually reply within a few hours</div>
           </div>
-          <button
+          <Button
             @click="closeWidget"
-            class="ml-2 p-1 rounded hover:bg-orange-700 focus:outline-none"
-            aria-label="Close"
-          >
+            class="ml-2"
+            aria-label="Close">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
-          </button>
+          </Button>
         </div>
 
         <!-- Messages -->
@@ -66,17 +64,16 @@
                 Hi {{ firstName }} 👋 — how can we help? Pick a topic or just type your message.
               </div>
               <div class="space-y-2">
-                <button
+                <Button size="sm"
                   v-for="item in faqSuggestions"
                   :key="item.id"
                   @click="sendFaqMessage(item)"
-                  class="w-full text-left px-3 py-2 rounded-lg bg-white border border-gray-200 hover:border-orange-400 hover:bg-orange-50 text-sm text-gray-700 flex items-center"
-                >
-                  <svg class="w-4 h-4 mr-2 text-orange-500 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  class="w-full text-left flex items-center">
+                  <svg class="w-4 h-4 mr-2 text-orange-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                   {{ item.question }}
-                </button>
+                </Button>
               </div>
             </div>
 
@@ -101,7 +98,7 @@
                 >
                   {{ message.sender_name || 'Support' }}
                 </div>
-                <div class="whitespace-pre-wrap break-words">{{ message.body }}</div>
+                <div class="whitespace-pre-wrap wrap-break-word">{{ message.body }}</div>
                 <div
                   class="text-[10px] mt-1"
                   :class="message.sender_type === 'user' ? 'text-orange-100' : 'text-gray-400'"
@@ -125,18 +122,17 @@
             rows="1"
             :disabled="sending"
             @keydown.enter.exact.prevent="handleSend"
-            class="flex-1 resize-none rounded-lg border border-gray-300 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 px-3 py-2 text-sm outline-none max-h-32"
+            class="flex-1 resize-none rounded-lg border border-gray-300 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 px-3 py-2 text-sm outline-hidden max-h-32"
           />
-          <button
+          <Button size="icon"
             @click="handleSend"
             :disabled="!draft.trim() || sending"
-            class="h-9 w-9 flex items-center justify-center rounded-lg bg-orange-600 text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-orange-700 transition"
-            aria-label="Send message"
-          >
+            class="h-9 w-9 flex items-center justify-center"
+            aria-label="Send message">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
             </svg>
-          </button>
+          </Button>
         </div>
       </div>
     </transition>
@@ -144,6 +140,7 @@
 </template>
 
 <script setup>
+import { Button } from '@/components/ui/button'
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { useAuth } from '@/stores/auth'
 import supportService from '@/services/supportService'

@@ -3,8 +3,8 @@
     <!-- Loading State -->
     <div v-if="loading" class="bg-white rounded-xl shadow-lg max-w-md w-full p-6 text-center animate-pulse">
       <div class="w-16 h-16 rounded-lg bg-gray-200 mx-auto mb-4"></div>
-      <div class="h-6 bg-gray-200 rounded w-48 mx-auto mb-2"></div>
-      <div class="h-4 bg-gray-200 rounded w-64 mx-auto"></div>
+      <div class="h-6 bg-gray-200 rounded-sm w-48 mx-auto mb-2"></div>
+      <div class="h-4 bg-gray-200 rounded-sm w-64 mx-auto"></div>
     </div>
 
     <!-- Error State -->
@@ -81,17 +81,15 @@
 
       <!-- Actions -->
       <div class="flex gap-3 mb-4">
-        <button
+        <Button variant="outline"
           @click="declineInvitation"
-          class="flex-1 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-        >
+          class="flex-1">
           Decline
-        </button>
-        <button
+        </Button>
+        <Button
           @click="acceptInvitation"
           :disabled="accepting"
-          class="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-orange-500 rounded-lg hover:bg-orange-600 transition-colors disabled:opacity-50"
-        >
+          class="flex-1 inline-flex items-center justify-center gap-2">
           <template v-if="accepting">
             <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -105,7 +103,7 @@
             </svg>
             Accept Invitation
           </template>
-        </button>
+        </Button>
       </div>
 
       <p class="text-xs text-center text-gray-500">
@@ -116,6 +114,7 @@
 </template>
 
 <script>
+import { Button } from '@/components/ui/button'
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import workspaceService from '@/services/workspaceService'
@@ -123,6 +122,7 @@ import toast from '@/services/toastService'
 
 export default {
   name: 'AcceptInvitationView',
+  components: { Button },
   setup() {
     const route = useRoute()
     const router = useRouter()

@@ -6,7 +6,7 @@
         v-for="tab in ['library', 'upload']"
         :key="tab"
         @click="activeTab = tab"
-        :class="activeTab === tab ? 'text-gray-900 bg-white shadow-sm' : 'text-gray-500 hover:text-gray-900'"
+        :class="activeTab === tab ? 'text-gray-900 bg-white shadow-xs' : 'text-gray-500 hover:text-gray-900'"
         class="flex-1 px-3 py-1.5 rounded-[6px] text-sm font-medium transition-all capitalize"
       >{{ tab === 'library' ? 'From Library' : 'Upload' }}</button>
     </div>
@@ -15,12 +15,10 @@
     <template v-if="activeTab === 'library'">
       <!-- Search -->
       <div class="mb-3">
-        <input
+        <Input
           v-model="searchQuery"
           type="text"
-          placeholder="Search videos..."
-          class="w-full px-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:border-orange-500/30 focus:ring-4 focus:ring-orange-500/5 outline-none transition-all"
-        />
+          placeholder="Search videos..." />
       </div>
 
       <!-- Loading -->
@@ -44,31 +42,29 @@
               : 'border-gray-200 hover:border-orange-300 hover:bg-orange-50/50',
           ]"
         >
-          <div class="w-16 h-10 bg-gray-200 rounded flex-shrink-0 overflow-hidden">
+          <div class="w-16 h-10 bg-gray-200 rounded-sm shrink-0 overflow-hidden">
             <img v-if="v.thumbnail_url" :src="v.thumbnail_url" class="w-full h-full object-cover" />
           </div>
           <div class="min-w-0 flex-1">
             <p class="text-xs font-medium text-gray-900 truncate">{{ v.title }}</p>
             <p class="text-[10px] text-gray-400">{{ formatDuration(v.duration) }}</p>
           </div>
-          <span v-if="isAlreadyAdded(v.id)" class="text-[10px] text-orange-500 font-medium flex-shrink-0">Added</span>
+          <span v-if="isAlreadyAdded(v.id)" class="text-[10px] text-orange-500 font-medium shrink-0">Added</span>
         </div>
       </div>
 
       <!-- Selected count + Done -->
       <div v-if="mergeVideos.length" class="mt-3 flex items-center justify-between pt-3 border-t border-gray-100">
         <span class="text-xs text-gray-500">{{ mergeVideos.length }} video{{ mergeVideos.length > 1 ? 's' : '' }} selected</span>
-        <button
-          @click="$emit('close')"
-          class="px-4 py-1.5 bg-orange-600 hover:bg-orange-700 text-white text-xs font-medium rounded-lg transition-colors"
-        >Done</button>
+        <Button size="sm"
+          @click="$emit('close')">Done</Button>
       </div>
     </template>
 
     <!-- Upload -->
     <template v-else>
       <div v-if="!uploading" class="text-center py-8">
-        <label class="inline-flex items-center gap-2 px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium rounded-lg shadow-sm transition-colors cursor-pointer">
+        <label class="inline-flex items-center gap-2 px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium rounded-lg shadow-xs transition-colors cursor-pointer">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
           Choose Video File
           <input type="file" accept="video/*" class="hidden" @change="onUpload" />
@@ -84,6 +80,8 @@
 </template>
 
 <script setup>
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
 import { ref, computed, onMounted } from 'vue'
 import videoService from '@/services/videoService'
 import { useEditorState } from '@/composables/useEditorState'

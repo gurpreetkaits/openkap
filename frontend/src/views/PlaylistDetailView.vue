@@ -8,9 +8,9 @@
 
     <template v-else-if="playlist">
       <!-- Hero Section -->
-      <div class="bg-gray-900 flex-shrink-0 relative overflow-hidden">
+      <div class="bg-gray-900 shrink-0 relative overflow-hidden">
         <!-- Background -->
-        <div class="absolute inset-0 bg-gradient-to-br from-gray-800 via-gray-900 to-black"></div>
+        <div class="absolute inset-0 bg-linear-to-br from-gray-800 via-gray-900 to-black"></div>
         <div class="absolute inset-0 opacity-[0.06]">
           <svg class="w-full h-full" viewBox="0 0 900 120" fill="none" preserveAspectRatio="xMidYMid slice">
             <circle cx="800" cy="20" r="100" fill="white"/>
@@ -21,12 +21,12 @@
 
         <div class="relative z-10 px-7 py-5 flex gap-5 items-start">
           <!-- Cover thumbnail -->
-          <div class="w-[88px] h-[68px] rounded-lg bg-white/[0.06] border border-white/10 flex-shrink-0 overflow-hidden">
+          <div class="w-[88px] h-[68px] rounded-lg bg-white/6 border border-white/10 shrink-0 overflow-hidden">
             <div class="w-full h-full grid grid-cols-2 gap-px p-1.5">
-              <div class="bg-white/[0.05] rounded-sm"></div>
-              <div class="bg-white/[0.08] rounded-sm"></div>
-              <div class="bg-white/[0.08] rounded-sm"></div>
-              <div class="bg-white/[0.05] rounded-sm"></div>
+              <div class="bg-white/5 rounded-xs"></div>
+              <div class="bg-white/8 rounded-xs"></div>
+              <div class="bg-white/8 rounded-xs"></div>
+              <div class="bg-white/5 rounded-xs"></div>
             </div>
           </div>
 
@@ -66,39 +66,37 @@
           </div>
 
           <!-- Actions -->
-          <div class="flex items-center gap-1.5 flex-shrink-0">
+          <div class="flex items-center gap-1.5 shrink-0">
             <!-- Play all -->
-            <button
-              v-if="playlist.videos && playlist.videos.length > 0"
+            <Button variant="ghost"
+              v-if="playlist.videos && playlist.videos.length> 0"
               @click="openVideo(playlist.videos[0].id)"
               class="flex items-center gap-1.5 px-3.5 py-[7px] bg-white text-gray-900 rounded-lg text-[12.5px] font-medium hover:bg-gray-100 transition-colors"
             >
               <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 12 12"><polygon points="3,2 10,6 3,10"/></svg>
               Play all
-            </button>
+            </Button>
 
             <!-- Share -->
-            <button
+            <Button variant="secondary" size="sm"
               @click="copyShareLink"
-              class="flex items-center gap-1.5 px-3.5 py-[7px] bg-white/[0.08] border border-white/[0.12] text-white/80 rounded-lg text-[12.5px] font-medium hover:bg-white/[0.14] hover:text-white transition-colors"
-            >
+              class="flex items-center gap-1.5">
               <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 12 12">
                 <circle cx="9" cy="2" r="1.4"/><circle cx="9" cy="10" r="1.4"/><circle cx="2" cy="6" r="1.4"/>
                 <line x1="7.7" y1="2.8" x2="3.3" y2="5.2"/><line x1="7.7" y1="9.2" x2="3.3" y2="6.8"/>
               </svg>
               Share
-            </button>
+            </Button>
 
             <!-- More dropdown -->
             <div class="relative" data-dropdown-menu>
-              <button
+              <Button variant="secondary" size="icon"
                 @click="showHeroMenu = !showHeroMenu"
-                class="w-8 h-8 bg-white/[0.08] border border-white/10 rounded-lg flex items-center justify-center text-white/60 hover:bg-white/[0.14] hover:text-white transition-colors"
-              >
+                class="w-8 h-8 flex items-center justify-center">
                 <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 14 14">
                   <circle cx="3" cy="7" r="1.2"/><circle cx="7" cy="7" r="1.2"/><circle cx="11" cy="7" r="1.2"/>
                 </svg>
-              </button>
+              </Button>
               <Transition name="dropdown">
                 <div
                   v-if="showHeroMenu"
@@ -119,15 +117,14 @@
             </div>
 
             <!-- Back button -->
-            <button
+            <Button variant="secondary" size="icon"
               @click="router.push('/playlists')"
-              class="w-8 h-8 bg-white/[0.08] border border-white/10 rounded-lg flex items-center justify-center text-white/60 hover:bg-white/[0.14] hover:text-white transition-colors"
-              title="Back to playlists"
-            >
+              class="w-8 h-8 flex items-center justify-center"
+              title="Back to playlists">
               <svg class="w-[13px] h-[13px]" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 13 13">
                 <path d="M8 2L3 6.5 8 11"/>
               </svg>
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -144,26 +141,24 @@
                 <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 12 12">
                   <circle cx="5" cy="5" r="3.5"/><path d="M8 8l2.5 2.5"/>
                 </svg>
-                <input
+                <Input
                   v-model="searchQuery"
                   type="text"
                   placeholder="Search in playlist..."
-                  class="bg-transparent border-none outline-none text-[12.5px] text-gray-900 placeholder-gray-400 w-40"
-                />
+                  class="w-40" />
               </div>
 
               <!-- Sort -->
               <div class="relative" data-dropdown-menu>
-                <button
+                <Button variant="outline" size="sm"
                   @click="showSortMenu = !showSortMenu"
-                  class="flex items-center gap-1.5 bg-white border border-gray-100 rounded-lg px-2.5 py-1.5 text-[12.5px] text-gray-500 hover:bg-gray-50 hover:text-gray-700 hover:border-gray-200 transition-colors cursor-pointer"
-                >
+                  class="flex items-center gap-1.5">
                   <svg class="w-[11px] h-[11px]" fill="none" stroke="currentColor" stroke-width="1.4" viewBox="0 0 11 11">
                     <path d="M1.5 3h8M2.5 5.5h6M3.5 8h4"/>
                   </svg>
                   {{ playlist.sort_by === 'manual' ? 'Manual order' : 'Date added' }}
                   <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 10 10"><path d="M2 4l3 3 3-3"/></svg>
-                </button>
+                </Button>
                 <Transition name="dropdown">
                   <div v-if="showSortMenu" class="menu-panel w-40">
                     <button
@@ -186,15 +181,14 @@
             </div>
 
             <!-- Add videos -->
-            <button
+            <Button size="sm"
               @click="showAddVideosModal = true"
-              class="flex items-center gap-1.5 px-3.5 py-[7px] bg-gray-900 text-white rounded-lg text-[12.5px] font-semibold hover:bg-black hover:shadow-md transition-all"
-            >
+              class="flex items-center gap-1.5">
               <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 12 12">
                 <line x1="6" y1="1" x2="6" y2="11"/><line x1="1" y1="6" x2="11" y2="6"/>
               </svg>
               Add videos
-            </button>
+            </Button>
           </div>
 
           <!-- Video Rows -->
@@ -211,7 +205,7 @@
               @click="openVideo(video.id)"
             >
               <!-- Thumbnail -->
-              <div class="relative w-[88px] h-[50px] rounded-md overflow-hidden bg-gray-200 flex-shrink-0">
+              <div class="relative w-[88px] h-[50px] rounded-md overflow-hidden bg-gray-200 shrink-0">
                 <img
                   v-if="video.thumbnail"
                   :src="video.thumbnail"
@@ -219,8 +213,8 @@
                   class="w-full h-full object-cover"
                   loading="lazy"
                 />
-                <div v-else class="w-full h-full bg-gradient-to-br from-gray-800 to-gray-900"></div>
-                <div class="absolute bottom-1 right-1 bg-black/75 text-white text-[9.5px] font-semibold px-1.5 py-[1.5px] rounded tracking-wide">
+                <div v-else class="w-full h-full bg-linear-to-br from-gray-800 to-gray-900"></div>
+                <div class="absolute bottom-1 right-1 bg-black/75 text-white text-[9.5px] font-semibold px-1.5 py-[1.5px] rounded-sm tracking-wide">
                   {{ formatDuration(video.duration) }}
                 </div>
               </div>
@@ -235,7 +229,7 @@
               </div>
 
               <!-- Stats -->
-              <div class="flex items-center gap-2 flex-shrink-0">
+              <div class="flex items-center gap-2 shrink-0">
                 <div class="flex items-center gap-1 text-[11.5px] text-gray-400">
                   <svg class="w-[11px] h-[11px]" fill="none" stroke="currentColor" stroke-width="1.3" viewBox="0 0 11 11">
                     <path d="M1 5.5C1 5.5 2.5 3 5.5 3S10 5.5 10 5.5 8.5 8 5.5 8 1 5.5 1 5.5z"/>
@@ -247,14 +241,13 @@
 
               <!-- More button -->
               <div class="relative" @click.stop>
-                <button
+                <Button variant="ghost"
                   @click="toggleVideoMenu(video.id)"
-                  class="w-[26px] h-[26px] rounded-[5px] flex items-center justify-center text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors opacity-0 group-hover:opacity-100"
-                >
+                  class="w-[26px] h-[26px] flex items-center justify-center opacity-0 group-hover:opacity-100">
                   <svg class="w-[13px] h-[13px]" fill="currentColor" viewBox="0 0 13 13">
                     <circle cx="6.5" cy="2" r="1.2"/><circle cx="6.5" cy="6.5" r="1.2"/><circle cx="6.5" cy="11" r="1.2"/>
                   </svg>
-                </button>
+                </Button>
                 <Transition name="dropdown">
                   <div
                     v-if="activeVideoMenu === video.id"
@@ -302,7 +295,7 @@
         </div>
 
         <!-- Sidebar -->
-        <div class="w-[280px] flex-shrink-0 border-l border-gray-100 px-[18px] py-[18px] overflow-y-auto">
+        <div class="w-[280px] shrink-0 border-l border-gray-100 px-[18px] py-[18px] overflow-y-auto">
           <!-- About -->
           <div class="mb-5">
             <div class="text-[10.5px] font-semibold text-gray-400 uppercase tracking-wider mb-2.5">About</div>
@@ -343,12 +336,12 @@
             <div class="bg-gray-50 border border-gray-100 rounded-lg px-3 py-2.5 mb-2.5">
               <div class="text-[11.5px] text-gray-400 font-mono truncate mb-2">{{ playlist.share_url || 'No share link' }}</div>
               <div class="flex gap-1.5">
-                <button @click="copyShareLink" class="flex-1 bg-white border border-gray-200 rounded-[5px] py-1.5 text-[11.5px] text-gray-500 text-center hover:bg-gray-50 hover:text-gray-900 hover:border-gray-300 transition-all cursor-pointer">
+                <Button variant="outline" size="sm" @click="copyShareLink" class="flex-1 text-center">
                   Copy
-                </button>
-                <button @click="copyEmbedCode" class="flex-1 bg-white border border-gray-200 rounded-[5px] py-1.5 text-[11.5px] text-gray-500 text-center hover:bg-gray-50 hover:text-gray-900 hover:border-gray-300 transition-all cursor-pointer">
+                </Button>
+                <Button variant="outline" size="sm" @click="copyEmbedCode" class="flex-1 text-center">
                   Embed
-                </button>
+                </Button>
               </div>
             </div>
           </div>
@@ -386,12 +379,11 @@
           </div>
 
           <!-- Delete -->
-          <button
+          <Button variant="destructive" size="sm"
             @click="confirmDeletePlaylist"
-            class="w-full bg-transparent border border-red-200/50 text-red-600 rounded-lg py-[7px] text-xs cursor-pointer hover:bg-red-50 transition-colors"
-          >
+            class="w-full bg-transparent">
             Delete playlist
-          </button>
+          </Button>
         </div>
       </div>
     </template>
@@ -401,7 +393,7 @@
       <Transition name="modal">
         <div
           v-if="showEditModal"
-          class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/25 backdrop-blur-[5px]"
+          class="fixed inset-0 z-200 flex items-center justify-center p-4 bg-black/25 backdrop-blur-[5px]"
           @click.self="showEditModal = false"
         >
           <div class="bg-white border border-gray-200 rounded-xl p-6 w-[440px] max-w-[90vw] shadow-2xl animate-modal-up">
@@ -410,26 +402,22 @@
             <form @submit.prevent="savePlaylist">
               <div class="mb-3.5">
                 <label class="block text-[11.5px] font-medium text-gray-500 mb-1.5">Name</label>
-                <input
+                <Input
                   v-model="editForm.title"
                   type="text"
-                  required
-                  class="w-full bg-gray-50 border border-gray-100 rounded-lg px-3 py-2.5 text-[13.5px] text-gray-900 placeholder-gray-400 outline-none focus:bg-white focus:border-gray-300 transition-all"
-                />
+                  required />
               </div>
               <div class="mb-3.5">
                 <label class="block text-[11.5px] font-medium text-gray-500 mb-1.5">Description <span class="text-gray-300">(optional)</span></label>
-                <input
+                <Input
                   v-model="editForm.description"
-                  type="text"
-                  class="w-full bg-gray-50 border border-gray-100 rounded-lg px-3 py-2.5 text-[13.5px] text-gray-900 placeholder-gray-400 outline-none focus:bg-white focus:border-gray-300 transition-all"
-                />
+                  type="text" />
               </div>
               <div class="flex justify-end gap-2 mt-5">
-                <button type="button" @click="showEditModal = false" class="px-4 py-2 text-[13px] font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-all">Cancel</button>
-                <button type="submit" :disabled="savingEdit" class="px-4 py-2 bg-gray-900 text-white rounded-lg text-[13px] font-semibold hover:bg-black transition-all disabled:bg-gray-300">
+                <Button variant="outline" type="button" @click="showEditModal = false">Cancel</Button>
+                <Button type="submit" :disabled="savingEdit">
                   {{ savingEdit ? 'Saving...' : 'Save changes' }}
-                </button>
+                </Button>
               </div>
             </form>
           </div>
@@ -445,35 +433,30 @@
         </p>
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-          <input
+          <Input
             v-model="passwordForm.password"
             type="password"
-            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm"
+           
             placeholder="Enter password (min 4 characters)"
             :required="!playlist?.has_password"
-            minlength="4"
-          />
+            minlength="4" />
         </div>
         <div class="flex items-center justify-between pt-4 border-t border-gray-100">
-          <button
+          <Button variant="destructive"
             v-if="playlist?.has_password"
             type="button"
             @click="removePassword"
-            :disabled="savingPassword"
-            class="px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-          >
+            :disabled="savingPassword">
             Remove Password
-          </button>
+          </Button>
           <div v-else></div>
           <div class="flex gap-2">
-            <button type="button" @click="showPasswordModal = false" class="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">Cancel</button>
-            <button
+            <Button variant="ghost" type="button" @click="showPasswordModal = false">Cancel</Button>
+            <Button
               type="submit"
-              :disabled="savingPassword || (!passwordForm.password || passwordForm.password.length < 4)"
-              class="px-4 py-2 bg-orange-600 hover:bg-orange-700 disabled:bg-gray-300 text-white rounded-lg font-medium text-sm transition-colors"
-            >
+              :disabled="savingPassword || (!passwordForm.password || passwordForm.password.length < 4)">
               {{ savingPassword ? 'Saving...' : 'Set Password' }}
-            </button>
+            </Button>
           </div>
         </div>
       </form>
@@ -497,9 +480,9 @@
           class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer"
           @click="toggleVideoSelection(video)"
         >
-          <div class="flex-shrink-0">
+          <div class="shrink-0">
             <div
-              class="w-5 h-5 border-2 rounded flex items-center justify-center transition-colors"
+              class="w-5 h-5 border-2 rounded-sm flex items-center justify-center transition-colors"
               :class="selectedVideoIds.includes(video.id) ? 'bg-orange-600 border-orange-600' : 'border-gray-300'"
             >
               <svg v-if="selectedVideoIds.includes(video.id)" class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
@@ -507,7 +490,7 @@
               </svg>
             </div>
           </div>
-          <div class="w-20 aspect-video rounded overflow-hidden bg-gray-200 flex-shrink-0">
+          <div class="w-20 aspect-video rounded-sm overflow-hidden bg-gray-200 shrink-0">
             <img v-if="video.thumbnail" :src="video.thumbnail" :alt="video.title" class="w-full h-full object-cover" />
           </div>
           <div class="flex-1 min-w-0">
@@ -520,14 +503,12 @@
       <div class="flex items-center justify-between pt-4 mt-4 border-t border-gray-100">
         <span class="text-sm text-gray-500">{{ selectedVideoIds.length }} selected</span>
         <div class="flex gap-2">
-          <button @click="showAddVideosModal = false" class="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">Cancel</button>
-          <button
+          <Button variant="ghost" @click="showAddVideosModal = false">Cancel</Button>
+          <Button
             @click="addSelectedVideos"
-            :disabled="selectedVideoIds.length === 0 || addingVideos"
-            class="px-4 py-2 bg-orange-600 hover:bg-orange-700 disabled:bg-gray-300 text-white rounded-lg font-medium text-sm transition-colors"
-          >
+            :disabled="selectedVideoIds.length === 0 || addingVideos">
             {{ addingVideos ? 'Adding...' : 'Add to Playlist' }}
-          </button>
+          </Button>
         </div>
       </div>
     </SBModal>
@@ -544,6 +525,8 @@
 </template>
 
 <script setup>
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import playlistService from '@/services/playlistService'

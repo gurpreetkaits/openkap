@@ -1,37 +1,35 @@
 <template>
   <div class="relative" ref="dropdownRef">
-    <button
+    <Button variant="ghost"
       @click="toggleDropdown"
       data-notification-bell
-      class="relative p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-    >
+      class="relative">
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
       </svg>
       <span
         v-if="unreadCount > 0"
-        class="absolute -top-0.5 -right-0.5 min-w-[16px] h-[16px] px-1 flex items-center justify-center text-[9px] font-bold text-white bg-orange-500 rounded-full border-2 border-white"
+        class="absolute -top-0.5 -right-0.5 min-w-4 h-4 px-1 flex items-center justify-center text-[9px] font-bold bg-primary text-primary-foreground rounded-full"
       >
         {{ unreadCount > 9 ? '9+' : unreadCount }}
       </span>
-    </button>
+    </Button>
 
     <!-- Dropdown Panel -->
     <Transition name="dropdown">
       <div
         v-show="showDropdown"
-        class="absolute right-0 mt-2 w-[480px] bg-white rounded-xl shadow-xl border border-gray-200 z-50 overflow-hidden"
+        class="absolute right-0 mt-2 w-[480px] bg-popover text-popover-foreground rounded-none shadow-md ring-1 ring-foreground/10 z-50 overflow-hidden"
       >
         <!-- Header -->
         <div class="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
           <h3 class="text-sm font-semibold text-gray-900">Notifications</h3>
-          <button
-            v-if="unreadCount > 0"
+          <Button variant="link" size="sm"
+            v-if="unreadCount> 0"
             @click="handleMarkAllAsRead"
-            class="text-xs text-orange-600 hover:text-orange-700 font-medium"
           >
             Mark all as read
-          </button>
+          </Button>
         </div>
 
         <!-- Tabs -->
@@ -82,7 +80,7 @@
               <div class="flex items-start gap-3">
                 <!-- Icon -->
                 <div
-                  class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
+                  class="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
                   :class="getIconClass(notification.type)"
                 >
                   <!-- comment -->
@@ -130,28 +128,26 @@
                 </div>
 
                 <!-- Download button for ready downloads -->
-                <button
+                <Button variant="ghost" size="sm"
                   v-if="notification.type === 'download' && notification.link"
                   @click.stop="handleDownloadClick(notification)"
-                  class="flex-shrink-0 px-2.5 py-1.5 bg-green-600 hover:bg-green-700 text-white text-[11px] font-semibold rounded-lg transition-colors flex items-center gap-1"
-                >
+                  class="shrink-0 flex items-center gap-1">
                   <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
                   </svg>
                   Download
-                </button>
+                </Button>
                 <!-- Mark as read -->
-                <button
+                <Button
                   v-else-if="!notification.read_at"
                   @click.stop="markAsRead(notification)"
-                  class="flex-shrink-0 p-1 text-gray-400 hover:text-orange-600 hover:bg-orange-50 rounded-md transition-colors"
-                  title="Mark as read"
-                >
+                  class="shrink-0"
+                  title="Mark as read">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                   </svg>
-                </button>
-                <div v-else class="w-6 flex-shrink-0"></div>
+                </Button>
+                <div v-else class="w-6 shrink-0"></div>
               </div>
             </div>
           </div>
@@ -162,6 +158,7 @@
 </template>
 
 <script>
+import { Button } from '@/components/ui/button'
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import notificationService from '@/services/notificationService'
@@ -169,6 +166,7 @@ import videoService from '@/services/videoService'
 
 export default {
   name: 'NotificationBell',
+  components: { Button },
   setup() {
     const router = useRouter()
     const dropdownRef = ref(null)

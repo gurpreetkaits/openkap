@@ -1,6 +1,6 @@
 <template>
-  <div v-if="isApplying" class="fixed inset-0 z-[60] flex items-center justify-center">
-    <div class="absolute inset-0 bg-gray-900/20 backdrop-blur-sm"></div>
+  <div v-if="isApplying" class="fixed inset-0 z-60 flex items-center justify-center">
+    <div class="absolute inset-0 bg-gray-900/20 backdrop-blur-xs"></div>
     <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm p-6 relative z-10 border border-gray-100 text-center">
       <!-- Sync mode: spinner + progress -->
       <template v-if="processingMode !== 'async'">
@@ -22,18 +22,17 @@
         </div>
         <h3 class="text-sm font-semibold text-gray-900 mb-1">Edits Submitted</h3>
         <p class="text-xs text-gray-500 mb-4">Your edits are being applied! We'll notify you when your new video is ready.</p>
-        <button
-          @click="$emit('goBack')"
-          class="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-xs font-medium shadow-sm transition-colors"
-        >
+        <Button size="sm"
+          @click="$emit('goBack')">
           Back to Videos
-        </button>
+        </Button>
       </template>
     </div>
   </div>
 </template>
 
 <script setup>
+import { Button } from '@/components/ui/button'
 import { useEditorState } from '@/composables/useEditorState'
 
 defineEmits(['goBack'])

@@ -3,7 +3,7 @@
     <!-- Logo -->
     <div class="w-full max-w-lg">
       <div class="text-center mb-8">
-        <img src="/logo.png" alt="OpenKap" class="mx-auto w-12 h-12 rounded-2xl shadow mb-4" />
+        <img src="/logo.png" alt="OpenKap" class="mx-auto w-12 h-12 rounded-2xl shadow-sm mb-4" />
         <div class="flex items-center justify-center gap-2 mb-1">
           <div
             v-for="i in 3"
@@ -18,7 +18,7 @@
         <p class="text-xs text-stone-400 mt-2">Step {{ step }} of 3</p>
       </div>
 
-      <div class="bg-white rounded-2xl shadow-sm border border-stone-100 p-8">
+      <div class="bg-white rounded-2xl shadow-xs border border-stone-100 p-8">
 
         <!-- Step 1: How did you hear about us -->
         <Transition name="slide" mode="out-in">
@@ -33,7 +33,7 @@
                 @click="form.heardFrom = option.value"
                 class="flex items-center gap-2.5 px-4 py-3 rounded-xl border text-sm font-medium text-left transition-all"
                 :class="form.heardFrom === option.value
-                  ? 'border-orange-400 bg-orange-50 text-orange-700 shadow-sm'
+                  ? 'border-orange-400 bg-orange-50 text-orange-700 shadow-xs'
                   : 'border-stone-200 text-stone-600 hover:border-stone-300 hover:bg-stone-50'"
               >
                 <span class="text-lg leading-none">{{ option.emoji }}</span>
@@ -41,13 +41,12 @@
               </button>
             </div>
 
-            <button
+            <Button size="lg"
               @click="nextStep"
               :disabled="!form.heardFrom"
-              class="mt-6 w-full py-3 rounded-xl bg-orange-500 text-white font-semibold text-sm transition-all hover:bg-orange-600 disabled:opacity-40 disabled:cursor-not-allowed"
-            >
+              class="mt-6 w-full">
               Continue
-            </button>
+            </Button>
           </div>
         </Transition>
 
@@ -62,7 +61,7 @@
                 class="flex items-center gap-2 border rounded-xl px-4 py-3 transition-all"
                 :class="comboboxOpen ? 'border-orange-400 ring-2 ring-orange-100' : 'border-stone-200'"
               >
-                <svg class="w-4 h-4 text-stone-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-4 h-4 text-stone-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/>
                 </svg>
                 <input
@@ -75,12 +74,12 @@
                   @keydown.arrow-down.prevent="highlightedIndex = Math.min(highlightedIndex + 1, filteredOrgs.length - 1)"
                   @keydown.arrow-up.prevent="highlightedIndex = Math.max(highlightedIndex - 1, 0)"
                   placeholder="e.g. Acme Corp, Google, your own name…"
-                  class="flex-1 text-sm text-stone-800 border-0 outline-none focus:ring-0 focus:outline-none placeholder:text-stone-400 bg-transparent"
+                  class="flex-1 text-sm text-stone-800 border-0 outline-hidden focus:ring-0 focus:outline-hidden placeholder:text-stone-400 bg-transparent"
                   autocomplete="off"
                 />
-                <button v-if="orgSearch" @click="orgSearch = ''; form.organizationName = ''" class="text-stone-300 hover:text-stone-500">
+                <Button variant="ghost" v-if="orgSearch" @click="orgSearch = ''; form.organizationName = ''">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                </button>
+                </Button>
               </div>
 
               <!-- Dropdown -->
@@ -97,13 +96,12 @@
                 >
                   {{ org }}
                 </button>
-                <button
+                <Button variant="outline"
                   v-if="orgSearch && !filteredOrgs.includes(orgSearch)"
                   @mousedown.prevent="selectOrg(orgSearch)"
-                  class="w-full text-left px-4 py-2.5 text-sm text-stone-500 hover:bg-stone-50 border-t border-stone-100"
-                >
+                  class="w-full text-left">
                   Use "<strong class="text-stone-700">{{ orgSearch }}</strong>"
-                </button>
+                </Button>
               </div>
             </div>
 
@@ -112,15 +110,14 @@
             </p>
 
             <div class="flex gap-3 mt-6">
-              <button @click="step--" class="px-5 py-3 rounded-xl border border-stone-200 text-stone-600 text-sm font-medium hover:bg-stone-50 transition-colors">
+              <Button variant="outline" size="lg" @click="step--">
                 Back
-              </button>
-              <button
+              </Button>
+              <Button size="lg"
                 @click="nextStep"
-                class="flex-1 py-3 rounded-xl bg-orange-500 text-white font-semibold text-sm transition-all hover:bg-orange-600"
-              >
+                class="flex-1">
                 Continue
-              </button>
+              </Button>
             </div>
           </div>
         </Transition>
@@ -132,15 +129,14 @@
             <p class="text-sm text-stone-500 mb-6">This is where your recordings will live. You can change it later.</p>
 
             <div>
-              <input
+              <Input
                 v-model="form.workspaceName"
                 @keydown.enter="submit"
                 type="text"
                 placeholder="e.g. Acme Engineering, My Team…"
                 maxlength="100"
-                class="w-full border rounded-xl px-4 py-3 text-sm text-stone-800 placeholder:text-stone-400 outline-none transition-all focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
-                :class="workspaceError ? 'border-red-300' : 'border-stone-200'"
-              />
+               
+                :class="workspaceError ? 'border-red-300' : 'border-stone-200'" />
               <p v-if="workspaceError" class="mt-1.5 text-xs text-red-500">{{ workspaceError }}</p>
             </div>
 
@@ -149,20 +145,19 @@
             </div>
 
             <div class="flex gap-3 mt-6">
-              <button @click="step--" class="px-5 py-3 rounded-xl border border-stone-200 text-stone-600 text-sm font-medium hover:bg-stone-50 transition-colors">
+              <Button variant="outline" size="lg" @click="step--">
                 Back
-              </button>
-              <button
+              </Button>
+              <Button size="lg"
                 @click="submit"
                 :disabled="loading || !form.workspaceName.trim()"
-                class="flex-1 py-3 rounded-xl bg-orange-500 text-white font-semibold text-sm transition-all hover:bg-orange-600 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-              >
+                class="flex-1 flex items-center justify-center gap-2">
                 <svg v-if="loading" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                   <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
                 </svg>
                 {{ loading ? 'Setting up…' : 'Get started' }}
-              </button>
+              </Button>
             </div>
           </div>
         </Transition>
@@ -176,6 +171,8 @@
 </template>
 
 <script setup>
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '@/stores/auth'

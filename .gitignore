@@ -27,3 +27,6 @@ Thumbs.db
 # Extension signing keys and packages
 *.pem
 *.crx
+
+# extensionV2 lives in its own repo, symlinked in locally
+/extension

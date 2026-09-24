@@ -7,38 +7,27 @@
     </div>
 
     <!-- Tabs -->
-    <div class="border-b border-gray-200 mb-6">
-      <nav class="-mb-px flex gap-6" aria-label="Settings tabs">
-        <button
-          v-for="tab in tabs"
-          :key="tab.id"
-          @click="setActiveTab(tab.id)"
-          class="py-3 px-1 border-b-2 font-medium text-sm transition-colors focus:outline-none"
-          :class="
-            activeTab === tab.id
-              ? 'border-orange-500 text-orange-600'
-              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-          "
-        >
-          <span class="inline-flex items-center gap-2">
-            <component :is="tab.iconComponent" />
-            {{ tab.label }}
-          </span>
-        </button>
-      </nav>
-    </div>
+    <Tabs :model-value="activeTab" @update:model-value="setActiveTab" class="mb-6">
+      <TabsList>
+        <TabsTrigger v-for="tab in tabs" :key="tab.id" :value="tab.id">
+          <component :is="tab.iconComponent" />
+          {{ tab.label }}
+        </TabsTrigger>
+      </TabsList>
+    </Tabs>
+
 
     <!-- Loading State -->
-    <div v-if="loading" class="bg-white rounded-xl border border-gray-100 p-12 text-center">
+    <Card v-if="loading" class="p-12 text-center">
       <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-orange-50 mb-3">
         <div class="animate-spin rounded-full h-6 w-6 border-2 border-orange-500 border-t-transparent"></div>
       </div>
       <p class="text-sm text-gray-500">Loading settings...</p>
-    </div>
+    </Card>
 
     <!-- BRANDING TAB -->
     <div v-else-if="activeTab === 'branding'" class="space-y-6">
-      <div class="bg-white rounded-xl border border-gray-100" :class="{ 'opacity-60 pointer-events-none': !isPaid }">
+      <Card>
         <!-- Header -->
         <div class="p-5 border-b border-gray-100">
           <div class="flex items-center gap-3">
@@ -69,7 +58,7 @@
           <div class="flex items-center gap-4">
             <!-- Logo Preview -->
             <div
-              class="w-16 h-16 rounded-xl border-2 border-dashed flex items-center justify-center flex-shrink-0 overflow-hidden"
+              class="w-16 h-16 rounded-xl border-2 border-dashed flex items-center justify-center shrink-0 overflow-hidden"
               :class="logoPreview ? 'border-gray-200 bg-white' : 'border-gray-300 bg-gray-50'"
             >
               <img v-if="logoPreview" :src="logoPreview" alt="Logo" class="w-full h-full object-contain p-1" />
@@ -80,25 +69,22 @@
 
             <!-- Actions -->
             <div class="flex items-center gap-2">
-              <button
+              <Button variant="outline" size="sm"
                 @click="$refs.logoInput.click()"
                 :disabled="uploadingLogo"
-                class="px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 rounded-lg transition-colors disabled:opacity-50 flex items-center gap-1.5"
-              >
+                class="flex items-center gap-1.5">
                 <svg v-if="uploadingLogo" class="animate-spin w-3 h-3" fill="none" viewBox="0 0 24 24">
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                   <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
                 {{ uploadingLogo ? 'Uploading...' : (logoPreview ? 'Change' : 'Upload') }}
-              </button>
-              <button
+              </Button>
+              <Button variant="destructive" size="sm"
                 v-if="logoPreview"
                 @click="removeLogo"
-                :disabled="uploadingLogo"
-                class="px-3 py-1.5 text-xs font-medium text-red-600 bg-white border border-red-200 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
-              >
+                :disabled="uploadingLogo">
                 Remove
-              </button>
+              </Button>
             </div>
 
             <input
@@ -130,7 +116,7 @@
                   :key="color"
                   @click="settings.brand_color = color"
                   class="w-6 h-6 rounded-full border-2 transition-all hover:scale-110"
-                  :class="settings.brand_color === color ? 'border-gray-900 ring-2 ring-offset-1 ring-gray-300' : 'border-white shadow-sm'"
+                  :class="settings.brand_color === color ? 'border-gray-900 ring-2 ring-offset-1 ring-gray-300' : 'border-white shadow-xs'"
                   :style="{ backgroundColor: color }"
                   :title="color"
                 />
@@ -138,12 +124,11 @@
 
               <!-- Custom picker -->
               <div class="relative">
-                <button
+                <Button variant="outline" size="icon"
                   @click="$refs.colorInput.click()"
-                  class="w-8 h-8 rounded-lg border border-gray-200 overflow-hidden cursor-pointer hover:ring-2 hover:ring-gray-300 hover:ring-offset-1 transition-all"
+                  class="w-8 h-8 overflow-hidden"
                   :style="{ backgroundColor: settings.brand_color }"
-                  title="Pick custom color"
-                />
+                  title="Pick custom color"/>
                 <input
                   ref="colorInput"
                   type="color"
@@ -153,13 +138,12 @@
               </div>
 
               <!-- Hex input -->
-              <input
+              <Input
                 v-model="settings.brand_color"
                 type="text"
                 maxlength="7"
-                class="w-20 px-2 py-1.5 text-xs font-mono text-gray-700 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
-                placeholder="#F97316"
-              />
+                class="w-20 font-mono"
+                placeholder="#F97316" />
             </div>
           </div>
         </div>
@@ -170,25 +154,24 @@
             <router-link to="/subscription" class="text-orange-600 hover:text-orange-700 font-medium">Upgrade to Pro</router-link> to unlock custom branding.
           </p>
           <span v-else></span>
-          <button
+          <Button size="sm"
             @click="saveBranding"
             :disabled="savingBranding || !isPaid"
-            class="px-5 py-2 text-xs font-medium text-white bg-orange-500 hover:bg-orange-600 rounded-lg shadow-sm transition-colors disabled:opacity-50 flex items-center gap-2"
-          >
+            class="flex items-center gap-2">
             <svg v-if="savingBranding" class="animate-spin w-3.5 h-3.5" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
             {{ savingBranding ? 'Saving...' : 'Save Branding' }}
-          </button>
+          </Button>
         </div>
-      </div>
+      </Card>
     </div>
 
     <!-- ACCOUNT TAB -->
     <div v-else-if="activeTab === 'account'" class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
       <!-- LEFT: Profile Card -->
-      <div class="bg-white rounded-xl border border-gray-100">
+      <Card>
         <div class="p-5 border-b border-gray-100">
           <div class="flex items-center gap-3">
             <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -223,29 +206,23 @@
             <div class="text-sm font-medium text-gray-900">Profile Photo</div>
             <div class="text-xs text-gray-500 mt-0.5">JPG, PNG or GIF. Max 2MB.</div>
             <div class="mt-2 flex items-center gap-2">
-              <button
+              <Button variant="outline" size="sm"
                 @click="$refs.avatarInput.click()"
-                :disabled="savingProfile"
-                class="px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 rounded-lg disabled:opacity-50"
-              >
+                :disabled="savingProfile">
                 {{ avatarPreview ? 'Change' : 'Upload' }}
-              </button>
-              <button
+              </Button>
+              <Button variant="destructive" size="sm"
                 v-if="avatarPreview && !pendingAvatarFile"
                 @click="removeAvatar"
-                :disabled="savingProfile"
-                class="px-3 py-1.5 text-xs font-medium text-red-600 bg-white border border-red-200 hover:bg-red-50 rounded-lg disabled:opacity-50"
-              >
+                :disabled="savingProfile">
                 Remove
-              </button>
-              <button
+              </Button>
+              <Button variant="ghost" size="sm"
                 v-if="pendingAvatarFile"
                 @click="clearPendingAvatar"
-                :disabled="savingProfile"
-                class="text-xs text-gray-500 hover:text-gray-700 disabled:opacity-50"
-              >
+                :disabled="savingProfile">
                 Clear
-              </button>
+              </Button>
             </div>
             <input
               ref="avatarInput"
@@ -261,14 +238,13 @@
         <div class="p-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div class="sm:col-span-2">
             <label class="text-xs font-medium text-gray-500 uppercase tracking-wide">Name</label>
-            <input
+            <Input
               v-model="profileForm.name"
               type="text"
               maxlength="255"
               :disabled="savingProfile"
-              class="mt-1 w-full px-3 py-2 text-sm bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none disabled:opacity-50"
-              placeholder="Your name"
-            />
+              class="mt-1 disabled:opacity-50"
+              placeholder="Your name" />
           </div>
           <div>
             <label class="text-xs font-medium text-gray-500 uppercase tracking-wide">Email</label>
@@ -296,33 +272,30 @@
           <p v-if="profileDirty" class="text-xs text-orange-600">You have unsaved changes.</p>
           <span v-else></span>
           <div class="flex items-center gap-2">
-            <button
+            <Button variant="outline" size="sm"
               v-if="profileDirty"
               @click="resetProfileForm"
-              :disabled="savingProfile"
-              class="px-3 py-2 text-xs font-medium text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 rounded-lg disabled:opacity-50"
-            >
+              :disabled="savingProfile">
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button size="sm"
               @click="saveProfile"
               :disabled="savingProfile || !profileDirty"
-              class="px-5 py-2 text-xs font-medium text-white bg-orange-500 hover:bg-orange-600 rounded-lg shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-            >
+              class="flex items-center gap-2">
               <svg v-if="savingProfile" class="animate-spin w-3.5 h-3.5" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
               </svg>
               {{ savingProfile ? 'Saving…' : 'Save Profile' }}
-            </button>
+            </Button>
           </div>
         </div>
-      </div>
+      </Card>
 
       <!-- RIGHT: Export cards stacked -->
       <div class="space-y-6">
         <!-- Recordings -->
-        <div class="bg-white rounded-xl border border-gray-100">
+        <Card>
           <div class="p-5 border-b border-gray-100">
             <div class="flex items-center gap-3">
               <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
@@ -339,7 +312,7 @@
 
           <div class="p-5 flex items-center justify-between gap-4">
             <div class="flex items-center gap-3 min-w-0">
-              <svg class="w-5 h-5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <svg class="w-5 h-5 text-gray-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
               </svg>
               <div class="min-w-0">
@@ -352,11 +325,10 @@
                 <div v-else class="text-xs text-gray-500">Packaged as a single .zip download</div>
               </div>
             </div>
-            <button
+            <Button size="sm"
               @click="exportRecordingsZip"
               :disabled="exportingRecordings || videoCount === 0"
-              class="px-4 py-2 text-xs font-medium text-white bg-orange-500 hover:bg-orange-600 rounded-lg shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 flex-shrink-0"
-            >
+              class="flex items-center gap-2 shrink-0">
               <svg v-if="exportingRecordings" class="animate-spin w-3.5 h-3.5" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
@@ -365,12 +337,12 @@
                 <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
               </svg>
               {{ exportingRecordings ? 'Preparing…' : 'Export as Zip' }}
-            </button>
+            </Button>
           </div>
-        </div>
+        </Card>
 
         <!-- Metadata / Transcriptions -->
-        <div class="bg-white rounded-xl border border-gray-100">
+        <Card>
           <div class="p-5 border-b border-gray-100">
             <div class="flex items-center gap-3">
               <div class="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
@@ -387,7 +359,7 @@
 
           <div class="p-5 flex items-center justify-between gap-4">
             <div class="flex items-center gap-3 min-w-0">
-              <svg class="w-5 h-5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <svg class="w-5 h-5 text-gray-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
               </svg>
               <div class="min-w-0">
@@ -398,11 +370,10 @@
                 <div v-else class="text-xs text-gray-500">Machine-readable, includes transcripts</div>
               </div>
             </div>
-            <button
+            <Button variant="ghost" size="sm"
               @click="exportMetadataJson"
               :disabled="exportingMetadata || videoCount === 0"
-              class="px-4 py-2 text-xs font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 flex-shrink-0"
-            >
+              class="flex items-center gap-2 shrink-0">
               <svg v-if="exportingMetadata" class="animate-spin w-3.5 h-3.5" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
@@ -411,9 +382,9 @@
                 <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
               </svg>
               {{ exportingMetadata ? 'Preparing…' : 'Export Metadata' }}
-            </button>
+            </Button>
           </div>
-        </div>
+        </Card>
 
         <p v-if="videoCount === 0 && !exportLoading" class="text-xs text-gray-500 text-center">
           You don't have any recordings yet.
@@ -424,18 +395,18 @@
     <!-- API Tokens tab -->
     <div v-else-if="activeTab === 'api-tokens'" class="space-y-6">
       <!-- Intro -->
-      <div class="bg-white rounded-xl border border-gray-100 p-5">
+      <Card class="p-5">
         <h2 class="text-lg font-semibold text-gray-900">API Tokens</h2>
         <p class="mt-1 text-sm text-gray-500">
           Personal tokens let you upload recordings to your workspace from anywhere — the qa-record skill, a script, or CI.
-          Send the token as <code class="px-1 py-0.5 text-xs bg-gray-100 rounded">Authorization: Bearer &lt;token&gt;</code>
-          when calling <code class="px-1 py-0.5 text-xs bg-gray-100 rounded">POST /api/videos</code>.
+          Send the token as <code class="px-1 py-0.5 text-xs bg-gray-100 rounded-sm">Authorization: Bearer &lt;token&gt;</code>
+          when calling <code class="px-1 py-0.5 text-xs bg-gray-100 rounded-sm">POST /api/videos</code>.
         </p>
         <p class="mt-3 text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
           A token has <strong>full access to your account</strong> — treat it like a password. Keep it in an environment
           variable or CI secret, never in committed code, and revoke it if it leaks.
         </p>
-      </div>
+      </Card>
 
       <!-- Just-created token (shown once) -->
       <div v-if="createdToken" class="bg-emerald-50 border border-emerald-200 rounded-xl p-5">
@@ -444,51 +415,48 @@
             <h3 class="text-sm font-semibold text-emerald-900">Your new token</h3>
             <p class="mt-1 text-xs text-emerald-700">Copy it now — for security, you won't be able to see it again.</p>
           </div>
-          <button @click="dismissCreatedToken" class="text-xs font-medium text-emerald-700 hover:text-emerald-900">Done</button>
+          <Button variant="ghost" size="sm" @click="dismissCreatedToken">Done</Button>
         </div>
         <div class="mt-3 flex items-center gap-2">
           <code class="flex-1 px-3 py-2 text-xs font-mono text-emerald-900 bg-white border border-emerald-200 rounded-lg break-all">{{ createdToken }}</code>
-          <button
+          <Button variant="ghost" size="sm"
             @click="copyCreatedToken"
-            class="px-3 py-2 text-xs font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-sm transition-colors flex-shrink-0"
-          >
+            class="shrink-0">
             Copy
-          </button>
+          </Button>
         </div>
       </div>
 
       <!-- Create form -->
-      <div class="bg-white rounded-xl border border-gray-100 p-5">
+      <Card class="p-5">
         <h3 class="text-sm font-semibold text-gray-900 mb-3">Create a token</h3>
         <div class="flex flex-col sm:flex-row gap-3">
-          <input
+          <Input
             v-model="newTokenName"
             type="text"
             placeholder="Token name (e.g. qa-record)"
             @keyup.enter="createApiToken"
-            class="flex-1 px-3 py-2 text-sm bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
-          />
+            class="flex-1" />
           <select
             v-model="newTokenExpiry"
-            class="px-3 py-2 text-sm bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
+            class="px-3 py-2 text-sm bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-hidden"
           >
             <option value="">No expiration</option>
             <option value="30">Expires in 30 days</option>
             <option value="90">Expires in 90 days</option>
             <option value="365">Expires in 1 year</option>
           </select>
-          <button
+          <Button size="sm"
             @click="createApiToken"
             :disabled="creatingToken || !newTokenName.trim()"
-            class="px-5 py-2 text-xs font-medium text-white bg-orange-500 hover:bg-orange-600 rounded-lg shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
-          >
+            class="shrink-0">
             {{ creatingToken ? 'Creating…' : 'Create token' }}
-          </button>
+          </Button>
         </div>
-      </div>
+      </Card>
 
       <!-- Token list -->
-      <div class="bg-white rounded-xl border border-gray-100 p-5">
+      <Card class="p-5">
         <h3 class="text-sm font-semibold text-gray-900 mb-3">Your tokens</h3>
 
         <div v-if="tokensLoading" class="py-6 text-center text-sm text-gray-400">Loading…</div>
@@ -509,15 +477,14 @@
                 <span v-else> · No expiration</span>
               </p>
             </div>
-            <button
+            <Button variant="destructive" size="sm"
               @click="askRevokeToken(token)"
-              class="px-3 py-1.5 text-xs font-medium text-red-600 bg-white border border-red-200 hover:bg-red-50 rounded-lg transition-colors flex-shrink-0"
-            >
+              class="shrink-0">
               Revoke
-            </button>
+            </Button>
           </li>
         </ul>
-      </div>
+      </Card>
     </div>
   </div>
 
@@ -528,25 +495,25 @@
     </p>
     <template #footer>
       <div class="flex justify-end gap-2">
-        <button
-          @click="showRevokeModal = false"
-          class="px-4 py-2 text-xs font-medium text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 rounded-lg transition-colors"
-        >
+        <Button variant="outline" size="sm"
+          @click="showRevokeModal = false">
           Cancel
-        </button>
-        <button
+        </Button>
+        <Button variant="destructive" size="sm"
           @click="confirmRevokeToken"
-          :disabled="revokingToken"
-          class="px-4 py-2 text-xs font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg shadow-sm transition-colors disabled:opacity-50"
-        >
+          :disabled="revokingToken">
           {{ revokingToken ? 'Revoking…' : 'Revoke token' }}
-        </button>
+        </Button>
       </div>
     </template>
   </SBModal>
 </template>
 
 <script setup>
+import { Input } from '@/components/ui/input'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Card } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import { ref, computed, h, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import settingsService from '@/services/settingsService'

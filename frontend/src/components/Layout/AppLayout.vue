@@ -3,23 +3,22 @@
     <!-- Top Navigation Header (replaces left sidebar) -->
     <header
       v-if="!isFullWidthRoute"
-      class="h-14 grid grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 lg:px-6 border-b border-gray-200 bg-white/90 backdrop-blur-md sticky top-0 z-30 flex-shrink-0"
+      class="h-14 grid grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 lg:px-6 border-b border-gray-200 bg-white/90 backdrop-blur-md sticky top-0 z-30 shrink-0"
     >
       <!-- Left: Mobile menu + Logo -->
       <div class="flex items-center gap-3 min-w-0">
         <!-- Mobile Menu Button -->
-        <button
+        <Button variant="ghost"
           @click="sidebarOpen = true"
-          class="lg:hidden p-2 -ml-2 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100 focus:outline-none"
-        >
+          class="lg:hidden -ml-2">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
           </svg>
-        </button>
+        </Button>
 
         <!-- Logo -->
-        <router-link to="/videos" class="flex items-center gap-2.5 group cursor-pointer flex-shrink-0">
-          <img :src="branding.logoUrl.value || '/logo.png'" alt="OpenKap" class="w-7 h-7 rounded-lg shadow-sm" />
+        <router-link to="/videos" class="flex items-center gap-2.5 group cursor-pointer shrink-0">
+          <img :src="branding.logoUrl.value || '/logo.png'" alt="OpenKap" class="w-7 h-7 rounded-lg shadow-xs" />
           <span class="text-gray-900 font-bold text-sm tracking-tight">OpenKap</span>
           <span
             v-if="isAuthenticated"
@@ -138,31 +137,33 @@
       </nav>
 
       <!-- Right: CTA + Bell + User -->
-      <div class="flex items-center gap-2 flex-shrink-0 justify-self-end">
+      <div class="flex items-center gap-2 shrink-0 justify-self-end">
         <!-- Free plan: Upgrade pill -->
-        <button
+        <Badge
           v-if="isAuthenticated && subscription && !subscription.is_active"
+          variant="secondary"
+          role="button"
+          tabindex="0"
           @click="router.push('/subscription')"
-          class="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1.5 text-[12px] font-medium text-orange-700 bg-orange-50 hover:bg-orange-100 border border-orange-200/60 rounded-lg transition-colors"
-          :title="`${minutesUsed} / ${minutesLimit} min this month — click to upgrade`"
-        >
+          @keyup.enter="router.push('/subscription')"
+          class="hidden md:inline-flex items-center gap-1.5 cursor-pointer"
+          :title="`${minutesUsed} / ${minutesLimit} min this month — click to upgrade`">
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
           </svg>
           {{ minutesUsed }}/{{ minutesLimit }} min
-        </button>
+        </Badge>
 
         <!-- New Recording -->
-        <button
+        <Button size="sm"
           v-if="isAuthenticated"
           @click="handleNewRecording"
-          class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium rounded-lg shadow-sm shadow-orange-100 transition-all"
-        >
+          class="inline-flex items-center gap-1.5">
           <div class="w-3.5 h-3.5 rounded-full bg-white/25 flex items-center justify-center">
             <svg class="w-2 h-2" fill="currentColor" viewBox="0 0 10 10"><circle cx="5" cy="5" r="4"/></svg>
           </div>
           <span class="hidden sm:inline">New Recording</span>
-        </button>
+        </Button>
 
         <!-- Notifications -->
         <NotificationBell v-if="isAuthenticated" />
@@ -170,10 +171,9 @@
         <!-- User avatar / dropdown -->
         <SBDropdown v-if="isAuthenticated" v-model="showUserDropdown" align="right" width="lg">
           <template #trigger>
-            <button
-              class="flex items-center gap-1.5 p-1 pr-1.5 rounded-full hover:bg-gray-100 transition-colors"
-              :title="userInfo.name"
-            >
+            <Button variant="ghost"
+              class="flex items-center gap-1.5 pr-1.5"
+              :title="userInfo.name">
               <div class="relative">
                 <img
                   v-if="userInfo.avatar"
@@ -181,14 +181,14 @@
                   :alt="userInfo.name"
                   class="w-7 h-7 rounded-full bg-gray-200 object-cover"
                 />
-                <div v-else class="w-7 h-7 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center">
+                <div v-else class="w-7 h-7 rounded-full bg-linear-to-br from-orange-400 to-orange-600 flex items-center justify-center">
                   <span class="text-xs font-bold text-white">{{ userInfo.initial }}</span>
                 </div>
               </div>
               <svg class="w-3 h-3 text-gray-400 transition-transform" :class="{ 'rotate-180': showUserDropdown }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
               </svg>
-            </button>
+            </Button>
           </template>
           <div class="menu-panel">
             <div class="px-3 py-2 border-b border-gray-100">
@@ -220,11 +220,10 @@
         </SBDropdown>
 
         <!-- Sign in (unauthenticated) -->
-        <button
+        <Button variant="outline" size="sm"
           v-else
           @click="handleLogin"
-          class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-        >
+          class="inline-flex items-center gap-1.5">
           <svg class="w-4 h-4" viewBox="0 0 24 24">
             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
             <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -232,7 +231,7 @@
             <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
           </svg>
           Sign in
-        </button>
+        </Button>
       </div>
     </header>
 
@@ -262,14 +261,12 @@
             <span class="text-gray-900 font-semibold tracking-tight text-[15px]">OpenKap</span>
           </router-link>
 
-          <button
-            @click="sidebarOpen = false"
-            class="p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100"
-          >
+          <Button variant="ghost"
+            @click="sidebarOpen = false">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
             </svg>
-          </button>
+          </Button>
         </div>
 
         <!-- Mobile Navigation -->
@@ -287,7 +284,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
               </svg>
               Dashboard
-              <span class="ml-auto text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-orange-100 text-orange-700">Admin</span>
+              <span class="ml-auto text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-sm bg-orange-100 text-orange-700">Admin</span>
             </router-link>
 
             <!-- Admin Support (Mobile) -->
@@ -302,7 +299,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
               </svg>
               Support
-              <span class="ml-auto text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-orange-100 text-orange-700">Admin</span>
+              <span class="ml-auto text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-sm bg-orange-100 text-orange-700">Admin</span>
             </router-link>
 
             <router-link
@@ -366,7 +363,7 @@
                 :alt="userInfo.name"
                 class="w-8 h-8 rounded-full bg-gray-200 object-cover ring-2 ring-white"
               />
-              <div v-else class="w-8 h-8 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center ring-2 ring-white">
+              <div v-else class="w-8 h-8 rounded-full bg-linear-to-br from-orange-400 to-orange-600 flex items-center justify-center ring-2 ring-white">
                 <span class="text-xs font-bold text-white">{{ userInfo.initial }}</span>
               </div>
             </div>
@@ -386,23 +383,21 @@
               </svg>
               Profile
             </router-link>
-            <button
+            <Button variant="destructive" size="sm"
               @click="sidebarOpen = false; showLogoutModal = true"
-              class="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-red-600 bg-white border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
-            >
+              class="flex-1 flex items-center justify-center gap-2">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
               </svg>
               Logout
-            </button>
+            </Button>
           </div>
         </div>
 
         <div v-else class="px-4 py-4 border-t border-gray-200">
-          <button
+          <Button variant="outline"
             @click="handleLogin"
-            class="flex items-center justify-center w-full px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-          >
+            class="flex items-center justify-center w-full">
             <svg class="w-5 h-5 mr-2" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
               <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -410,7 +405,7 @@
               <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
             </svg>
             Sign in with Google
-          </button>
+          </Button>
         </div>
       </aside>
     </div>
@@ -425,16 +420,16 @@
 
     <!-- Extension Install Modal -->
     <Transition name="dropdown">
-      <div v-if="showExtensionModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" @click="showExtensionModal = false"></div>
+      <div v-if="showExtensionModal" class="fixed inset-0 z-100 flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/40 backdrop-blur-xs" @click="showExtensionModal = false"></div>
         <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-fade-in">
           <!-- Header with gradient -->
-          <div class="bg-gradient-to-br from-orange-500 to-orange-600 px-6 pt-8 pb-10 text-center relative">
-            <button @click="showExtensionModal = false" class="absolute top-3 right-3 text-white/70 hover:text-white transition-colors">
+          <div class="bg-linear-to-br from-orange-500 to-orange-600 px-6 pt-8 pb-10 text-center relative">
+            <Button variant="ghost" @click="showExtensionModal = false" class="absolute top-3 right-3">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
               </svg>
-            </button>
+            </Button>
             <div class="w-16 h-16 bg-white rounded-2xl shadow-lg flex items-center justify-center mx-auto mb-4">
               <img :src="branding.logoUrl.value || '/logo.png'" alt="OpenKap" class="w-10 h-10 rounded-lg" />
             </div>
@@ -446,7 +441,7 @@
           <div class="px-6 py-5 -mt-4">
             <div class="bg-gray-50 rounded-xl p-4 border border-gray-100">
               <div class="flex items-start gap-3">
-                <div class="w-8 h-8 rounded-lg bg-orange-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <div class="w-8 h-8 rounded-lg bg-orange-100 flex items-center justify-center shrink-0 mt-0.5">
                   <svg class="w-4 h-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                   </svg>
@@ -462,7 +457,7 @@
               :href="extensionStoreUrl"
               target="_blank"
               rel="noopener noreferrer"
-              class="flex items-center justify-center gap-2 w-full mt-4 px-4 py-3 bg-orange-600 hover:bg-orange-700 text-white text-sm font-semibold rounded-xl shadow-sm transition-all hover:shadow-md"
+              class="flex items-center justify-center gap-2 w-full mt-4 px-4 py-3 bg-orange-600 hover:bg-orange-700 text-white text-sm font-semibold rounded-xl shadow-xs transition-all hover:shadow-md"
             >
               <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
@@ -488,6 +483,8 @@
 </template>
 
 <script>
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { SBLogoutModal, SBDropdown } from '../Global'
@@ -501,7 +498,7 @@ import { useBranding } from '@/composables/useBranding'
 
 export default {
   name: 'AppLayout',
-  components: {
+  components: { Button, Badge,
     SBLogoutModal,
     SBDropdown,
     RecordingSetupPanel,
@@ -560,8 +557,31 @@ export default {
       return route.path.startsWith('/video/')
     })
 
+    // Recording happens in the extension, not in the web app. Ask it to open
+    // its recorder on this tab; if it is not installed there is nothing to
+    // fall back to, so point the user at the install page.
     const handleNewRecording = () => {
-      router.push('/record')
+      const extensionId = document.documentElement.getAttribute('data-openkap-extension-id')
+
+      if (extensionId && window.chrome?.runtime?.sendMessage) {
+        try {
+          chrome.runtime.sendMessage(extensionId, { action: 'startRecording' }, (response) => {
+            if (chrome.runtime.lastError || !response?.success) {
+              promptExtensionInstall()
+            }
+          })
+          return
+        } catch (e) {
+          // fall through to the install prompt
+        }
+      }
+
+      promptExtensionInstall()
+    }
+
+    // Reuse the install modal this layout already ships rather than a toast.
+    const promptExtensionInstall = () => {
+      showExtensionModal.value = true
     }
 
     const handleLogin = () => {

@@ -8,15 +8,14 @@
       <div class="flex min-h-full items-center justify-center p-4">
         <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-4xl transform transition-all">
           <!-- Close Button (only when not recording or finishing) -->
-          <button
+          <Button variant="ghost"
             v-if="!isRecording && !isFinishing && !isSaving"
             @click="closeModal"
-            class="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors z-10"
-          >
+            class="absolute top-4 right-4 z-10">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
             </svg>
-          </button>
+          </Button>
 
           <!-- Loading State - Checking Subscription -->
           <div v-if="isCheckingSubscription" class="p-8 text-center">
@@ -79,11 +78,10 @@
             </div>
 
             <!-- Start Recording Button -->
-            <button
+            <Button variant="outline" size="lg"
               @click="startRecording"
               :disabled="isStartingRecording"
-              class="inline-flex items-center px-8 py-4 border border-transparent text-lg font-semibold rounded-full text-white bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 focus:outline-none focus:ring-4 focus:ring-orange-300 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
-            >
+              class="inline-flex items-center from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700">
               <svg v-if="!isStartingRecording" class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20">
                 <circle cx="10" cy="10" r="7"/>
               </svg>
@@ -92,7 +90,7 @@
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
               {{ isStartingRecording ? 'Starting...' : 'Start Recording' }}
-            </button>
+            </Button>
 
             <p class="mt-4 text-sm text-gray-500">
               Click to select what to share and start recording
@@ -122,37 +120,34 @@
 
             <!-- Recording Controls -->
             <div class="flex items-center justify-center space-x-4">
-              <button
+              <Button variant="outline"
                 @click="pauseRecording"
                 v-if="!isPaused"
-                class="inline-flex items-center px-5 py-2.5 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors"
-              >
+                class="inline-flex items-center">
                 <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M5 4h3v12H5V4zm7 0h3v12h-3V4z"/>
                 </svg>
                 Pause
-              </button>
+              </Button>
 
-              <button
+              <Button
                 @click="resumeRecording"
                 v-if="isPaused"
-                class="inline-flex items-center px-5 py-2.5 border border-transparent text-sm font-medium rounded-lg text-white bg-orange-600 hover:bg-orange-700 transition-colors"
-              >
+                class="inline-flex items-center">
                 <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.841z"/>
                 </svg>
                 Resume
-              </button>
+              </Button>
 
-              <button
+              <Button variant="destructive"
                 @click="stopRecording"
-                class="inline-flex items-center px-5 py-2.5 border border-transparent text-sm font-medium rounded-lg text-white bg-red-600 hover:bg-red-700 transition-colors"
-              >
+                class="inline-flex items-center">
                 <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
                   <rect x="4" y="4" width="12" height="12" rx="2"/>
                 </svg>
                 Stop Recording
-              </button>
+              </Button>
             </div>
           </div>
 
@@ -172,11 +167,10 @@
             </p>
 
             <div class="flex items-center justify-center gap-4">
-              <button
+              <Button variant="outline" size="lg"
                 @click="discardRecording"
                 :disabled="isDiscarding"
-                class="inline-flex items-center px-6 py-3 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors disabled:opacity-50"
-              >
+                class="inline-flex items-center">
                 <svg v-if="!isDiscarding" class="w-5 h-5 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                 </svg>
@@ -185,18 +179,17 @@
                   <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
                 </svg>
                 {{ isDiscarding ? 'Discarding...' : 'Discard' }}
-              </button>
+              </Button>
 
-              <button
+              <Button variant="outline" size="lg"
                 @click="saveRecording"
                 :disabled="isDiscarding"
-                class="inline-flex items-center px-6 py-3 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 transition-colors disabled:opacity-50"
-              >
+                class="inline-flex items-center from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                 </svg>
                 Save Recording
-              </button>
+              </Button>
             </div>
           </div>
 
@@ -218,6 +211,7 @@
 </template>
 
 <script>
+import { Button } from '@/components/ui/button'
 import { ref, watch, onUnmounted } from 'vue'
 import { useAuth } from '@/stores/auth'
 import { buildApiUrl } from '@/config/api'
@@ -225,6 +219,7 @@ import toast from '@/services/toastService'
 
 export default {
   name: 'SBRecordingModal',
+  components: { Button },
   props: {
     show: {
       type: Boolean,

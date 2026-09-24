@@ -1,191 +1,108 @@
 <template>
-  <Teleport to="body">
-    <Transition
-      enter-active-class="duration-200 ease-out"
-      enter-from-class="opacity-0"
-      enter-to-class="opacity-100"
-      leave-active-class="duration-150 ease-in"
-      leave-from-class="opacity-100"
-      leave-to-class="opacity-0"
+  <Dialog :open="modelValue" @update:open="onOpenChange">
+    <DialogContent
+      :class="cn(sizeClass, paddingClass)"
+      :show-close-button="closable"
+      @interact-outside="onInteractOutside"
+      @escape-key-down="onEscapeKeyDown"
     >
-      <div
-        v-if="modelValue"
-        class="fixed inset-0 z-50 overflow-y-auto"
-        @click="handleBackdropClick"
-      >
-        <!-- Backdrop -->
-        <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity"></div>
+      <DialogHeader v-if="title || $slots.header">
+        <slot name="header">
+          <DialogTitle>{{ title }}</DialogTitle>
+        </slot>
+      </DialogHeader>
 
-        <!-- Modal Container -->
-        <div class="flex min-h-full items-center justify-center p-4">
-          <Transition
-            enter-active-class="duration-250 ease-out"
-            enter-from-class="opacity-0 scale-95"
-            enter-to-class="opacity-100 scale-100"
-            leave-active-class="duration-150 ease-in"
-            leave-from-class="opacity-100 scale-100"
-            leave-to-class="opacity-0 scale-95"
-          >
-            <div
-              v-if="modelValue"
-              ref="panelRef"
-              :class="modalClasses"
-              role="dialog"
-              aria-modal="true"
-              tabindex="-1"
-              @click.stop
-            >
-              <!-- Header -->
-              <div v-if="$slots.header || title || closable" class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-                <slot name="header">
-                  <h3 v-if="title" class="text-lg font-semibold text-gray-900">
-                    {{ title }}
-                  </h3>
-                </slot>
+      <slot />
 
-                <button
-                  v-if="closable"
-                  @click="close"
-                  class="p-1.5 -mr-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 transition-colors"
-                >
-                  <span class="sr-only">Close</span>
-                  <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-
-              <!-- Body -->
-              <div :class="bodyClasses">
-                <slot />
-              </div>
-
-              <!-- Footer -->
-              <div v-if="$slots.footer" class="px-6 py-4 bg-gray-50 border-t border-gray-100 rounded-b-xl">
-                <slot name="footer" />
-              </div>
-            </div>
-          </Transition>
-        </div>
-      </div>
-    </Transition>
-  </Teleport>
+      <DialogFooter v-if="$slots.footer">
+        <slot name="footer" />
+      </DialogFooter>
+    </DialogContent>
+  </Dialog>
 </template>
 
-<script>
-import { computed, ref, watch, nextTick, onBeforeUnmount } from 'vue'
+<script setup>
+/**
+ * Thin wrapper over the shadcn Dialog.
+ *
+ * The original API (v-model, title, size, closable, closeOnBackdrop,
+ * padding, plus header/footer slots) is preserved so the thirteen existing
+ * call sites keep working. New code should use `@/components/ui/dialog`
+ * directly.
+ */
+import { computed } from 'vue'
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { cn } from '@/lib/utils'
 
-export default {
-  name: 'SBModal',
-  emits: ['update:modelValue', 'close'],
-  props: {
-    modelValue: {
-      type: Boolean,
-      required: true
-    },
-    title: {
-      type: String,
-      default: ''
-    },
-    size: {
-      type: String,
-      default: 'md',
-      validator: (value) => ['xs', 'sm', 'md', 'lg', 'xl', '2xl', '3xl', '4xl', '5xl', '6xl', '7xl'].includes(value)
-    },
-    closable: {
-      type: Boolean,
-      default: true
-    },
-    closeOnBackdrop: {
-      type: Boolean,
-      default: true
-    },
-    padding: {
-      type: String,
-      default: 'default',
-      validator: (value) => ['none', 'sm', 'default', 'lg'].includes(value)
-    }
+defineOptions({ name: 'SBModal' })
+
+const props = defineProps({
+  modelValue: { type: Boolean, required: true },
+  title: { type: String, default: '' },
+  size: {
+    type: String,
+    default: 'md',
+    validator: (v) =>
+      ['xs', 'sm', 'md', 'lg', 'xl', '2xl', '3xl', '4xl', '5xl', '6xl', '7xl'].includes(v),
   },
-  setup(props, { emit }) {
-    const sizeClasses = computed(() => {
-      const sizes = {
-        xs: 'sm:max-w-xs',
-        sm: 'sm:max-w-sm',
-        md: 'sm:max-w-md',
-        lg: 'sm:max-w-lg',
-        xl: 'sm:max-w-xl',
-        '2xl': 'sm:max-w-2xl',
-        '3xl': 'sm:max-w-3xl',
-        '4xl': 'sm:max-w-4xl',
-        '5xl': 'sm:max-w-5xl',
-        '6xl': 'sm:max-w-6xl',
-        '7xl': 'sm:max-w-7xl'
-      }
-      return sizes[props.size] || sizes.md
-    })
+  closable: { type: Boolean, default: true },
+  closeOnBackdrop: { type: Boolean, default: true },
+  padding: {
+    type: String,
+    default: 'default',
+    validator: (v) => ['none', 'sm', 'default', 'lg'].includes(v),
+  },
+})
 
-    const modalClasses = computed(() => {
-      return [
-        'relative transform overflow-hidden rounded-xl bg-white text-left shadow-xl transition-all w-full',
-        sizeClasses.value
-      ].join(' ')
-    })
+const emit = defineEmits(['update:modelValue', 'close'])
 
-    const bodyClasses = computed(() => {
-      const paddingClasses = {
-        none: '',
-        sm: 'p-4',
-        default: 'px-6 py-5',
-        lg: 'p-8'
-      }
-      return paddingClasses[props.padding] || paddingClasses.default
-    })
+const SIZES = {
+  xs: 'sm:max-w-xs',
+  sm: 'sm:max-w-sm',
+  md: 'sm:max-w-md',
+  lg: 'sm:max-w-lg',
+  xl: 'sm:max-w-xl',
+  '2xl': 'sm:max-w-2xl',
+  '3xl': 'sm:max-w-3xl',
+  '4xl': 'sm:max-w-4xl',
+  '5xl': 'sm:max-w-5xl',
+  '6xl': 'sm:max-w-6xl',
+  '7xl': 'sm:max-w-7xl',
+}
 
-    const close = () => {
-      emit('update:modelValue', false)
-      emit('close')
-    }
+const PADDING = {
+  none: 'p-0',
+  sm: 'p-4',
+  default: 'p-6',
+  lg: 'p-8',
+}
 
-    const handleBackdropClick = () => {
-      if (props.closeOnBackdrop) {
-        close()
-      }
-    }
+const sizeClass = computed(() => SIZES[props.size] ?? SIZES.md)
+const paddingClass = computed(() => PADDING[props.padding] ?? PADDING.default)
 
-    // --- Keyboard + focus accessibility ---
-    const panelRef = ref(null)
-    let previouslyFocused = null
+function close() {
+  emit('update:modelValue', false)
+  emit('close')
+}
 
-    const onKeydown = (e) => {
-      if (e.key === 'Escape' && props.modelValue) {
-        close()
-      }
-    }
+function onOpenChange(open) {
+  if (!open) close()
+}
 
-    watch(() => props.modelValue, (open) => {
-      if (open) {
-        previouslyFocused = document.activeElement
-        document.addEventListener('keydown', onKeydown)
-        nextTick(() => panelRef.value?.focus())
-      } else {
-        document.removeEventListener('keydown', onKeydown)
-        if (previouslyFocused && typeof previouslyFocused.focus === 'function') {
-          previouslyFocused.focus()
-        }
-      }
-    })
+// `closable` and `closeOnBackdrop` were independent in the original: a modal
+// could be dismissed by clicking away but not by a close button, or vice
+// versa. Preserve both by vetoing the matching Dialog events.
+function onInteractOutside(event) {
+  if (!props.closeOnBackdrop) event.preventDefault()
+}
 
-    onBeforeUnmount(() => {
-      document.removeEventListener('keydown', onKeydown)
-    })
-
-    return {
-      modalClasses,
-      bodyClasses,
-      close,
-      handleBackdropClick,
-      panelRef
-    }
-  }
+function onEscapeKeyDown(event) {
+  if (!props.closable) event.preventDefault()
 }
 </script>

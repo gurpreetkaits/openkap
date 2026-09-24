@@ -15,15 +15,14 @@
         >
           {{ subscription.is_active ? 'Pro Plan' : 'Free Plan' }}
         </span>
-        <button
+        <Button
           @click="showCreateModal = true"
-          class="inline-flex items-center gap-2 px-4 py-2 bg-orange-500 text-white text-sm font-medium rounded-lg hover:bg-orange-600 transition-colors"
-        >
+          class="inline-flex items-center gap-2">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
           </svg>
           New Workspace
-        </button>
+        </Button>
       </div>
     </div>
 
@@ -33,11 +32,11 @@
         <div class="flex items-start gap-3 mb-4">
           <div class="w-10 h-10 rounded-lg bg-gray-200"></div>
           <div class="flex-1">
-            <div class="h-5 bg-gray-200 rounded w-32 mb-2"></div>
-            <div class="h-4 bg-gray-200 rounded w-20"></div>
+            <div class="h-5 bg-gray-200 rounded-sm w-32 mb-2"></div>
+            <div class="h-4 bg-gray-200 rounded-sm w-20"></div>
           </div>
         </div>
-        <div class="h-4 bg-gray-200 rounded w-48"></div>
+        <div class="h-4 bg-gray-200 rounded-sm w-48"></div>
       </div>
     </div>
 
@@ -50,15 +49,14 @@
       </div>
       <h3 class="text-lg font-semibold text-gray-900 mb-2">No workspaces yet</h3>
       <p class="text-gray-500 mb-6">Create your first workspace to start collaborating with your team.</p>
-      <button
+      <Button
         @click="showCreateModal = true"
-        class="inline-flex items-center gap-2 px-4 py-2 bg-orange-500 text-white text-sm font-medium rounded-lg hover:bg-orange-600 transition-colors"
-      >
+        class="inline-flex items-center gap-2">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
         </svg>
         Create Workspace
-      </button>
+      </Button>
     </div>
 
     <!-- Workspaces Grid -->
@@ -67,7 +65,7 @@
         v-for="workspace in workspaces"
         :key="workspace.id"
         :to="`/workspace/${workspace.slug}`"
-        class="bg-white rounded-xl border border-gray-100 p-5 hover:shadow-sm hover:border-gray-300 transition-all group"
+        class="bg-white rounded-xl border border-gray-100 p-5 hover:shadow-xs hover:border-gray-300 transition-all group"
       >
         <div class="flex items-start justify-between mb-4">
           <div class="flex items-center gap-3">
@@ -120,7 +118,7 @@
       <Transition name="modal">
         <div
           v-if="showCreateModal"
-          class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50"
+          class="fixed inset-0 z-100 flex items-center justify-center p-4 bg-black/50"
           @click.self="showCreateModal = false"
         >
           <Transition name="modal-content" appear>
@@ -131,13 +129,11 @@
               <div class="space-y-4">
                 <div>
                   <label for="workspace-name" class="block text-sm font-medium text-gray-700 mb-1">Workspace Name</label>
-                  <input
+                  <Input
                     id="workspace-name"
                     v-model="newWorkspace.name"
                     type="text"
-                    placeholder="My Team"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all"
-                  />
+                    placeholder="My Team" />
                   <p v-if="createError" class="mt-1 text-sm text-red-600">{{ createError }}</p>
                 </div>
                 <div>
@@ -147,25 +143,21 @@
                     v-model="newWorkspace.description"
                     placeholder="What's this workspace for?"
                     rows="3"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all resize-none"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-hidden transition-all resize-none"
                   ></textarea>
                 </div>
               </div>
 
               <div class="flex justify-end gap-3 mt-6">
-                <button
-                  @click="showCreateModal = false"
-                  class="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-                >
+                <Button variant="ghost"
+                  @click="showCreateModal = false">
                   Cancel
-                </button>
-                <button
+                </Button>
+                <Button
                   @click="createWorkspace"
-                  :disabled="!newWorkspace.name.trim() || creating"
-                  class="px-4 py-2 text-sm font-medium text-white bg-orange-500 rounded-lg hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
+                  :disabled="!newWorkspace.name.trim() || creating">
                   {{ creating ? 'Creating...' : 'Create Workspace' }}
-                </button>
+                </Button>
               </div>
             </div>
           </Transition>
@@ -176,6 +168,8 @@
 </template>
 
 <script>
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import workspaceService from '@/services/workspaceService'
@@ -183,6 +177,7 @@ import { useAuth } from '@/stores/auth'
 
 export default {
   name: 'WorkspacesView',
+  components: { Input, Button },
   setup() {
     const router = useRouter()
     const auth = useAuth()

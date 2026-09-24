@@ -8,33 +8,31 @@
           Conversations from users. All admins see this shared inbox.
         </p>
       </div>
-      <button
+      <Button variant="outline" size="sm"
         @click="loadConversations"
         :disabled="loadingList"
-        class="px-3 py-1.5 text-sm rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50 flex items-center gap-2"
-      >
+        class="flex items-center gap-2">
         <svg class="w-4 h-4" :class="{ 'animate-spin': loadingList }" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
         </svg>
         Refresh
-      </button>
+      </Button>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
       <!-- Conversation list -->
-      <div class="lg:col-span-4 bg-white border border-gray-200 rounded-xl overflow-hidden flex flex-col" style="height: calc(100vh - 180px); min-height: 500px">
+      <Card class="lg:col-span-4 overflow-hidden flex flex-col gap-0 py-0" style="height: calc(100vh - 180px); min-height: 500px">
         <div class="p-3 border-b border-gray-200">
           <div class="relative">
             <svg class="w-4 h-4 absolute left-3 top-2.5 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
-            <input
+            <Input
               v-model="search"
               @input="onSearchInput"
               type="text"
               placeholder="Search by name or email"
-              class="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-gray-300 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none"
-            />
+              class="pl-9 pr-3" />
           </div>
         </div>
 
@@ -54,7 +52,7 @@
             class="w-full text-left px-3 py-3 border-b border-gray-100 hover:bg-gray-50 flex items-start gap-3"
             :class="{ 'bg-orange-50': selectedConversationId === conv.id }"
           >
-            <div class="flex-shrink-0">
+            <div class="shrink-0">
               <img
                 v-if="conv.user?.avatar_url"
                 :src="conv.user.avatar_url"
@@ -73,7 +71,7 @@
                 <div class="font-medium text-sm text-gray-900 truncate">
                   {{ conv.user?.name || 'Unknown user' }}
                 </div>
-                <div v-if="conv.last_message_at" class="text-[11px] text-gray-400 flex-shrink-0">
+                <div v-if="conv.last_message_at" class="text-[11px] text-gray-400 shrink-0">
                   {{ formatTime(conv.last_message_at) }}
                 </div>
               </div>
@@ -87,7 +85,7 @@
                 </div>
                 <span
                   v-if="conv.unread_count_admin > 0"
-                  class="flex-shrink-0 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-semibold flex items-center justify-center"
+                  class="shrink-0 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-semibold flex items-center justify-center"
                 >
                   {{ conv.unread_count_admin > 9 ? '9+' : conv.unread_count_admin }}
                 </span>
@@ -98,26 +96,24 @@
 
         <!-- Pagination -->
         <div v-if="pagination.lastPage > 1" class="border-t border-gray-200 p-2 flex items-center justify-center gap-2 text-xs">
-          <button
+          <Button variant="outline" size="sm"
             @click="changePage(pagination.page - 1)"
-            :disabled="pagination.page <= 1"
-            class="px-2 py-1 rounded border border-gray-300 disabled:opacity-40"
-          >
+            :disabled="pagination.page <= 1">
             Prev
-          </button>
+          </Button>
           <span class="text-gray-500">Page {{ pagination.page }} / {{ pagination.lastPage }}</span>
-          <button
+          <Button variant="ghost"
             @click="changePage(pagination.page + 1)"
-            :disabled="pagination.page >= pagination.lastPage"
-            class="px-2 py-1 rounded border border-gray-300 disabled:opacity-40"
+            :disabled="pagination.page>= pagination.lastPage"
+            class="px-2 py-1 rounded-sm border border-gray-300 disabled:opacity-40"
           >
             Next
-          </button>
+          </Button>
         </div>
-      </div>
+      </Card>
 
       <!-- Thread view -->
-      <div class="lg:col-span-8 bg-white border border-gray-200 rounded-xl flex flex-col" style="height: calc(100vh - 180px); min-height: 500px">
+      <Card class="lg:col-span-8 flex flex-col gap-0 py-0" style="height: calc(100vh - 180px); min-height: 500px">
         <div v-if="!selectedConversationId" class="flex-1 flex items-center justify-center text-center text-gray-400 px-6">
           <div>
             <svg class="w-12 h-12 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
@@ -180,7 +176,7 @@
                   >
                     {{ message.sender_name }}
                   </div>
-                  <div class="whitespace-pre-wrap break-words">{{ message.body }}</div>
+                  <div class="whitespace-pre-wrap wrap-break-word">{{ message.body }}</div>
                   <div
                     class="text-[10px] mt-1"
                     :class="message.sender_type === 'admin' ? 'text-orange-100' : 'text-gray-400'"
@@ -200,23 +196,25 @@
               rows="1"
               :disabled="sending"
               @keydown.enter.exact.prevent="sendReply"
-              class="flex-1 resize-none rounded-lg border border-gray-300 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 px-3 py-2 text-sm outline-none max-h-32"
+              class="flex-1 resize-none rounded-lg border border-gray-300 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 px-3 py-2 text-sm outline-hidden max-h-32"
             />
-            <button
+            <Button
               @click="sendReply"
               :disabled="!draft.trim() || sending"
-              class="h-9 px-4 rounded-lg bg-orange-600 text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-orange-700 transition text-sm font-medium"
-            >
+              class="h-9">
               {{ sending ? 'Sending…' : 'Send' }}
-            </button>
+            </Button>
           </div>
         </template>
-      </div>
+      </Card>
     </div>
   </div>
 </template>
 
 <script setup>
+import { Card } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import supportService from '@/services/supportService'
 

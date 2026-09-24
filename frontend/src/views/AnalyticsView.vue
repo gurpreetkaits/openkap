@@ -24,36 +24,35 @@
             ]"
           >{{ opt.label }}</button>
         </div>
-        <button
+        <Button variant="outline" size="sm"
           @click="fetchAnalytics"
           :disabled="loading"
-          class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
-        >
+          class="inline-flex items-center gap-1.5">
           <svg class="w-4 h-4" :class="loading ? 'animate-spin' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
           </svg>
           Refresh
-        </button>
+        </Button>
       </div>
     </div>
 
     <!-- Loading skeleton -->
     <div v-if="loading" class="space-y-4">
       <div class="grid grid-cols-2 lg:grid-cols-6 gap-3">
-        <div v-for="i in 6" :key="i" class="bg-white rounded-xl border border-gray-100 shadow-sm p-5 animate-pulse">
-          <div class="h-3 bg-gray-100 rounded w-24 mb-3"></div>
-          <div class="h-7 bg-gray-100 rounded w-16 mb-1"></div>
-          <div class="h-3 bg-gray-100 rounded w-20"></div>
+        <div v-for="i in 6" :key="i" class="bg-white rounded-xl border border-gray-100 shadow-xs p-5 animate-pulse">
+          <div class="h-3 bg-gray-100 rounded-sm w-24 mb-3"></div>
+          <div class="h-7 bg-gray-100 rounded-sm w-16 mb-1"></div>
+          <div class="h-3 bg-gray-100 rounded-sm w-20"></div>
         </div>
       </div>
-      <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5 animate-pulse">
-        <div class="h-3 bg-gray-100 rounded w-32 mb-4"></div>
+      <div class="bg-white rounded-xl border border-gray-100 shadow-xs p-5 animate-pulse">
+        <div class="h-3 bg-gray-100 rounded-sm w-32 mb-4"></div>
         <div class="h-48 bg-gray-50 rounded-lg"></div>
       </div>
     </div>
 
     <!-- Empty state -->
-    <div v-else-if="isEmpty" class="bg-white rounded-xl border border-gray-100 shadow-sm p-16 text-center">
+    <div v-else-if="isEmpty" class="bg-white rounded-xl border border-gray-100 shadow-xs p-16 text-center">
       <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-orange-50 mb-4">
         <svg class="w-8 h-8 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
@@ -70,7 +69,7 @@
       <div
         :class="[
           'space-y-6 transition-all',
-          isPaywall ? 'pointer-events-none select-none [filter:blur(6px)] opacity-70' : ''
+          isPaywall ? 'pointer-events-none select-none filter-[blur(6px)] opacity-70' : ''
         ]"
         :aria-hidden="isPaywall ? 'true' : null"
       >
@@ -117,14 +116,14 @@
       </div>
 
       <!-- Views over time -->
-      <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+      <div class="bg-white rounded-xl border border-gray-100 shadow-xs p-5">
         <div class="flex items-center justify-between mb-4">
           <div>
             <h2 class="text-sm font-semibold uppercase tracking-wide text-gray-900">Views over time</h2>
             <p class="text-xs text-gray-400 mt-0.5">Solid = this period · Dashed = previous</p>
           </div>
           <div class="flex items-center gap-4 text-xs">
-            <span class="flex items-center gap-1.5 text-gray-600"><span class="w-3 h-0.5 bg-orange-500 rounded"></span>This period</span>
+            <span class="flex items-center gap-1.5 text-gray-600"><span class="w-3 h-0.5 bg-orange-500 rounded-sm"></span>This period</span>
             <span class="flex items-center gap-1.5 text-gray-400"><span class="w-3 h-0.5 border-t-2 border-dashed border-gray-300"></span>Previous</span>
           </div>
         </div>
@@ -170,7 +169,7 @@
 
       <!-- Retention + Funnel -->
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5 lg:col-span-2">
+        <div class="bg-white rounded-xl border border-gray-100 shadow-xs p-5 lg:col-span-2">
           <div class="flex items-center justify-between mb-1">
             <h2 class="text-sm font-semibold uppercase tracking-wide text-gray-900">Audience retention</h2>
             <span class="text-xs text-gray-400">Avg across videos</span>
@@ -212,7 +211,7 @@
           <div v-else class="text-sm text-gray-400 italic py-10 text-center">Not enough viewing data yet.</div>
         </div>
 
-        <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+        <div class="bg-white rounded-xl border border-gray-100 shadow-xs p-5">
           <h2 class="text-sm font-semibold uppercase tracking-wide text-gray-900 mb-1">Viewer funnel</h2>
           <p class="text-xs text-gray-500 mb-4">Where viewers drop out.</p>
 
@@ -233,7 +232,7 @@
 
       <!-- Top videos + Audience -->
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5 lg:col-span-2">
+        <div class="bg-white rounded-xl border border-gray-100 shadow-xs p-5 lg:col-span-2">
           <h2 class="text-sm font-semibold uppercase tracking-wide text-gray-900 mb-4">Top performing videos</h2>
 
           <div v-if="!view.top_videos || !view.top_videos.length" class="text-sm text-gray-400 italic py-6">No videos in this period yet.</div>
@@ -251,7 +250,7 @@
               <tr v-for="(video, idx) in view.top_videos" :key="video.id" class="border-t border-gray-100">
                 <td class="py-3">
                   <div class="flex items-center gap-3 min-w-0">
-                    <span class="text-xs font-semibold text-gray-300 w-4 text-center flex-shrink-0">{{ idx + 1 }}</span>
+                    <span class="text-xs font-semibold text-gray-300 w-4 text-center shrink-0">{{ idx + 1 }}</span>
                     <router-link
                       :to="{ name: 'VideoPlayer', params: { id: video.id } }"
                       class="font-medium text-gray-900 hover:text-orange-600 truncate min-w-0"
@@ -261,7 +260,7 @@
                 <td class="text-right font-semibold text-gray-900">{{ formatNumber(video.views_count) }}</td>
                 <td class="text-right text-gray-600">{{ formatTime(video.avg_watch_seconds) }}</td>
                 <td class="text-right">
-                  <span class="inline-flex items-center text-xs font-semibold rounded px-1.5 py-0.5"
+                  <span class="inline-flex items-center text-xs font-semibold rounded-sm px-1.5 py-0.5"
                     :class="engagementClass(video.engagement_rate)">
                     {{ video.engagement_rate }}%
                   </span>
@@ -272,14 +271,14 @@
           </table>
         </div>
 
-        <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+        <div class="bg-white rounded-xl border border-gray-100 shadow-xs p-5">
           <h2 class="text-sm font-semibold uppercase tracking-wide text-gray-900 mb-4">Where viewers are</h2>
           <div v-if="!view.top_countries.length" class="text-sm text-gray-400 italic">No location data yet.</div>
           <div v-else class="space-y-3">
             <div v-for="c in view.top_countries" :key="c.country_code">
               <div class="flex justify-between text-sm mb-1">
                 <span class="flex items-center gap-2 min-w-0 truncate">{{ countryFlag(c.country_code) }} {{ c.country }}</span>
-                <span class="text-gray-500 text-xs flex-shrink-0 ml-2">{{ formatNumber(c.views) }} · {{ c.percentage }}%</span>
+                <span class="text-gray-500 text-xs shrink-0 ml-2">{{ formatNumber(c.views) }} · {{ c.percentage }}%</span>
               </div>
               <div class="h-1.5 bg-gray-100 rounded-full overflow-hidden">
                 <div class="h-full bg-orange-500" :style="{ width: `${Math.min(c.percentage, 100)}%` }"></div>
@@ -301,7 +300,7 @@
 
       <!-- Recent activity + Referrers -->
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5 lg:col-span-2">
+        <div class="bg-white rounded-xl border border-gray-100 shadow-xs p-5 lg:col-span-2">
           <div class="flex items-center justify-between mb-4">
             <h2 class="text-sm font-semibold uppercase tracking-wide text-gray-900">Recent activity</h2>
             <span class="text-xs text-gray-400">Real-time</span>
@@ -309,7 +308,7 @@
           <div v-if="!view.recent_activity.length" class="text-sm text-gray-400 italic">No activity yet.</div>
           <div v-else class="divide-y divide-gray-100 text-sm">
             <div v-for="(a, i) in view.recent_activity" :key="i" class="flex items-center gap-3 py-2.5">
-              <div class="w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-semibold text-white"
+              <div class="w-8 h-8 rounded-full shrink-0 flex items-center justify-center text-xs font-semibold text-white"
                 :class="activityAvatarClass(a)">
                 {{ activityAvatarLabel(a) }}
               </div>
@@ -325,12 +324,12 @@
                   <span v-if="a.content"> · "{{ a.content }}"</span>
                 </div>
               </div>
-              <span class="text-xs text-gray-400 flex-shrink-0">{{ timeAgo(a.at) }}</span>
+              <span class="text-xs text-gray-400 shrink-0">{{ timeAgo(a.at) }}</span>
             </div>
           </div>
         </div>
 
-        <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+        <div class="bg-white rounded-xl border border-gray-100 shadow-xs p-5">
           <h2 class="text-sm font-semibold uppercase tracking-wide text-gray-900 mb-4">How they got there</h2>
           <div v-if="!view.referrers.length" class="text-sm text-gray-400 italic">No referrer data yet.</div>
           <ul v-else class="space-y-3 text-sm">
@@ -362,7 +361,7 @@
               Pro feature
             </div>
 
-            <div class="mx-auto w-14 h-14 rounded-2xl bg-gradient-to-br from-orange-100 to-amber-100 flex items-center justify-center mb-4 ring-1 ring-orange-200/50">
+            <div class="mx-auto w-14 h-14 rounded-2xl bg-linear-to-br from-orange-100 to-amber-100 flex items-center justify-center mb-4 ring-1 ring-orange-200/50">
               <svg class="w-7 h-7 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
               </svg>
@@ -377,26 +376,26 @@
 
             <ul class="text-left text-sm text-gray-700 space-y-2.5 mb-7">
               <li class="flex items-start gap-2.5">
-                <svg class="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                <svg class="w-4 h-4 text-emerald-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
                 <span>See exactly who watched, how far they got, and from where</span>
               </li>
               <li class="flex items-start gap-2.5">
-                <svg class="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                <svg class="w-4 h-4 text-emerald-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
                 <span>Spot the moments where viewers drop off</span>
               </li>
               <li class="flex items-start gap-2.5">
-                <svg class="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                <svg class="w-4 h-4 text-emerald-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
                 <span>Track replies, reactions, and which videos actually drive action</span>
               </li>
               <li class="flex items-start gap-2.5">
-                <svg class="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                <svg class="w-4 h-4 text-emerald-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
                 <span>Real-time viewer feed so you can follow up while it's warm</span>
               </li>
             </ul>
 
             <router-link
               :to="{ name: 'Subscription' }"
-              class="inline-flex w-full items-center justify-center gap-2 px-5 py-3 bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold rounded-lg transition-colors shadow-sm"
+              class="inline-flex w-full items-center justify-center gap-2 px-5 py-3 bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold rounded-lg transition-colors shadow-xs"
             >
               Upgrade to Pro
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
@@ -412,6 +411,7 @@
 </template>
 
 <script setup>
+import { Button } from '@/components/ui/button'
 import { ref, computed, onMounted, h, defineComponent } from 'vue'
 
 const KpiCard = defineComponent({
@@ -426,7 +426,7 @@ const KpiCard = defineComponent({
     icon: Function,
   },
   setup(props) {
-    return () => h('div', { class: 'bg-white rounded-xl border border-gray-100 shadow-sm p-4' }, [
+    return () => h('div', { class: 'bg-white rounded-xl border border-gray-100 shadow-xs p-4' }, [
       h('div', { class: 'flex items-center justify-between mb-2' }, [
         h('span', { class: 'text-[11px] font-semibold uppercase tracking-wider text-gray-500' }, props.label),
         h('div', { class: `w-7 h-7 rounded-lg flex items-center justify-center ${props.iconBg} ${props.iconColor}` }, props.icon ? [props.icon()] : []),
@@ -436,7 +436,7 @@ const KpiCard = defineComponent({
         props.delta != null
           ? h('span', {
               class: [
-                'text-[11px] font-semibold rounded px-1.5 py-0.5',
+                'text-[11px] font-semibold rounded-sm px-1.5 py-0.5',
                 props.delta > 0 ? 'text-emerald-700 bg-emerald-50' : (props.delta < 0 ? 'text-red-700 bg-red-50' : 'text-gray-500 bg-gray-50'),
               ],
             }, `${props.delta > 0 ? '↑' : (props.delta < 0 ? '↓' : '·')} ${Math.abs(props.delta)}${props.deltaUnit}`)
@@ -753,9 +753,9 @@ function activityAvatarLabel(a) {
   return name.split(/\s+/).map(p => p[0]).slice(0, 2).join('').toUpperCase() || '?'
 }
 function activityAvatarClass(a) {
-  if (a.type === 'comment') return 'bg-gradient-to-br from-amber-400 to-orange-500'
-  if (a.type === 'reaction') return 'bg-gradient-to-br from-pink-400 to-rose-500 text-base'
-  return 'bg-gradient-to-br from-blue-400 to-indigo-500'
+  if (a.type === 'comment') return 'bg-linear-to-br from-amber-400 to-orange-500'
+  if (a.type === 'reaction') return 'bg-linear-to-br from-pink-400 to-rose-500 text-base'
+  return 'bg-linear-to-br from-blue-400 to-indigo-500'
 }
 function referrerLabel(source) {
   return ({ direct: 'Direct link', email: 'Email', slack: 'Slack', docs: 'Notion / Docs', chat: 'Chat apps', social: 'Social', embed: 'Embedded', other: 'Other' })[source] || source

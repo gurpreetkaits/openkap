@@ -43,7 +43,7 @@
           @blur="commitEdit(index)"
           @keydown="onEditKeyDown($event, index)"
           :rows="Math.max(1, Math.ceil((editValue || '').length / 35))"
-          class="w-full bg-orange-500/5 border border-orange-500/30 rounded-md px-2 py-1.5 text-sm leading-relaxed outline-none focus:ring-1 focus:ring-orange-500/30 resize-none"
+          class="w-full bg-orange-500/5 border border-orange-500/30 rounded-md px-2 py-1.5 text-sm leading-relaxed outline-hidden focus:ring-1 focus:ring-orange-500/30 resize-none"
         ></textarea>
 
         <!-- Display text -->
